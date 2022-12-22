@@ -12,15 +12,30 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import org.openstreetmap.josm.data.osm.Changeset;
-import org.openstreetmap.josm.gui.dialogs.properties.PropertiesDialog.ReadOnlyTableModel;
 
 /**
  * This panel displays the tags of the currently selected changeset in the {@link ChangesetCacheManager}
  *
  */
 public class ChangesetTagsPanel extends JPanel implements PropertyChangeListener {
+
+    /**
+     * Class that allows fast creation of read-only table model with String columns
+     */
+    public static class ReadOnlyTableModel extends DefaultTableModel {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return String.class;
+        }
+    }
 
     private ReadOnlyTableModel model;
 

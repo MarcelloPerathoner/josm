@@ -18,6 +18,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -42,7 +43,7 @@ public class FilterField extends DisableShortcutsOnFocusGainedTextField {
      * @since 17768
      */
     public static void setSearchIcon(JosmTextField textField) {
-        textField.setIcon(ImageProvider.get("listsearch"));
+        textField.setIcon(ImageProvider.get("listsearch", ImageSizes.SMALLICON));
     }
 
     /**

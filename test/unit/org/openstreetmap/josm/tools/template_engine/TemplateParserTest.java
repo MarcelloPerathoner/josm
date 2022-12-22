@@ -4,8 +4,12 @@ package org.openstreetmap.josm.tools.template_engine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
@@ -102,6 +106,15 @@ class TemplateParserTest {
     }
 
     TemplateEngineDataProvider dataProvider = new TemplateEngineDataProvider() {
+        Map<String, String> tags = new HashMap<String, String>() {{
+            put("name", "waypointName");
+            put("number", "10");
+            put("description", "Cycleway");
+            put("description:de", "Fahrradweg");
+            put("description:de_CH", "Veloweg");
+            put("special:key", "specialKey");
+        }};
+
         @Override
         public Object getTemplateValue(String name, boolean special) {
             if (special) {
@@ -110,16 +123,7 @@ class TemplateParserTest {
                 else
                     return null;
             } else {
-                switch (name) {
-                case "name":
-                    return "waypointName";
-                case "number":
-                    return 10;
-                case "special:key":
-                    return "specialKey";
-                default:
-                    return null;
-                }
+                return tags.get(name);
             }
         }
 
@@ -130,9 +134,23 @@ class TemplateParserTest {
 
         @Override
         public List<String> getTemplateKeys() {
-            return Arrays.asList("name", "number");
+            return new ArrayList<>(tags.keySet());
         }
     };
+
+    /**
+     * Parse template against dataprovider and check result
+     * @param template The template to parse
+     * @param result   The expected result
+     * @throws ParseError if the template cannot be parsed
+     */
+    private void assert_equals(String template, String result) throws ParseError {
+        TemplateParser parser = new TemplateParser(template);
+        TemplateEntry templateEntry = parser.parse();
+        StringBuilder sb = new StringBuilder();
+        templateEntry.appendText(sb, dataProvider);
+        assertEquals(result, sb.toString());
+    }
 
     /**
      * Test to fill a template.
@@ -176,10 +194,13 @@ class TemplateParserTest {
     void testPrintAll() throws ParseError {
         TemplateParser parser = new TemplateParser("{special:everything}");
         TemplateEntry entry = parser.parse();
+        Assert.assertEquals("{special:everything}", entry.toString());
         StringBuilder sb = new StringBuilder();
         entry.appendText(sb, dataProvider);
-        Assert.assertEquals("name=waypointName, number=10", sb.toString());
-        Assert.assertEquals("{special:everything}", entry.toString());
+        Assert.assertEquals(
+            "description=Cycleway, description:de=Fahrradweg, description:de_CH=Veloweg, name=waypointName, number=10, special:key=specialKey", 
+            sb.toString()
+        );
     }
 
     /**
@@ -201,12 +222,49 @@ class TemplateParserTest {
      */
     @Test
     void testSpecialVariable() throws ParseError {
-        TemplateParser parser = new TemplateParser("{name}u{special:localName}u{special:special:key}");
-        TemplateEntry templateEntry = parser.parse();
+        assert_equals("{name}u{special:localName}u{special:special:key}", "waypointNameulocalNameuspecialKey");  
+    }
 
-        StringBuilder sb = new StringBuilder();
-        templateEntry.appendText(sb, dataProvider);
-        Assert.assertEquals("waypointNameulocalNameuspecialKey", sb.toString());
+    /**
+     * Test special:local variables.
+     * @throws ParseError if the template cannot be parsed
+     */
+    @Test
+    void testSpecialLocalVariable() throws ParseError {
+        Locale old_locale = Locale.getDefault();
+
+        Locale.setDefault(new Locale("de", "DE"));
+        assert_equals("{special:local:description}", "Fahrradweg");
+
+        Locale.setDefault(new Locale("de", "AT"));
+        assert_equals("{special:local:description}", "Fahrradweg");
+
+        Locale.setDefault(new Locale("de", "CH"));
+        assert_equals("{special:local:description}", "Veloweg");
+
+        Locale.setDefault(new Locale("fr", "FR")); // default to unlocalized description
+        assert_equals("{special:local:description}", "Cycleway");
+
+        Locale.setDefault(old_locale);
+        assert_equals("{special:local:nosuchtag}", "");
+        assert_equals("{special:local:number}", "10");
+    }
+
+    /**
+     * Test special:local variables in conditions.
+     * @throws ParseError if the template cannot be parsed
+     */
+    @Test
+    void testSpecialLocalVariableImplicitCondition() throws ParseError {
+        Locale old_locale = Locale.getDefault();
+
+        Locale.setDefault(new Locale("de", "DE"));
+        assert_equals("?{'{special:local:description}' | 'y'}", "Fahrradweg");
+        assert_equals("?{'{special:local:nosuchtag}'   | 'y'}", "y");
+
+        Locale.setDefault(old_locale);
+        assert_equals("?{'x{special:local:nosuchtag}'  | 'y'}", "y");
+        assert_equals("?{'x{special:local:number}'     | 'y'}", "x10");
     }
 
     @Test

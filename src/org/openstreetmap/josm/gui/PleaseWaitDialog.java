@@ -53,33 +53,32 @@ public class PleaseWaitDialog extends JDialog implements ProgressMonitorDialog {
     }
 
     private void initDialog() {
-        setLayout(new GridBagLayout());
         JPanel pane = new JPanel(new GridBagLayout());
-        pane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        pane.add(currentAction, GBC.eol().fill(GBC.HORIZONTAL));
-        pane.add(customText, GBC.eol().fill(GBC.HORIZONTAL));
+        pane.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
+        pane.add(currentAction, GBC.eop().fill(GBC.HORIZONTAL));
+        pane.add(customText, GBC.eop().fill(GBC.HORIZONTAL));
         pane.add(progressBar, GBC.eop().fill(GBC.HORIZONTAL));
         JPanel buttons = new JPanel(new GridBagLayout());
         btnCancel = new JButton(tr("Cancel"));
         btnCancel.setIcon(ImageProvider.get("cancel"));
         btnCancel.setToolTipText(tr("Click to cancel the current operation"));
-        buttons.add(btnCancel);
+        buttons.add(btnCancel, GBC.std());
         btnInBackground = new JButton(tr("In background"));
         btnInBackground.setToolTipText(tr("Click to run job in background"));
         buttons.add(btnInBackground, GBC.std().fill(GBC.VERTICAL).insets(5, 0, 0, 0));
-        pane.add(buttons, GBC.eol().anchor(GBC.CENTER));
-        GridBagConstraints gc = GBC.eol().fill(GBC.BOTH);
+        pane.add(buttons, GBC.eop().anchor(GBC.CENTER));
+        GridBagConstraints gc = GBC.eop().fill(GBC.BOTH);
         gc.weighty = 1.0;
         gc.weightx = 1.0;
         pane.add(spLog, gc);
         spLog.setVisible(false);
-        setContentPane(pane);
+        add(pane);
         setCustomText("");
         setLocationRelativeTo(getParent());
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent ev) {
-                int w = getWidth();
+                int w = getContentPane().getSize().width;
                 if (w > 200) {
                     Config.getPref().putInt("progressdialog.size", w);
                 }
@@ -97,7 +96,10 @@ public class PleaseWaitDialog extends JDialog implements ProgressMonitorDialog {
         invalidate();
         setDropTarget(null); // Workaround to JDK bug 7027598/7100524/7169912 (#8613)
         pack();
-        setSize(Config.getPref().getInt("progressdialog.size", 600), getSize().height);
+        getContentPane().setSize(
+            Config.getPref().getInt("progressdialog.size", 600),
+            getContentPane().getSize().height
+        );
     }
 
     /**

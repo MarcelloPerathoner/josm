@@ -1,6 +1,5 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui;
-
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -17,15 +16,12 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -62,11 +58,15 @@ import org.openstreetmap.josm.gui.layer.NativeScaleLayer;
 import org.openstreetmap.josm.gui.layer.NativeScaleLayer.Scale;
 import org.openstreetmap.josm.gui.layer.NativeScaleLayer.ScaleList;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
+import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
+import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
+import org.openstreetmap.josm.gui.mappaint.StyleElementList;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
 import org.openstreetmap.josm.gui.util.CursorManager;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Logging;
+import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.bugreport.BugReportExceptionHandler;
 
@@ -99,16 +99,13 @@ public class NavigatableComponent extends JComponent implements Helpful {
     public transient Predicate<OsmPrimitive> isSelectablePredicate = prim -> {
         if (!prim.isSelectable()) return false;
         // if it isn't displayed on screen, you cannot click on it
-        MapCSSStyleSource.STYLE_SOURCE_LOCK.readLock().lock();
-        try {
-            return !MapPaintStyles.getStyles().get(prim, getDist100Pixel(), this).isEmpty();
-        } finally {
-            MapCSSStyleSource.STYLE_SOURCE_LOCK.readLock().unlock();
-        }
+        return !getStyleElementList(prim).isEmpty();
     };
 
-    /** Snap distance */
+    /** Node snap distance */
     public static final IntegerProperty PROP_SNAP_DISTANCE = new IntegerProperty("mappaint.node.snap-distance", 10);
+    /** Segment snap distance */
+    public static final IntegerProperty PROP_SEGMENT_SNAP_DISTANCE = new IntegerProperty("mappaint.segment.snap-distance", 10);
     /** Zoom steps to get double scale */
     public static final DoubleProperty PROP_ZOOM_RATIO = new DoubleProperty("zoom.ratio", 2.0);
     /** Divide intervals between native resolution levels to smaller steps if they are much larger than zoom ratio */
@@ -1048,420 +1045,355 @@ public class NavigatableComponent extends JComponent implements Helpful {
                 getLatLon(p.x + snapDistance, p.y + snapDistance));
     }
 
-    /**
-     * The *result* does not depend on the current map selection state, neither does the result *order*.
-     * It solely depends on the distance to point p.
-     * @param p point
-     * @param predicate predicate to match
-     *
-     * @return a sorted map with the keys representing the distance of their associated nodes to point p.
-     */
-    private Map<Double, List<Node>> getNearestNodesImpl(Point p, Predicate<OsmPrimitive> predicate) {
-        Map<Double, List<Node>> nearestMap = new TreeMap<>();
-        DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
-
-        if (ds != null) {
-            double dist, snapDistanceSq = PROP_SNAP_DISTANCE.get();
-            snapDistanceSq *= snapDistanceSq;
-
-            for (Node n : ds.searchNodes(getBBox(p, PROP_SNAP_DISTANCE.get()))) {
-                if (predicate.test(n)
-                        && (dist = getPoint2D(n).distanceSq(p)) < snapDistanceSq) {
-                    nearestMap.computeIfAbsent(dist, k -> new LinkedList<>()).add(n);
-                }
-            }
+    private StyleElementList getStyleElementList(OsmPrimitive osm) {
+        MapCSSStyleSource.STYLE_SOURCE_LOCK.readLock().lock();
+        try {
+            return MapPaintStyles.getStyles().get(osm, getDist100Pixel(), this);
+        } finally {
+            MapCSSStyleSource.STYLE_SOURCE_LOCK.readLock().unlock();
         }
-
-        return nearestMap;
     }
 
     /**
-     * The *result* does not depend on the current map selection state,
-     * neither does the result *order*.
-     * It solely depends on the distance to point p.
+     * Return all nodes that are closer to {@code p} than
+     * {@code mappaint.node.snap-distance}, and are not in {@code ignore}, and
+     * satisfy {@code predicate}, sorted by their distance to {@code p}
+     * ascending.
      *
-     * @param p the point for which to search the nearest segment.
-     * @param ignore a collection of nodes which are not to be returned.
-     * @param predicate the returned objects have to fulfill certain properties.
+     * @param p the screen point
+     * @param ignore nodes to ignore
+     * @param predicate the returned nodes must satisfy
      *
-     * @return All nodes nearest to point p that are in a belt from
-     *      dist(nearest) to dist(nearest)+4px around p and
-     *      that are not in ignore.
+     * @return the nearest nodes
      */
     public final List<Node> getNearestNodes(Point p,
             Collection<Node> ignore, Predicate<OsmPrimitive> predicate) {
-        List<Node> nearestList = Collections.emptyList();
 
-        if (ignore == null) {
-            ignore = Collections.emptySet();
-        }
+        DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
 
-        Map<Double, List<Node>> nlists = getNearestNodesImpl(p, predicate);
-        if (!nlists.isEmpty()) {
-            Double minDistSq = null;
-            for (Entry<Double, List<Node>> entry : nlists.entrySet()) {
-                Double distSq = entry.getKey();
-                List<Node> nlist = entry.getValue();
+        List<Pair<Double, Node>> l = new ArrayList<>();
+        if (ds != null) {
+            Integer snapDistance = PROP_SNAP_DISTANCE.get();
 
-                // filter nodes to be ignored before determining minDistSq..
-                nlist.removeAll(ignore);
-                if (minDistSq == null) {
-                    if (!nlist.isEmpty()) {
-                        minDistSq = distSq;
-                        nearestList = new ArrayList<>();
-                        nearestList.addAll(nlist);
-                    }
-                } else {
-                    if (distSq-minDistSq < 16) {
-                        nearestList.addAll(nlist);
-                    }
+            for (Node n : ds.searchNodes(getBBox(p, snapDistance))) {
+                if (predicate != null && !predicate.test(n))
+                    continue;
+                if (ignore != null && ignore.contains(n))
+                    continue;
+                double dist = getPoint2D(n).distance(p);
+                if (dist <= snapDistance) {
+                    l.add(new Pair<>(dist, n));
                 }
             }
+            // N.B. we must not sort selected nodes in front of unselected
+            // or the order in the middle-click-menu will change
+            Collections.sort(l, Comparator.comparing(i -> i.a));
         }
-
-        return nearestList;
+        return l.stream().map(i -> i.b).collect(Collectors.toList());
     }
 
     /**
-     * The *result* does not depend on the current map selection state,
-     * neither does the result *order*.
-     * It solely depends on the distance to point p.
+     * Convenience method for {@link #getNearestNodes(Point, Collection, Predicate)}.
      *
-     * @param p the point for which to search the nearest segment.
-     * @param predicate the returned objects have to fulfill certain properties.
+     * @param p the screen point
+     * @param predicate the returned nodes must satisfy
      *
-     * @return All nodes nearest to point p that are in a belt from
-     *      dist(nearest) to dist(nearest)+4px around p.
-     * @see #getNearestNodes(Point, Collection, Predicate)
+     * @return the nearest nodes
      */
     public final List<Node> getNearestNodes(Point p, Predicate<OsmPrimitive> predicate) {
         return getNearestNodes(p, null, predicate);
     }
 
     /**
-     * The *result* depends on the current map selection state IF use_selected is true.
+     * Return the nearest node to {@code p} that is closer than
+     * {@code mappaint.node.snap-distance} and satisfies {@code predicate}.
+     * <p>
+     * The following algorithm is used:
+     * <ul>
+     * <li>If {@code useSelected} is true, prefer the closest selected node. Use
+     * case: remove a primitive from a selection.
      *
-     * If more than one node within node.snap-distance pixels is found,
-     * the nearest node selected is returned IF use_selected is true.
+     * <li>Else if {@code preferredRefs} is not null, prefer the closest node that
+     * is referred by any of the primitives in {@code preferredRefs}.
      *
-     * Else the nearest new/id=0 node within about the same distance
-     * as the true nearest node is returned.
+     * <li>Else prefer the closest new node (node with id==0) within about the same
+     * distance as the node closest to {@code p}.
      *
-     * If no such node is found either, the true nearest node to p is returned.
+     * <li>Else return the closest node.
      *
-     * Finally, if a node is not found at all, null is returned.
-     *
+     * <li>Else return null.
+     * </ul>
      * @param p the screen point
-     * @param predicate this parameter imposes a condition on the returned object, e.g.
-     *        give the nearest node that is tagged.
-     * @param useSelected make search depend on selection
+     * @param predicate the node must satisfy
+     * @param useSelected prefer a selected node
+     * @param preferredRefs prefer a node referred by one of these primitives
      *
-     * @return A node within snap-distance to point p, that is chosen by the algorithm described.
-     */
-    public final Node getNearestNode(Point p, Predicate<OsmPrimitive> predicate, boolean useSelected) {
-        return getNearestNode(p, predicate, useSelected, null);
-    }
-
-    /**
-     * The *result* depends on the current map selection state IF use_selected is true
-     *
-     * If more than one node within node.snap-distance pixels is found,
-     * the nearest node selected is returned IF use_selected is true.
-     *
-     * If there are no selected nodes near that point, the node that is related to some of the preferredRefs
-     *
-     * Else the nearest new/id=0 node within about the same distance
-     * as the true nearest node is returned.
-     *
-     * If no such node is found either, the true nearest node to p is returned.
-     *
-     * Finally, if a node is not found at all, null is returned.
-     *
-     * @param p the screen point
-     * @param predicate this parameter imposes a condition on the returned object, e.g.
-     *        give the nearest node that is tagged.
-     * @param useSelected make search depend on selection
-     * @param preferredRefs primitives, whose nodes we prefer
-     *
-     * @return A node within snap-distance to point p, that is chosen by the algorithm described.
+     * @return the nearest node
      * @since 6065
      */
     public final Node getNearestNode(Point p, Predicate<OsmPrimitive> predicate,
             boolean useSelected, Collection<OsmPrimitive> preferredRefs) {
 
-        Map<Double, List<Node>> nlists = getNearestNodesImpl(p, predicate);
-        if (nlists.isEmpty()) return null;
+        List<Node> nlist = getNearestNodes(p, predicate);
+        if (nlist.isEmpty()) return null;
 
-        if (preferredRefs != null && preferredRefs.isEmpty()) preferredRefs = null;
-        Node ntsel = null, ntnew = null, ntref = null;
-        boolean useNtsel = useSelected;
-        double minDistSq = nlists.keySet().iterator().next();
+        Node result;
 
-        for (Entry<Double, List<Node>> entry : nlists.entrySet()) {
-            Double distSq = entry.getKey();
-            for (Node nd : entry.getValue()) {
-                // find the nearest selected node
-                if (ntsel == null && nd.isSelected()) {
-                    ntsel = nd;
-                    // if there are multiple nearest nodes, prefer the one
-                    // that is selected. This is required in order to drag
-                    // the selected node if multiple nodes have the same
-                    // coordinates (e.g. after unglue)
-                    useNtsel |= Utils.equalsEpsilon(distSq, minDistSq);
-                }
-                if (ntref == null && preferredRefs != null && Utils.equalsEpsilon(distSq, minDistSq)) {
-                    List<OsmPrimitive> ndRefs = nd.getReferrers();
-                    if (preferredRefs.stream().anyMatch(ndRefs::contains)) {
-                        ntref = nd;
-                    }
-                }
-                // find the nearest newest node that is within about the same
-                // distance as the true nearest node
-                if (ntnew == null && nd.isNew() && (distSq-minDistSq < 1)) {
-                    ntnew = nd;
-                }
-            }
+        if (useSelected) {
+            result = nlist.stream().filter(n -> n.isSelected()).findFirst().orElse(null);
+            if (result != null) return result;
+        }
+        if (preferredRefs != null && !preferredRefs.isEmpty()) {
+            Set<OsmPrimitive> prefs = new HashSet<>(preferredRefs);
+            result = nlist.stream().filter(
+                n -> n.getReferrers().stream().anyMatch(prefs::contains)
+                ).findFirst().orElse(null);
+            if (result != null) return result;
         }
 
-        // take nearest selected, nearest new or true nearest node to p, in that order
-        if (ntsel != null && useNtsel)
-            return ntsel;
-        if (ntref != null)
-            return ntref;
-        if (ntnew != null)
-            return ntnew;
-        return nlists.values().iterator().next().get(0);
+        Node firstNew = nlist.stream().filter(n -> n.isNew()).findFirst().orElse(null);
+        Node first = nlist.stream().findFirst().orElse(null);
+
+        if (firstNew == null) return first;
+        if (first == null) return null;
+        if (first == firstNew) return first;
+
+        Point2D pt = new Point2D.Double(p.x, p.y);
+        double distNew = pt.distance(getPoint2D(firstNew));
+        double dist = pt.distance(getPoint2D(first));
+
+        return (distNew - dist < 1) ? firstNew : first;
     }
 
     /**
-     * Convenience method to {@link #getNearestNode(Point, Predicate, boolean)}.
-     * @param p the screen point
-     * @param predicate this parameter imposes a condition on the returned object, e.g.
-     *        give the nearest node that is tagged.
+     * Convenience method for {@link #getNearestNode(Point, Predicate, boolean, Collection)}.
      *
-     * @return The nearest node to point p.
+     * @param p the screen point
+     * @param predicate the node must satisfy
+     * @param useSelected prefer a selected node
+     *
+     * @return the nearest node
+     */
+    public final Node getNearestNode(Point p,
+            Predicate<OsmPrimitive> predicate, boolean useSelected) {
+
+        return getNearestNode(p, predicate, useSelected, null);
+    }
+
+    /**
+     * Convenience method for {@link #getNearestNode(Point, Predicate, boolean, Collection)}.
+     * <p>
+     * Prefers selected nodes.
+     *
+     * @param p the screen point
+     * @param predicate the node must satisfy
+     *
+     * @return the nearest node
      */
     public final Node getNearestNode(Point p, Predicate<OsmPrimitive> predicate) {
-        return getNearestNode(p, predicate, true);
+        return getNearestNode(p, predicate, true, null);
     }
 
     /**
-     * The *result* does not depend on the current map selection state, neither does the result *order*.
-     * It solely depends on the distance to point p.
-     * @param p the screen point
-     * @param predicate this parameter imposes a condition on the returned object, e.g.
-     *        give the nearest node that is tagged.
+     * To determine the perpendicular distance from a point {@code pt} to a way
+     * segment {@code pt1, pt2} we calculate the height of the triangle
+     * {@code pt, pt1, pt2} using the formula:
+     * <p>
+     *   h^2=b^2-(\frac{-a^2+b^2+c^2}{2c})^2
+     * <p>
+     * See: <a
+     * href="https://en.wikipedia.org/wiki/Heron%27s_formula#Algebraic_proof_using_the_Pythagorean_theorem">Proof
+     * of Heron's formula using the Pythagorean theorem</a>.
+     * <p>
+     * To avoid taking a square root we rewrite the formula as:
+     * <p>
+     *   h^2 = b^2 - \frac{(-a^2 + b^2 + c^2)^2}{4 c^2}
+     * <p>
+     * N.B. Floating point math is not associative so we have to be careful
+     * about the order of evaluation. The method is public so we can test it.
      *
-     * @return a sorted map with the keys representing the perpendicular
-     *      distance of their associated way segments to point p.
+     * @param aSq length of side a squared
+     * @param bSq length of side b squared
+     * @param cSq length of way segment squared
+     * @return perpendicular distance squared
      */
-    private Map<Double, List<WaySegment>> getNearestWaySegmentsImpl(Point p, Predicate<OsmPrimitive> predicate) {
-        Map<Double, List<WaySegment>> nearestMap = new TreeMap<>();
+    public final double Heron(double aSq, double bSq, double cSq) {
+        double f = (bSq - aSq) + cSq;    // make order of evaluation explicit
+        return bSq - (f * f) / (4 * cSq);
+    }
+
+    /**
+     * Return all way segments that are closer to {@code p} than
+     * {@code mappaint.segment.snap-distance}, and are not in {@code ignore},
+     * and satisfy {@code predicate}, sorted by their distance to {@code p}
+     * ascending.
+     * <p>
+     *
+     * @param p the screen point
+     * @param ignore nodes to ignore
+     * @param predicate the way segments must satisfy
+     * @return the nearest way segments
+     */
+
+    public List<WaySegment> getNearestWaySegments(
+        Point p, Collection<WaySegment> ignore, Predicate<OsmPrimitive> predicate) {
         DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
 
+        List<Pair<Double, WaySegment>> l = new ArrayList<>();
         if (ds != null) {
-            double snapDistanceSq = Config.getPref().getInt("mappaint.segment.snap-distance", 10);
-            snapDistanceSq *= snapDistanceSq;
+            Integer snapDistance = PROP_SEGMENT_SNAP_DISTANCE.get();
+            double snapDistanceSq = snapDistance * snapDistance;
 
-            for (Way w : ds.searchWays(getBBox(p, Config.getPref().getInt("mappaint.segment.snap-distance", 10)))) {
-                if (!predicate.test(w)) {
+            for (Way w : ds.searchWays(getBBox(p, snapDistance))) {
+                if (predicate != null && !predicate.test(w))
                     continue;
-                }
-                Node lastN = null;
-                int i = -2;
-                for (Node n : w.getNodes()) {
-                    i++;
-                    if (n.isDeleted() || n.isIncomplete()) { //FIXME: This shouldn't happen, raise exception?
+
+                Node n1 = null;
+                for (Node n2 : w.getNodes()) {
+                    if (n2.isDeleted() || n2.isIncomplete()) { //FIXME: This shouldn't happen, raise exception?
                         continue;
                     }
-                    if (lastN == null) {
-                        lastN = n;
+                    if (n1 == null) {
+                        n1 = n2;
                         continue;
                     }
 
-                    Point2D pA = getPoint2D(lastN);
-                    Point2D pB = getPoint2D(n);
-                    double c = pA.distanceSq(pB);
-                    double a = p.distanceSq(pB);
-                    double b = p.distanceSq(pA);
+                    Point2D pt = new Point2D.Double(p.x, p.y);
+                    Point2D pt1 = getPoint2D(n1);
+                    Point2D pt2 = getPoint2D(n2);
 
-                    /* perpendicular distance squared
-                     * loose some precision to account for possible deviations in the calculation above
-                     * e.g. if identical (A and B) come about reversed in another way, values may differ
-                     * -- zero out least significant 32 dual digits of mantissa..
-                     */
-                    double perDistSq = Double.longBitsToDouble(
-                            Double.doubleToLongBits(a - (a - b + c) * (a - b + c) / 4 / c)
-                            >> 32 << 32); // resolution in numbers with large exponent not needed here..
+                    double a2 = pt.distanceSq(pt1);
+                    double b2 = pt.distanceSq(pt2);
+                    double c2 = pt1.distanceSq(pt2);
 
-                    if (perDistSq < snapDistanceSq && a < c + snapDistanceSq && b < c + snapDistanceSq) {
-                        nearestMap.computeIfAbsent(perDistSq, k -> new LinkedList<>()).add(new WaySegment(w, i));
+                    // early out if point is too far away from segment
+                    if (a2 <= c2 + snapDistanceSq && b2 <= c2 + snapDistanceSq) {
+                        double distSq = Heron(a2, b2, c2);
+                        if (distSq <= snapDistanceSq) {
+                            WaySegment ws = WaySegment.forNodePair(w, n1, n2);
+                            if (ignore == null || !ignore.contains(ws)) {
+                                l.add(new Pair<>(distSq, ws));
+                            }
+                        }
                     }
-
-                    lastN = n;
+                    n1 = n2;
                 }
             }
+            // sort according to distance ascending
+            // N.B. we must not sort selected ways in front of unselected
+            // or the order in the middle-click-menu will change
+            Collections.sort(l, Comparator.comparing(i -> i.a));
         }
-
-        return nearestMap;
+        return l.stream().map(i -> i.b).collect(Collectors.toList());
     }
 
     /**
-     * The result *order* depends on the current map selection state.
-     * Segments within 10px of p are searched and sorted by their distance to {@code p},
-     * then, within groups of equally distant segments, prefer those that are selected.
+     * Convenience method for {@link #getNearestWaySegments(Point, Collection, Predicate)}.
      *
-     * @param p the point for which to search the nearest segments.
-     * @param ignore a collection of segments which are not to be returned.
-     * @param predicate the returned objects have to fulfill certain properties.
+     * @param p the screen point
+     * @param predicate the way segments must satisfy
      *
-     * @return all segments within 10px of p that are not in ignore,
-     *          sorted by their perpendicular distance.
-     */
-    public final List<WaySegment> getNearestWaySegments(Point p,
-            Collection<WaySegment> ignore, Predicate<OsmPrimitive> predicate) {
-        List<WaySegment> nearestList = new ArrayList<>();
-        List<WaySegment> unselected = new LinkedList<>();
-
-        for (List<WaySegment> wss : getNearestWaySegmentsImpl(p, predicate).values()) {
-            // put selected waysegs within each distance group first
-            // makes the order of nearestList dependent on current selection state
-            for (WaySegment ws : wss) {
-                (ws.getWay().isSelected() ? nearestList : unselected).add(ws);
-            }
-            nearestList.addAll(unselected);
-            unselected.clear();
-        }
-        if (ignore != null) {
-            nearestList.removeAll(ignore);
-        }
-
-        return nearestList;
-    }
-
-    /**
-     * The result *order* depends on the current map selection state.
-     *
-     * @param p the point for which to search the nearest segments.
-     * @param predicate the returned objects have to fulfill certain properties.
-     *
-     * @return all segments within 10px of p, sorted by their perpendicular distance.
-     * @see #getNearestWaySegments(Point, Collection, Predicate)
+     * @return the nearest way segments
      */
     public final List<WaySegment> getNearestWaySegments(Point p, Predicate<OsmPrimitive> predicate) {
         return getNearestWaySegments(p, null, predicate);
     }
 
     /**
-     * The *result* depends on the current map selection state IF use_selected is true.
+     * Return the nearest way segment to {@code p} that is closer than
+     * {@code mappaint.segment.snap-distance} and satisfies {@code predicate}.
+     * <p>
+     * The following algorithm is used:
+     * <ul>
+     *  <li>If {@code useSelected} is true, prefer the closest selected way segment.
+     *       Use case: remove a primitive from a selection.</li>
+     *  <li>Else if {@code preferredRefs} is not null, prefer the closest way segment
+     *   that is referred by any of the primitives in {@code preferredRefs}.</li>
+     *  <li>Else return the closest way segment.</li>
+     *  <li>Else return null.</li>
+     * </ul>
      *
-     * @param p the point for which to search the nearest segment.
-     * @param predicate the returned object has to fulfill certain properties.
-     * @param useSelected whether selected way segments should be preferred.
+     * @param p the screen point
+     * @param predicate the way segment must satisfy
+     * @param useSelected prefer a selected way segment
+     * @param preferredRefs prefer way segments related to these primitives
      *
-     * @return The nearest way segment to point p,
-     *      and, depending on use_selected, prefers a selected way segment, if found.
-     * @see #getNearestWaySegments(Point, Collection, Predicate)
-     */
-    public final WaySegment getNearestWaySegment(Point p, Predicate<OsmPrimitive> predicate, boolean useSelected) {
-        WaySegment wayseg = null;
-        WaySegment ntsel = null;
-
-        for (List<WaySegment> wslist : getNearestWaySegmentsImpl(p, predicate).values()) {
-            if (wayseg != null && ntsel != null) {
-                break;
-            }
-            for (WaySegment ws : wslist) {
-                if (wayseg == null) {
-                    wayseg = ws;
-                }
-                if (ntsel == null && ws.getWay().isSelected()) {
-                    ntsel = ws;
-                }
-            }
-        }
-
-        return (ntsel != null && useSelected) ? ntsel : wayseg;
-    }
-
-    /**
-     * The *result* depends on the current map selection state IF use_selected is true.
-     *
-     * @param p the point for which to search the nearest segment.
-     * @param predicate the returned object has to fulfill certain properties.
-     * @param useSelected whether selected way segments should be preferred.
-     * @param preferredRefs - prefer segments related to these primitives, may be null
-     *
-     * @return The nearest way segment to point p,
-     *      and, depending on use_selected, prefers a selected way segment, if found.
-     * Also prefers segments of ways that are related to one of preferredRefs primitives
-     *
+     * @return The nearest way segment
      * @see #getNearestWaySegments(Point, Collection, Predicate)
      * @since 6065
      */
     public final WaySegment getNearestWaySegment(Point p, Predicate<OsmPrimitive> predicate,
             boolean useSelected, Collection<OsmPrimitive> preferredRefs) {
-        WaySegment wayseg = null;
-        if (preferredRefs != null && preferredRefs.isEmpty())
-            preferredRefs = null;
 
-        for (List<WaySegment> wslist : getNearestWaySegmentsImpl(p, predicate).values()) {
-            for (WaySegment ws : wslist) {
-                if (wayseg == null) {
-                    wayseg = ws;
-                }
-                if (useSelected && ws.getWay().isSelected()) {
-                    return ws;
-                }
-                if (!Utils.isEmpty(preferredRefs)) {
-                    // prefer ways containing given nodes
-                    if (preferredRefs.contains(ws.getFirstNode()) || preferredRefs.contains(ws.getSecondNode())) {
-                        return ws;
-                    }
-                    Collection<OsmPrimitive> wayRefs = ws.getWay().getReferrers();
-                    // prefer member of the given relations
-                    for (OsmPrimitive ref: preferredRefs) {
-                        if (ref instanceof Relation && wayRefs.contains(ref)) {
-                            return ws;
-                        }
-                    }
-                }
-            }
+        List<WaySegment> wslist = getNearestWaySegments(p, predicate);
+        if (wslist.isEmpty()) return null;
+
+        if (useSelected) {
+            WaySegment result = wslist.stream().filter(ws -> ws.getWay().isSelected()).findFirst().orElse(null);
+            if (result != null) return result;
         }
-        return wayseg;
+        if (preferredRefs != null && !preferredRefs.isEmpty()) {
+            Set<OsmPrimitive> prefs = new HashSet<>(preferredRefs);
+            WaySegment result = wslist.stream().filter(
+                ws -> prefs.contains(ws.getFirstNode()) ||
+                    prefs.contains(ws.getSecondNode()) ||
+                    ws.getWay().getReferrers().stream().anyMatch(prefs::contains)
+                ).findFirst().orElse(null);
+            if (result != null) return result;
+        }
+        return wslist.stream().findFirst().orElse(null);
     }
 
     /**
-     * Convenience method to {@link #getNearestWaySegment(Point, Predicate, boolean)}.
-     * @param p the point for which to search the nearest segment.
-     * @param predicate the returned object has to fulfill certain properties.
+     * Convenience method for {@link #getNearestWaySegment(Point, Predicate, boolean, Collection)}.
      *
-     * @return The nearest way segment to point p.
+     * @param p the screen point
+     * @param predicate the way segment must satisfy
+     * @param useSelected prefer a selected way segment
+     *
+     * @return The nearest way segment
+     */
+    public final WaySegment getNearestWaySegment(Point p,
+            Predicate<OsmPrimitive> predicate, boolean useSelected) {
+
+        return getNearestWaySegment(p, predicate, useSelected, null);
+    }
+
+    /**
+     * Convenience method for {@link #getNearestWaySegment(Point, Predicate, boolean, Collection)}.
+     * <p>
+     * Prefers selected way segments.
+     *
+     * @param p the screen point
+     * @param predicate the way segment must satisfy
+     *
+     * @return The nearest way segment
      */
     public final WaySegment getNearestWaySegment(Point p, Predicate<OsmPrimitive> predicate) {
-        return getNearestWaySegment(p, predicate, true);
+        return getNearestWaySegment(p, predicate, true, null);
     }
 
     /**
-     * The *result* does not depend on the current map selection state,
-     * neither does the result *order*.
-     * It solely depends on the perpendicular distance to point p.
+     * Return all ways that are closer to {@code p} than
+     * {@code mappaint.segment.snap-distance}, and are not in {@code ignore},
+     * and satisfy {@code predicate}, sorted by their distance to {@code p}
+     * ascending.
+     * <p>
+     * For the algorithm see: {@link #getNearestWaySegments(Point, Collection, Predicate)}
      *
-     * @param p the point for which to search the nearest ways.
-     * @param ignore a collection of ways which are not to be returned.
-     * @param predicate the returned object has to fulfill certain properties.
+     * @param p the screen point
+     * @param ignore nodes to ignore
+     * @param predicate the ways must satisfy
      *
-     * @return all nearest ways to the screen point given that are not in ignore.
-     * @see #getNearestWaySegments(Point, Collection, Predicate)
+     * @return the nearest ways
      */
     public final List<Way> getNearestWays(Point p,
             Collection<Way> ignore, Predicate<OsmPrimitive> predicate) {
-        Set<Way> wset = new HashSet<>();
+        Set<Way> seen = new HashSet<>();
 
-        List<Way> nearestList = getNearestWaySegmentsImpl(p, predicate).values().stream()
-                .flatMap(Collection::stream)
-                .filter(ws -> wset.add(ws.getWay()))
+        List<Way> nearestList = getNearestWaySegments(p, predicate).stream()
                 .map(ws -> ws.getWay())
+                .filter(seen::add)
                 .collect(Collectors.toList());
         if (ignore != null) {
             nearestList.removeAll(ignore);
@@ -1471,31 +1403,30 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * The *result* does not depend on the current map selection state,
-     * neither does the result *order*.
-     * It solely depends on the perpendicular distance to point p.
+     * Convenience method for {@link #getNearestWays(Point, Collection, Predicate)}.
      *
-     * @param p the point for which to search the nearest ways.
-     * @param predicate the returned object has to fulfill certain properties.
+     * @param p the screen point
+     * @param predicate the ways must satisfy
      *
-     * @return all nearest ways to the screen point given.
-     * @see #getNearestWays(Point, Collection, Predicate)
+     * @return the nearest ways
      */
     public final List<Way> getNearestWays(Point p, Predicate<OsmPrimitive> predicate) {
         return getNearestWays(p, null, predicate);
     }
 
     /**
-     * The *result* depends on the current map selection state.
+     * Return the way nearest to point {@code p} that is closer than
+     * {@code mappaint.segment.snap-distance} and satisfies {@code predicate}.
+     * Prefer selected ways.
      *
-     * @param p the point for which to search the nearest segment.
-     * @param predicate the returned object has to fulfill certain properties.
+     * @param p the screen point
+     * @param predicate the way must satisfy
      *
-     * @return The nearest way to point p, prefer a selected way if there are multiple nearest.
-     * @see #getNearestWaySegment(Point, Predicate)
+     * @return the nearest way or null
+     * @see #getNearestWaySegment(Point, Predicate, boolean, Collection)
      */
     public final Way getNearestWay(Point p, Predicate<OsmPrimitive> predicate) {
-        WaySegment nearestWaySeg = getNearestWaySegment(p, predicate);
+        WaySegment nearestWaySeg = getNearestWaySegment(p, predicate, true, null);
         return (nearestWaySeg == null) ? null : nearestWaySeg.getWay();
     }
 
@@ -1554,137 +1485,97 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * This is used as a helper routine to {@link #getNearestNodeOrWay(Point, Predicate, boolean)}
-     * It decides, whether to yield the node to be tested or look for further (way) candidates.
+     * Returns the squared size of the screen symbol representing the node.
      *
-     * @param osm node to check
-     * @param p point clicked
-     * @param useSelected whether to prefer selected nodes
-     * @return true, if the node fulfills the properties of the function body
+     * @param n the node
+     * @return the size of the symbol squared
      */
-    private boolean isPrecedenceNode(Node osm, Point p, boolean useSelected) {
-        if (osm != null) {
-            if (p.distanceSq(getPoint2D(osm)) <= (4*4)) return true;
-            if (osm.isTagged()) return true;
-            if (useSelected && osm.isSelected()) return true;
-        }
-        return false;
-    }
-
-    /**
-     * The *result* depends on the current map selection state IF use_selected is true.
-     *
-     * IF use_selected is true, use {@link #getNearestNode(Point, Predicate)} to find
-     * the nearest, selected node.  If not found, try {@link #getNearestWaySegment(Point, Predicate)}
-     * to find the nearest selected way.
-     *
-     * IF use_selected is false, or if no selected primitive was found, do the following.
-     *
-     * If the nearest node found is within 4px of p, simply take it.
-     * Else, find the nearest way segment. Then, if p is closer to its
-     * middle than to the node, take the way segment, else take the node.
-     *
-     * Finally, if no nearest primitive is found at all, return null.
-     *
-     * @param p The point on screen.
-     * @param predicate the returned object has to fulfill certain properties.
-     * @param useSelected whether to prefer primitives that are currently selected or referred by selected primitives
-     *
-     * @return A primitive within snap-distance to point p,
-     *      that is chosen by the algorithm described.
-     * @see #getNearestNode(Point, Predicate)
-     * @see #getNearestWay(Point, Predicate)
-     */
-    public final OsmPrimitive getNearestNodeOrWay(Point p, Predicate<OsmPrimitive> predicate, boolean useSelected) {
-        Collection<OsmPrimitive> sel;
-        DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
-        if (useSelected && ds != null) {
-            sel = ds.getSelected();
-        } else {
-            sel = null;
-        }
-        OsmPrimitive osm = getNearestNode(p, predicate, useSelected, sel);
-
-        if (isPrecedenceNode((Node) osm, p, useSelected)) return osm;
-        WaySegment ws;
-        if (useSelected) {
-            ws = getNearestWaySegment(p, predicate, useSelected, sel);
-        } else {
-            ws = getNearestWaySegment(p, predicate, useSelected);
-        }
-        if (ws == null) return osm;
-
-        if ((ws.getWay().isSelected() && useSelected) || osm == null) {
-            // either (no _selected_ nearest node found, if desired) or no nearest node was found
-            osm = ws.getWay();
-        } else {
-            int maxWaySegLenSq = 3*PROP_SNAP_DISTANCE.get();
-            maxWaySegLenSq *= maxWaySegLenSq;
-
-            Point2D wp1 = getPoint2D(ws.getFirstNode());
-            Point2D wp2 = getPoint2D(ws.getSecondNode());
-
-            // is wayseg shorter than maxWaySegLenSq and
-            // is p closer to the middle of wayseg  than  to the nearest node?
-            if (wp1.distanceSq(wp2) < maxWaySegLenSq &&
-                    p.distanceSq(project(0.5, wp1, wp2)) < p.distanceSq(getPoint2D((Node) osm))) {
-                osm = ws.getWay();
+    private double getSymbolSizeSq(Node n) {
+        int size = 4; // default
+        for (StyleElement e : getStyleElementList(n)) {
+            if (e instanceof NodeElement) {
+                NodeElement ne = (NodeElement) e;
+                if (ne.symbol != null) {
+                    size = ne.symbol.size;
+                    break;
+                }
             }
         }
-        return osm;
+        return size * size;
     }
 
     /**
-     * if r = 0 returns a, if r=1 returns b,
-     * if r = 0.5 returns center between a and b, etc..
+     * Return the nearest node or way to a point on the screen.
      *
-     * @param r scale value
-     * @param a root of vector
-     * @param b vector
-     * @return new point at a + r*(ab)
+     * Start by looking for the nearest node. If found and if {@code p} is
+     * inside the bbox of this node, return it. Else look for the nearest way
+     * and, if found, return it. Finally, if no nearest primitive is found at
+     * all, return null.
+     *
+     * If {@code use_selected} is true, prefer selected primitives and
+     * primitives referred by selected primitives over other primitives.
+     *
+     * @param p The point on screen
+     * @param predicate the primitive must satisfy
+     * @param useSelected prefer selected primitives and primitives referred by
+     *                    selected primitives
+     *
+     * @return The nearest node or way or null
+     * @see #getNearestNode(Point, Predicate, boolean, Collection)
+     * @see #getNearestWaySegment(Point, Predicate, boolean, Collection)
      */
-    public static Point2D project(double r, Point2D a, Point2D b) {
-        Point2D ret = null;
+    public final OsmPrimitive getNearestNodeOrWay(Point p,
+            Predicate<OsmPrimitive> predicate, boolean useSelected) {
 
-        if (a != null && b != null) {
-            ret = new Point2D.Double(a.getX() + r*(b.getX()-a.getX()),
-                    a.getY() + r*(b.getY()-a.getY()));
+        DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
+        Collection<OsmPrimitive> sel = (useSelected && ds != null) ? ds.getSelected() : null;
+
+        Node n = getNearestNode(p, predicate, useSelected, sel);
+        if (n != null) {
+            if (useSelected && n.isSelected())
+                return n;
+            if (n.isTagged())
+                return n;
+            if (p.distanceSq(getPoint2D(n)) <= getSymbolSizeSq(n))
+                return n;
         }
-        return ret;
+        WaySegment ws = getNearestWaySegment(p, predicate, useSelected, sel);
+        if (ws != null)
+            return ws.getWay();
+
+        return n; // which may be null
     }
 
     /**
-     * The *result* does not depend on the current map selection state, neither does the result *order*.
-     * It solely depends on the distance to point p.
+     * Return all primitives that are closest to {@code p}, and are not in
+     * {@code ignore}, and satisfy {@code predicate}.
+     * <p>
+     * Return a list containing: the closest ways in ascending order of distance
+     * from {@code p}, then the nodes in the same order, then all parent
+     * relations of those ways and nodes.
+     * <p>
+     * Use case: the "middle-click" dialog.
      *
-     * @param p The point on screen.
-     * @param ignore a collection of ways which are not to be returned.
-     * @param predicate the returned object has to fulfill certain properties.
+     * @param p the screen point
+     * @param ignore primitives to ignore
+     * @param predicate the primitives must satisfy
      *
-     * @return a list of all objects that are nearest to point p and
-     *          not in ignore or an empty list if nothing was found.
+     * @return the primitives
      */
     public final List<OsmPrimitive> getAllNearest(Point p,
             Collection<OsmPrimitive> ignore, Predicate<OsmPrimitive> predicate) {
-        Set<Way> wset = new HashSet<>();
 
-        // add nearby ways
-        List<OsmPrimitive> nearestList = getNearestWaySegmentsImpl(p, predicate).values().stream()
-                .flatMap(Collection::stream)
-                .filter(ws -> wset.add(ws.getWay()))
-                .map(ws -> ws.getWay())
-                .collect(Collectors.toList());
+        List<OsmPrimitive> nearestList = new ArrayList<>();
+        nearestList.addAll(getNearestWays(p, predicate));
+        nearestList.addAll(getNearestNodes(p, predicate));
 
-        // add nearby nodes
-        getNearestNodesImpl(p, predicate).values()
-                .forEach(nearestList::addAll);
-
-        // add parent relations of nearby nodes and ways
-        Set<OsmPrimitive> parentRelations = nearestList.stream()
+        // add the parent relations
+        Set<OsmPrimitive> seen = new HashSet<>();
+        nearestList.addAll(nearestList.stream()
                 .flatMap(o -> o.referrers(Relation.class))
                 .filter(predicate)
-                .collect(Collectors.toSet());
-        nearestList.addAll(parentRelations);
+                .filter(seen::add)
+                .collect(Collectors.toList()));
 
         if (ignore != null) {
             nearestList.removeAll(ignore);
@@ -1694,15 +1585,12 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * The *result* does not depend on the current map selection state, neither does the result *order*.
-     * It solely depends on the distance to point p.
+     * Convenience method for {@link #getAllNearest(Point, Collection, Predicate)}.
      *
-     * @param p The point on screen.
-     * @param predicate the returned object has to fulfill certain properties.
+     * @param p the screen point
+     * @param predicate the primitives must satisfy
      *
-     * @return a list of all objects that are nearest to point p
-     *          or an empty list if nothing was found.
-     * @see #getAllNearest(Point, Collection, Predicate)
+     * @return the primitives
      */
     public final List<OsmPrimitive> getAllNearest(Point p, Predicate<OsmPrimitive> predicate) {
         return getAllNearest(p, null, predicate);

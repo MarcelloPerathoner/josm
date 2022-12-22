@@ -54,7 +54,7 @@ public final class TaggingPresetSearchDialog extends ExtendedDialog {
         if (buttonIndex == 0) {
             TaggingPreset preset = selector.getSelectedPresetAndUpdateClassification();
             if (preset != null) {
-                preset.actionPerformed(null);
+                preset.getAction().actionPerformed(null);
             }
         }
         selector.savePreferences();

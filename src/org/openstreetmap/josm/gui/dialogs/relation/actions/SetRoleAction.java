@@ -7,12 +7,12 @@ import static org.openstreetmap.josm.tools.I18n.trn;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.openstreetmap.josm.gui.ConditionalOptionPaneUtil;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -23,7 +23,7 @@ import org.openstreetmap.josm.tools.Utils;
 public class SetRoleAction extends AbstractRelationEditorAction implements DocumentListener {
     private static final long serialVersionUID = 1L;
 
-    private final transient AutoCompletingTextField tfRole;
+    private final transient JTextField tfRole;
 
     /**
      * Constructs a new {@code SetRoleAction}.
@@ -32,7 +32,7 @@ public class SetRoleAction extends AbstractRelationEditorAction implements Docum
     public SetRoleAction(IRelationEditorActionAccess editorAccess) {
         super(editorAccess);
         this.tfRole = editorAccess.getTextFieldRole();
-        putValue(SHORT_DESCRIPTION, tr("Sets a role for the selected members"));
+        putValue(SHORT_DESCRIPTION, tr("Apply the role to the selected members"));
         new ImageProvider("apply").getResource().attachImageIcon(this);
         putValue(NAME, tr("Apply Role"));
         updateEnabledState();

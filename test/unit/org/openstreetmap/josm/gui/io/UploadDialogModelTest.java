@@ -49,7 +49,8 @@ public class UploadDialogModelTest {
     @Test
     void testCommentWithHashtags() {
         UploadDialogModel model = new UploadDialogModel();
-        model.add("comment", "comment with a #hashtag");
+        model.put("comment", "comment with a #hashtag");
+        model.ensureTags();
         assertEquals("#hashtag", model.getValue("hashtags"));
     }
 

@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.dialogs.relation.actions;
 
 import javax.swing.Action;
+import javax.swing.JTextField;
 
 import org.openstreetmap.josm.data.osm.IRelation;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -11,9 +12,8 @@ import org.openstreetmap.josm.gui.dialogs.relation.MemberTable;
 import org.openstreetmap.josm.gui.dialogs.relation.MemberTableModel;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTable;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTableModel;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
 
 /**
  * This interface provides access to the relation editor for actions.
@@ -67,7 +67,7 @@ public interface IRelationEditorActionAccess {
      * Gets the model for the tag table.
      * @return The tag editor model.
      */
-    TagEditorModel getTagModel();
+    TagTableModel getTagModel();
 
     /**
      * Get the changed relation
@@ -91,7 +91,7 @@ public interface IRelationEditorActionAccess {
         } else {
             newRelation = new Relation();
         }
-        getTagModel().applyToPrimitive(newRelation);
+        newRelation.setKeys(getTagModel().getTags());
         getMemberTableModel().applyToRelation(newRelation);
         return newRelation;
     }
@@ -100,7 +100,7 @@ public interface IRelationEditorActionAccess {
      * Get the text field that is used to edit the role.
      * @return The role text field.
      */
-    AutoCompletingTextField getTextFieldRole();
+    JTextField getTextFieldRole();
 
     /**
      * Tells the member table editor to stop editing and accept any partially edited value as the value of the editor.

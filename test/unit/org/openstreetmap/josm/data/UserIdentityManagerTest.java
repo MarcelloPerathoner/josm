@@ -127,7 +127,8 @@ class UserIdentityManagerTest {
      */
     @Test
     void testSetFullyIdentified() {
-        UserIdentityManager im = UserIdentityManager.getInstance();
+        // UserIdentityManager im = UserIdentityManager.getInstance();
+        UserIdentityManager im = new UserIdentityManager();
 
         UserInfo userInfo = newUserInfo();
 

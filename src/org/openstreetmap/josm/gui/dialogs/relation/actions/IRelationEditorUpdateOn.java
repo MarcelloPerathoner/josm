@@ -26,7 +26,7 @@ public interface IRelationEditorUpdateOn {
     /**
      * Update when a tag of the relation changed
      */
-    IRelationEditorUpdateOn TAG_CHANGE = (editor, action) -> editor.getTagModel().addPropertyChangeListener(action);
+    IRelationEditorUpdateOn TAG_CHANGE = (editor, action) -> editor.getTagModel().addTableModelListener(action);
 
     /**
      * Update when a relation changed

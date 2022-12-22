@@ -124,6 +124,14 @@ public class MultiMap<A, B> {
     }
 
     /**
+     * Like getValues, but returns all values for all keys.
+     * @return the set of all values or an empty set
+     */
+    public Set<B> getAllValues() {
+        return map.entrySet().stream().flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
+    }
+
+    /**
      * Returns {@code true} if this map contains no key-value mappings.
      * @return {@code true} if this map contains no key-value mappings
      * @see Map#isEmpty()

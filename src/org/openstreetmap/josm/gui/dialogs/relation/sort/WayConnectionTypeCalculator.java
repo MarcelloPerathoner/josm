@@ -141,6 +141,14 @@ public class WayConnectionTypeCalculator {
             if (lastWct != null && !RelationSortUtils.isOneway(m)) {
                 wct.direction = determineDirection(i-1, lastWct.direction, i);
                 wct.linkPrev = wct.direction != NONE;
+
+                // This ends the split before a roundabout so that the graph in the
+                // relation editor joins before entering the roundabout.  This makes it
+                // symmetric with the exit from a roundabout, which always starts
+                // joined.
+                if (lastWct.isOnewayLoopForwardPart || lastWct.isOnewayLoopBackwardPart) {
+                    lastWct.isOnewayTail = true;
+                }
             }
         }
 
@@ -277,6 +285,7 @@ public class WayConnectionTypeCalculator {
             dirBW = determineDirection(lastBackwardWay, con.get(lastBackwardWay).direction, i, true);
         }
 
+        // role == forward or backward
         if (RelationSortUtils.isOneway(m)) {
             if (dirBW != NONE) {
                 wct.direction = dirBW;
@@ -306,7 +315,7 @@ public class WayConnectionTypeCalculator {
                     wct.direction = dirBW;
                 }
 
-                wct.isOnewayTail = true;
+                wct.isOnewayTail = true; // FIXME: is this real?
             }
 
         } else {

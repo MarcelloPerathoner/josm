@@ -12,10 +12,10 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -39,13 +39,13 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WayData;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.ExactKeyValue;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
+import org.openstreetmap.josm.gui.MainApplicationTest;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetMenu;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.tools.Logging;
+import org.xml.sax.SAXException;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -57,6 +57,25 @@ import nl.jqno.equalsverifier.Warning;
 @BasicPreferences
 @Timeout(30)
 class SearchCompilerTest {
+
+    /**
+     * Inits 3 presets:
+     * @return the tagging presets instance
+     */
+    private TaggingPresets init3Presets() {
+        try {
+            return TaggingPresetsTest.initFromLiteral(
+                "<group name='group'>" +
+                "  <item name='foo' />" +
+                "  <item name='bar' />" +
+                "  <item name='baz' />" +
+                "</group>");
+        } catch (SAXException e) {
+            Logging.error("can't happen");
+            return null;
+        }
+    }
+
     private static final class SearchContext {
         final DataSet ds = new DataSet();
         final Node n1 = new Node(LatLon.ZERO);
@@ -572,8 +591,6 @@ class SearchCompilerTest {
         settings.text = "preset:";
         settings.mapCSSSearch = false;
 
-        TaggingPresets.readFromPreferences();
-
         assertThrows(SearchParseError.class, () -> SearchCompiler.compile(settings));
     }
 
@@ -589,31 +606,29 @@ class SearchCompilerTest {
         settings.text = "preset:" + testPresetName;
         settings.mapCSSSearch = false;
 
-        // load presets
-        TaggingPresets.readFromPreferences();
-
         assertThrows(SearchParseError.class, () -> SearchCompiler.compile(settings));
     }
 
     /**
      * Robustness tests for preset searching. Ensures that combined preset names (having more than
      * 1 word) must be enclosed with " .
+     * @throws SAXException on invalid XML
      * @since 12464
      */
     @Test
-    void testPresetMultipleWords() {
-        TaggingPreset testPreset = new TaggingPreset();
-        testPreset.name = "Test Combined Preset Name";
-        testPreset.group = new TaggingPresetMenu();
-        testPreset.group.name = "TestGroupName";
+    void testPresetMultipleWords() throws SAXException {
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromLiteral(
+            "<group name='TestGroupName'>" +
+            "  <item name='Test Combined Preset Name' />" +
+            "</group>"
+        );
+        MainApplicationTest.setTaggingPresets(taggingPresets);
+        TaggingPreset testPreset = taggingPresets.getAllPresets().iterator().next();
 
         String combinedPresetname = testPreset.getRawName();
         SearchSetting settings = new SearchSetting();
         settings.text = "preset:" + combinedPresetname;
         settings.mapCSSSearch = false;
-
-        // load presets
-        TaggingPresets.readFromPreferences();
 
         assertThrows(SearchParseError.class, () -> SearchCompiler.compile(settings));
     }
@@ -628,20 +643,14 @@ class SearchCompilerTest {
      */
     @Test
     void testPresetLookup() throws SearchParseError, NoSuchFieldException, IllegalAccessException {
-        TaggingPreset testPreset = new TaggingPreset();
-        testPreset.name = "Test Preset Name";
-        testPreset.group = new TaggingPresetMenu();
-        testPreset.group.name = "Test Preset Group Name";
+        TaggingPresets taggingPresets = init3Presets();
+        MainApplicationTest.setTaggingPresets(taggingPresets);
+        TaggingPreset testPreset = taggingPresets.getAllPresets().iterator().next();
 
-        String query = "preset:" +
-                "\"" + testPreset.getRawName() + "\"";
+        String query = MessageFormat.format("preset:\"{0}\"", testPreset.getRawName());
         SearchSetting settings = new SearchSetting();
         settings.text = query;
         settings.mapCSSSearch = false;
-
-        // load presets and add the test preset
-        TaggingPresets.readFromPreferences();
-        TaggingPresets.addTaggingPresets(Collections.singletonList(testPreset));
 
         Match match = SearchCompiler.compile(settings);
 
@@ -667,28 +676,13 @@ class SearchCompilerTest {
      */
     @Test
     void testPresetLookupWildcard() throws SearchParseError, NoSuchFieldException, IllegalAccessException {
-        TaggingPresetMenu group = new TaggingPresetMenu();
-        group.name = "TestPresetGroup";
+        TaggingPresets taggingPresets = init3Presets();
+        MainApplicationTest.setTaggingPresets(taggingPresets);
 
-        TaggingPreset testPreset1 = new TaggingPreset();
-        testPreset1.name = "TestPreset1";
-        testPreset1.group = group;
-
-        TaggingPreset testPreset2 = new TaggingPreset();
-        testPreset2.name = "TestPreset2";
-        testPreset2.group = group;
-
-        TaggingPreset testPreset3 = new TaggingPreset();
-        testPreset3.name = "TestPreset3";
-        testPreset3.group = group;
-
-        String query = "preset:" + "\"" + group.getRawName() + "/*\"";
+        String query = "preset:\"group/*\"";
         SearchSetting settings = new SearchSetting();
         settings.text = query;
         settings.mapCSSSearch = false;
-
-        TaggingPresets.readFromPreferences();
-        TaggingPresets.addTaggingPresets(Arrays.asList(testPreset1, testPreset2, testPreset3));
 
         Match match = SearchCompiler.compile(settings);
 
@@ -700,38 +694,35 @@ class SearchCompilerTest {
         Collection<TaggingPreset> foundPresets = (Collection<TaggingPreset>) field.get(match);
 
         assertEquals(3, foundPresets.size());
-        assertTrue(foundPresets.contains(testPreset1));
-        assertTrue(foundPresets.contains(testPreset2));
-        assertTrue(foundPresets.contains(testPreset3));
+        for (TaggingPreset preset : taggingPresets.getAllPresets()) {
+            assertTrue(foundPresets.contains(preset));
+        }
     }
 
     /**
      * Ensures that correct primitives are matched against the specified preset.
      * @throws SearchParseError if an error has been encountered while compiling
+     * @throws SAXException on invalid XML
      * @since 12464
      */
     @Test
-    void testPreset() throws SearchParseError {
+    void testPreset() throws SearchParseError, SAXException {
         final String presetName = "Test Preset Name";
         final String presetGroupName = "Test Preset Group";
         final String key = "test_key1";
         final String val = "test_val1";
 
-        Key key1 = new Key();
-        key1.key = key;
-        key1.value = val;
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromLiteral(
+            MessageFormat.format(
+            "<group name=\"{0}\">" +
+            "  <item name=\"{1}\" type=\"node\">" +
+            "    <key key=\"{2}\" value=\"{3}\" />" +
+            "  </item>" +
+            "</group>", presetGroupName, presetName, key, val)
+        );
+        MainApplicationTest.setTaggingPresets(taggingPresets);
 
-        TaggingPreset testPreset = new TaggingPreset();
-        testPreset.name = presetName;
-        testPreset.types = Collections.singleton(TaggingPresetType.NODE);
-        testPreset.data.add(key1);
-        testPreset.group = new TaggingPresetMenu();
-        testPreset.group.name = presetGroupName;
-
-        TaggingPresets.readFromPreferences();
-        TaggingPresets.addTaggingPresets(Collections.singleton(testPreset));
-
-        String query = "preset:" + "\"" + testPreset.getRawName() + "\"";
+        String query = MessageFormat.format("preset:\"{0}/{1}\"", presetGroupName, presetName);
 
         SearchContext ctx = new SearchContext(query);
         ctx.n1.put(key, val);
@@ -751,22 +742,19 @@ class SearchCompilerTest {
      */
     @Test
     void testEqualsContract() {
+        TaggingPresets taggingPresets = init3Presets();
+        MainApplicationTest.setTaggingPresets(taggingPresets);
         TestUtils.assumeWorkingEqualsVerifier();
         Set<Class<? extends Match>> matchers = TestUtils.getJosmSubtypes(Match.class);
         Assert.assertTrue(matchers.size() >= 10); // if it finds less than 10 classes, something is broken
         for (Class<?> c : matchers) {
+            Iterator<TaggingPreset> iter = taggingPresets.getAllPresets().iterator();
             Logging.debug(c.toString());
             EqualsVerifier.forClass(c).usingGetClass()
                 .suppress(Warning.NONFINAL_FIELDS, Warning.INHERITED_DIRECTLY_FROM_OBJECT)
-                .withPrefabValues(TaggingPreset.class, newTaggingPreset("foo"), newTaggingPreset("bar"))
+                .withPrefabValues(TaggingPreset.class, iter.next(), iter.next())
                 .verify();
         }
-    }
-
-    private static TaggingPreset newTaggingPreset(String name) {
-        TaggingPreset result = new TaggingPreset();
-        result.name = name;
-        return result;
     }
 
     /**
@@ -843,6 +831,7 @@ class SearchCompilerTest {
 
     /**
      * Non-regression test for JOSM #21463
+     * @throws SearchParseError in case of parser error
      */
     @Test
     void testNonRegression21463() throws SearchParseError {

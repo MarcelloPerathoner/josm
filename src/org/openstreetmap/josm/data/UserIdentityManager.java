@@ -90,7 +90,7 @@ public final class UserIdentityManager implements PreferenceChangedListener {
     private boolean accessTokenKeyChanged;
     private boolean accessTokenSecretChanged;
 
-    private UserIdentityManager() {
+    UserIdentityManager() {
     }
 
     /**

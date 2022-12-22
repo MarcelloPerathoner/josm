@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -24,14 +24,12 @@ import org.openstreetmap.josm.data.osm.Tag;
 import org.openstreetmap.josm.data.preferences.sources.ValidatorPrefHelper;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetItem;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.I18n;
 import org.openstreetmap.josm.tools.Logging;
-
+import org.xml.sax.SAXException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -214,19 +212,17 @@ class OpeningHourTestTest {
 
     /**
      * Tests that predefined values in presets are correct.
+     * @throws SAXException on invalid XML
+     * @throws IOException on IO errors
      */
     @Test
-    void testPresetValues() {
-        final Collection<TaggingPreset> presets = TaggingPresetReader.readFromPreferences(false, false);
+    void testPresetValues() throws SAXException, IOException {
+
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
         final Set<Tag> values = new LinkedHashSet<>();
-        for (final TaggingPreset p : presets) {
-            for (final TaggingPresetItem i : p.data) {
-                if (i instanceof KeyedItem &&
-                        Arrays.asList("opening_hours", "service_times", "collection_times").contains(((KeyedItem) i).key)) {
-                    for (final String v : ((KeyedItem) i).getValues()) {
-                        values.add(new Tag(((KeyedItem) i).key, v));
-                    }
-                }
+        for (String key : Arrays.asList("opening_hours", "service_times", "collection_times")) {
+            for (String value : taggingPresets.getPresetValues(key)) {
+                values.add(new Tag(key, value));
             }
         }
         for (final Tag t : values) {

@@ -362,6 +362,29 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
         return insertArguments(matchingSelector, getDescription(p), p);
     }
 
+    /**
+     * Returns the offending keys.
+     * <p>
+     * Inspects the description of the selector and returns the keys.
+     * Use case: highlighting the offending keys in a tag editor.
+     *
+     * @param p                OSM primitive
+     * @param matchingSelector matching selector
+     * @return                 the keys
+     */
+    Set<String> getKeysForMatchingSelector(OsmPrimitive p, Selector matchingSelector) {
+        if (matchingSelector instanceof Selector.ChildOrParentSelector) {
+            return getKeysForMatchingSelector(p, ((Selector.ChildOrParentSelector) matchingSelector).right);
+        }
+        Set<String> l = new HashSet<>();
+        final Matcher m = Pattern.compile("\\{(\\d+)\\.(key|tag)\\}").matcher(getDescription(p));
+        while (m.find()) {
+            l.add(determineArgument((Selector.GeneralSelector) matchingSelector,
+                    Integer.parseInt(m.group(1)), "key", p));
+        }
+        return l;
+    }
+
     Severity getSeverity() {
         return errors.isEmpty() ? null : errors.values().iterator().next();
     }
@@ -388,8 +411,10 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
             final String description1 = group == null ? description : group;
             final String description2 = group == null ? null : description;
             final String selector = matchingSelector.toString();
+            final Set<String> keys = getKeysForMatchingSelector(p, matchingSelector);
             TestError.Builder errorBuilder = TestError.builder(tester, getSeverity(), 3000)
-                    .messageWithManuallyTranslatedDescription(description1, description2, selector);
+                    .messageWithManuallyTranslatedDescription(description1, description2, selector)
+                    .keys(keys);
             if (fix != null) {
                 errorBuilder.fix(() -> fix);
             }

@@ -23,7 +23,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -39,11 +38,6 @@ import org.openstreetmap.josm.data.osm.OsmDataManager;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.tagging.presets.items.ComboMultiSelect;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles.Role;
 import org.openstreetmap.josm.gui.widgets.PopupMenuLauncher;
 import org.openstreetmap.josm.gui.widgets.SearchTextResultListPanel;
 import org.openstreetmap.josm.tools.Destroyable;
@@ -77,7 +71,7 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
                 boolean isSelected, boolean cellHasFocus) {
             JLabel result = (JLabel) def.getListCellRendererComponent(list, tp, index, isSelected, cellHasFocus);
             result.setText(tp.getName());
-            result.setIcon((Icon) tp.getValue(Action.SMALL_ICON));
+            result.setIcon(tp.getIcon(Action.SMALL_ICON));
             return result;
         }
     }
@@ -86,8 +80,11 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
      * Computes the match ration of a {@link TaggingPreset} wrt. a searchString.
      */
     public static class PresetClassification implements Comparable<PresetClassification> {
+        /** The preset to classify */
         public final TaggingPreset preset;
+        /** how well this preset matches */
         public int classification;
+        /** where to put it in the list */
         public int favoriteIndex;
         private final Collection<String> groups;
         private final Collection<String> names;
@@ -98,28 +95,20 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
             Set<String> groupSet = new HashSet<>();
             Set<String> nameSet = new HashSet<>();
             Set<String> tagSet = new HashSet<>();
-            TaggingPreset group = preset.group;
-            while (group != null) {
-                addLocaleNames(groupSet, group);
-                group = group.group;
+
+            for (String name : preset.getLocaleGroupName().split("/", -1)) {
+                addLocaleNames(groupSet, name);
             }
-            addLocaleNames(nameSet, preset);
-            for (TaggingPresetItem item: preset.data) {
+            addLocaleNames(nameSet, preset.getLocaleName());
+            for (Item item: preset.getAllItems()) {
                 if (item instanceof KeyedItem) {
-                    tagSet.add(((KeyedItem) item).key);
+                    tagSet.add(((KeyedItem) item).getKey());
+                    tagSet.addAll(((KeyedItem) item).getValues());
                     if (item instanceof ComboMultiSelect) {
-                        final ComboMultiSelect cms = (ComboMultiSelect) item;
-                        if (cms.values_searchable) {
-                            tagSet.addAll(cms.getDisplayValues());
-                        }
+                        tagSet.addAll(((ComboMultiSelect) item).getDisplayValues());
                     }
-                    if (item instanceof Key && ((Key) item).value != null) {
-                        tagSet.add(((Key) item).value);
-                    }
-                } else if (item instanceof Roles) {
-                    for (Role role : ((Roles) item).roles) {
-                        tagSet.add(role.key);
-                    }
+                } else if (item instanceof Role) {
+                    tagSet.add(((Role) item).getKey());
                 }
             }
             this.groups = Utils.toUnmodifiableList(groupSet);
@@ -127,8 +116,7 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
             this.tags = Utils.toUnmodifiableList(tagSet);
         }
 
-        private static void addLocaleNames(Collection<String> collection, TaggingPreset preset) {
-            String locName = preset.getLocaleName();
+        private static void addLocaleNames(Collection<String> collection, String locName) {
             if (locName != null) {
                 Collections.addAll(collection, locName.toLowerCase(Locale.ENGLISH).split("\\s", -1));
             }
@@ -200,8 +188,8 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
     public TaggingPresetSelector(boolean displayOnlyApplicable, boolean displaySearchInTags) {
         super();
         lsResult.setCellRenderer(new ResultListCellRenderer());
-        classifications.loadPresets(TaggingPresets.getTaggingPresets());
-        TaggingPresets.addListener(this);
+        classifications.loadPresets(MainApplication.getTaggingPresets().getAllPresets());
+        MainApplication.getTaggingPresets().addTaggingPresetListener(this);
 
         JPanel pnChecks = new JPanel();
         pnChecks.setLayout(new BoxLayout(pnChecks, BoxLayout.Y_AXIS));
@@ -276,6 +264,16 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
 
         private final List<PresetClassification> classifications = new ArrayList<>();
 
+        /**
+         * Returns a list of presets that match the search criteria.
+         *
+         * @param searchText the search text
+         * @param onlyApplicable only consider presets applicable to {@code presetTypes}
+         * @param inTags if true also search for words in tags
+         * @param presetTypes these preset types
+         * @param selectedPrimitives consider relation presets that can use the selected primitives as roles
+         * @return the list of presets
+         */
         public List<PresetClassification> getMatchingPresets(String searchText, boolean onlyApplicable, boolean inTags,
                 Set<TaggingPresetType> presetTypes, final Collection<? extends OsmPrimitive> selectedPrimitives) {
             final String[] groupWords;
@@ -292,6 +290,16 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
             return getMatchingPresets(groupWords, nameWords, onlyApplicable, inTags, presetTypes, selectedPrimitives);
         }
 
+        /**
+         * Returns a list of presets that match the search criteria.
+         * @param groupWords search for these preset groups
+         * @param nameWords search for these preset names
+         * @param onlyApplicable only consider presets applicable to {@code presetTypes}
+         * @param inTags if true also search for words in tags
+         * @param presetTypes these preset types
+         * @param selectedPrimitives consider relation presets that can use the selected primitives as roles
+         * @return the list of presets
+         */
         public List<PresetClassification> getMatchingPresets(String[] groupWords, String[] nameWords, boolean onlyApplicable,
                 boolean inTags, Set<TaggingPresetType> presetTypes, final Collection<? extends OsmPrimitive> selectedPrimitives) {
 
@@ -303,10 +311,9 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
                 if (onlyApplicable) {
                     boolean suitable = preset.typeMatches(presetTypes);
 
-                    if (!suitable && preset.types.contains(TaggingPresetType.RELATION)
-                            && preset.roles != null && !preset.roles.roles.isEmpty()) {
-                        suitable = preset.roles.roles.stream().anyMatch(
-                                object -> object.memberExpression != null && selectedPrimitives.stream().anyMatch(object.memberExpression));
+                    if (!suitable && preset.getTypes().contains(TaggingPresetType.RELATION)) {
+                        suitable = preset.getAllRoles().stream().anyMatch(
+                                role -> role.getMemberExpression() != null && selectedPrimitives.stream().anyMatch(role.getMemberExpression()));
                         // keep the preset to allow the creation of new relations
                     }
                     if (!suitable) {
@@ -360,10 +367,9 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
          */
         public void loadPresets(Collection<TaggingPreset> presets) {
             for (TaggingPreset preset : presets) {
-                if (preset instanceof TaggingPresetSeparator || preset instanceof TaggingPresetMenu) {
-                    continue;
+                if (preset.getClass() == TaggingPreset.class) {
+                    classifications.add(new PresetClassification(preset));
                 }
-                classifications.add(new PresetClassification(preset));
             }
         }
 
@@ -463,12 +469,12 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
     @Override
     public void taggingPresetsModified() {
         classifications.clear();
-        classifications.loadPresets(TaggingPresets.getTaggingPresets());
+        classifications.loadPresets(MainApplication.getTaggingPresets().getAllPresets());
     }
 
     @Override
     public void destroy() {
-        TaggingPresets.removeListener(this);
+        MainApplication.getTaggingPresets().removeTaggingPresetListener(this);
     }
 
 }

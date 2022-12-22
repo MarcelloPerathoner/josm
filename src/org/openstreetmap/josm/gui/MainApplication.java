@@ -125,6 +125,7 @@ import org.openstreetmap.josm.gui.preferences.display.LafPreference;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.gui.preferences.server.ProxyPreference;
 import org.openstreetmap.josm.gui.progress.swing.ProgressMonitorExecutor;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.CheckThreadViolationRepaintManager;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.RedirectInputMap;
@@ -206,6 +207,14 @@ public class MainApplication {
      * The toolbar preference control to register new actions.
      */
     static volatile ToolbarPreferences toolbar;
+
+    /**
+     * The tagging presets as selected in the preferences dialog.
+     * <p>
+     * TaggingPresets used to be a static class, but it was too hard to do reliable
+     * testing.
+     */
+    static TaggingPresets taggingPresets;
 
     private static MainFrame mainFrame;
 
@@ -424,6 +433,13 @@ public class MainApplication {
     }
 
     /**
+     * Async initialization of tagging presets
+     */
+    static void initializeTaggingPresets() {
+        taggingPresets.initialize();
+    }
+
+    /**
      * Returns the JOSM main frame.
      * @return the JOSM main frame
      * @since 14140
@@ -489,6 +505,15 @@ public class MainApplication {
      */
     public static ToolbarPreferences getToolbar() {
         return toolbar;
+    }
+
+    /**
+     * Returns the tagging presets.
+     * @return the tagging presets
+     * @since xxx
+     */
+    public static TaggingPresets getTaggingPresets() {
+        return taggingPresets;
     }
 
     /**
@@ -950,6 +975,7 @@ public class MainApplication {
         }
 
         monitor.indeterminateSubTask(tr("Setting defaults"));
+        taggingPresets = new TaggingPresets();
         toolbar = new ToolbarPreferences();
         ProjectionPreference.setProjection();
         setupNadGridSources();

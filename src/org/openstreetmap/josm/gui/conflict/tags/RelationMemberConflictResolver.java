@@ -29,12 +29,15 @@ import javax.swing.event.ChangeListener;
 
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
+import org.openstreetmap.josm.data.osm.OsmDataManager;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+import org.openstreetmap.josm.gui.tagging.ac.DefaultAutoCompListener;
 import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Utils;
@@ -45,9 +48,9 @@ import org.openstreetmap.josm.tools.Utils;
  */
 public class RelationMemberConflictResolver extends JPanel {
 
-    private final AutoCompletingTextField tfRole = new AutoCompletingTextField(10);
-    private final AutoCompletingTextField tfKey = new AutoCompletingTextField(10);
-    private final AutoCompletingTextField tfValue = new AutoCompletingTextField(10);
+    private final AutoCompTextField<String> tfRole = new AutoCompTextField<>(10);
+    private final AutoCompTextField<String> tfKey = new AutoCompTextField<>(10);
+    private final AutoCompTextField<String> tfValue = new AutoCompTextField<>(10);
     private JCheckBox cbTagRelations;
     private final RelationMemberConflictResolverModel model;
     private final RelationMemberConflictResolverTable tblResolver;
@@ -95,6 +98,7 @@ public class RelationMemberConflictResolver extends JPanel {
                     }
                 }
         );
+        tfRole.addAutoCompListener(new RoleAutoCompManager());
         return pnl;
     }
 
@@ -114,6 +118,8 @@ public class RelationMemberConflictResolver extends JPanel {
         tfValue.setToolTipText(tr("<html>Enter a tag value, e.g. <strong><tt>check members</tt></strong></html>"));
         cbTagRelations.setSelected(false);
         tfKey.setEnabled(false);
+        AutoCompletionManager manager = AutoCompletionManager.of(OsmDataManager.getInstance().getEditDataSet());
+        tfKey.addAutoCompListener(manager.new NaiveKeyAutoCompManager());
         tfValue.setEnabled(false);
         return pnl;
     }
@@ -183,10 +189,19 @@ public class RelationMemberConflictResolver extends JPanel {
         }
     }
 
+    /**
+     * Returns the model.
+     * @return the model
+     */
     public RelationMemberConflictResolverModel getModel() {
         return model;
     }
 
+    /**
+     * Returns a command to change the tags on the given primitives.
+     * @param primitives the primitives to edit
+     * @return the command
+     */
     public Command buildTagApplyCommands(Collection<? extends OsmPrimitive> primitives) {
         if (!cbTagRelations.isSelected())
             return null;
@@ -199,21 +214,16 @@ public class RelationMemberConflictResolver extends JPanel {
         return new ChangePropertyCommand(primitives, Utils.removeWhiteSpaces(tfKey.getText()), Utils.removeWhiteSpaces(tfValue.getText()));
     }
 
-    public void prepareForEditing() {
-        AutoCompletionList acList = new AutoCompletionList();
-        OsmDataLayer editLayer = MainApplication.getLayerManager().getEditLayer();
-        if (editLayer != null) {
-            AutoCompletionManager.of(editLayer.data).populateWithMemberRoles(acList);
+    /**
+     * Provides autocompletion for the 'role' textfield
+     */
+    private static class RoleAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            OsmDataLayer editLayer = MainApplication.getLayerManager().getEditLayer();
+            if (editLayer != null) {
+                model.replaceAllElements(AutoCompletionManager.of(editLayer.data).getAllRoles());
+            }
         }
-        tfRole.setAutoCompletionList(acList);
-        AutoCompletingTextField editor = (AutoCompletingTextField) tblResolver.getColumnModel().getColumn(2).getCellEditor();
-        if (editor != null) {
-            editor.setAutoCompletionList(acList);
-        }
-        AutoCompletionList acList2 = new AutoCompletionList();
-        if (editLayer != null) {
-            AutoCompletionManager.of(editLayer.data).populateWithKeys(acList2);
-        }
-        tfKey.setAutoCompletionList(acList2);
     }
 }

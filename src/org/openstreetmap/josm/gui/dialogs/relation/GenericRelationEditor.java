@@ -10,12 +10,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.FlavorListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -27,14 +26,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -45,6 +48,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.event.TableModelListener;
@@ -54,12 +58,17 @@ import org.openstreetmap.josm.command.ChangeMembersCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.UndoRedoHandler.CommandQueueListener;
+import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.DefaultNameFormatter;
 import org.openstreetmap.josm.data.osm.IRelation;
+import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.data.osm.Tag;
+import org.openstreetmap.josm.data.osm.Tagged;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompItemCellRenderer;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompletionPriority;
 import org.openstreetmap.josm.data.validation.tests.RelationChecker;
 import org.openstreetmap.josm.gui.ConditionalOptionPaneUtil;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -98,18 +107,23 @@ import org.openstreetmap.josm.gui.dialogs.relation.actions.SortBelowAction;
 import org.openstreetmap.josm.gui.help.ContextSensitiveHelpAction;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.tagging.TagEditorPanel;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList;
+import org.openstreetmap.josm.gui.tagging.TagTable;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+import org.openstreetmap.josm.gui.tagging.ac.DefaultAutoCompListener;
+import org.openstreetmap.josm.gui.tagging.ac.TagTableUtils;
+import org.openstreetmap.josm.gui.tagging.presets.PresetListPanel;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.WindowGeometry;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
+import org.openstreetmap.josm.tools.GBC;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.InputMapUtils;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -120,8 +134,13 @@ import org.openstreetmap.josm.tools.Utils;
  * @since 343
  */
 public class GenericRelationEditor extends RelationEditor implements CommandQueueListener {
-    /** the tag table and its model */
+    private static final String PREF_LASTROLE = "relation.editor.generic.lastrole";
+    private static final String PREF_USE_ROLE_FILTER = "relation.editor.use_role_filter";
+
+    private final PresetListPanel presetListPanel;
     private final TagEditorPanel tagEditorPanel;
+
+    /** the parent relations table and its model */
     private final ReferringRelationsBrowser referrerBrowser;
     private final ReferringRelationsBrowserModel referrerModel;
 
@@ -133,8 +152,11 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
     private final SelectionTable selectionTable;
     private final SelectionTableModel selectionTableModel;
 
-    private final AutoCompletingTextField tfRole;
+    private final AutoCompletionManager manager;
+    private final AutoCompComboBox<AutoCompletionItem> cbRole;
     private final RelationEditorActionAccess actionAccess;
+
+    private final TaggedHandler taggedHandler;
 
     /**
      * the menu item in the windows menu. Required to properly hide on dialog close.
@@ -175,6 +197,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
 
     private Component selectedTabPane;
     private JTabbedPane tabbedPane;
+    private JCheckBox btnFilter = new JCheckBox(tr("Filter"));
 
     /**
      * Creates a new relation editor for the given relation. The relation will be saved if the user
@@ -192,58 +215,113 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         setRememberWindowGeometry(getClass().getName() + ".geometry",
                 WindowGeometry.centerInWindow(MainApplication.getMainFrame(), new Dimension(700, 650)));
 
-        final TaggingPresetHandler presetHandler = new TaggingPresetHandler() {
+        /**
+         * The data handler we pass to any preset dialog opened from here.
+         * <p>
+         * This handler creates a new relation and a new dataset because the validator (that may run
+         * in the preset dialog) assumes that the primitive to validate has a dataset. On read it
+         * copies the current state of the tag editor to the relation. On write the data goes to the
+         * tag table.
+         */
+        taggedHandler = new TaggedHandler() {
+            Relation relation = new Relation();
+            DataSet ds = new DataSet();
 
-            @Override
-            public void updateTags(List<Tag> tags) {
-                tagEditorPanel.getModel().updateTags(tags);
+            /* anon constructor */ {
+                ds.addPrimitive(relation);
             }
 
             @Override
-            public Collection<OsmPrimitive> getSelection() {
-                Relation relation = new Relation();
-                tagEditorPanel.getModel().applyToPrimitive(relation);
+            public void update(String oldKey, String newKey, String value) {
+                tagEditorPanel.getModel().put(oldKey, value);
+            }
+
+            @Override
+            public Collection<? extends Tagged> get() {
+                relation.setKeys(tagEditorPanel.getModel().getTags());
                 return Collections.<OsmPrimitive>singletonList(relation);
             }
         };
 
+        if (relation == null)
+            relation = new Relation();
+
         // init the various models
         //
-        memberTableModel = new MemberTableModel(relation, getLayer(), presetHandler);
+        memberTableModel = new MemberTableModel(relation, getLayer(), taggedHandler);
         memberTableModel.register();
         selectionTableModel = new SelectionTableModel(getLayer());
         selectionTableModel.register();
         referrerModel = new ReferringRelationsBrowserModel(relation);
 
-        tagEditorPanel = new TagEditorPanel(relation, presetHandler);
+        manager = AutoCompletionManager.of(this.getLayer().data);
+
+        tagEditorPanel = new TagEditorPanel(null, 0);
         populateModels(relation);
-        tagEditorPanel.getModel().ensureOneTag();
+
+        presetListPanel = Config.getPref().getBoolean("relation.editor.presets.visible", true) ?
+            new PresetListPanel() : null;
+        if (presetListPanel != null) {
+            updatePresets();
+            tagEditorPanel.getModel().addTableModelListener(e -> updatePresets());
+        }
+
+        TagTableUtils tagTableUtils = new TagTableUtils(tagEditorPanel.getModel(), this::getContextKey);
+
+        // setting up the tag table
+        AutoCompComboBox<AutoCompletionItem> keyEditor = tagTableUtils.getKeyEditor(new KeyAutoCompListener());
+        AutoCompComboBox<AutoCompletionItem> valueEditor = tagTableUtils.getValueEditor(new ValueAutoCompListener());
+
+        TagTable tagTable = tagEditorPanel.getTable();
+        tagTable.setKeyEditor(keyEditor);
+        tagTable.setValueEditor(valueEditor);
+        tagTable.setRowHeight(keyEditor.getEditorComponent().getPreferredSize().height);
+        tagTableUtils.setTypes(Collections.singleton(relation));
 
         // setting up the member table
-        memberTable = new MemberTable(getLayer(), getRelation(), memberTableModel);
+        AutoCompComboBox<AutoCompletionItem> cbRoleEditor = new AutoCompComboBox<>();
+        RoleAutoCompManager roleAutoCompManager = new RoleAutoCompManager();
+        cbRoleEditor.getEditorComponent().addAutoCompListener(roleAutoCompManager);
+        cbRoleEditor.addPopupMenuListener(roleAutoCompManager);
+        cbRoleEditor.getEditorComponent().enableUndoRedo(false);
+        Insets insets = cbRoleEditor.getEditorComponent().getInsets();
+        cbRoleEditor.getEditorComponent().setBorder(BorderFactory.createEmptyBorder(0, insets.left, 0, insets.right));
+        cbRoleEditor.setToolTipText(tr("Select a role for this relation member"));
+        cbRoleEditor.setRenderer(new AutoCompItemCellRenderer(cbRoleEditor, cbRoleEditor.getRenderer(), null));
+
+        int height = cbRoleEditor.getEditorComponent().getPreferredSize().height;
+        memberTable = new MemberTable(getLayer(), cbRoleEditor, memberTableModel);
+
+        height = Math.max(height, memberTable.getColumnModel().getColumn(1).getCellRenderer().
+            getTableCellRendererComponent(memberTable, new Node(), false, false, 0, 0).getPreferredSize().height);
+
+        Logging.info("Row Height is {0}", height);
+
         memberTable.addMouseListener(new MemberTableDblClickAdapter());
+        memberTable.setRowHeight(height);
         memberTableModel.addMemberModelListener(memberTable);
 
-        MemberRoleCellEditor ce = (MemberRoleCellEditor) memberTable.getColumnModel().getColumn(0).getCellEditor();
         selectionTable = new SelectionTable(selectionTableModel, memberTableModel);
-        selectionTable.setRowHeight(ce.getEditor().getPreferredSize().height);
+        selectionTable.setRowHeight(height);
 
         LeftButtonToolbar leftButtonToolbar = new LeftButtonToolbar(new RelationEditorActionAccess());
-        tfRole = buildRoleTextField(this);
+        cbRole = new AutoCompComboBox<>();
+        cbRole.getEditorComponent().addAutoCompListener(roleAutoCompManager);
+        cbRole.addPopupMenuListener(roleAutoCompManager);
+        cbRole.setText(Config.getPref().get(PREF_LASTROLE, ""));
+        cbRole.setToolTipText(tr("Select a role"));
+        cbRole.setRenderer(new AutoCompItemCellRenderer(cbRole, cbRole.getRenderer(), null));
 
-        JSplitPane pane = buildSplitPane(
-                buildTagEditorPanel(tagEditorPanel),
-                buildMemberEditorPanel(leftButtonToolbar, new RelationEditorActionAccess()),
+        JSplitPane tagsAndMembersPane = buildSplitPane(
+                buildTagEditorPanel(presetListPanel, tagEditorPanel),
+                buildMemberEditorPanel(leftButtonToolbar),
                 this);
-        pane.setPreferredSize(new Dimension(100, 100));
 
-        JPanel pnl = new JPanel(new BorderLayout());
-        pnl.add(pane, BorderLayout.CENTER);
-        pnl.setBorder(BorderFactory.createRaisedBevelBorder());
-
+        int w = ImageProvider.adj(3);
+        tagsAndMembersPane.setBorder(BorderFactory.createEmptyBorder(w, w, w, w));
         getContentPane().setLayout(new BorderLayout());
         tabbedPane = new JTabbedPane();
-        tabbedPane.add(tr("Tags and Members"), pnl);
+        tabbedPane.add(tr("Tags and Members"), tagsAndMembersPane);
         referrerBrowser = new ReferringRelationsBrowser(getLayer(), referrerModel);
         tabbedPane.add(tr("Parent Relations"), referrerBrowser);
         tabbedPane.add(tr("Child Relations"), new ChildRelationBrowser(getLayer(), relation));
@@ -256,10 +334,10 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
                 referrerBrowser.init();
             }
             // see #20228
-            boolean selIsTagsAndMembers = sourceTabbedPane.getSelectedComponent() == pnl;
-            if (selectedTabPane == pnl && !selIsTagsAndMembers) {
+            boolean selIsTagsAndMembers = sourceTabbedPane.getSelectedComponent() == tagsAndMembersPane;
+            if (selectedTabPane == tagsAndMembersPane && !selIsTagsAndMembers) {
                 unregisterMain();
-            } else if (selectedTabPane != pnl && selIsTagsAndMembers) {
+            } else if (selectedTabPane != tagsAndMembersPane && selIsTagsAndMembers) {
                 registerMain();
             }
             selectedTabPane = sourceTabbedPane.getSelectedComponent();
@@ -303,7 +381,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         );
         InputMapUtils.addCtrlEnterAction(getRootPane(), okAction);
         // CHECKSTYLE.OFF: LineLength
-        registerCopyPasteAction(tagEditorPanel.getPasteAction(), "PASTE_TAGS",
+        registerCopyPasteAction(tagTable.getActionMap().get("paste"), "PASTE_TAGS",
                 Shortcut.registerShortcut("system:pastestyle", tr("Edit: {0}", tr("Paste Tags")), KeyEvent.VK_V, Shortcut.CTRL_SHIFT).getKeyStroke(),
                 getRootPane(), memberTable, selectionTable);
         // CHECKSTYLE.ON: LineLength
@@ -317,7 +395,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     super.actionPerformed(e);
-                    tfRole.requestFocusInWindow();
+                    cbRole.requestFocusInWindow();
                 }
             }, "PASTE_MEMBERS", key, getRootPane(), memberTable, selectionTable);
         }
@@ -327,11 +405,18 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             registerCopyPasteAction(new CopyMembersAction(actionAccess),
                     "COPY_MEMBERS", key, getRootPane(), memberTable, selectionTable);
         }
-        tagEditorPanel.setNextFocusComponent(memberTable);
         selectionTable.setFocusable(false);
         memberTableModel.setSelectedMembers(selectedMembers);
         HelpUtil.setHelpContext(getRootPane(), ht("/Dialog/RelationEditor"));
         UndoRedoHandler.getInstance().addCommandQueueListener(this);
+    }
+
+    String getContextKey() {
+        TagTable tagTable = tagEditorPanel.getTable();
+        int row = tagTable.getEditingRow();
+        if (row == -1)
+            row = tagTable.getSelectedRow();
+        return tagTable.getKey(row);
     }
 
     private void registerMain() {
@@ -355,7 +440,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
 
     private void populateModels(Relation relation) {
         if (relation != null) {
-            tagEditorPanel.getModel().initFromPrimitive(relation);
+            tagEditorPanel.getModel().initFromMap(relation.getKeys());
             memberTableModel.populate(relation);
             if (!getLayer().data.getRelations().contains(relation)) {
                 // treat it as a new relation if it doesn't exist in the data set yet.
@@ -365,6 +450,16 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             tagEditorPanel.getModel().clear();
             memberTableModel.populate(null);
         }
+    }
+
+    private void updatePresets() {
+        presetListPanel.updatePresets(
+            EnumSet.of(TaggingPresetType.RELATION),
+            tagEditorPanel.getModel().getTags(),
+            taggedHandler,
+            manager
+        );
+        validate();
     }
 
     /**
@@ -410,6 +505,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
     /**
      * builds the panel with the OK and the Cancel button
      * @param okAction OK action
+     * @param deleteAction Delete Action
      * @param cancelAction Cancel action
      *
      * @return the panel with the OK and the Cancel button
@@ -451,76 +547,36 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
 
     /**
      * builds the panel with the tag editor
+     * @param presetListPanel the preset list panel or null
      * @param tagEditorPanel tag editor panel
      *
      * @return the panel with the tag editor
      */
-    protected static JPanel buildTagEditorPanel(TagEditorPanel tagEditorPanel) {
+    protected static JPanel buildTagEditorPanel(PresetListPanel presetListPanel, TagEditorPanel tagEditorPanel) {
         JPanel pnl = new JPanel(new GridBagLayout());
 
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.gridx = 0;
-        gc.gridy = 0;
-        gc.gridheight = 1;
-        gc.gridwidth = 1;
-        gc.fill = GridBagConstraints.HORIZONTAL;
-        gc.anchor = GridBagConstraints.FIRST_LINE_START;
-        gc.weightx = 1.0;
-        gc.weighty = 0.0;
-        pnl.add(new JLabel(tr("Tags")), gc);
+        GBC gbc = GBC.eol().fill(GridBagConstraints.HORIZONTAL).anchor(GridBagConstraints.FIRST_LINE_START);
 
-        gc.gridx = 0;
-        gc.gridy = 1;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.anchor = GridBagConstraints.CENTER;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        pnl.add(tagEditorPanel, gc);
+        if (presetListPanel != null) {
+            pnl.add(presetListPanel, gbc.insets(0, 3, 0, 3));
+        }
+
+        pnl.add(new JLabel(tr("Tags")), gbc.insets(0));
+
+        gbc.fill(GridBagConstraints.BOTH);
+        pnl.add(tagEditorPanel, gbc.weight(1.0, 1.0));
         return pnl;
-    }
-
-    /**
-     * builds the role text field
-     * @param re relation editor
-     * @return the role text field
-     */
-    protected static AutoCompletingTextField buildRoleTextField(final IRelationEditor re) {
-        final AutoCompletingTextField tfRole = new AutoCompletingTextField(10);
-        tfRole.setToolTipText(tr("Enter a role and apply it to the selected relation members"));
-        tfRole.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                tfRole.selectAll();
-            }
-        });
-        tfRole.setAutoCompletionList(new AutoCompletionList());
-        tfRole.addFocusListener(
-                new FocusAdapter() {
-                    @Override
-                    public void focusGained(FocusEvent e) {
-                        AutoCompletionList list = tfRole.getAutoCompletionList();
-                        if (list != null) {
-                            list.clear();
-                            AutoCompletionManager.of(re.getLayer().data).populateWithMemberRoles(list, re.getRelation());
-                        }
-                    }
-                }
-        );
-        tfRole.setText(Config.getPref().get("relation.editor.generic.lastrole", ""));
-        return tfRole;
     }
 
     /**
      * builds the panel for the relation member editor
      * @param leftButtonToolbar left button toolbar
-     * @param editorAccess The relation editor
      *
      * @return the panel for the relation member editor
      */
-    protected static JPanel buildMemberEditorPanel(
-            LeftButtonToolbar leftButtonToolbar, IRelationEditorActionAccess editorAccess) {
+    protected JPanel buildMemberEditorPanel(LeftButtonToolbar leftButtonToolbar) {
         final JPanel pnl = new JPanel(new GridBagLayout());
-        final JScrollPane scrollPane = new JScrollPane(editorAccess.getMemberTable());
+        final JScrollPane scrollPane = new JScrollPane(memberTable);
 
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = 0;
@@ -552,21 +608,33 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         pnl.add(scrollPane, gc);
 
         // --- role editing
-        JPanel p3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        p3.add(new JLabel(tr("Apply Role:")));
-        p3.add(editorAccess.getTextFieldRole());
-        SetRoleAction setRoleAction = new SetRoleAction(editorAccess);
-        editorAccess.getMemberTableModel().getSelectionModel().addListSelectionListener(setRoleAction);
-        editorAccess.getTextFieldRole().getDocument().addDocumentListener(setRoleAction);
-        editorAccess.getTextFieldRole().addActionListener(setRoleAction);
-        editorAccess.getMemberTableModel().getSelectionModel().addListSelectionListener(
-                e -> editorAccess.getTextFieldRole().setEnabled(editorAccess.getMemberTable().getSelectedRowCount() > 0)
+        JPanel p3 = new JPanel(new GridBagLayout());
+        GBC gbc = GBC.std().fill(GridBagConstraints.NONE);
+        JLabel lbl = new JLabel(tr("Role:"));
+        p3.add(lbl, gbc);
+
+        p3.add(cbRole, gbc.insets(3, 3, 0, 3).fill(GridBagConstraints.HORIZONTAL));
+
+        SetRoleAction setRoleAction = new SetRoleAction(new RelationEditorActionAccess());
+        memberTableModel.getSelectionModel().addListSelectionListener(setRoleAction);
+        cbRole.getEditorComponent().getDocument().addDocumentListener(setRoleAction);
+        cbRole.getEditorComponent().addActionListener(setRoleAction);
+        memberTableModel.getSelectionModel().addListSelectionListener(
+                e -> cbRole.setEnabled(memberTable.getSelectedRowCount() > 0)
         );
-        editorAccess.getTextFieldRole().setEnabled(editorAccess.getMemberTable().getSelectedRowCount() > 0);
+        cbRole.setEnabled(memberTable.getSelectedRowCount() > 0);
+
         JButton btnApply = new JButton(setRoleAction);
-        btnApply.setPreferredSize(new Dimension(20, 20));
+        int height = cbRole.getPreferredSize().height;
+        btnApply.setPreferredSize(new Dimension(height, height));
         btnApply.setText("");
-        p3.add(btnApply);
+        p3.add(btnApply, gbc.weight(0, 0).fill(GridBagConstraints.NONE));
+
+        btnFilter.setToolTipText(tr("Filter suggestions based on context"));
+        btnFilter.setSelected(Config.getPref().getBoolean(PREF_USE_ROLE_FILTER, false));
+        p3.add(btnFilter, gbc.span(GridBagConstraints.REMAINDER));
+
+        //
 
         gc.gridx = 1;
         gc.gridy = 2;
@@ -596,7 +664,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         gc.anchor = GridBagConstraints.NORTHWEST;
         gc.weightx = 0.0;
         gc.weighty = 1.0;
-        pnl2.add(new ScrollViewport(buildSelectionControlButtonToolbar(editorAccess),
+        pnl2.add(new ScrollViewport(buildSelectionControlButtonToolbar(new RelationEditorActionAccess()),
                 ScrollViewport.VERTICAL_DIRECTION), gc);
 
         gc.gridx = 1;
@@ -604,21 +672,19 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         gc.weightx = 1.0;
         gc.weighty = 1.0;
         gc.fill = GridBagConstraints.BOTH;
-        pnl2.add(buildSelectionTablePanel(editorAccess.getSelectionTable()), gc);
+        pnl2.add(buildSelectionTablePanel(selectionTable), gc);
 
         final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(pnl);
         splitPane.setRightComponent(pnl2);
         splitPane.setOneTouchExpandable(false);
-        if (editorAccess.getEditor() instanceof Window) {
-            ((Window) editorAccess.getEditor()).addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowOpened(WindowEvent e) {
-                    // has to be called when the window is visible, otherwise no effect
-                    splitPane.setDividerLocation(0.6);
-                }
-            });
-        }
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                // has to be called when the window is visible, otherwise no effect
+                splitPane.setDividerLocation(0.6);
+            }
+        });
 
         JPanel pnl3 = new JPanel(new BorderLayout());
         pnl3.add(splitPane, BorderLayout.CENTER);
@@ -773,9 +839,6 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         if (isVisible() == visible) {
             return;
         }
-        if (visible) {
-            tagEditorPanel.initAutoCompletion(getLayer());
-        }
         super.setVisible(visible);
         Clipboard clipboard = ClipboardUtils.getClipboard();
         if (visible) {
@@ -788,6 +851,9 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
                 clipboard.addFlavorListener(listener);
             }
         } else {
+            Config.getPref().put(PREF_LASTROLE, cbRole.getText());
+            Config.getPref().putBoolean(PREF_USE_ROLE_FILTER, btnFilter.isSelected());
+
             // make sure all registered listeners are unregistered
             //
             memberTable.stopHighlighting();
@@ -866,7 +932,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         }
     }
 
-    private void registerCopyPasteAction(AbstractAction action, Object actionName, KeyStroke shortcut,
+    private void registerCopyPasteAction(Action action, Object actionName, KeyStroke shortcut,
             JRootPane rootPane, JTable... tables) {
         if (shortcut == null) {
             Logging.warn("No shortcut provided for the Paste action in Relation editor dialog");
@@ -996,7 +1062,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
     public static Command addPrimitivesToRelation(final Relation orig, Collection<? extends OsmPrimitive> primitivesToAdd) {
         CheckParameterUtil.ensureParameterNotNull(orig, "orig");
         try {
-            final Collection<TaggingPreset> presets = TaggingPresets.getMatchingPresets(
+            final Collection<TaggingPreset> presets = MainApplication.getTaggingPresets().getMatchingPresets(
                     EnumSet.of(TaggingPresetType.forPrimitive(orig)), orig.getKeys(), false);
             Relation target = new Relation(orig);
             boolean modified = false;
@@ -1068,15 +1134,14 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         }
 
         @Override
-        public TagEditorModel getTagModel() {
+        public TagTableModel getTagModel() {
             return tagEditorPanel.getModel();
         }
 
         @Override
-        public AutoCompletingTextField getTextFieldRole() {
-            return tfRole;
+        public JTextField getTextFieldRole() {
+            return cbRole.getEditorComponent();
         }
-
     }
 
     @Override
@@ -1086,6 +1151,80 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             // see #19915
             setRelation(null);
             applyAction.updateEnabledState();
+        }
+    }
+
+    private class KeyAutoCompListener extends DefaultAutoCompListener<AutoCompletionItem> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            Map<String, String> keys = tagEditorPanel.getModel().getTags();
+            Map<String, String> matchKeys = btnFilter.isSelected() ? keys : null;
+
+            Map<String, AutoCompletionPriority> map = AutoCompletionManager.merge(
+                AutoCompletionManager.toMap(manager.getPresetsAllKeys(EnumSet.of(TaggingPresetType.RELATION), matchKeys),
+                    AutoCompletionPriority.IS_IN_STANDARD),
+                AutoCompletionManager.toMap(manager.getKeysForRelation(matchKeys), AutoCompletionPriority.IS_IN_DATASET)
+            );
+
+            model.replaceAllElements(map.entrySet().stream().filter(e -> !keys.containsKey(e.getKey()))
+                .map(e -> new AutoCompletionItem(e.getKey(), e.getValue()))
+                .sorted(AutoCompletionManager.ALPHABETIC_COMPARATOR).collect(Collectors.toList()));
+        }
+    }
+
+    private class ValueAutoCompListener extends DefaultAutoCompListener<AutoCompletionItem> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            String key = getContextKey();
+            Map<String, String> tags = btnFilter.isSelected() ? tagEditorPanel.getModel().getTags() : null;
+
+            Map<String, AutoCompletionPriority> map = AutoCompletionManager.merge(
+                AutoCompletionManager.toMap(manager.getPresetValues(EnumSet.of(TaggingPresetType.RELATION), tags, key),
+                    AutoCompletionPriority.IS_IN_STANDARD),
+                AutoCompletionManager.toMap(manager.getValuesForRelation(tags, key), AutoCompletionPriority.IS_IN_DATASET)
+            );
+
+            model.replaceAllElements(AutoCompletionManager.toList(map, AutoCompletionManager.PRIORITY_COMPARATOR));
+        }
+    }
+
+    /**
+     * Returns the roles currently edited in the members table.
+     * @param types the preset types to include, (node / way / relation ...) or null to include all types
+     * @return the roles currently edited in the members table.
+     */
+    private Set<String> getCurrentRoles(Collection<TaggingPresetType> types) {
+        Set<String> set = new HashSet<>();
+        for (int i = 0; i < memberTableModel.getRowCount(); ++i) {
+            RelationMember member = memberTableModel.getValue(i);
+            if (types == null || types.contains(TaggingPresetType.forPrimitiveType(member.getDisplayType()))) {
+                set.add(member.getRole());
+            }
+        }
+        return set;
+    }
+
+    private class RoleAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            Map<String, AutoCompletionPriority> map;
+            Map<String, String> keys = btnFilter.isSelected() ? tagEditorPanel.getModel().getTags() : null;
+
+            EnumSet<TaggingPresetType> selectedTypes = EnumSet.noneOf(TaggingPresetType.class);
+            for (RelationMember member : memberTableModel.getSelectedMembers()) {
+                selectedTypes.add(TaggingPresetType.forPrimitiveType(member.getDisplayType()));
+            }
+
+            map = AutoCompletionManager.merge(
+                AutoCompletionManager.toMap(manager.getPresetRoles(keys, selectedTypes), AutoCompletionPriority.IS_IN_STANDARD),
+                AutoCompletionManager.toMap(manager.getRolesForRelation(keys, selectedTypes), AutoCompletionPriority.IS_IN_DATASET),
+                AutoCompletionManager.toMap(getCurrentRoles(selectedTypes), AutoCompletionPriority.IS_IN_SELECTION)
+            );
+
+            // turn into AutoCompletionItems
+            model.replaceAllElements(map.entrySet().stream()
+                .map(e -> new AutoCompletionItem(e.getKey(), e.getValue()))
+                .sorted(AutoCompletionManager.ALPHABETIC_COMPARATOR).collect(Collectors.toList()));
         }
     }
 }

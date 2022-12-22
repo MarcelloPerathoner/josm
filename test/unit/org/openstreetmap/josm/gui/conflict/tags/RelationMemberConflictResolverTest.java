@@ -3,6 +3,10 @@ package org.openstreetmap.josm.gui.conflict.tags;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.OsmDataManager;
+import org.openstreetmap.josm.gui.MainApplication;
+import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,9 @@ class RelationMemberConflictResolverTest {
      */
     @Test
     void testRelationMemberConflictResolver() {
+        DataSet ds = new DataSet();
+        OsmDataManager.getInstance().setActiveDataSet(ds);
+        MainApplication.getLayerManager().addLayer(new OsmDataLayer(ds, "Test Layer", null));
         assertNotNull(new RelationMemberConflictResolver(null));
     }
 }

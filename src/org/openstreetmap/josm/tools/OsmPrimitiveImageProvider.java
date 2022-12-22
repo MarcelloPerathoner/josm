@@ -16,14 +16,13 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.INode;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.Range;
 import org.openstreetmap.josm.gui.mappaint.StyleElementList;
 import org.openstreetmap.josm.gui.mappaint.styleelement.MapImage;
 import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 
 /**
  * An {@link ImageProvider} for {@link org.openstreetmap.josm.data.osm.OsmPrimitive}
@@ -55,10 +54,11 @@ public final class OsmPrimitiveImageProvider {
 
         // Check if the presets have icons for nodes/relations.
         if (primitive.isTagged() && (!options.contains(Options.NO_WAY_PRESETS) || OsmPrimitiveType.WAY != primitive.getType())) {
-            final Optional<ImageResource> icon = TaggingPresets.getMatchingPresets(primitive).stream()
-                    .sorted(Comparator.comparing(p -> (p.iconName != null && p.iconName.contains("multipolygon"))
-                            || Utils.isEmpty(p.types) ? Integer.MAX_VALUE : p.types.size()))
-                    .map(TaggingPreset::getImageResource)
+            final Optional<ImageResource> icon = MainApplication.getTaggingPresets().getMatchingPresets(primitive).stream()
+                    .sorted(Comparator.comparing(p ->
+                        ((p.getIconName() != null && p.getIconName().contains("multipolygon")) || Utils.isEmpty(p.getTypes()))
+                             ? Integer.MAX_VALUE : p.getTypes().size()))
+                    .map(tp -> ImageResource.getAttachedImageResource(tp.getAction()))
                     .filter(Objects::nonNull)
                     .findFirst();
             if (icon.isPresent()) {
@@ -151,6 +151,6 @@ public final class OsmPrimitiveImageProvider {
          */
         NO_WAY_PRESETS;
 
-        static final Collection<Options> DEFAULT = Collections.singleton(Options.NO_WAY_PRESETS);
+        public static final Collection<Options> DEFAULT = Collections.singleton(Options.NO_WAY_PRESETS);
     }
 }

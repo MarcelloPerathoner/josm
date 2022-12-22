@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 /**
  * Determines how the image is sized/resized in {@link ImageResource#getImageIcon(Dimension, boolean, ImageResizeMode)}.
  */
-enum ImageResizeMode {
+public enum ImageResizeMode {
 
     /**
      * Calculate proportional dimensions that best fit into the target width and height, retain aspect ratio
@@ -22,7 +22,7 @@ enum ImageResizeMode {
             CheckParameterUtil.ensureThat((dim.width > 0 || dim.width == -1) && (dim.height > 0 || dim.height == -1),
                     () -> dim + " is invalid");
             if (dim.width == -1 && dim.height == -1) {
-                return new Dimension(GuiSizesHelper.getSizeDpiAdjusted(icon.width), GuiSizesHelper.getSizeDpiAdjusted(icon.height));
+                return new Dimension(icon.width, icon.height);
             } else if (dim.width == -1) {
                 return new Dimension(Math.max(1, icon.width * dim.height / icon.height), dim.height);
             } else if (dim.height == -1) {

@@ -29,23 +29,18 @@ import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
+import org.openstreetmap.josm.gui.tagging.presets.Role;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetItem;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetListener;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles.Role;
-import org.openstreetmap.josm.tools.SubclassFilteredCollection;
 import org.openstreetmap.josm.tools.Utils;
 
 /**
  * Check for wrong relations.
  * @since 3669
  */
-public class RelationChecker extends Test implements TaggingPresetListener {
+public class RelationChecker extends Test {
 
     // CHECKSTYLE.OFF: SingleSpaceSeparator
     /** Role ''{0}'' is not among expected values ''{1}'' */
@@ -91,25 +86,7 @@ public class RelationChecker extends Test implements TaggingPresetListener {
 
     @Override
     public void initialize() {
-        TaggingPresets.addListener(this);
-        initializePresets();
-    }
-
-    private static final Collection<TaggingPreset> relationpresets = new LinkedList<>();
-
-    /**
-     * Reads the presets data.
-     */
-    public static synchronized void initializePresets() {
-        if (!relationpresets.isEmpty()) {
-            // the presets have already been initialized
-            return;
-        }
-        for (TaggingPreset p : TaggingPresets.getTaggingPresets()) {
-            if (p.data.stream().anyMatch(i -> i instanceof Roles)) {
-                relationpresets.add(p);
-            }
-        }
+        // only here to get rid of the exception the base class declares
     }
 
     private static class RoleInfo {
@@ -175,42 +152,22 @@ public class RelationChecker extends Test implements TaggingPresetListener {
         return map;
     }
 
-    // return Roles grouped by key
-    private static Map<Role, String> buildAllRoles(Relation n) {
+    /**
+     * Returns all roles with preset name
+     *
+     * @param rel the relation
+     * @return all roles in all matching presets
+     */
+    private static Map<Role, String> buildAllRoles(Relation rel) {
         Map<Role, String> allroles = new LinkedHashMap<>();
+        EnumSet<TaggingPresetType> types = EnumSet.of(TaggingPresetType.RELATION);
 
-        for (TaggingPreset p : relationpresets) {
-            final boolean matches = TaggingPresetItem.matches(Utils.filteredCollection(p.data, KeyedItem.class), n.getKeys());
-            final SubclassFilteredCollection<TaggingPresetItem, Roles> roles = Utils.filteredCollection(p.data, Roles.class);
-            if (matches && !roles.isEmpty()) {
-                for (Role role: roles.iterator().next().roles) {
-                    allroles.put(role, p.name);
-                }
+        for (TaggingPreset p : MainApplication.getTaggingPresets().getMatchingPresets(types, rel.getKeys(), false)) {
+            for (Role role: p.getAllRoles()) {
+                allroles.put(role, p.getBaseName());
             }
         }
         return allroles;
-    }
-
-    private static boolean checkMemberType(Role r, RelationMember member) {
-        if (r.types != null) {
-            switch (member.getDisplayType()) {
-            case NODE:
-                return r.types.contains(TaggingPresetType.NODE);
-            case CLOSEDWAY:
-                return r.types.contains(TaggingPresetType.CLOSEDWAY);
-            case WAY:
-                return r.types.contains(TaggingPresetType.WAY);
-            case MULTIPOLYGON:
-                return r.types.contains(TaggingPresetType.MULTIPOLYGON);
-            case RELATION:
-                return r.types.contains(TaggingPresetType.RELATION);
-            default: // not matching type
-                return false;
-            }
-        } else {
-            // if no types specified, then test is passed
-            return true;
-        }
     }
 
     /**
@@ -226,7 +183,7 @@ public class RelationChecker extends Test implements TaggingPresetListener {
         String role = member.getRole();
         String name = null;
         // Set of all accepted types in preset
-        Collection<TaggingPresetType> types = EnumSet.noneOf(TaggingPresetType.class);
+        EnumSet<TaggingPresetType> types = EnumSet.noneOf(TaggingPresetType.class);
         TestError possibleMatchError = null;
         // iterate through all of the role definition within preset
         // and look for any matching definition
@@ -236,10 +193,10 @@ public class RelationChecker extends Test implements TaggingPresetListener {
                 continue;
             }
             name = e.getValue();
-            types.addAll(r.types);
-            if (checkMemberType(r, member)) {
+            types.addAll(r.getTypes());
+            if (r.appliesTo(member.getDisplayType())) {
                 // member type accepted by role definition
-                if (r.memberExpression == null) {
+                if (r.getMemberExpression() == null) {
                     // no member expression - so all requirements met
                     return true;
                 } else {
@@ -251,7 +208,7 @@ public class RelationChecker extends Test implements TaggingPresetListener {
                         return true;
                     } else {
                         // verify expression
-                        if (r.memberExpression.match(primitive)) {
+                        if (r.getMemberExpression().match(primitive)) {
                             return true;
                         } else {
                             // possible match error
@@ -261,21 +218,21 @@ public class RelationChecker extends Test implements TaggingPresetListener {
                             possibleMatchError = TestError.builder(this, Severity.WARNING, WRONG_ROLE)
                                     .message(ROLE_VERIF_PROBLEM_MSG,
                                             marktr("Role of relation member does not match template expression ''{0}'' in preset {1}"),
-                                            r.memberExpression, name)
+                                            r.getMemberExpression(), name)
                                     .primitives(member.getMember().isUsable() ? member.getMember() : n)
                                     .build();
                         }
                     }
                 }
             } else if (OsmPrimitiveType.RELATION == member.getType() && !member.getMember().isUsable()
-                    && r.types.contains(TaggingPresetType.MULTIPOLYGON)) {
+                    && r.appliesTo(TaggingPresetType.MULTIPOLYGON)) {
                 // if relation is incomplete we cannot verify if it's a multipolygon - so we just skip it
                 return true;
             }
         }
 
         if (name == null) {
-           return true;
+            return true;
         } else if (possibleMatchError != null) {
             // if any error found, then assume that member type was correct
             // and complain about not matching the memberExpression
@@ -318,11 +275,11 @@ public class RelationChecker extends Test implements TaggingPresetListener {
 
         // verify role counts based on whole role sets
         for (Role r: allroles.keySet()) {
-            String keyname = r.key;
+            String keyname = r.getKey();
             if (keyname.isEmpty()) {
                 keyname = tr("<empty>");
             }
-            checkRoleCounts(n, r, keyname, map.get(r.key));
+            checkRoleCounts(n, r, keyname, map.get(r.getKey()));
         }
         if ("network".equals(n.get("type")) && !"bicycle".equals(n.get("route"))) {
             return;
@@ -331,7 +288,7 @@ public class RelationChecker extends Test implements TaggingPresetListener {
         for (String key : map.keySet()) {
             if (allroles.keySet().stream().noneMatch(role -> role.isRole(key))) {
                 String templates = allroles.keySet().stream()
-                        .map(r -> r.key)
+                        .map(r -> r.getKey())
                         .map(r -> Utils.isEmpty(r) ? tr("<empty>") : r)
                         .distinct()
                         .collect(Collectors.joining("/"));
@@ -398,12 +355,6 @@ public class RelationChecker extends Test implements TaggingPresetListener {
         Collection<? extends OsmPrimitive> primitives = testError.getPrimitives();
         return (testError.getCode() == RELATION_EMPTY && !primitives.isEmpty() && primitives.iterator().next().isNew())
                 || (testError.getCode() == RELATION_LOOP && primitives.size() == 1);
-    }
-
-    @Override
-    public void taggingPresetsModified() {
-        relationpresets.clear();
-        initializePresets();
     }
 
     @Override

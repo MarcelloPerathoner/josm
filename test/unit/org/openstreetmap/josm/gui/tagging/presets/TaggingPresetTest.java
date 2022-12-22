@@ -3,16 +3,16 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest.build;
 
-import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.OsmUtils;
-import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchParseError;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -21,7 +21,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * Unit tests of {@code TaggingPreset}
  */
 class TaggingPresetTest {
-
     /**
      * Setup test.
      */
@@ -35,20 +34,27 @@ class TaggingPresetTest {
      */
     @Test
     void test() throws SearchParseError {
-        Key key = new Key();
-        key.key = "railway";
-        key.value = "tram_stop";
-        TaggingPreset preset = new TaggingPreset();
-        preset.data.add(key);
+        Key key = (Key) build("key key=railway value=tram_stop");
+        Map<String, Chunk> chunks = new HashMap<>();
+
+        TaggingPreset preset = (TaggingPreset) build("item");
+        preset.addItem(key);
+        preset.fixup(chunks, null);
 
         assertFalse(preset.test(OsmUtils.createPrimitive("node foo=bar")));
         assertTrue(preset.test(OsmUtils.createPrimitive("node railway=tram_stop")));
 
-        preset.types = EnumSet.of(TaggingPresetType.NODE);
+        preset = (TaggingPreset) build("item type=node");
+        preset.addItem(key);
+        preset.fixup(chunks, null);
+
         assertTrue(preset.test(OsmUtils.createPrimitive("node railway=tram_stop")));
         assertFalse(preset.test(OsmUtils.createPrimitive("way railway=tram_stop")));
 
-        preset.matchExpression = SearchCompiler.compile("-public_transport");
+        preset = (TaggingPreset) build("item type=node match_expression=-public_transport");
+        preset.addItem(key);
+        preset.fixup(chunks, null);
+
         assertTrue(preset.test(OsmUtils.createPrimitive("node railway=tram_stop")));
         assertFalse(preset.test(OsmUtils.createPrimitive("node railway=tram_stop public_transport=stop_position")));
     }

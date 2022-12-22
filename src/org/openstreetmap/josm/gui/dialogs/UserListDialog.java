@@ -43,6 +43,7 @@ import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.GuiHelper;
+import org.openstreetmap.josm.gui.util.TableHelper;
 import org.openstreetmap.josm.gui.widgets.PopupMenuLauncher;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -90,6 +91,7 @@ public class UserListDialog extends ToggleDialog implements DataSelectionListene
     protected void build() {
         model = new UserTableModel();
         userTable = new JTable(model);
+        TableHelper.setFont(userTable, UserListDialog.class);
         userTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         userTable.addMouseListener(new DoubleClickAdapter());
 

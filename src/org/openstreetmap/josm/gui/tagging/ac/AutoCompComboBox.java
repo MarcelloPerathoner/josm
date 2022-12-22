@@ -1,11 +1,18 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.ac;
 
+import java.awt.Component;
+import java.awt.event.MouseEvent;
 import java.awt.im.InputContext;
+import java.util.EventObject;
 import java.util.Locale;
 
 import javax.swing.ComboBoxEditor;
+import javax.swing.JTable;
+import javax.swing.event.CellEditorListener;
+import javax.swing.table.TableCellEditor;
 
+import org.openstreetmap.josm.gui.util.CellEditorSupport;
 import org.openstreetmap.josm.gui.widgets.JosmComboBox;
 import org.openstreetmap.josm.tools.Logging;
 
@@ -21,11 +28,13 @@ import org.openstreetmap.josm.tools.Logging;
  * @param <E> the type of the combobox entries
  * @since 18173
  */
-public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompListener {
+public class AutoCompComboBox<E> extends JosmComboBox<E> implements TableCellEditor, AutoCompListener {
 
     /** force a different keyboard input locale for the editor */
     private boolean useFixedLocale;
     private final transient InputContext privateInputContext = InputContext.getInstance();
+    /** Disables firing of action events when true */
+    protected boolean disableActionEvents = false;
 
     /**
      * Constructs an {@code AutoCompletingComboBox}.
@@ -45,6 +54,7 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompList
         setEditable(true);
         getEditorComponent().setModel(model);
         getEditorComponent().addAutoCompListener(this);
+        tableCellEditorSupport = new CellEditorSupport(this);
     }
 
     /**
@@ -91,7 +101,8 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompList
         // Save the text in case item is null, because setSelectedItem will erase it.
         String savedText = getText();
         setSelectedItem(item);
-        setText(savedText);
+        if (item == null)
+            setText(savedText);
     }
 
     /**
@@ -103,6 +114,19 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompList
      */
     public boolean setAutocompleteEnabled(boolean enabled) {
         return getEditorComponent().setAutocompleteEnabled(enabled);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Sometimes we need to disable overly zealous action events, eg. when programmatically filling
+     * the drop down list before displaying the popup.
+     */
+    @Override
+    protected void fireActionEvent() {
+        if (!disableActionEvents) {
+            super.fireActionEvent();
+        }
     }
 
     /**
@@ -140,7 +164,9 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompList
         return super.getInputContext();
     }
 
-    /** AutoCompListener Interface */
+    /* ------------------------------------------------------------------------------------ */
+    /* AutoCompListener interface                                                           */
+    /* ------------------------------------------------------------------------------------ */
 
     @Override
     public void autoCompBefore(AutoCompEvent e) {
@@ -148,6 +174,83 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements AutoCompList
 
     @Override
     public void autoCompPerformed(AutoCompEvent e) {
+        boolean oldDisableActionEvents = disableActionEvents;
+        disableActionEvents = true;
         autocomplete(e.getItem());
+        disableActionEvents = oldDisableActionEvents;
+    }
+
+    /* ------------------------------------------------------------------------------------ */
+    /* TableCellEditor interface                                                            */
+    /* ------------------------------------------------------------------------------------ */
+
+    private transient CellEditorSupport tableCellEditorSupport;
+    private String originalValue;
+
+    @Override
+    public void addCellEditorListener(CellEditorListener l) {
+        tableCellEditorSupport.addCellEditorListener(l);
+    }
+
+    protected void rememberOriginalValue(String value) {
+        this.originalValue = value;
+    }
+
+    protected void restoreOriginalValue() {
+        setText(originalValue);
+    }
+
+    @Override
+    public void removeCellEditorListener(CellEditorListener l) {
+        tableCellEditorSupport.removeCellEditorListener(l);
+    }
+
+    @Override
+    public void cancelCellEditing() {
+        restoreOriginalValue();
+        tableCellEditorSupport.fireEditingCanceled();
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return getText();
+    }
+
+    /**
+    * Returns true if <code>anEvent</code> is <b>not</b> a <code>MouseEvent</code>.  Otherwise, it
+    * returns true if the necessary number of clicks have occurred, and returns false otherwise.
+    *
+    * @param   anEvent         the event
+    * @return  true  if cell is ready for editing, false otherwise
+    * @see #shouldSelectCell
+    */
+    @Override
+    public boolean isCellEditable(EventObject anEvent) {
+        if (anEvent instanceof MouseEvent) {
+            return ((MouseEvent) anEvent).getClickCount() >= 1;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean shouldSelectCell(EventObject anEvent) {
+        if (anEvent instanceof MouseEvent) {
+            MouseEvent e = (MouseEvent) anEvent;
+            return e.getID() != MouseEvent.MOUSE_DRAGGED;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+        tableCellEditorSupport.fireEditingStopped();
+        return true;
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        setText(value == null ? "" : value.toString());
+        rememberOriginalValue(getText());
+        return this;
     }
 }

@@ -8,7 +8,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -35,7 +34,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -72,6 +70,7 @@ import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
 import org.openstreetmap.josm.tools.Utils;
@@ -439,10 +438,12 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
         if (isDialogInDefaultView()) {
             setContentVisible(false);
             setIsCollapsed(true);
-            setPreferredSize(new Dimension(0, 20));
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
-            setMinimumSize(new Dimension(Integer.MAX_VALUE, 20));
-            titleBar.lblMinimized.setIcon(ImageProvider.get("misc", "minimized"));
+            Dimension size = titleBar.getPreferredSize();
+            size.width = Integer.MAX_VALUE;
+            setPreferredSize(size);
+            setMaximumSize(size);
+            setMinimumSize(size);
+            titleBar.lblMinimized.setIcon(titleBar.iconMinimized);
         } else
             throw new IllegalStateException();
     }
@@ -456,7 +457,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
             setIsCollapsed(false);
             setPreferredSize(new Dimension(0, preferredHeight));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-            titleBar.lblMinimized.setIcon(ImageProvider.get("misc", "normal"));
+            titleBar.lblMinimized.setIcon(titleBar.iconNormal);
         } else
             throw new IllegalStateException();
     }
@@ -530,45 +531,38 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
         private final JLabel lblMinimized;
         /** the label which displays the dialog's title **/
         private final JLabel lblTitle;
-        private final JComponent lblTitleWeak;
         /** the button which shows whether buttons are dynamic or not */
         private final JButton buttonsHide;
         /** the contextual menu **/
         private DialogPopupMenu popupMenu;
+        /* icons */
+        private final ImageIcon icon;
+        private final ImageIcon iconNormal;
+        private final ImageIcon iconMinimized;
+
+        private final int gap = ImageProvider.adj(2);
+        private final GBC gbc = GBC.std().insets(gap, gap, gap, gap);
 
         private MouseEventHandler mouseEventHandler;
 
         @SuppressWarnings("unchecked")
         public TitleBar(String toggleDialogName, String iconName) {
+            icon = ImageProvider.get("dialogs", iconName, ImageSizes.SMALLICON);
+            iconNormal = ImageProvider.get("misc", "normal", ImageSizes.SMALLICON);
+            iconMinimized = ImageProvider.get("misc", "minimized", ImageSizes.SMALLICON);
+
             setLayout(new GridBagLayout());
 
-            lblMinimized = new JLabel(ImageProvider.get("misc", "normal"));
-            add(lblMinimized);
+            lblMinimized = new JLabel(isCollapsed ? iconMinimized : iconNormal);
+            add(lblMinimized, gbc);
 
-            // scale down the dialog icon
-            ImageIcon icon = ImageProvider.get("dialogs", iconName, ImageProvider.ImageSizes.SMALLICON);
-            lblTitle = new JLabel("", icon, JLabel.TRAILING);
+            lblTitle = new JLabel("", icon, JLabel.LEADING);
             lblTitle.setIconTextGap(8);
 
-            JPanel conceal = new JPanel();
-            conceal.add(lblTitle);
-            conceal.setVisible(false);
-            add(conceal, GBC.std());
-
-            // Cannot add the label directly since it would displace other elements on resize
-            lblTitleWeak = new JComponent() {
-                @Override
-                public void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    lblTitle.paint(g);
-                }
-            };
-            lblTitleWeak.setPreferredSize(new Dimension(Integer.MAX_VALUE, 20));
-            lblTitleWeak.setMinimumSize(new Dimension(0, 20));
-            add(lblTitleWeak, GBC.std().fill(GBC.HORIZONTAL));
+            add(lblTitle, ((GBC) gbc.clone()).fill(GBC.HORIZONTAL).weight(1.0, 0.0));
 
             buttonsHide = new JButton(ImageProvider.get("misc", buttonHiding != ButtonHidingType.ALWAYS_SHOWN
-                ? /* ICON(misc/)*/ "buttonhide" :  /* ICON(misc/)*/ "buttonshow"));
+                ? /* ICON(misc/)*/ "buttonhide" :  /* ICON(misc/)*/ "buttonshow", ImageSizes.SMALLICON));
             addButton(buttonsHide, tr("Toggle dynamic buttons"), e -> {
                 JRadioButtonMenuItem item = (buttonHiding == ButtonHidingType.DYNAMIC) ? alwaysShown : dynamic;
                 item.setSelected(true);
@@ -577,7 +571,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
 
             // show the pref button if applicable
             if (preferenceClass != null) {
-                addButton(new JButton(ImageProvider.get("preference_small", ImageProvider.ImageSizes.SMALLICON)),
+                addButton(new JButton(ImageProvider.get("preference_small", ImageSizes.SMALLICON)),
                         tr("Open preferences for this panel"), e -> {
                     final PreferenceDialog p = new PreferenceDialog(MainApplication.getMainFrame());
                     SwingUtilities.invokeLater(() -> {
@@ -592,13 +586,14 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
             }
 
             // show the help button
-            addButton(new JButton(ImageProvider.get("help", ImageProvider.ImageSizes.SMALLICON)),
+            addButton(new JButton(ImageProvider.get("help", ImageSizes.SMALLICON)),
                     tr("Open help for this panel"), e -> {
                 HelpBrowser.setUrlForHelpTopic(helpTopic());
             });
 
             // show the sticky button
-            addButton(new JButton(ImageProvider.get("misc", "sticky")), tr("Undock the panel"), e -> {
+            addButton(new JButton(ImageProvider.get("misc", "sticky", ImageSizes.SMALLICON)),
+                    tr("Undock the panel"), e -> {
                 detach();
                 if (dialogsPanel != null) {
                     dialogsPanel.reconstruct(Action.ELEMENT_SHRINKS, null);
@@ -606,7 +601,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
             });
 
             // show the close button
-            addButton(new JButton(ImageProvider.get("misc", "close")),
+            addButton(new JButton(ImageProvider.get("misc", "close", ImageSizes.SMALLICON)),
                     tr("Close this panel. You can reopen it with the buttons in the left toolbar."), e -> {
                 hideDialog();
                 if (dialogsPanel != null) {
@@ -619,16 +614,16 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
             setTitle(toggleDialogName);
         }
 
-        protected final Component addButton(JButton button, String tooltip, ActionListener actionListener) {
+        protected final JButton addButton(JButton button, String tooltip, ActionListener actionListener) {
             button.setBorder(BorderFactory.createEmptyBorder());
             button.addActionListener(actionListener);
             button.setToolTipText(tooltip);
-            return add(button);
+            add(button, gbc);
+            return button;
         }
 
         public void setTitle(String title) {
             lblTitle.setText(title);
-            lblTitleWeak.repaint();
         }
 
         public String getTitle() {
@@ -1034,7 +1029,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
 
     private void refreshHidingButtons() {
         titleBar.buttonsHide.setIcon(ImageProvider.get("misc", buttonHiding != ButtonHidingType.ALWAYS_SHOWN
-            ?  /* ICON(misc/)*/ "buttonhide" :  /* ICON(misc/)*/ "buttonshow"));
+            ?  /* ICON(misc/)*/ "buttonhide" :  /* ICON(misc/)*/ "buttonshow", ImageSizes.SMALLICON));
         titleBar.buttonsHide.setEnabled(buttonHiding != ButtonHidingType.ALWAYS_HIDDEN);
         if (buttonsPanel != null) {
             buttonsPanel.setVisible(buttonHiding != ButtonHidingType.ALWAYS_HIDDEN || !isDocked);

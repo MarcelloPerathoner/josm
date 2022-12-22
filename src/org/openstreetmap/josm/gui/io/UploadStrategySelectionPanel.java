@@ -69,7 +69,7 @@ public class UploadStrategySelectionPanel extends JPanel {
 
     protected JPanel buildUploadStrategyPanel() {
         JPanel pnl = new JPanel(new GridBagLayout());
-        pnl.setBorder(BorderFactory.createTitledBorder(tr("Please select the upload strategy:")));
+        pnl.setBorder(BorderFactory.createTitledBorder(tr("Please select an upload strategy:")));
         ButtonGroup bgStrategies = new ButtonGroup();
         rbStrategy = new EnumMap<>(UploadStrategy.class);
         lblNumRequests = new EnumMap<>(UploadStrategy.class);

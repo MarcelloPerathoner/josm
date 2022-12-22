@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.EnumSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.ImageIcon;
 
@@ -16,10 +19,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.JOSMFixture;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmUtils;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetUtils;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.tools.OsmPrimitiveImageProvider.Options;
+import org.xml.sax.SAXException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -45,10 +50,17 @@ class OsmPrimitiveImageProviderTest {
 
     /**
      * Unit test of {@link OsmPrimitiveImageProvider#getResource}.
+     * @throws SAXException if defaultpresets.xml is invalid XML
+     * @throws IOException if defaultpresets.xml defaults
+     * @throws InterruptedException if any thread is interrupted
+     * @throws ExecutionException if any thread throws
+     * @throws TimeoutException on timeout
      */
     @Test
-    void testGetResource() {
-        TaggingPresetsTest.waitForIconLoading(TaggingPresets.getTaggingPresets());
+    void testGetResource() throws SAXException, IOException, InterruptedException, ExecutionException, TimeoutException {
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
+
+        TaggingPresetUtils.waitForIconsLoaded(taggingPresets.getAllPresets(), 30);
 
         final EnumSet<Options> noDefault = EnumSet.of(Options.NO_DEFAULT);
         final Dimension iconSize = new Dimension(16, 16);
@@ -71,12 +83,12 @@ class OsmPrimitiveImageProviderTest {
         final ImageIcon bankIcon = OsmPrimitiveImageProvider
                 .getResource(OsmUtils.createPrimitive("node amenity=bank"), Options.DEFAULT)
                 .getPaddedIcon(ImageProvider.ImageSizes.LARGEICON.getImageDimension());
-        assertEquals(ImageProvider.ImageSizes.LARGEICON.getVirtualWidth(), bankIcon.getIconWidth());
-        assertEquals(ImageProvider.ImageSizes.LARGEICON.getVirtualHeight(), bankIcon.getIconHeight());
+        assertEquals(ImageProvider.ImageSizes.LARGEICON.getWidth(), bankIcon.getIconWidth());
+        assertEquals(ImageProvider.ImageSizes.LARGEICON.getHeight(), bankIcon.getIconHeight());
         final ImageIcon addressIcon = OsmPrimitiveImageProvider
                 .getResource(OsmUtils.createPrimitive("node \"addr:housenumber\"=123"), Options.DEFAULT)
                 .getPaddedIcon(ImageProvider.ImageSizes.LARGEICON.getImageDimension());
-        assertEquals(ImageProvider.ImageSizes.LARGEICON.getVirtualWidth(), addressIcon.getIconWidth());
-        assertEquals(ImageProvider.ImageSizes.LARGEICON.getVirtualHeight(), addressIcon.getIconHeight());
+        assertEquals(ImageProvider.ImageSizes.LARGEICON.getWidth(), addressIcon.getIconWidth());
+        assertEquals(ImageProvider.ImageSizes.LARGEICON.getHeight(), addressIcon.getIconHeight());
     }
 }

@@ -32,7 +32,7 @@ class ValidationTaskPerformanceTest {
      */
     @RegisterExtension
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules().projection().territories().preferences();
+    public JOSMTestRules test = new JOSMTestRules().projection().territories().preferences().presets();
 
     /**
      * Setup test.

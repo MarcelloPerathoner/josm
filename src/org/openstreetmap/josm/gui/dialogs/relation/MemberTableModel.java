@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,10 +41,9 @@ import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.SortableTableModel;
 import org.openstreetmap.josm.gui.widgets.OsmPrimitivesTableModel;
@@ -69,7 +67,7 @@ implements TableModelListener, DataSelectionListener, DataSetListener, OsmPrimit
     private DefaultListSelectionModel listSelectionModel;
     private final transient CopyOnWriteArrayList<IMemberModelListener> listeners;
     private final transient OsmDataLayer layer;
-    private final transient TaggingPresetHandler presetHandler;
+    private final transient TaggedHandler taggedHandler;
 
     private final transient WayConnectionTypeCalculator wayConnectionTypeCalculator = new WayConnectionTypeCalculator();
     private final transient RelationSorter relationSorter = new RelationSorter();
@@ -78,14 +76,14 @@ implements TableModelListener, DataSelectionListener, DataSetListener, OsmPrimit
      * constructor
      * @param relation relation
      * @param layer data layer
-     * @param presetHandler tagging preset handler
+     * @param taggedHandler2 tagging preset handler
      */
-    public MemberTableModel(Relation relation, OsmDataLayer layer, TaggingPresetHandler presetHandler) {
+    public MemberTableModel(Relation relation, OsmDataLayer layer, TaggedHandler taggedHandler2) {
         this.relation = relation;
         this.members = new ArrayList<>();
         this.listeners = new CopyOnWriteArrayList<>();
         this.layer = layer;
-        this.presetHandler = presetHandler;
+        this.taggedHandler = taggedHandler2;
         addTableModelListener(this);
     }
 
@@ -430,12 +428,12 @@ implements TableModelListener, DataSelectionListener, DataSetListener, OsmPrimit
     }
 
     RelationMember getRelationMemberForPrimitive(final OsmPrimitive primitive) {
-        final Collection<TaggingPreset> presets = TaggingPresets.getMatchingPresets(
+        final Collection<TaggingPreset> presets = MainApplication.getTaggingPresets().getMatchingPresets(
                 EnumSet.of(relation != null ? TaggingPresetType.forPrimitive(relation) : TaggingPresetType.RELATION),
-                presetHandler.getSelection().iterator().next().getKeys(), false);
+                taggedHandler.get().iterator().next().getKeys(), false);
         Collection<String> potentialRoles = presets.stream()
                 .map(tp -> tp.suggestRoleForOsmPrimitive(primitive))
-                .filter(Objects::nonNull)
+                .filter(role -> !Utils.isEmpty(role))
                 .collect(Collectors.toCollection(TreeSet::new));
         // TODO: propose user to choose role among potential ones instead of picking first one
         final String role = potentialRoles.isEmpty() ? "" : potentialRoles.iterator().next();

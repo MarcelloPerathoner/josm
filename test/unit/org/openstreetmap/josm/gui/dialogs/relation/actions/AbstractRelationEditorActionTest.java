@@ -3,15 +3,14 @@ package org.openstreetmap.josm.gui.dialogs.relation.actions;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.Tag;
+import org.openstreetmap.josm.data.osm.Tagged;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.gui.dialogs.relation.GenericRelationEditorTest;
 import org.openstreetmap.josm.gui.dialogs.relation.IRelationEditor;
 import org.openstreetmap.josm.gui.dialogs.relation.MemberTable;
@@ -19,9 +18,12 @@ import org.openstreetmap.josm.gui.dialogs.relation.MemberTableModel;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTable;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTableModel;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompEvent;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompListener;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -31,7 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author Michael Zangl
  */
 @Disabled
-public abstract class AbstractRelationEditorActionTest {
+public abstract class AbstractRelationEditorActionTest implements AutoCompListener {
     /**
      * Platform for tooltips.
      */
@@ -46,18 +48,18 @@ public abstract class AbstractRelationEditorActionTest {
     private IRelationEditor editor;
     private MemberTable memberTable;
     private MemberTableModel memberTableModel;
-    private AutoCompletingTextField tfRole;
-    private TagEditorModel tagModel;
+    private AutoCompTextField<AutoCompletionItem> tfRole;
+    private TagTableModel tagModel;
 
     protected final IRelationEditorActionAccess relationEditorAccess = new IRelationEditorActionAccess() {
 
         @Override
-        public AutoCompletingTextField getTextFieldRole() {
+        public AutoCompTextField<AutoCompletionItem> getTextFieldRole() {
             return tfRole;
         }
 
         @Override
-        public TagEditorModel getTagModel() {
+        public TagTableModel getTagModel() {
             return tagModel;
         }
 
@@ -96,21 +98,29 @@ public abstract class AbstractRelationEditorActionTest {
         final Relation orig = new Relation(1);
         ds.addPrimitive(orig);
         layer = new OsmDataLayer(ds, "test", null);
-        memberTableModel = new MemberTableModel(orig, layer, new TaggingPresetHandler() {
+        memberTableModel = new MemberTableModel(orig, layer, new TaggedHandler() {
             @Override
-            public void updateTags(List<Tag> tags) {
+            public void update(String key, String newKey, String newValue) {
             }
 
             @Override
-            public Collection<OsmPrimitive> getSelection() {
-                return Collections.<OsmPrimitive>singleton(orig);
+            public Collection<Tagged> get() {
+                return Collections.<Tagged>singleton(orig);
             }
         });
         selectionTableModel = new SelectionTableModel(layer);
         selectionTable = new SelectionTable(selectionTableModel, memberTableModel);
         editor = GenericRelationEditorTest.newRelationEditor(orig, layer);
-        tfRole = new AutoCompletingTextField();
-        tagModel = new TagEditorModel();
-        memberTable = new MemberTable(layer, editor.getRelation(), memberTableModel);
+        tfRole = new AutoCompTextField<>();
+        tagModel = new TagTableModel(null);
+        memberTable = new MemberTable(layer, new AutoCompComboBox<String>(), memberTableModel);
+    }
+
+    @Override
+    public void autoCompBefore(AutoCompEvent e) {
+    }
+
+    @Override
+    public void autoCompPerformed(AutoCompEvent e) {
     }
 }

@@ -20,6 +20,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellEditor;
 
 import org.openstreetmap.josm.actions.AbstractShowHistoryAction;
 import org.openstreetmap.josm.actions.AutoScaleAction;
@@ -27,7 +28,6 @@ import org.openstreetmap.josm.actions.AutoScaleAction.AutoScaleMode;
 import org.openstreetmap.josm.actions.HistoryInfoAction;
 import org.openstreetmap.josm.actions.ZoomToAction;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -41,7 +41,6 @@ import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 import org.openstreetmap.josm.gui.widgets.OsmPrimitivesTable;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -60,16 +59,15 @@ public class MemberTable extends OsmPrimitivesTable implements IMemberModelListe
      * constructor for relation member table
      *
      * @param layer the data layer of the relation. Must not be null
-     * @param relation the relation. Can be null
+     * @param roleCellEditor the role editor combobox
      * @param model the table model
      */
-    public MemberTable(OsmDataLayer layer, Relation relation, MemberTableModel model) {
-        super(model, new MemberTableColumnModel(AutoCompletionManager.of(layer.data), relation), model.getSelectionModel());
+    public MemberTable(OsmDataLayer layer, TableCellEditor roleCellEditor, MemberTableModel model) {
+        super(model, new MemberTableColumnModel(roleCellEditor), model.getSelectionModel());
         setLayer(layer);
         model.addMemberModelListener(this);
 
-        MemberRoleCellEditor ce = (MemberRoleCellEditor) getColumnModel().getColumn(0).getCellEditor();
-        setRowHeight(ce.getEditor().getPreferredSize().height);
+        setRowHeight(roleCellEditor.getTableCellEditorComponent(this, "", false, 0, 0).getPreferredSize().height);
         setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
@@ -83,9 +81,7 @@ public class MemberTable extends OsmPrimitivesTable implements IMemberModelListe
         if (!GraphicsEnvironment.isHeadless()) {
             setTransferHandler(new MemberTransferHandler());
             setFillsViewportHeight(true); // allow drop on empty table
-            if (!GraphicsEnvironment.isHeadless()) {
-                setDragEnabled(true);
-            }
+            setDragEnabled(true);
             setDropMode(DropMode.INSERT_ROWS);
         }
     }

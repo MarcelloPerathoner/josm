@@ -3,10 +3,12 @@ package org.openstreetmap.josm.gui.dialogs.properties;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -18,20 +20,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
-import javax.swing.JComponent;
+import javax.swing.InputMap;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -40,17 +39,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.event.RowSorterListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.actions.relation.DeleteRelationsAction;
@@ -58,10 +55,8 @@ import org.openstreetmap.josm.actions.relation.DuplicateRelationAction;
 import org.openstreetmap.josm.actions.relation.EditRelationAction;
 import org.openstreetmap.josm.command.ChangeMembersCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
-import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.coor.LatLon;
-import org.openstreetmap.josm.data.osm.AbstractPrimitive;
 import org.openstreetmap.josm.data.osm.DataSelectionListener;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.DefaultNameFormatter;
@@ -70,6 +65,7 @@ import org.openstreetmap.josm.data.osm.IRelation;
 import org.openstreetmap.josm.data.osm.IRelationMember;
 import org.openstreetmap.josm.data.osm.KeyValueVisitor;
 import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmData;
 import org.openstreetmap.josm.data.osm.OsmDataManager;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -84,10 +80,11 @@ import org.openstreetmap.josm.data.osm.event.DatasetEventManager.FireMode;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchSetting;
-import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeEvent;
-import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeListener;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.CachingProperty;
+import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeEvent;
+import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeListener;
+import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.gui.ConditionalOptionPaneUtil;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -103,11 +100,14 @@ import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
+import org.openstreetmap.josm.gui.tagging.TagTable;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+import org.openstreetmap.josm.gui.tagging.ac.TagTableUtils;
+import org.openstreetmap.josm.gui.tagging.presets.PresetListPanel;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetListener;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.AbstractTag2LinkPopupListener;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 import org.openstreetmap.josm.gui.util.TableHelper;
@@ -118,9 +118,9 @@ import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.gui.widgets.PopupMenuLauncher;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.InputMapUtils;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -135,7 +135,7 @@ import org.openstreetmap.josm.tools.Utils;
  * If only one is selected, all tags of this object are selected.
  * If more than one object are selected, the sum of all tags are displayed. If the
  * different objects share the same tag, the shared value is displayed. If they have
- * different values, all of them are put in a combo box and the string "&lt;different&gt;"
+ * different values, all of them are put in a combo box and the string "{@code <different>}"
  * is displayed in italic.
  *
  * Below the list, the user can click on an add, modify and delete tag button to
@@ -146,9 +146,9 @@ import org.openstreetmap.josm.tools.Utils;
  * @author imi
  */
 public class PropertiesDialog extends ToggleDialog
-implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListener, 
+implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListener,
         DataSetListenerAdapter.Listener, TaggingPresetListener, PrimitiveHoverListener {
-    private static final BooleanProperty PROP_DISPLAY_DISCARDABLE_KEYS = new BooleanProperty("display.discardable-keys", false);
+    private final BooleanProperty PROP_DISPLAY_DISCARDABLE_KEYS = new BooleanProperty("display.discardable-keys", false);
 
     /**
      * hook for roadsigns plugin to display a small button in the upper right corner of this dialog
@@ -158,64 +158,59 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     /**
      * The tag data of selected objects.
      */
-    private final ReadOnlyTableModel tagData = new ReadOnlyTableModel();
-    private final PropertiesCellRenderer cellRenderer = new PropertiesCellRenderer();
-    private final transient TableRowSorter<ReadOnlyTableModel> tagRowSorter = new TableRowSorter<>(tagData);
     private final JosmTextField tagTableFilter;
 
-    /**
-     * The membership data of selected objects.
+    /*
+     * The tag editor table.
      */
-    private final DefaultTableModel membershipData = new ReadOnlyTableModel();
+    private final ActiveDataSetHandler taggedHandler = new ActiveDataSetHandler();
+    private final TagTableModel tagTableModel = new TagTableModel(taggedHandler);
+    private final TagTable tagTable = new TagTable(tagTableModel, 255);
+    private final TagTableUtils tagTableUtils = new TagTableUtils(tagTableModel, this::getContextKey);
 
-    /**
-     * The tags table.
-     */
-    private final JTable tagTable = new JTable(tagData);
-
-    /**
+    /*
      * The membership table.
      */
-    private final JTable membershipTable = new JTable(membershipData);
+    private final MembershipTableModel membershipTableModel = new MembershipTableModel();
+    private final JTable membershipTable = new JTable(membershipTableModel);
 
     /** JPanel containing both previous tables */
-    private final JPanel bothTables = new JPanel(new GridBagLayout());
+    private final JPanel bothTables;
 
     // Popup menus
-    private final JPopupMenu tagMenu = new JPopupMenu();
+    private final JPopupMenu tagMenu;
     private final JPopupMenu membershipMenu = new JPopupMenu();
     private final JPopupMenu blankSpaceMenu = new JPopupMenu();
 
     // Popup menu handlers
-    private final transient PopupMenuHandler tagMenuHandler = new PopupMenuHandler(tagMenu);
     private final transient PopupMenuHandler membershipMenuHandler = new PopupMenuHandler(membershipMenu);
     private final transient PopupMenuHandler blankSpaceMenuHandler = new PopupMenuHandler(blankSpaceMenu);
 
     private final List<JMenuItem> tagMenuTagInfoNatItems = new ArrayList<>();
     private final List<JMenuItem> membershipMenuTagInfoNatItems = new ArrayList<>();
 
-    private final transient Map<String, Map<String, Integer>> valueCount = new TreeMap<>();
     /**
      * This sub-object is responsible for all adding and editing of tags
      */
-    private final transient TagEditHelper editHelper = new TagEditHelper(tagTable, tagData, valueCount);
+    private final transient TagEditHelper editHelper = new TagEditHelper();
 
     private final transient DataSetListenerAdapter dataChangedAdapter = new DataSetListenerAdapter(this);
-    private final HelpAction helpTagAction = new HelpTagAction(tagTable, editHelper::getDataKey, editHelper::getDataValues);
-    private final HelpAction helpRelAction = new HelpMembershipAction(membershipTable, x -> (IRelation<?>) membershipData.getValueAt(x, 0));
+    private final HelpAction helpTagAction = new HelpTagAction(tagTable, tagTable::getKey, row -> tagTable.getValueType(row).getMap());
+    private final HelpAction helpRelAction = new HelpMembershipAction(membershipTable,
+            x -> (IRelation<?>) membershipTableModel.getValueAt(x, 0));
     private final TaginfoAction taginfoAction = new TaginfoAction(
-            tagTable, editHelper::getDataKey, editHelper::getDataValues,
-            membershipTable, x -> (IRelation<?>) membershipData.getValueAt(x, 0));
+            tagTable, tagTable::getKey, row -> tagTable.getValueType(row).getMap(),
+            membershipTable, x -> (IRelation<?>) membershipTableModel.getValueAt(x, 0));
     private final TaginfoAction tagHistoryAction = taginfoAction.toTagHistoryAction();
     private final Collection<TaginfoAction> taginfoNationalActions = new ArrayList<>();
     private transient int taginfoNationalHash;
     private final PasteValueAction pasteValueAction = new PasteValueAction();
     private final CopyValueAction copyValueAction = new CopyValueAction(
-            tagTable, editHelper::getDataKey, OsmDataManager.getInstance()::getInProgressISelection);
+            tagTable, tagTable::getKey, OsmDataManager.getInstance()::getInProgressISelection);
     private final CopyKeyValueAction copyKeyValueAction = new CopyKeyValueAction(
-            tagTable, editHelper::getDataKey, OsmDataManager.getInstance()::getInProgressISelection);
+            tagTable, tagTable::getKey, OsmDataManager.getInstance()::getInProgressISelection);
     private final CopyAllKeyValueAction copyAllKeyValueAction = new CopyAllKeyValueAction(
-            tagTable, editHelper::getDataKey, OsmDataManager.getInstance()::getInProgressISelection).registerShortcut(); /* NO-SHORTCUT */
+            tagTable, tagTable::getKey, OsmDataManager.getInstance()::getInProgressISelection).registerShortcut(); /* NO-SHORTCUT */
     private final SearchAction searchActionSame = new SearchAction(true);
     private final SearchAction searchActionAny = new SearchAction(false);
     private final AddAction addAction = new AddAction();
@@ -245,14 +240,8 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     /**
      * Text to display when nothing selected.
      */
-    private final JLabel selectSth = new JLabel("<html><p>"
+    private final JLabel selectSomething = new JLabel("<html><p>"
             + tr("Select objects for which to change tags.") + "</p></html>");
-
-    private final transient TaggingPresetHandler presetHandler = new TaggingPresetCommandHandler();
-
-    private PopupMenuLauncher popupMenuLauncher;
-
-    private static final BooleanProperty PROP_AUTORESIZE_TAGS_TABLE = new BooleanProperty("propertiesdialog.autoresizeTagsTable", false);
 
     /**
      * Show tags and relation memberships of objects in the properties dialog when hovering over them with the mouse pointer
@@ -260,13 +249,42 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      */
     public static final BooleanProperty PROP_PREVIEW_ON_HOVER = new BooleanProperty("propertiesdialog.preview-on-hover", true);
     private final HoverPreviewPropListener hoverPreviewPropListener = new HoverPreviewPropListener();
+    private IPrimitive hovered;
 
     /**
      * Always show information for selected objects when something is selected instead of the hovered object
      * @since 18574
      */
-    public static final CachingProperty<Boolean> PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION = 
+    public static final CachingProperty<Boolean> PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION =
         new BooleanProperty("propertiesdialog.preview-on-hover.always-show-selected", true).cached();
+
+    private static final BooleanProperty PROP_AUTORESIZE_TAGS_TABLE = new BooleanProperty("propertiesdialog.autoresizeTagsTable", false);
+
+    private static class ActiveDataSetHandler extends DataSetHandler {
+        private Collection<OsmPrimitive> selection;
+
+        ActiveDataSetHandler() {
+            super(null);
+        }
+
+        @Override
+        public DataSet getDataSet() {
+            return OsmDataManager.getInstance().getActiveDataSet();
+        }
+
+        public void setSelection(Collection<OsmPrimitive> selection) {
+            this.selection = selection;
+        }
+
+        /**
+         * Returns the collection of primitives to display or edit.
+         * @return the collection to display
+         */
+        @Override
+        public Collection<OsmPrimitive> get() {
+            return selection;
+        }
+    }
 
     /**
      * Create a new PropertiesDialog
@@ -276,8 +294,10 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
                 Shortcut.registerShortcut("subwindow:properties", tr("Windows: {0}", tr("Tags/Memberships")), KeyEvent.VK_P,
                         Shortcut.ALT_SHIFT), 150, true);
 
-        setupTagsMenu();
-        buildTagsTable();
+        bothTables = new JPanel(new GridBagLayout());
+        tagMenu = buildTagMenu();
+        buildTagTable();
+        tagTable.addMouseListener(new PopupMenuLauncher(tagMenu));
 
         setupMembershipMenu();
         buildMembershipTable();
@@ -292,10 +312,12 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
             double epsilon = Double.MIN_VALUE; // need to set a weight or else anchor value is ignored
             bothTables.add(pluginHook, GBC.eol().insets(0, 1, 1, 1).anchor(GBC.NORTHEAST).weight(epsilon, epsilon));
         }
-        bothTables.add(selectSth, GBC.eol().fill().insets(10, 10, 10, 10));
+        bothTables.add(selectSomething, GBC.eol().fill().insets(10, 10, 10, 10));
         bothTables.add(tagTableFilter, GBC.eol().fill(GBC.HORIZONTAL));
+
         bothTables.add(tagTable.getTableHeader(), GBC.eol().fill(GBC.HORIZONTAL));
         bothTables.add(tagTable, GBC.eol().fill(GBC.BOTH));
+
         bothTables.add(membershipTable.getTableHeader(), GBC.eol().fill(GBC.HORIZONTAL));
         bothTables.add(membershipTable, GBC.eol().fill(GBC.BOTH));
         if (presetsVisible && !top) {
@@ -318,15 +340,52 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         tagTable.addMouseListener(mouseClickWatch);
         membershipTable.addMouseListener(mouseClickWatch);
         scrollPane.addMouseListener(mouseClickWatch);
+        tagTable.setFillsViewportHeight(true);
 
-        selectSth.setPreferredSize(scrollPane.getSize());
+        selectSomething.setPreferredSize(scrollPane.getSize());
         presets.setSize(scrollPane.getSize());
 
         editHelper.loadTagsIfNeeded();
 
-        TaggingPresets.addListener(this);
-
+        MainApplication.getTaggingPresets().addTaggingPresetListener(this);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(this);
         PROP_PREVIEW_ON_HOVER.addListener(hoverPreviewPropListener);
+    }
+
+    @Override
+    public void destroy() {
+        membershipMenuHandler.setPrimitives(Collections.emptyList());
+        destroyTaginfoNationalActions();
+
+        MainApplication.getTaggingPresets().removeTaggingPresetListener(this);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener(this);
+
+        Container parent = pluginHook.getParent();
+        if (parent != null) {
+            parent.remove(pluginHook);
+        }
+
+        super.destroy();
+    }
+
+    /**
+     * Returns the tag menu
+     * <p>
+     * For plugins (eg. Mapillary) that need to add menu entries.
+     */
+    public JPopupMenu getTagMenu() {
+        return tagMenu;
+    }
+
+    public TagTable getTagTable() {
+        return tagTable;
+    }
+
+    String getContextKey() {
+        int row = tagTable.getEditingRow();
+        if (row == -1)
+            row = tagTable.getSelectedRow();
+        return tagTable.getKey(row);
     }
 
     @Override
@@ -334,45 +393,40 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         return HelpUtil.ht("/Dialog/TagsMembership");
     }
 
-    private void buildTagsTable() {
+    private void buildTagTable() {
         // setting up the tags table
         TableHelper.setFont(tagTable, getClass());
-        tagData.setColumnIdentifiers(new String[]{tr("Key"), tr("Value")});
-        tagTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        tagTable.getTableHeader().setReorderingAllowed(false);
-
-        tagTable.getColumnModel().getColumn(0).setCellRenderer(cellRenderer);
-        tagTable.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
-        tagTable.setRowSorter(tagRowSorter);
 
         final RemoveHiddenSelection removeHiddenSelection = new RemoveHiddenSelection();
         tagTable.getSelectionModel().addListSelectionListener(removeHiddenSelection);
-        tagRowSorter.addRowSorterListener(removeHiddenSelection);
-        tagRowSorter.setComparator(0, AlphanumComparator.getInstance());
-        tagRowSorter.setComparator(1, (o1, o2) -> {
-            if (o1 instanceof Map && o2 instanceof Map) {
-                final String v1 = ((Map) o1).size() == 1 ? (String) ((Map) o1).keySet().iterator().next() : tr("<different>");
-                final String v2 = ((Map) o2).size() == 1 ? (String) ((Map) o2).keySet().iterator().next() : tr("<different>");
-                return AlphanumComparator.getInstance().compare(v1, v2);
-            } else {
-                return AlphanumComparator.getInstance().compare(String.valueOf(o1), String.valueOf(o2));
-            }
-        });
+        tagTable.getRowSorter().addRowSorterListener(removeHiddenSelection);
+
+        AutoCompComboBox<AutoCompletionItem> keyEditor = tagTableUtils.getKeyEditor(null);
+        AutoCompComboBox<AutoCompletionItem> valueEditor = tagTableUtils.getValueEditor(null);
+
+        tagTable.setKeyEditor(keyEditor);
+        tagTable.setValueEditor(valueEditor);
+        tagTable.setRowHeight(keyEditor.getEditorComponent().getPreferredSize().height);
     }
 
     private void buildMembershipTable() {
-        TableHelper.setFont(membershipTable, getClass());
-        membershipData.setColumnIdentifiers(new String[]{tr("Member Of"), tr("Role"), tr("Position")});
-        membershipTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        MembershipTableCellRenderer cellRenderer = new MembershipTableCellRenderer();
 
-        TableColumnModel mod = membershipTable.getColumnModel();
-        membershipTable.getTableHeader().setReorderingAllowed(false);
-        mod.getColumn(0).setCellRenderer(new MemberOfCellRenderer());
-        mod.getColumn(1).setCellRenderer(new RoleCellRenderer());
-        mod.getColumn(2).setCellRenderer(new PositionCellRenderer());
-        mod.getColumn(2).setPreferredWidth(20);
-        mod.getColumn(1).setPreferredWidth(40);
-        mod.getColumn(0).setPreferredWidth(200);
+        TableColumnModel cm = membershipTable.getColumnModel();
+        cm.removeColumn(cm.getColumn(0));
+        cm.removeColumn(cm.getColumn(0));
+
+        cm.getColumn(0).setCellRenderer(cellRenderer);
+        cm.getColumn(1).setCellRenderer(cellRenderer);
+        cm.getColumn(2).setCellRenderer(cellRenderer);
+
+        cm.getColumn(0).setPreferredWidth(200);
+        cm.getColumn(1).setPreferredWidth(40);
+        cm.getColumn(2).setPreferredWidth(20);
+
+        TableHelper.setFont(membershipTable, getClass());
+        membershipTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        membershipTable.getTableHeader().setReorderingAllowed(true);
     }
 
     /**
@@ -439,12 +493,12 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
             }
         });
 
-        popupMenuLauncher = new PopupMenuLauncher(membershipMenu) {
+        membershipTable.addMouseListener(new PopupMenuLauncher(membershipMenu) {
             @Override
             protected int checkTableSelection(JTable table, Point p) {
                 int row = super.checkTableSelection(table, p);
                 List<IRelation<?>> rels = Arrays.stream(table.getSelectedRows())
-                        .mapToObj(i -> (IRelation<?>) table.getValueAt(i, 0))
+                        .mapToObj(i -> (IRelation<?>) table.getModel().getValueAt(i, 0))
                         .collect(Collectors.toList());
                 membershipMenuHandler.setPrimitives(rels);
                 return row;
@@ -455,7 +509,7 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
                 //update highlights
                 if (MainApplication.isDisplayingMapView()) {
                     int row = membershipTable.rowAtPoint(e.getPoint());
-                    if (row >= 0 && highlightHelper.highlightOnly((Relation) membershipTable.getValueAt(row, 0))) {
+                    if (row >= 0 && highlightHelper.highlightOnly((Relation) membershipTableModel.getValueAt(row, 0))) {
                         MainApplication.getMap().mapView.repaint();
                     }
                 }
@@ -466,14 +520,15 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
             public void mouseExited(MouseEvent me) {
                 highlightHelper.clear();
             }
-        };
-        membershipTable.addMouseListener(popupMenuLauncher);
+        });
     }
 
     /**
      * Creates the popup menu @field tagMenu and its launcher on tag table.
+     * @return the tag menu
      */
-    private void setupTagsMenu() {
+    private JPopupMenu buildTagMenu() {
+        JPopupMenu tagMenu = new JPopupMenu();
         if (Config.getPref().getBoolean("properties.menu.add_edit_delete", true)) {
             tagMenu.add(addAction);
             tagMenu.add(editAction);
@@ -498,8 +553,7 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
                 visitSelectedProperties((primitive, key, value) -> addLinks(tagMenu, key, value));
             }
         });
-
-        tagTable.addMouseListener(new PopupMenuLauncher(tagMenu));
+        return tagMenu;
     }
 
     /**
@@ -508,53 +562,59 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      * @since 8980
      */
     public void setFilter(final SearchCompiler.Match filter) {
-        this.tagRowSorter.setRowFilter(new SearchBasedRowFilter(filter));
+        tagTable.getRowSorter().setRowFilter(new SearchBasedRowFilter(filter));
     }
 
     /**
      * Assigns all needed keys like Enter and Spacebar to most important actions.
      */
     private void setupKeyboardShortcuts() {
-
         // ENTER = editAction, open "edit" dialog
-        InputMapUtils.addEnterActionWhenAncestor(tagTable, editAction);
         InputMapUtils.addEnterActionWhenAncestor(membershipTable, editAction);
 
-        // INSERT button = addAction, open "add tag" dialog
-        tagTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "onTableInsert");
-        tagTable.getActionMap().put("onTableInsert", addAction);
+        InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // CTRL+ENTER
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), "openEditDialog");
+        getActionMap().put("openEditDialog", editAction);
+
+        // CTRL+INSERT
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK), "openAddDialog");
+        getActionMap().put("openAddDialog", addAction);
+
+        // DEL button = deleteAction
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
+        getActionMap().put("delete", deleteAction);
+
+        // ESC
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
+        getActionMap().put("escape", new FocusMainWindowAction());
 
         // unassign some standard shortcuts for JTable to allow upload / download / image browsing
-        InputMapUtils.unassignCtrlShiftUpDown(tagTable, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        InputMapUtils.unassignPageUpDown(tagTable, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMapUtils.unassignCtrlShiftUpDown(tagTable, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMapUtils.unassignPageUpDown(tagTable, WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // unassign some standard shortcuts for correct copy-pasting, fix #8508
         tagTable.setTransferHandler(null);
 
-        tagTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(Shortcut.getCopyKeyStroke(), "onCopy");
+        im.put(Shortcut.getCopyKeyStroke(), "onCopy");
         tagTable.getActionMap().put("onCopy", copyKeyValueAction);
 
         // allow using enter to add tags for all look&feel configurations
         InputMapUtils.enableEnter(this.btnAdd);
 
-        // DEL button = deleteAction
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete"
-                );
-        getActionMap().put("delete", deleteAction);
-
         // F1 button = custom help action
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                HelpAction.getKeyStroke(), "onHelp");
+        im.put(HelpAction.getKeyStroke(), "onHelp");
         getActionMap().put("onHelp", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (tagTable.getSelectedRowCount() == 1) {
+                    helpTagAction.actionPerformed(e);
+                    return;
+                }
                 if (membershipTable.getSelectedRowCount() == 1) {
                     helpRelAction.actionPerformed(e);
-                } else {
-                    helpTagAction.actionPerformed(e);
+                    return;
                 }
             }
         });
@@ -576,13 +636,14 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      * @param row position
      */
     private void editMembership(int row) {
-        Relation relation = (Relation) membershipData.getValueAt(row, 0);
+        Relation relation = (Relation) membershipTableModel.getValueAt(row, 0);
+        MemberInfo info = (MemberInfo) membershipTableModel.getValueAt(row, 1);
         MainApplication.getMap().relationListDialog.selectRelation(relation);
         OsmDataLayer layer = MainApplication.getLayerManager().getActiveDataLayer();
         if (!layer.isLocked()) {
-            List<RelationMember> members = ((MemberInfo) membershipData.getValueAt(row, 1)).role.stream()
-                    .filter(RelationMember.class::isInstance)
-                    .map(RelationMember.class::cast)
+            List<RelationMember> members = info.role.stream()
+                    .filter(rm -> rm instanceof RelationMember)
+                    .map(rm -> (RelationMember) rm)
                     .collect(Collectors.toList());
             RelationEditor.getEditor(layer, relation, members).setVisible(true);
         }
@@ -637,152 +698,61 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     }
 
     @Override
-    public void destroy() {
-        membershipMenuHandler.setPrimitives(Collections.emptyList());
-        destroyTaginfoNationalActions();
-        membershipTable.removeMouseListener(popupMenuLauncher);
-        super.destroy();
-        TaggingPresets.removeListener(this);
-        PROP_PREVIEW_ON_HOVER.removeListener(hoverPreviewPropListener);
-        Container parent = pluginHook.getParent();
-        if (parent != null) {
-            parent.remove(pluginHook);
-        }
+    public void primitiveHovered(PrimitiveHoverEvent e) {
+        hovered = e.getHoveredPrimitive();
+        selectionChanged(null);
     }
 
     @Override
-    public void selectionChanged(SelectionChangeEvent event) {
-        if (!isVisible())
-            return;
+    public void selectionChanged(SelectionChangeEvent event /*ignored*/) {
         if (tagTable == null)
             return; // selection changed may be received in base class constructor before init
-        if (tagTable.getCellEditor() != null) {
-            tagTable.getCellEditor().cancelCellEditing();
-        }
-
-        // Ignore parameter as we do not want to operate always on real selection here, especially in draw mode
-        Collection<? extends IPrimitive> newSel = OsmDataManager.getInstance().getInProgressISelection();
-
-        // Temporarily disable listening to primitive mouse hover events while we have a selection as that takes priority
-        if (PROP_PREVIEW_ON_HOVER.get() && PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION.get()) {
-            if (newSel.isEmpty()) {
-                MainApplication.getMap().mapView.addPrimitiveHoverListener(this);
-            } else {
-                MainApplication.getMap().mapView.removePrimitiveHoverListener(this);
-            }
-        }
-
-        updateUi(newSel);
-    }
-
-    @Override
-    public void primitiveHovered(PrimitiveHoverEvent e) {
-        Collection<? extends IPrimitive> selection = OsmDataManager.getInstance().getInProgressISelection();
-        if (Boolean.TRUE.equals(PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION.get()) && !selection.isEmpty())
+        if (!isVisible())
             return;
 
-        if (e.getHoveredPrimitive() != null) {
-            updateUi(e.getHoveredPrimitive());
-        } else {
-            updateUi(selection);
+        // save the eventual open edit to the *old* selection
+        TagTable.SavedState state = tagTable.saveState();
+        if (tagTable.isEditing())
+            tagTable.endCellEditing(); // save edit
+
+        // Start working with the  new selection.  In draw mode this is not the same as
+        // the current selection, see comment at: {@link
+        // org.openstreetmap.josm.actions.mapmode.DrawAction#getInProgressSelection
+        // DrawAction.getInProgressSelection}
+        Collection<OsmPrimitive> newSel = OsmDataManager.getInstance().getInProgressSelection();
+
+        if (hovered != null) {
+            if (Boolean.FALSE.equals(PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION.get()) || newSel.isEmpty())
+                newSel = Collections.singleton((OsmPrimitive) hovered);
         }
-    }
 
-    private void autoresizeTagTable() {
-        if (Boolean.TRUE.equals(PROP_AUTORESIZE_TAGS_TABLE.get())) {
-            // resize table's columns to fit content
-            TableHelper.computeColumnsWidth(tagTable);
-        }
-    }
+        taggedHandler.setSelection(newSel);
+        tagTableUtils.setTypes(newSel);
 
-    private void updateUi(IPrimitive primitive) {
-        updateUi(primitive == null ? Collections.emptyList() :
-                                     Collections.singletonList(primitive));
-    }
+        //
+        // init the tag table
+        //
+        tagTableModel.initFromHandler();
+        state.restore();
 
-    private void updateUi(Collection<? extends IPrimitive> primitives) {
+        //
+        // init the membership table
+        //
+        int newSelSize = newSel.size();
         IRelation<?> selectedRelation = null;
-        String selectedTag = editHelper.getChangedKey(); // select last added or last edited key by default
-        if (selectedTag == null && tagTable.getSelectedRowCount() == 1) {
-            selectedTag = editHelper.getDataKey(tagTable.getSelectedRow());
-        }
         if (membershipTable.getSelectedRowCount() == 1) {
-            selectedRelation = (IRelation<?>) membershipData.getValueAt(membershipTable.getSelectedRow(), 0);
+            selectedRelation = (IRelation<?>) membershipTableModel.getValueAt(membershipTable.getSelectedRow(), 0);
         }
 
-        updateTagTableData(primitives);
-        updateMembershipTableData(primitives);
+        final Map<IRelation<?>, MemberInfo> roles = new HashMap<>();
+        membershipTableModel.setRowCount(0);
 
-        updateMembershipTableVisibility();
-        updateActionsEnabledState();
-        updateTagTableVisibility(primitives);
-
-        setupTaginfoNationalActions(primitives);
-        autoresizeTagTable();
-
-        int selectedIndex;
-        if (selectedTag != null && (selectedIndex = findViewRow(tagTable, tagData, selectedTag)) != -1) {
-            tagTable.changeSelection(selectedIndex, 0, false, false);
-        } else if (selectedRelation != null && (selectedIndex = findViewRow(membershipTable, membershipData, selectedRelation)) != -1) {
-            membershipTable.changeSelection(selectedIndex, 0, false, false);
-        } else if (tagData.getRowCount() > 0) {
-            tagTable.changeSelection(0, 0, false, false);
-        } else if (membershipData.getRowCount() > 0) {
-            membershipTable.changeSelection(0, 0, false, false);
-        }
-
-        updateTitle(primitives);
-    }
-
-    private void updateTagTableData(Collection<? extends IPrimitive> primitives) {
-        int newSelSize = primitives.size();
-
-        // re-load tag data
-        tagData.setRowCount(0);
-
-        final boolean displayDiscardableKeys = PROP_DISPLAY_DISCARDABLE_KEYS.get();
-        final Map<String, Integer> keyCount = new HashMap<>();
-        final Map<String, String> tags = new HashMap<>();
-        valueCount.clear();
-        Set<TaggingPresetType> types = EnumSet.noneOf(TaggingPresetType.class);
-        for (IPrimitive osm : primitives) {
-            types.add(TaggingPresetType.forPrimitive(osm));
-            osm.visitKeys((p, key, value) -> {
-                if (displayDiscardableKeys || !AbstractPrimitive.getDiscardableKeys().contains(key)) {
-                    keyCount.put(key, keyCount.containsKey(key) ? keyCount.get(key) + 1 : 1);
-                    if (valueCount.containsKey(key)) {
-                        Map<String, Integer> v = valueCount.get(key);
-                        v.put(value, v.containsKey(value) ? v.get(value) + 1 : 1);
-                    } else {
-                        Map<String, Integer> v = new TreeMap<>();
-                        v.put(value, 1);
-                        valueCount.put(key, v);
-                    }
-                }
-            });
-        }
-        for (Entry<String, Map<String, Integer>> e : valueCount.entrySet()) {
-            int count = e.getValue().values().stream().mapToInt(i -> i).sum();
-            if (count < newSelSize) {
-                e.getValue().put("", newSelSize - count);
-            }
-            tagData.addRow(new Object[]{e.getKey(), e.getValue()});
-            tags.put(e.getKey(), e.getValue().size() == 1
-                    ? e.getValue().keySet().iterator().next() : tr("<different>"));
-        }
-
-        presets.updatePresets(types, tags, presetHandler);
-    }
-
-    private void updateMembershipTableData(Collection<? extends IPrimitive> primitives) {
-        membershipData.setRowCount(0);
-
-        Map<IRelation<?>, MemberInfo> roles = new HashMap<>();
-        for (IPrimitive primitive : primitives) {
-            for (IPrimitive ref : primitive.getReferrers(true)) {
+        final Collection<OsmPrimitive> effectivelyFinalNewSel = newSel;
+        for (IPrimitive primitive: newSel) {
+            for (IPrimitive ref: primitive.getReferrers(true)) {
                 if (ref instanceof IRelation && !ref.isIncomplete() && !ref.isDeleted()) {
                     IRelation<?> r = (IRelation<?>) ref;
-                    MemberInfo mi = roles.computeIfAbsent(r, ignore -> new MemberInfo(primitives));
+                    MemberInfo mi = roles.computeIfAbsent(r, ignore -> new MemberInfo(effectivelyFinalNewSel));
                     int i = 1;
                     for (IRelationMember<?> m : r.getMembers()) {
                         if (m.getMember() == primitive) {
@@ -801,44 +771,148 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         });
 
         for (IRelation<?> r: sortedRelations) {
-            membershipData.addRow(new Object[]{r, roles.get(r)});
+            membershipTableModel.addRow(new Object[]{r, roles.get(r)});
         }
-    }
+        TableHelper.setRowHeights(membershipTable);
+        membershipTable.getTableHeader().setVisible(membershipTableModel.getRowCount() > 0);
+        membershipTable.setVisible(membershipTableModel.getRowCount() > 0);
 
-    private void updateMembershipTableVisibility() {
-        membershipTable.getTableHeader().setVisible(membershipData.getRowCount() > 0);
-        membershipTable.setVisible(membershipData.getRowCount() > 0);
-    }
+        //
+        // init the preset list
+        //
+        presets.updatePresets(tagTableUtils.getTypes(), tagTableModel.getTags(),
+            taggedHandler, tagTableUtils.getManager());
 
-    private void updateTagTableVisibility(Collection<? extends IPrimitive> primitives) {
-        boolean hasSelection = !primitives.isEmpty();
-        boolean hasTags = hasSelection && tagData.getRowCount() > 0;
+        //
+        // other stuff
+        //
+        OsmData<?, ?, ?, ?> ds = MainApplication.getLayerManager().getActiveData();
+        int tags = tagTableModel.getRowCount() - 1;
+        boolean isReadOnly = ds != null && ds.isLocked();
+        boolean hasSelection = !newSel.isEmpty();
+        boolean hasTags = hasSelection && tags > 0;
+        boolean hasMemberships = hasSelection && membershipTableModel.getRowCount() > 0;
 
-        tagTable.setVisible(hasTags);
+        addAction.setEnabled(!isReadOnly && hasSelection);
+        editAction.setEnabled(!isReadOnly && (hasTags || hasMemberships));
+        deleteAction.setEnabled(!isReadOnly && (hasTags || hasMemberships));
+        tagTable.setVisible(hasSelection);
         tagTable.getTableHeader().setVisible(hasTags);
         tagTableFilter.setVisible(hasTags);
-        selectSth.setVisible(!hasSelection);
+        selectSomething.setVisible(!hasSelection);
         pluginHook.setVisible(hasSelection);
-    }
 
-    private void updateActionsEnabledState() {
-        addAction.updateEnabledState();
-        editAction.updateEnabledState();
-        deleteAction.updateEnabledState();
-    }
+        setupTaginfoNationalActions(newSel);
+        autoresizeTagTable();
 
-    private void updateTitle(Collection<? extends IPrimitive> primitives) {
-        int newSelSize = primitives.size();
-        if (tagData.getRowCount() != 0 || membershipData.getRowCount() != 0) {
+        int selectedIndex;
+        if (selectedRelation != null && (selectedIndex = findViewRow(membershipTable, membershipTableModel, selectedRelation)) != -1) {
+            membershipTable.changeSelection(selectedIndex, 0, false, false);
+        } else if (hasMemberships) {
+            membershipTable.changeSelection(0, 0, false, false);
+        }
+
+        if (tags != 0 || membershipTableModel.getRowCount() != 0) {
             if (newSelSize > 1) {
                 setTitle(tr("Objects: {2} / Tags: {0} / Memberships: {1}",
-                    tagData.getRowCount(), membershipData.getRowCount(), newSelSize));
+                    tags, membershipTableModel.getRowCount(), newSelSize));
             } else {
                 setTitle(tr("Tags: {0} / Memberships: {1}",
-                    tagData.getRowCount(), membershipData.getRowCount()));
+                    tags, membershipTableModel.getRowCount()));
             }
         } else {
             setTitle(tr("Tags/Memberships"));
+        }
+    }
+
+    private void autoresizeTagTable() {
+        if (PROP_AUTORESIZE_TAGS_TABLE.get()) {
+            // resize table's columns to fit content
+            TableHelper.computeColumnsWidth(tagTable);
+        }
+    }
+
+    /**
+     * Returns true if the focus owner is the container or any one of its children
+     * @param container the container
+     * @return true if focus in inside container
+     */
+    private static boolean isFocusIn(Component container) {
+        Component f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        while (f != null) {
+            if (f == container)
+                return true;
+            f = f.getParent();
+        }
+        return false;
+    }
+
+    /**
+     * Function that prevents keystrokes intended for text-editing from also triggering global
+     * shortcuts.
+     * <p>
+     * When the panel is docked, there is no JFrame between the table and the main window, so all
+     * keystrokes used for editing went further up and triggered global shortcuts.  This function
+     * keeps all keys without modifier or with 'shift' modifier only local.
+     * <p>
+     * A downside of this approach is that, if the tag table or any other child of this panel has
+     * focus, the global shortcuts do not work.  We must thus take pains to not keep focus in this
+     * panel longer that strictly necessary.
+     * <p>
+     * See also: #8710
+     */
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        if (super.processKeyBinding(ks, e, condition, pressed))
+            return true; // we actually processed it
+        // Logging.info("processKeyBindings: {0}", e.paramString());
+
+        // if tagtable is editing ...
+
+        int modifiers = e.getModifiersEx(); // *_DOWN_MASK modifiers
+        if (modifiers == 0 || modifiers == KeyEvent.SHIFT_DOWN_MASK)
+            return true; // lie about having processed it, so the components further up won't get it
+        return false;
+    }
+
+    /* ---------------------------------------------------------------------------------- */
+    /* PropertyChangedListener                                                            */
+    /* ---------------------------------------------------------------------------------- */
+
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+        if (Layer.VISIBLE_PROP.equals(e.getPropertyName())) {
+            boolean isVisible = (boolean) e.getNewValue();
+
+            // Disable hover preview when primitives are invisible
+            if (isVisible && Boolean.TRUE.equals(PROP_PREVIEW_ON_HOVER.get())) {
+                MainApplication.getMap().mapView.addPrimitiveHoverListener(this);
+            } else {
+                MainApplication.getMap().mapView.removePrimitiveHoverListener(this);
+            }
+        }
+
+        if (!"focusOwner".equals(e.getPropertyName()))
+            return;
+
+        Color background = UIManager.getColor("Table.background");
+        Color focusedBg = new Color(255, 255, 208);
+
+        if (isFocusIn(tagTable)) {
+            membershipTable.clearSelection();
+            tagTable.setBackground(focusedBg);
+        } else {
+            tagTable.setBackground(background);
+        }
+        if (isFocusIn(membershipTable)) {
+            tagTable.clearSelection();
+            membershipTable.setBackground(focusedBg);
+        } else {
+            membershipTable.setBackground(background);
+        }
+        if (isFocusIn(MainApplication.getMap().mapView)) {
+            tagTable.clearSelection();
+            membershipTable.clearSelection();
         }
     }
 
@@ -852,8 +926,10 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     @Override
     public void preferenceChanged(PreferenceChangeEvent e) {
         super.preferenceChanged(e);
-        if (PROP_DISPLAY_DISCARDABLE_KEYS.getKey().equals(e.getKey()) && MainApplication.getLayerManager().getActiveData() != null) {
-            updateSelection();
+        if (PROP_DISPLAY_DISCARDABLE_KEYS.getKey().equals(e.getKey())) {
+            if (MainApplication.getLayerManager().getActiveData() != null) {
+                updateSelection();
+            }
         }
     }
 
@@ -878,19 +954,12 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
         if (e.getSource().getEditLayer() == null) {
             editHelper.saveTagsIfNeeded();
-            editHelper.resetSelection();
-        }
-        // it is time to save history of tags
-        updateSelection();
-
-        // Listen for active layer visibility change to enable/disable hover preview
-        // Remove previous listener first (order matters if we are somehow getting a layer change event 
-        // switching from one layer to the same layer)
-        Layer prevLayer = e.getPreviousDataLayer();
-        if (prevLayer != null) {
-            prevLayer.removePropertyChangeListener(this);
         }
 
+        DataSet dataSet = e.getSource().getActiveDataSet();
+        if (dataSet != null) {
+            tagTableUtils.setManager(AutoCompletionManager.of(dataSet));
+        }
         Layer newLayer = e.getSource().getActiveDataLayer();
         if (newLayer != null) {
             newLayer.addPropertyChangeListener(this);
@@ -900,33 +969,14 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
                 MainApplication.getMap().mapView.removePrimitiveHoverListener(this);
             }
         }
-    }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        if (Layer.VISIBLE_PROP.equals(e.getPropertyName())) {
-            boolean isVisible = (boolean) e.getNewValue();
-
-            // Disable hover preview when primitives are invisible
-            if (isVisible && Boolean.TRUE.equals(PROP_PREVIEW_ON_HOVER.get())) {
-                MainApplication.getMap().mapView.addPrimitiveHoverListener(this);
-            } else {
-                MainApplication.getMap().mapView.removePrimitiveHoverListener(this);
-            }
-        }
+        // it is time to save history of tags
+        updateSelection();
     }
 
     @Override
     public void processDatasetEvent(AbstractDatasetChangedEvent event) {
         updateSelection();
-    }
-
-    /**
-     * Replies the tag popup menu handler.
-     * @return The tag popup menu handler
-     */
-    public PopupMenuHandler getPropertyPopupMenuHandler() {
-        return tagMenuHandler;
     }
 
     /**
@@ -947,9 +997,9 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      */
     public Tags getSelectedProperties() {
         int row = tagTable.getSelectedRow();
-        if (row == -1) return null;
-        Map<String, Integer> map = editHelper.getDataValues(row);
-        return new Tags(editHelper.getDataKey(row), map.keySet());
+        if (row == -1)
+            return null;
+        return new Tags(tagTable.getKey(row), tagTable.getValueType(row).values());
     }
 
     /**
@@ -959,9 +1009,8 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      */
     public void visitSelectedProperties(KeyValueVisitor visitor) {
         for (int row : tagTable.getSelectedRows()) {
-            final String key = editHelper.getDataKey(row);
-            Set<String> values = editHelper.getDataValues(row).keySet();
-            values.forEach(value -> visitor.visitKeyValue(null, key, value));
+            final String key = tagTable.getKey(row);
+            tagTable.getValueType(row).values().forEach(value -> visitor.visitKeyValue(null, key, value));
         }
     }
 
@@ -979,7 +1028,7 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      */
     public IRelation<?> getSelectedMembershipRelation() {
         int row = membershipTable.getSelectedRow();
-        return row > -1 ? (IRelation<?>) membershipData.getValueAt(row, 0) : null;
+        return row > -1 ? (IRelation<?>) membershipTableModel.getValueAt(row, 0) : null;
     }
 
     /**
@@ -989,86 +1038,39 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
      */
     public Collection<IRelation<?>> getSelectedMembershipRelations() {
         return Arrays.stream(membershipTable.getSelectedRows())
-                .mapToObj(row -> (IRelation<?>) membershipData.getValueAt(row, 0))
+                .mapToObj(row -> (IRelation<?>) membershipTableModel.getValueAt(row, 0))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Adds a custom table cell renderer to render cells of the tags table.
+     * Table cell renderer
      *
-     * If the renderer is not capable performing a {@link TableCellRenderer#getTableCellRendererComponent},
-     * it should return {@code null} to fall back to the
-     * {@link PropertiesCellRenderer#getTableCellRendererComponent default implementation}.
-     * @param renderer the renderer to add
-     * @since 9149
+     * Displays an icon for the relation type.
+     * Uses italics if the relation is disabled.
      */
-    public void addCustomPropertiesCellRenderer(TableCellRenderer renderer) {
-        cellRenderer.addCustomRenderer(renderer);
-    }
+    static final class MembershipTableCellRenderer extends DefaultTableCellRenderer {
+        private boolean disabled;
 
-    /**
-     * Removes a custom table cell renderer.
-     * @param renderer the renderer to remove
-     * @since 9149
-     */
-    public void removeCustomPropertiesCellRenderer(TableCellRenderer renderer) {
-        cellRenderer.removeCustomRenderer(renderer);
-    }
-
-    static final class MemberOfCellRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-            if (value == null)
-                return this;
             if (c instanceof JLabel) {
                 JLabel label = (JLabel) c;
-                IRelation<?> r = (IRelation<?>) value;
-                label.setText(r.getDisplayName(DefaultNameFormatter.getInstance()));
-                if (r.isDisabledAndHidden()) {
-                    label.setFont(label.getFont().deriveFont(Font.ITALIC));
-                }
-            }
-            return c;
-        }
-    }
 
-    static final class RoleCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            if (value == null)
-                return this;
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-            boolean isDisabledAndHidden = ((IRelation<?>) table.getValueAt(row, 0)).isDisabledAndHidden();
-            if (c instanceof JLabel) {
-                JLabel label = (JLabel) c;
-                label.setText(((MemberInfo) value).getRoleString());
-                if (isDisabledAndHidden) {
-                    label.setFont(label.getFont().deriveFont(Font.ITALIC));
+                // add icon to relations
+                if (value instanceof Relation) {
+                    Relation relation = (Relation) value;
+                    label.setText(relation.getDisplayName(DefaultNameFormatter.getInstance()));
+                    label.setIcon(ImageProvider.getPadded((OsmPrimitive) value, ImageSizes.SMALLICON));
+                    label.setIconTextGap(8);
+                    // this will disable the whole table row
+                    disabled = relation.isDisabledAndHidden();
+                } else {
+                    label.setText((String) value);
+                    label.setIcon(null);
                 }
-            }
-            return c;
-        }
-    }
-
-    static final class PositionCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-            IRelation<?> relation = (IRelation<?>) table.getValueAt(row, 0);
-            boolean isDisabledAndHidden = relation != null && relation.isDisabledAndHidden();
-            if (c instanceof JLabel) {
-                JLabel label = (JLabel) c;
-                MemberInfo member = (MemberInfo) table.getValueAt(row, 1);
-                if (member != null) {
-                    label.setText(member.getPositionString());
-                }
-                if (isDisabledAndHidden) {
-                    label.setFont(label.getFont().deriveFont(Font.ITALIC));
-                }
+                label.setFont(label.getFont().deriveFont(disabled ? Font.ITALIC : Font.PLAIN));
             }
             return c;
         }
@@ -1088,21 +1090,6 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         }
     }
 
-    static final class TaggingPresetCommandHandler implements TaggingPresetHandler {
-        @Override
-        public void updateTags(List<Tag> tags) {
-            Command command = TaggingPreset.createCommand(getSelection(), tags);
-            if (command != null) {
-                UndoRedoHandler.getInstance().add(command);
-            }
-        }
-
-        @Override
-        public Collection<OsmPrimitive> getSelection() {
-            return OsmDataManager.getInstance().getInProgressSelection();
-        }
-    }
-
     /**
      * Class that watches for mouse clicks
      * @author imi
@@ -1110,46 +1097,37 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     public class MouseClickWatch extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() < 2) {
-                // single click, clear selection in other table not clicked in
-                if (e.getSource() == tagTable) {
-                    membershipTable.clearSelection();
-                } else if (e.getSource() == membershipTable) {
-                    tagTable.clearSelection();
-                }
-            } else if (e.getSource() == tagTable) {
-                // double click, edit or add tag
-                int row = tagTable.rowAtPoint(e.getPoint());
-                if (row > -1) {
-                    boolean focusOnKey = tagTable.columnAtPoint(e.getPoint()) == 0;
-                    editHelper.editTag(row, focusOnKey);
+            if (e.getClickCount() < 2)
+                return;
+            if (e.getSource() == membershipTable) {
+                int row = membershipTable.convertRowIndexToModel(membershipTable.rowAtPoint(e.getPoint()));
+                int col = membershipTable.convertColumnIndexToModel(membershipTable.columnAtPoint(e.getPoint()));
+                if (row < 0)
+                    return;
+                if (col == 3) {
+                    final Relation relation = (Relation) membershipTableModel.getValueAt(row, 0);
+                    final MemberInfo info = (MemberInfo) membershipTableModel.getValueAt(row, 1);
+                    RelationRoleEditor.editRole(relation, info);
                 } else {
-                    editHelper.addTag();
-                    btnAdd.requestFocusInWindow();
-                }
-            } else if (e.getSource() == membershipTable) {
-                int row = membershipTable.rowAtPoint(e.getPoint());
-                int col = membershipTable.columnAtPoint(e.getPoint());
-                if (row > -1 && col == 1) {
-                    final Relation relation = (Relation) membershipData.getValueAt(row, 0);
-                    final MemberInfo memberInfo = (MemberInfo) membershipData.getValueAt(row, 1);
-                    RelationRoleEditor.editRole(relation, memberInfo);
-                } else if (row > -1) {
                     editMembership(row);
                 }
             } else {
-                editHelper.addTag();
-                btnAdd.requestFocusInWindow();
+                // double-click in the empty area of tag table
+                // (on the rows it is consumed by the combo box)
+                editHelper.addTag(tagTableModel);
             }
         }
+    }
 
+    /**
+     * Requests focus in main window in order to enable the expected keyboard shortcuts (see #8710).
+     */
+    static class FocusMainWindowAction extends AbstractAction {
         @Override
-        public void mousePressed(MouseEvent e) {
-            if (e.getSource() == tagTable) {
-                membershipTable.clearSelection();
-            } else if (e.getSource() == membershipTable) {
-                tagTable.clearSelection();
-            }
+        public void actionPerformed(ActionEvent ae) {
+            // tagTable.clearSelection();
+            // membershipTable.clearSelection();
+            MainApplication.getMap().mapView.requestFocus();
         }
     }
 
@@ -1213,21 +1191,6 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
     }
 
     /**
-     * Class that allows fast creation of read-only table model with String columns
-     */
-    public static class ReadOnlyTableModel extends DefaultTableModel {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
-    }
-
-    /**
      * Action handling delete button press in properties dialog.
      */
     class DeleteAction extends JosmAction implements ListSelectionListener {
@@ -1241,49 +1204,13 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
             updateEnabledState();
         }
 
-        protected void deleteTags(int... rows) {
-            // convert list of rows to HashMap (and find gap for nextKey)
-            Map<String, String> tags = new HashMap<>(Utils.hashMapInitialCapacity(rows.length));
-            int nextKeyIndex = rows[0];
-            for (int row : rows) {
-                String key = editHelper.getDataKey(row);
-                if (row == nextKeyIndex + 1) {
-                    nextKeyIndex = row; // no gap yet
-                }
-                tags.put(key, null);
-            }
-
-            // find key to select after deleting other tags
-            String nextKey = null;
-            int rowCount = tagData.getRowCount();
-            if (rowCount > rows.length) {
-                if (nextKeyIndex == rows[rows.length-1]) {
-                    // no gap found, pick next or previous key in list
-                    nextKeyIndex = nextKeyIndex + 1 < rowCount ? nextKeyIndex + 1 : rows[0] - 1;
-                } else {
-                    // gap found
-                    nextKeyIndex++;
-                }
-                // We use unfiltered indexes here. So don't use getDataKey()
-                nextKey = (String) tagData.getValueAt(nextKeyIndex, 0);
-            }
-
-            Collection<OsmPrimitive> sel = OsmDataManager.getInstance().getInProgressSelection();
-            UndoRedoHandler.getInstance().add(new ChangePropertyCommand(sel, tags));
-
-            membershipTable.clearSelection();
-            if (nextKey != null) {
-                tagTable.changeSelection(findViewRow(tagTable, tagData, nextKey), 0, false, false);
-            }
-        }
-
         protected void deleteFromRelation(int row) {
-            Relation cur = (Relation) membershipData.getValueAt(row, 0);
+            Relation cur = (Relation) membershipTableModel.getValueAt(row, 0);
 
             Relation nextRelation = null;
             int rowCount = membershipTable.getRowCount();
             if (rowCount > 1) {
-                nextRelation = (Relation) membershipData.getValueAt(row + 1 < rowCount ? row + 1 : row - 1, 0);
+                nextRelation = (Relation) membershipTableModel.getValueAt(row + 1 < rowCount ? row + 1 : row - 1, 0);
             }
 
             ExtendedDialog ed = new ExtendedDialog(MainApplication.getMainFrame(),
@@ -1304,15 +1231,14 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
 
             tagTable.clearSelection();
             if (nextRelation != null) {
-                membershipTable.changeSelection(findViewRow(membershipTable, membershipData, nextRelation), 0, false, false);
+                membershipTable.changeSelection(findViewRow(membershipTable, membershipTableModel, nextRelation), 0, false, false);
             }
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if (tagTable.getSelectedRowCount() > 0) {
-                int[] rows = tagTable.getSelectedRows();
-                deleteTags(rows);
+                tagTable.getActionMap().get("delete").actionPerformed(e);
             } else if (membershipTable.getSelectedRowCount() > 0) {
                 ConditionalOptionPaneUtil.startBulkOperation(DELETE_FROM_RELATION_PREF);
                 int[] rows = membershipTable.getSelectedRows();
@@ -1356,18 +1282,11 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
                 return;
             }
             try {
-                editHelper.addTag();
-                btnAdd.requestFocusInWindow();
+                editHelper.addTag(tagTableModel);
+                // btnAdd.requestFocusInWindow();
             } finally {
                 isPerforming.set(false);
             }
-        }
-
-        @Override
-        protected final void updateEnabledState() {
-            DataSet ds = OsmDataManager.getInstance().getActiveDataSet();
-            setEnabled(ds != null && !ds.isLocked() &&
-                    !Utils.isEmpty(OsmDataManager.getInstance().getInProgressSelection()));
         }
     }
 
@@ -1391,7 +1310,12 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
             try {
                 if (tagTable.getSelectedRowCount() == 1) {
                     int row = tagTable.getSelectedRow();
-                    editHelper.editTag(row, false);
+                    String key = tagTable.getKey(row);
+                    if (key.isEmpty()) {
+                        editHelper.addTag(tagTableModel);
+                    } else {
+                        editHelper.editTag(tagTableModel, key, false);
+                    }
                 } else if (membershipTable.getSelectedRowCount() == 1) {
                     int row = membershipTable.getSelectedRow();
                     editMembership(row);
@@ -1427,8 +1351,8 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         public void actionPerformed(ActionEvent ae) {
             if (tagTable.getSelectedRowCount() != 1)
                 return;
-            String key = editHelper.getDataKey(tagTable.getSelectedRow());
-            Collection<OsmPrimitive> sel = OsmDataManager.getInstance().getInProgressSelection();
+            String key = tagTable.getKey(tagTable.getSelectedRow());
+            Collection<? extends OsmPrimitive> sel = taggedHandler.get();
             String clipboard = ClipboardUtils.getClipboardStringContent();
             if (sel.isEmpty() || clipboard == null || sel.iterator().next().getDataSet().isLocked())
                 return;
@@ -1456,7 +1380,7 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
         public void actionPerformed(ActionEvent e) {
             if (tagTable.getSelectedRowCount() != 1)
                 return;
-            String key = editHelper.getDataKey(tagTable.getSelectedRow());
+            String key = tagTable.getKey(tagTable.getSelectedRow());
             Collection<? extends IPrimitive> sel = OsmDataManager.getInstance().getInProgressISelection();
             if (sel.isEmpty())
                 return;
@@ -1504,7 +1428,7 @@ implements DataSelectionListener, ActiveLayerChangeListener, PropertyChangeListe
 
         void removeHiddenSelection() {
             try {
-                tagRowSorter.convertRowIndexToModel(tagTable.getSelectedRow());
+                tagTable.getRowSorter().convertRowIndexToModel(tagTable.getSelectedRow());
             } catch (IndexOutOfBoundsException ignore) {
                 Logging.trace(ignore);
                 Logging.trace("Clearing tagTable selection");

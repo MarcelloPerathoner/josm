@@ -13,7 +13,9 @@ import org.openstreetmap.josm.spi.preferences.Config;
  * of sizes wont work for all users alike.
  * @since 12682 (moved from {@code gui.util} package)
  * @since 10358
+ * @deprecated Java9 is HiDPI aware. See also: {@link ImageProvider.ImageSizes#adj}
  */
+@Deprecated
 public final class GuiSizesHelper {
 
     private GuiSizesHelper() {

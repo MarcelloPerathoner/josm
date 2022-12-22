@@ -3,17 +3,20 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 
 import org.openstreetmap.josm.actions.PreferencesAction;
 import org.openstreetmap.josm.data.osm.IPrimitive;
@@ -22,111 +25,99 @@ import org.openstreetmap.josm.data.preferences.IntegerProperty;
 import org.openstreetmap.josm.data.preferences.ListProperty;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainMenu;
-import org.openstreetmap.josm.gui.MenuScroller;
 import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.preferences.map.TaggingPresetPreference;
-import org.openstreetmap.josm.gui.tagging.presets.items.CheckGroup;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles.Role;
-import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.MultiMap;
-import org.openstreetmap.josm.tools.SubclassFilteredCollection;
 
 /**
  * Class holding Tagging Presets and allowing to manage them.
- * @since 7100
+ * <p>
+ * TaggingPresets used to be a global static class, but that caused troubles with unit
+ * testing, especially:
+ * <p>
+ * While unit testing {@code JOSMTestRules} clears all layers from the Layer Manager
+ * before and after <i>every</i> test it runs.  Tests execute in parallel so the
+ * layerChangeListeners that TaggingPresets has registered in one test run will just go
+ * "poof" at random moments, and when TaggingPresets later attempts to unregister them
+ * it gets the infamous: "Attempted to remove listener that was not in list" message
+ * followed by a stack trace. Many tests load defaultpresets.xml, with ~873 items in it,
+ * so we get 873 stack traces in the output, which takes JUint forever to process.
+ * <p>
+ * Plugin authors should use {@code MainApplication.getTaggingPresets()} instead of
+ * {@code TaggingPresets}.
+ *
+ * @since xxx (non-static)
  */
 public final class TaggingPresets {
-
-    /** The collection of tagging presets */
-    private static final Collection<TaggingPreset> taggingPresets = new ArrayList<>();
-
-    /** cache for key/value pairs found in the preset */
-    private static final MultiMap<String, String> PRESET_TAG_CACHE = new MultiMap<>();
-    /** cache for roles found in the preset */
-    private static final Set<String> PRESET_ROLE_CACHE = new HashSet<>();
-
-    /** The collection of listeners */
-    private static final Collection<TaggingPresetListener> listeners = new ArrayList<>();
     /**
-     * Sort presets menu alphabetically
+     * Defines whether the validator should be active in the preset dialog
+     * @see TaggingPresetValidator
      */
-    public static final BooleanProperty SORT_MENU = new BooleanProperty("taggingpreset.sortvalues", true);
-    /**
-     * Custom icon sources
-     */
+    public static final BooleanProperty USE_VALIDATOR = new BooleanProperty("taggingpreset.validator", false);
+    /** Sort preset values alphabetically in combos and menus */
+    public static final BooleanProperty SORT_VALUES = new BooleanProperty("taggingpreset.sortvalues", true);
+    /** No. of items a menu must have before using a scroller  */
+    public static final IntegerProperty MIN_ELEMENTS_FOR_SCROLLER = new IntegerProperty("taggingpreset.min-elements-for-scroller", 15);
+    /** Custom icon sources */
     public static final ListProperty ICON_SOURCES = new ListProperty("taggingpreset.icon.sources", null);
-    private static final IntegerProperty MIN_ELEMENTS_FOR_SCROLLER = new IntegerProperty("taggingpreset.min-elements-for-scroller", 15);
 
-    private TaggingPresets() {
-        // Hide constructor for utility classes
+    /** The root elements of all XML files. */
+    private final Collection<Root> rootElements = new LinkedList<>();
+    /** The registered listeners */
+    private final Collection<TaggingPresetListener> listeners = new LinkedList<>();
+    /** caches all presets fullname->preset */
+    private final Map<String, TaggingPreset> PRESET_CACHE = new LinkedHashMap<>();
+    /** caches all presets with nametemplates fullname->preset */
+    private final Map<String, TaggingPreset> PRESET_WITH_NAMETEMPLATE_CACHE = new LinkedHashMap<>();
+    /** caches the tags in all presets key -> values */
+    private final MultiMap<String, String> PRESET_TAG_CACHE = new MultiMap<>();
+    /** caches the roles in all presets key -> role */
+    private final Set<Role> PRESET_ROLE_CACHE = new HashSet<>();
+
+    /**
+     * Returns all tagging presets. Only for plugin compatibility.
+     * @return all tagging presets
+     * @deprecated use {@code MainApplication.getTaggingPresets().getAllPresets();}
+     */
+    @Deprecated
+    public static Collection<TaggingPreset> getTaggingPresets() {
+        return MainApplication.getTaggingPresets().getAllPresets();
     }
 
     /**
-     * Initializes tagging presets from preferences.
+     * Adds a tagging preset listener. Only for plugin compatibility.
+     * @param listener The listener to add
+     * @deprecated use {@code MainApplication.getTaggingPresets().addTaggingPresetListener(listener);}
      */
-    public static void readFromPreferences() {
-        taggingPresets.clear();
-        taggingPresets.addAll(TaggingPresetReader.readFromPreferences(false, false));
-        cachePresets(taggingPresets);
+    @Deprecated
+    public static void addListener(TaggingPresetListener listener) {
+        MainApplication.getTaggingPresets().addTaggingPresetListener(listener);
     }
 
     /**
-     * Initialize the tagging presets (load and may display error)
+     * Removes a tagging preset listener. Only for plugin compatibility.
+     * @param listener The listener to remove
+     * @deprecated use {@code MainApplication.getTaggingPresets().removeTaggingPresetListener(listener);}
      */
-    public static void initialize() {
-        MainMenu mainMenu = MainApplication.getMenu();
-        JMenu presetsMenu = mainMenu.presetsMenu;
-        if (presetsMenu.getComponentCount() == 0) {
-            MainMenu.add(presetsMenu, mainMenu.presetSearchAction);
-            MainMenu.add(presetsMenu, mainMenu.presetSearchPrimitiveAction);
-            MainMenu.add(presetsMenu, PreferencesAction.forPreferenceTab(tr("Preset preferences..."),
-                    tr("Click to open the tagging presets tab in the preferences"), TaggingPresetPreference.class));
-            presetsMenu.addSeparator();
-        }
+    @Deprecated
+    public static void removeListener(TaggingPresetListener listener) {
+        MainApplication.getTaggingPresets().removeTaggingPresetListener(listener);
+    }
 
-        readFromPreferences();
-        for (TaggingPreset tp: taggingPresets) {
-            if (!(tp instanceof TaggingPresetSeparator)) {
-                MainApplication.getToolbar().register(tp);
-                MainApplication.getLayerManager().addActiveLayerChangeListener(tp);
-            }
-        }
-        if (taggingPresets.isEmpty()) {
-            presetsMenu.setVisible(false);
-        } else {
-            Map<TaggingPresetMenu, JMenu> submenus = new HashMap<>();
-            for (final TaggingPreset p : taggingPresets) {
-                JMenu m = p.group != null ? submenus.get(p.group) : presetsMenu;
-                if (m == null && p.group != null) {
-                    Logging.error("No tagging preset submenu for " + p.group);
-                } else if (m == null) {
-                    Logging.error("No tagging preset menu. Tagging preset " + p + " won't be available there");
-                } else if (p instanceof TaggingPresetSeparator) {
-                    m.add(new JSeparator());
-                } else if (p instanceof TaggingPresetMenu) {
-                    JMenu submenu = new JMenu(p);
-                    submenu.setText(p.getLocaleName());
-                    ((TaggingPresetMenu) p).menu = submenu;
-                    submenus.put((TaggingPresetMenu) p, submenu);
-                    m.add(submenu);
-                } else {
-                    JMenuItem mi = new JMenuItem(p);
-                    mi.setText(p.getLocaleName());
-                    m.add(mi);
-                }
-            }
-            for (JMenu submenu : submenus.values()) {
-                if (submenu.getItemCount() >= MIN_ELEMENTS_FOR_SCROLLER.get()) {
-                    MenuScroller.setScrollerFor(submenu);
-                }
-            }
-        }
-        if (SORT_MENU.get()) {
-            TaggingPresetMenu.sortMenu(presetsMenu);
-        }
-        listeners.forEach(TaggingPresetListener::taggingPresetsModified);
+    /**
+     * Standard initialization during app startup. Obeys users prefs.
+     */
+    public void initialize() {
+        initFromUserPrefs();
+        initializeMenus();
+    }
+
+    /**
+     * Initializes tagging presets from user preferences.
+     */
+    public void initFromUserPrefs() {
+        TaggingPresetReader.readFromPreferences(false, false).forEach(this::addRoot);
+        notifyListeners();
     }
 
     // Cannot implement Destroyable since this is static
@@ -136,82 +127,61 @@ public final class TaggingPresets {
      *
      * @since 15582
      */
-    public static void destroy() {
-        ToolbarPreferences toolBar = MainApplication.getToolbar();
-        for (TaggingPreset tp: taggingPresets) {
-            toolBar.unregister(tp);
-            if (!(tp instanceof TaggingPresetSeparator)) {
-                MainApplication.getLayerManager().removeActiveLayerChangeListener(tp);
-            }
-        }
-        taggingPresets.clear();
-        PRESET_TAG_CACHE.clear();
-        PRESET_ROLE_CACHE.clear();
-        MainApplication.getMenu().presetsMenu.removeAll();
+    public void destroy() {
+        unInitializeMenus();
+        cleanUp();
     }
 
     /**
-     * Initialize the cache for presets. This is done only once.
-     * @param presets Tagging presets to cache
+     * Adds a tagging preset listener.
+     * @param listener The listener to add
      */
-    public static void cachePresets(Collection<TaggingPreset> presets) {
-        for (final TaggingPreset p : presets) {
-            for (TaggingPresetItem item : p.data) {
-                cachePresetItem(p, item);
-            }
-        }
-    }
-
-    private static void cachePresetItem(TaggingPreset p, TaggingPresetItem item) {
-        if (item instanceof KeyedItem) {
-            KeyedItem ki = (KeyedItem) item;
-            if (ki.key != null && ki.getValues() != null) {
-                PRESET_TAG_CACHE.putAll(ki.key, ki.getValues());
-            }
-        } else if (item instanceof Roles) {
-            Roles r = (Roles) item;
-            for (Role i : r.roles) {
-                if (i.key != null) {
-                    PRESET_ROLE_CACHE.add(i.key);
-                }
-            }
-        } else if (item instanceof CheckGroup) {
-            for (KeyedItem check : ((CheckGroup) item).checks) {
-                cachePresetItem(p, check);
-            }
+    public void addTaggingPresetListener(TaggingPresetListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
         }
     }
 
     /**
-     * Replies a new collection containing all tagging presets.
-     * @return a new collection containing all tagging presets. Empty if presets are not initialized (never null)
+     * Removes a tagging preset listener.
+     * @param listener The listener to remove
      */
-    public static Collection<TaggingPreset> getTaggingPresets() {
-        return Collections.unmodifiableCollection(taggingPresets);
+    public void removeTaggingPresetListener(TaggingPresetListener listener) {
+        if (listener != null) {
+            listeners.remove(listener);
+        }
     }
 
     /**
-     * Replies a set of all roles in the tagging presets.
-     * @return a set of all roles in the tagging presets.
+     * Returns all tagging presets.
+     * @return all tagging presets
      */
-    public static Set<String> getPresetRoles() {
+    public Collection<TaggingPreset> getAllPresets() {
+        return Collections.unmodifiableCollection(PRESET_CACHE.values());
+    }
+
+    /**
+     * Returns every role found in any preset.
+     * @return the roles
+     */
+    public Set<Role> getPresetRoles() {
         return Collections.unmodifiableSet(PRESET_ROLE_CACHE);
     }
 
     /**
-     * Replies a set of all keys in the tagging presets.
-     * @return a set of all keys in the tagging presets.
+     * Returns all keys seen in all tagging presets.
+     * @return the set of all keys
      */
-    public static Set<String> getPresetKeys() {
+    public Set<String> getPresetKeys() {
         return Collections.unmodifiableSet(PRESET_TAG_CACHE.keySet());
     }
 
     /**
-     * Return set of values for a key in the tagging presets
+     * Returns all values seen in all presets for this key.
      * @param key the key
-     * @return set of values for a key in the tagging presets
+     * @return the set of all values
      */
-    public static Set<String> getPresetValues(String key) {
+    public Set<String> getPresetValues(String key) {
         Set<String> values = PRESET_TAG_CACHE.get(key);
         if (values != null)
             return Collections.unmodifiableSet(values);
@@ -224,64 +194,182 @@ public final class TaggingPresets {
      * @return {@code true} if the given key in the loaded presets
      * @since 18281
      */
-    public static boolean isKeyInPresets(String key) {
+    public boolean isKeyInPresets(String key) {
         return PRESET_TAG_CACHE.get(key) != null;
     }
 
     /**
      * Replies a new collection of all presets matching the parameters.
      *
-     * @param t the preset types to include
-     * @param tags the tags to perform matching on, see {@link TaggingPresetItem#matches(Map)}
-     * @param onlyShowable whether only {@link TaggingPreset#isShowable() showable} presets should be returned
+     * @param types the preset types to include
      * @return a new collection of all presets matching the parameters.
+     * @since xxx
+     */
+    public Collection<TaggingPreset> getMatchingPresets(final Collection<TaggingPresetType> types) {
+        return PRESET_CACHE.values().stream().filter(preset -> preset.typeMatches(types)).collect(Collectors.toList());
+    }
+
+    /**
+     * Replies a new collection of all presets matching the parameters.
+     *
+     * @param types the preset types (or null to match any preset type)
+     * @param tags the tags to perform matching on
+     * @param onlyShowable whether the preset must be showable
+     * @return a collection of all presets matching the parameters.
+     *
      * @see TaggingPreset#matches(Collection, Map, boolean)
+     * @see TaggingPreset#typeMatches(Collection)
+     * @see KeyedItem#matches(Map)
+     * @see TaggingPreset#isShowable()
      * @since 9266
      */
-    public static Collection<TaggingPreset> getMatchingPresets(final Collection<TaggingPresetType> t,
-                                                               final Map<String, String> tags, final boolean onlyShowable) {
-        return SubclassFilteredCollection.filter(getTaggingPresets(), preset -> preset.matches(t, tags, onlyShowable));
+    public Collection<TaggingPreset> getMatchingPresets(final Collection<TaggingPresetType> types,
+                                                            final Map<String, String> tags, final boolean onlyShowable) {
+        return PRESET_CACHE.values().stream().filter(preset -> preset.matches(types, tags, onlyShowable)).collect(Collectors.toList());
     }
 
     /**
      * Replies a new collection of all presets matching the given preset.
      *
      * @param primitive the primitive
-     * @return a new collection of all presets matching the given preset.
+     * @return a new collection of all presets matching the given primitive.
      * @see TaggingPreset#test(IPrimitive)
      * @since 13623 (signature)
      */
-    public static Collection<TaggingPreset> getMatchingPresets(final IPrimitive primitive) {
-        return SubclassFilteredCollection.filter(getTaggingPresets(), preset -> preset.test(primitive));
+    public Collection<TaggingPreset> getMatchingPresets(final IPrimitive primitive) {
+        return PRESET_CACHE.values().stream().filter(preset -> preset.test(primitive)).collect(Collectors.toList());
     }
 
     /**
-     * Adds a list of tagging presets to the current list.
-     * @param presets The tagging presets to add
+     * Returns the first preset with a name_template matching the given primitive
+     *
+     * @param primitive the primitive to match
+     * @return the preset or null
      */
-    public static void addTaggingPresets(Collection<TaggingPreset> presets) {
-        if (presets != null && taggingPresets.addAll(presets)) {
-            listeners.forEach(TaggingPresetListener::taggingPresetsModified);
+    public TaggingPreset getFirstMatchingPresetWithNameTemplate(final IPrimitive primitive) {
+        Collection<TaggingPresetType> type = EnumSet.of(TaggingPresetType.forPrimitive(primitive));
+        for (TaggingPreset tp : PRESET_WITH_NAMETEMPLATE_CACHE.values()) {
+            if (tp.typeMatches(type)) {
+                if (tp.getNameTemplateFilter() != null) {
+                    if (tp.getNameTemplateFilter().match(primitive))
+                        return tp;
+                } else if (tp.matches(type, primitive.getKeys(), false)) {
+                    return tp;
+                }
+            }
         }
+        return null;
     }
 
     /**
-     * Adds a tagging preset listener.
-     * @param listener The listener to add
+     * Add a new root element
+     * @param root the new root element
      */
-    public static void addListener(TaggingPresetListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
+    void addRoot(Root root) {
+        Map<String, Chunk> chunks = new HashMap<>();
+        root.fixup(chunks, root);
+        rootElements.add(root);
+        cachePresets(root);
     }
 
     /**
-     * Removes a tagging preset listener.
-     * @param listener The listener to remove
+     * Returns all items that satisfy a given predicate.
+     * @param p the predicate all items must satisfy
+     * @return the items that satisfy the predicate
      */
-    public static void removeListener(TaggingPresetListener listener) {
-        if (listener != null) {
-            listeners.remove(listener);
+    List<Item> getAllItems(Predicate<Item> p) {
+        List<Item> list = new LinkedList<>();
+        rootElements.forEach(r -> r.addToItemList(list, p, false));
+        return list;
+    }
+
+    /**
+     * Returns all items of a type.
+     * @param <E> the type
+     * @param type the type
+     * @return the list of all items
+     */
+    <E> List<E> getAllItems(Class<E> type) {
+        List<E> list = new LinkedList<>();
+        rootElements.forEach(r -> r.addToItemList(list, type, false));
+        return list;
+    }
+
+    /**
+     * Notifies all listeners that presets have changed.
+     */
+    void notifyListeners() {
+        listeners.forEach(TaggingPresetListener::taggingPresetsModified);
+    }
+
+    /**
+     * Initializes the preset menu and toolbar.
+     * <p>
+     * Builds the tagging presets menu and registers all preset actions with the application
+     * toolbar.
+     */
+    private void initializeMenus() {
+        MainMenu mainMenu = MainApplication.getMenu();
+        JMenu presetsMenu = mainMenu.presetsMenu;
+        if (presetsMenu.getComponentCount() == 0) {
+            MainMenu.add(presetsMenu, mainMenu.presetSearchAction);
+            MainMenu.add(presetsMenu, mainMenu.presetSearchPrimitiveAction);
+            MainMenu.add(presetsMenu, PreferencesAction.forPreferenceTab(tr("Preset preferences..."),
+                    tr("Click to open the tagging presets tab in the preferences"), TaggingPresetPreference.class));
+            presetsMenu.addSeparator();
         }
+
+        // register all presets with the application toolbar
+        ToolbarPreferences toolBar = MainApplication.getToolbar();
+        getAllItems(TaggingPresetBase.class).forEach(tp -> toolBar.register(tp.getAction()));
+        toolBar.refreshToolbarControl();
+
+        // add presets and groups to the presets menu
+        if (rootElements.isEmpty()) {
+            presetsMenu.setVisible(false);
+        } else {
+            rootElements.forEach(e -> e.addToMenu(presetsMenu));
+            if (TaggingPresets.SORT_VALUES.get()) {
+                TaggingPresetUtils.sortMenu(presetsMenu);
+            }
+        }
+    }
+
+    private void unInitializeMenus() {
+        ToolbarPreferences toolBar = MainApplication.getToolbar();
+        if (toolBar != null)
+            getAllItems(TaggingPresetBase.class).forEach(tp -> toolBar.unregister(tp.getAction()));
+        MainMenu menu = MainApplication.getMenu();
+        if (menu != null)
+            menu.presetsMenu.removeAll();
+    }
+
+    private void cleanUp() {
+        PRESET_CACHE.clear();
+        PRESET_WITH_NAMETEMPLATE_CACHE.clear();
+        PRESET_TAG_CACHE.clear();
+        PRESET_ROLE_CACHE.clear();
+        rootElements.forEach(Root::destroy);
+        rootElements.clear();
+    }
+
+    /**
+     * Initialize the cache with presets.
+     *
+     * @param root the root of the xml file
+     */
+    private void cachePresets(Root root) {
+        for (TaggingPreset tp : root.getAllItems(TaggingPreset.class, false)) {
+            PRESET_CACHE.put(tp.getRawName(), tp);
+            if (tp.getNameTemplate() != null)
+                PRESET_WITH_NAMETEMPLATE_CACHE.put(tp.getRawName(), tp);
+        }
+
+        PRESET_ROLE_CACHE.addAll(root.getAllItems(Role.class, false));
+        root.getAllItems(KeyedItem.class, false).forEach(item -> {
+            if (item.key != null && item.getValues() != null) {
+                PRESET_TAG_CACHE.putAll(item.key, item.getValues());
+            }
+        });
     }
 }

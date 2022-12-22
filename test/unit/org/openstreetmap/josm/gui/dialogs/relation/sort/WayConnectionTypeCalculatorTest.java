@@ -130,7 +130,7 @@ class WayConnectionTypeCalculatorTest {
     void testLoop() {
         Relation relation = getRelation("loop");
         String actual = getConnections(wayConnectionTypeCalculator.updateLinks(relation.getMembers()));
-        Assert.assertEquals("[FPH FORWARD, FP FORWARD, NONE, FPH FORWARD, NONE, FPH FORWARD, NONE]", actual);
+        Assert.assertEquals("[FPH FORWARD, FPT FORWARD, NONE, FPHT FORWARD, NONE, FPHT FORWARD, NONE]", actual);
         //TODO Sorting doesn't work well in this case
         actual = getConnections(wayConnectionTypeCalculator.updateLinks(sorter.sortMembers(relation.getMembers())));
         Assert.assertEquals("[BACKWARD, BACKWARD, BACKWARD, FP FORWARD, BP BACKWARD, BP BACKWARD, BPT BACKWARD]", actual);
@@ -216,8 +216,8 @@ class WayConnectionTypeCalculatorTest {
         // TODO: This is not yet sorted perfectly (might not be possible)
         String actual = getConnections(wayConnectionTypeCalculator.updateLinks(sorter.sortMembers(relation.getMembers())));
         String expected = "[" +
-            "FORWARD, FPH FORWARD, FP FORWARD, FP FORWARD, BP BACKWARD, BP BACKWARD, " +
-            "FORWARD, FPH FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, BP BACKWARD, BP BACKWARD, " +
+            "FORWARD, FPH FORWARD, FP FORWARD, FP FORWARD, BP BACKWARD, BPT BACKWARD, " +
+            "FORWARD, FPH FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, FP FORWARD, BP BACKWARD, BPT BACKWARD, " +
             "BACKWARD, FPH FORWARD, FP FORWARD, FP FORWARD" +
         "]";
         Assert.assertEquals(expected, actual);

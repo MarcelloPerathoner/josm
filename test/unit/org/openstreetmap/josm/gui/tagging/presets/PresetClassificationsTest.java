@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -13,14 +12,18 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openstreetmap.josm.JOSMFixture;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetSelector.PresetClassification;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetSelector.PresetClassifications;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
+import org.openstreetmap.josm.tools.Logging;
 import org.xml.sax.SAXException;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Unit tests of {@link PresetClassifications} class.
@@ -31,14 +34,20 @@ class PresetClassificationsTest {
 
     /**
      * Setup test.
+     */
+    @RegisterExtension
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public JOSMTestRules test = new JOSMTestRules();
+
+    /**
+     * Setup test.
      * @throws SAXException if any XML error occurs
      * @throws IOException if any I/O error occurs
      */
     @BeforeAll
     public static void setUp() throws IOException, SAXException {
-        JOSMFixture.createUnitTestFixture().init();
-        final Collection<TaggingPreset> presets = TaggingPresetReader.readAll("resource://data/defaultpresets.xml", true);
-        classifications.loadPresets(presets);
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
+        classifications.loadPresets(taggingPresets.getAllPresets());
     }
 
     private List<PresetClassification> getMatchingPresets(String searchText, OsmPrimitive w) {
@@ -47,7 +56,7 @@ class PresetClassificationsTest {
     }
 
     private List<String> getMatchingPresetNames(String searchText, OsmPrimitive w) {
-        return getMatchingPresets(searchText, w).stream().map(x -> x.preset.name).collect(Collectors.toList());
+        return getMatchingPresets(searchText, w).stream().map(x -> x.preset.getBaseName()).collect(Collectors.toList());
     }
 
     /**
@@ -60,8 +69,10 @@ class PresetClassificationsTest {
         w.addNode(n1);
         w.addNode(new Node());
         w.addNode(new Node());
+        Logging.info(getMatchingPresetNames("building", w).toString());
         assertFalse(getMatchingPresetNames("building", w).contains("Building"), "unclosed way should not match building preset");
         w.addNode(n1);
+        Logging.info(getMatchingPresetNames("building", w).toString());
         assertTrue(getMatchingPresetNames("building", w).contains("Building"), "closed way should match building preset");
     }
 

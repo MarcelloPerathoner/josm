@@ -166,7 +166,7 @@ class RelationEditorActionsTest extends AbstractRelationEditorActionTest {
         assertTrue(ds.isLocked(), "The dataset should be locked when it is being uploaded.");
         relationEditorAccess.getEditor().setRelation(relation);
         relationEditorAccess.getMemberTableModel().populate(relation);
-        relationEditorAccess.getTagModel().initFromPrimitive(relation);
+        relationEditorAccess.getTagModel().initFromMap(relation.getKeys());
         relationEditorAccess.getEditor().reloadDataFromRelation();
         assertDoesNotThrow(relationEditorAccess::getChangedRelation);
     }

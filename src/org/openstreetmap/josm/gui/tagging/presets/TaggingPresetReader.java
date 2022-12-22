@@ -9,52 +9,54 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayDeque;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.JOptionPane;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 
 import org.openstreetmap.josm.data.preferences.sources.PresetPrefHelper;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.tagging.presets.items.Check;
-import org.openstreetmap.josm.gui.tagging.presets.items.CheckGroup;
-import org.openstreetmap.josm.gui.tagging.presets.items.Combo;
-import org.openstreetmap.josm.gui.tagging.presets.items.ComboMultiSelect;
-import org.openstreetmap.josm.gui.tagging.presets.items.ItemSeparator;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
-import org.openstreetmap.josm.gui.tagging.presets.items.Label;
-import org.openstreetmap.josm.gui.tagging.presets.items.Link;
-import org.openstreetmap.josm.gui.tagging.presets.items.MultiSelect;
-import org.openstreetmap.josm.gui.tagging.presets.items.Optional;
-import org.openstreetmap.josm.gui.tagging.presets.items.PresetLink;
-import org.openstreetmap.josm.gui.tagging.presets.items.PresetListEntry;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles.Role;
-import org.openstreetmap.josm.gui.tagging.presets.items.Space;
-import org.openstreetmap.josm.gui.tagging.presets.items.Text;
 import org.openstreetmap.josm.io.CachedFile;
 import org.openstreetmap.josm.io.NetworkManager;
 import org.openstreetmap.josm.io.UTFInputStreamReader;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.I18n;
+import org.openstreetmap.josm.tools.JosmRuntimeException;
+import org.openstreetmap.josm.tools.LanguageInfo;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Stopwatch;
 import org.openstreetmap.josm.tools.Utils;
-import org.openstreetmap.josm.tools.XmlObjectParser;
+import org.openstreetmap.josm.tools.XmlParsingException;
+import org.openstreetmap.josm.tools.XmlUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
- * The tagging presets reader.
- * @since 6068
+ * The tagging presets XML file parser.
+ * <p>
+ * Parses an XML file and builds an in-memory tree of template classes. The template classes are
+ * then used to create preset dialogs and menus.
+ *
+ * @since xxx
  */
 public final class TaggingPresetReader {
 
@@ -77,335 +79,308 @@ public final class TaggingPresetReader {
      */
     public static final String SCHEMA_SOURCE = "resource://data/tagging-preset.xsd";
 
-    private static volatile File zipIcons;
-    private static volatile boolean loadIcons = true;
+    private static File zipIcons;
+    private static boolean loadIcons = true;
 
-    /**
-     * Holds a reference to a chunk of items/objects.
-     */
-    public static class Chunk {
-        /** The chunk id, can be referenced later */
-        public String id;
+    private static class Parser extends DefaultHandler {
+        private Root root;
+        private Stack<Item> stack = new Stack<>();
+        private StringBuilder characters;
+        private Locator locator;
+        private final String lang = LanguageInfo.getLanguageCodeXML();
 
-        @Override
-        public String toString() {
-            return "Chunk [id=" + id + ']';
+        public Root getRoot() {
+            return root;
         }
-    }
-
-    /**
-     * Holds a reference to an earlier item/object.
-     */
-    public static class Reference {
-        /** Reference matching a chunk id defined earlier **/
-        public String ref;
 
         @Override
-        public String toString() {
-            return "Reference [ref=" + ref + ']';
+        public void setDocumentLocator(Locator locator) {
+            this.locator = locator;
         }
-    }
 
-    static class HashSetWithLast<E> extends LinkedHashSet<E> {
-        private static final long serialVersionUID = 1L;
-        protected transient E last;
+        private Map<String, String> getAttributes(Attributes a) {
+            Map<String, String> attributes = new HashMap<>();
+            for (int i = 0; i < a.getLength(); ++i) {
+                String name = a.getLocalName(i);
+                if (name.startsWith(lang)) {
+                    name = "locale_" + name.substring(lang.length());
+                }
+                attributes.put(a.getLocalName(i), a.getValue(i));
+            }
+            return attributes;
+        }
 
         @Override
-        public boolean add(E e) {
-            last = e;
-            return super.add(e);
+        public void startElement(String ns, String lname, String qname, Attributes a) throws SAXException {
+            Item item = null;
+            Map<String, String> attributes = getAttributes(a);
+
+            try {
+                item = ItemFactory.build(lname, attributes);
+                if (item instanceof Root) {
+                    Root root = (Root) item;
+                    if (this.root == null) {
+                        root.url = locator.getSystemId();
+                        this.root = root;
+                    }
+                }
+                if (stack.size() > 0) {
+                    // add this item to the parent
+                    // do not put this into the constructor of Item or Chunks will not work
+                    stack.peek().addItem(item);
+                }
+            } catch (IllegalArgumentException e) {
+                throwException(e);
+            }
+            stack.push(item);
+        }
+
+        @Override
+        public void endElement(String ns, String lname, String qname) throws SAXException {
+            try {
+                Item item = stack.peek();
+                if (characters != null)
+                    item.setContent(characters.toString().trim());
+                item.endElement();
+            } catch (IllegalArgumentException e) {
+                throwException(e);
+            }
+            stack.pop();
+            characters = null;
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            if (characters == null)
+                characters = new StringBuilder(64); // lazily get a builder
+            characters.append(ch, start, length);
         }
 
         /**
-         * Returns the last inserted element.
-         * @return the last inserted element
+         * Rethrows an exception and adds location information
+         * @param e the exception without location information
+         * @throws XmlParsingException the exception with location information
          */
-        public E getLast() {
-            return last;
+        private void throwException(Exception e) throws XmlParsingException {
+            throw new XmlParsingException(e).rememberLocation(locator);
+        }
+
+        @Override
+        public void error(SAXParseException e) throws SAXException {
+            throwException(e);
+        }
+
+        @Override
+        public void fatalError(SAXParseException e) throws SAXException {
+            throwException(e);
+        }
+    }
+
+    private static void start(final Reader in, final ContentHandler contentHandler, String url) throws SAXException, IOException {
+        try {
+            XMLReader reader = XmlUtils.newSafeSAXParser().getXMLReader();
+            reader.setContentHandler(contentHandler);
+            try {
+                // better performance on big files like defaultpresets.xml
+                reader.setProperty("http://apache.org/xml/properties/input-buffer-size", 8 * 1024);
+                // enable xinclude
+                reader.setFeature("http://apache.org/xml/features/xinclude", true);
+                // do not set xml:base, it doesn't validate
+                reader.setFeature("http://apache.org/xml/features/xinclude/fixup-base-uris", false);
+                // Do not load external DTDs (fix #8191)
+                reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            } catch (SAXException e) {
+                // Exception very unlikely to happen, so no need to translate this
+                Logging.log(Logging.LEVEL_ERROR, "Cannot set property or feature on SAX reader:", e);
+            }
+            InputSource is = new InputSource(in);
+            is.setSystemId(url);
+            reader.parse(is);
+        } catch (ParserConfigurationException e) {
+            throw new JosmRuntimeException(e);
         }
     }
 
     /**
-     * Returns the set of preset source URLs.
-     * @return The set of preset source URLs.
+     * This filter adds the default namespace
+     * {@code http://josm.openstreetmap.de/tagging-preset-1.0} to all elements that have none.
      */
-    public static Set<String> getPresetSources() {
-        return new PresetPrefHelper().getActiveUrls();
-    }
+    private static class AddNamespaceFilter extends XMLFilterImpl {
+        private final String namespace;
 
-    private static XmlObjectParser buildParser() {
-        XmlObjectParser parser = new XmlObjectParser();
-        parser.mapOnStart("item", TaggingPreset.class);
-        parser.mapOnStart("separator", TaggingPresetSeparator.class);
-        parser.mapBoth("group", TaggingPresetMenu.class);
-        parser.map("text", Text.class);
-        parser.map("link", Link.class);
-        parser.map("preset_link", PresetLink.class);
-        parser.mapOnStart("optional", Optional.class);
-        parser.mapOnStart("roles", Roles.class);
-        parser.map("role", Role.class);
-        parser.mapBoth("checkgroup", CheckGroup.class);
-        parser.map("check", Check.class);
-        parser.map("combo", Combo.class);
-        parser.map("multiselect", MultiSelect.class);
-        parser.map("label", Label.class);
-        parser.map("space", Space.class);
-        parser.map("key", Key.class);
-        parser.map("list_entry", PresetListEntry.class);
-        parser.map("item_separator", ItemSeparator.class);
-        parser.mapBoth("chunk", Chunk.class);
-        parser.map("reference", Reference.class);
-        return parser;
-    }
-
-    /**
-     * Reads all tagging presets from the input reader.
-     * @param in The input reader
-     * @param validate if {@code true}, XML validation will be performed
-     * @return collection of tagging presets
-     * @throws SAXException if any XML error occurs
-     */
-    public static Collection<TaggingPreset> readAll(Reader in, boolean validate) throws SAXException {
-        return readAll(in, validate, new HashSetWithLast<TaggingPreset>());
-    }
-
-    /**
-     * Reads all tagging presets from the input reader.
-     * @param in The input reader
-     * @param validate if {@code true}, XML validation will be performed
-     * @param all the accumulator for parsed tagging presets
-     * @return the accumulator
-     * @throws SAXException if any XML error occurs
-     */
-    static Collection<TaggingPreset> readAll(Reader in, boolean validate, HashSetWithLast<TaggingPreset> all) throws SAXException {
-        XmlObjectParser parser = buildParser();
-
-        /** to detect end of {@code <checkgroup>} */
-        CheckGroup lastcheckgroup = null;
-        /** to detect end of {@code <group>} */
-        TaggingPresetMenu lastmenu = null;
-        /** to detect end of reused {@code <group>} */
-        TaggingPresetMenu lastmenuOriginal = null;
-        Roles lastrole = null;
-        final List<Check> checks = new LinkedList<>();
-        final List<PresetListEntry> listEntries = new LinkedList<>();
-        final Map<String, List<Object>> byId = new HashMap<>();
-        final Deque<String> lastIds = new ArrayDeque<>();
-        /** lastIdIterators contains non empty iterators of items to be handled before obtaining the next item from the XML parser */
-        final Deque<Iterator<Object>> lastIdIterators = new ArrayDeque<>();
-
-        if (validate) {
-            parser.startWithValidation(in, NAMESPACE, SCHEMA_SOURCE);
-        } else {
-            parser.start(in);
+        AddNamespaceFilter(String namespace) {
+            this.namespace = namespace;
         }
-        while (parser.hasNext() || !lastIdIterators.isEmpty()) {
-            final Object o;
-            if (!lastIdIterators.isEmpty()) {
-                // obtain elements from lastIdIterators with higher priority
-                o = lastIdIterators.peek().next();
-                if (!lastIdIterators.peek().hasNext()) {
-                    // remove iterator if is empty
-                    lastIdIterators.pop();
-                }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            if ("".equals(uri)) {
+                super.startElement(namespace, localName, qName, atts);
             } else {
-                o = parser.next();
-            }
-            Logging.trace("Preset object: {0}", o);
-            if (o instanceof Chunk) {
-                if (!lastIds.isEmpty() && ((Chunk) o).id.equals(lastIds.peek())) {
-                    // pop last id on end of object, don't process further
-                    lastIds.pop();
-                    ((Chunk) o).id = null;
-                } else {
-                    // if preset item contains an id, store a mapping for later usage
-                    String lastId = ((Chunk) o).id;
-                    lastIds.push(lastId);
-                    byId.put(lastId, new ArrayList<>());
-                }
-                continue;
-            } else if (!lastIds.isEmpty()) {
-                // add object to mapping for later usage
-                byId.get(lastIds.peek()).add(o);
-                continue;
-            }
-            if (o instanceof Reference) {
-                // if o is a reference, obtain the corresponding objects from the mapping,
-                // and iterate over those before consuming the next element from parser.
-                final String ref = ((Reference) o).ref;
-                if (byId.get(ref) == null) {
-                    throw new SAXException(tr("Reference {0} is being used before it was defined", ref));
-                }
-                Iterator<Object> it = byId.get(ref).iterator();
-                if (it.hasNext()) {
-                    lastIdIterators.push(it);
-                    if (lastIdIterators.size() > 100) {
-                        throw new SAXException(tr("Reference stack for {0} is too large", ref));
-                    }
-                } else {
-                    Logging.warn("Ignoring reference '"+ref+"' denoting an empty chunk");
-                }
-                continue;
-            }
-            if (!(o instanceof TaggingPresetItem) && !checks.isEmpty()) {
-                all.getLast().data.addAll(checks);
-                checks.clear();
-            }
-            if (o instanceof TaggingPresetMenu) {
-                TaggingPresetMenu tp = (TaggingPresetMenu) o;
-                if (tp == lastmenu || tp == lastmenuOriginal) {
-                    lastmenu = tp.group;
-                } else {
-                    tp.group = lastmenu;
-                    if (all.contains(tp)) {
-                        lastmenuOriginal = tp;
-                        tp = (TaggingPresetMenu) all.stream().filter(tp::equals).findFirst().orElse(tp);
-                        lastmenuOriginal.group = null;
-                    } else {
-                        tp.setDisplayName();
-                        all.add(tp);
-                        lastmenuOriginal = null;
-                    }
-                    lastmenu = tp;
-                }
-                lastrole = null;
-            } else if (o instanceof TaggingPresetSeparator) {
-                TaggingPresetSeparator tp = (TaggingPresetSeparator) o;
-                tp.group = lastmenu;
-                all.add(tp);
-                lastrole = null;
-            } else if (o instanceof TaggingPreset) {
-                TaggingPreset tp = (TaggingPreset) o;
-                tp.group = lastmenu;
-                tp.setDisplayName();
-                all.add(tp);
-                lastrole = null;
-            } else {
-                if (!all.isEmpty()) {
-                    if (o instanceof Roles) {
-                        all.getLast().data.add((TaggingPresetItem) o);
-                        if (all.getLast().roles != null) {
-                            throw new SAXException(tr("Roles cannot appear more than once"));
-                        }
-                        all.getLast().roles = (Roles) o;
-                        lastrole = (Roles) o;
-                        // #16458 - Make sure we don't duplicate role entries if used in a chunk/reference
-                        lastrole.roles.clear();
-                    } else if (o instanceof Role) {
-                        if (lastrole == null)
-                            throw new SAXException(tr("Preset role element without parent"));
-                        lastrole.roles.add((Role) o);
-                    } else if (o instanceof Check) {
-                        if (lastcheckgroup != null) {
-                            checks.add((Check) o);
-                        } else {
-                            all.getLast().data.add((TaggingPresetItem) o);
-                        }
-                    } else if (o instanceof PresetListEntry) {
-                        listEntries.add((PresetListEntry) o);
-                    } else if (o instanceof CheckGroup) {
-                        CheckGroup cg = (CheckGroup) o;
-                        if (cg == lastcheckgroup) {
-                            lastcheckgroup = null;
-                            all.getLast().data.add(cg);
-                            // Make sure list of checks is empty to avoid adding checks several times
-                            // when used in chunks (fix #10801)
-                            cg.checks.clear();
-                            cg.checks.addAll(checks);
-                            checks.clear();
-                        } else {
-                            lastcheckgroup = cg;
-                        }
-                    } else {
-                        if (!checks.isEmpty()) {
-                            all.getLast().data.addAll(checks);
-                            checks.clear();
-                        }
-                        all.getLast().data.add((TaggingPresetItem) o);
-                        if (o instanceof ComboMultiSelect) {
-                            ((ComboMultiSelect) o).addListEntries(listEntries);
-                        } else if (o instanceof Key && ((Key) o).value == null) {
-                            ((Key) o).value = ""; // Fix #8530
-                        }
-                        listEntries.clear();
-                        lastrole = null;
-                    }
-                } else
-                    throw new SAXException(tr("Preset sub element without parent"));
+                super.startElement(uri, localName, qName, atts);
             }
         }
-        if (!all.isEmpty() && !checks.isEmpty()) {
-            all.getLast().data.addAll(checks);
-            checks.clear();
-        }
-        return all;
     }
 
     /**
-     * Reads all tagging presets from the given source.
-     * @param source a given filename, URL or internal resource
-     * @param validate if {@code true}, XML validation will be performed
-     * @return collection of tagging presets
-     * @throws SAXException if any XML error occurs
-     * @throws IOException if any I/O error occurs
+     * Add validation filters to a parser
+     *
+     * @param parser the parser without validation
+     * @param namespace default namespace
+     * @param schemaUrl URL of XSD schema
+     * @return the new parser with validation
+     * @throws SAXException if any XML or I/O error occurs
      */
-    public static Collection<TaggingPreset> readAll(String source, boolean validate) throws SAXException, IOException {
-        return readAll(source, validate, new HashSetWithLast<TaggingPreset>());
+    public static ContentHandler buildParserWithValidation(Parser parser, String namespace, String schemaUrl) throws SAXException {
+        SchemaFactory factory = XmlUtils.newXmlSchemaFactory();
+        try (CachedFile cf = new CachedFile(schemaUrl);
+            InputStream mis = cf.getInputStream()) {
+            Schema schema = factory.newSchema(new StreamSource(mis));
+            ValidatorHandler validator = schema.newValidatorHandler();
+            validator.setContentHandler(parser);
+            validator.setErrorHandler(parser);
+
+            AddNamespaceFilter filter = new AddNamespaceFilter(namespace);
+            filter.setContentHandler(validator);
+            return filter;
+        } catch (IOException e) {
+            throw new SAXException(tr("Failed to load XML schema."), e);
+        }
     }
 
     /**
-     * Reads all tagging presets from the given source.
-     * @param source a given filename, URL or internal resource
+     * Reads all tagging presets from an XML literal.
+     *
+     * @param xml the xml literal
      * @param validate if {@code true}, XML validation will be performed
-     * @param all the accumulator for parsed tagging presets
-     * @return the accumulator
+     * @return the root element of the resource
      * @throws SAXException if any XML error occurs
-     * @throws IOException if any I/O error occurs
      */
-    static Collection<TaggingPreset> readAll(String source, boolean validate, HashSetWithLast<TaggingPreset> all)
-            throws SAXException, IOException {
-        Collection<TaggingPreset> tp;
-        Logging.debug("Reading presets from {0}", source);
+    public static Root readLiteral(String xml, boolean validate) throws SAXException {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        Parser parser = new Parser();
+        ContentHandler handler = parser;
+        if (validate) {
+            handler = buildParserWithValidation((Parser) handler, NAMESPACE, SCHEMA_SOURCE);
+        }
+        try {
+            start(new StringReader(xml), handler, "XML literal");
+        } catch (IOException e) {
+            Logging.error("can't happen"); // reading a literal
+        }
+
+        Logging.debug(stopwatch.toString("Reading presets from XML literal"));
+        return parser.getRoot();
+    }
+
+    /**
+     * Reads all tagging presets from the given XML resource.
+     *
+     * @param url a given filename, URL or internal resource
+     * @param validate if {@code true}, XML validation will be performed
+     * @return the root element of the resource
+     * @throws SAXException if any XML error occurs
+     * @throws IOException if any I/O error occurs
+     */
+    public static Root read(String url, boolean validate) throws SAXException, IOException {
+        Logging.debug("Reading presets from {0}", url);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Parser parser = new Parser();
+
         try (
-            CachedFile cf = new CachedFile(source).setHttpAccept(PRESET_MIME_TYPES);
+            CachedFile cf = new CachedFile(url);
             // zip may be null, but Java 7 allows it: https://blogs.oracle.com/darcy/entry/project_coin_null_try_with
             InputStream zip = cf.findZipEntryInputStream("xml", "preset")
         ) {
+            cf.setHttpAccept(PRESET_MIME_TYPES);
             if (zip != null) {
                 zipIcons = cf.getFile();
                 I18n.addTexts(zipIcons);
             }
             try (InputStreamReader r = UTFInputStreamReader.create(zip == null ? cf.getInputStream() : zip)) {
-                tp = readAll(new BufferedReader(r), validate, all);
+                ContentHandler handler = parser;
+                if (validate) {
+                    handler = buildParserWithValidation((Parser) handler, NAMESPACE, SCHEMA_SOURCE);
+                }
+                start(new BufferedReader(r), handler, url);
             }
         }
+
+        Root patchRoot = readPatchFile(url, validate);
+        if (patchRoot != null)
+            parser.getRoot().items.addAll(patchRoot.items);
+
         Logging.debug(stopwatch.toString("Reading presets"));
-        return tp;
+        return parser.getRoot();
     }
 
     /**
-     * Reads all tagging presets from the given sources.
+     * Try to read a .local preset patch file.
+     * <p>
+     * A preset patch file has the same structure as the {@code defaultpresets.xml} file. All items
+     * in the root of the preset patch file will be appended to the root of the respective presets
+     * file. Chunks in the preset patch file will replace chunks with the same {@code id} in the
+     * presets file. The patch file must be placed in the {@code josmdir://} and have the same
+     * filename and extension with an added extension of {@code .local} eg.
+     * {@code <josmdir>/defaultpresets.xml.local}
+     *
+     * @param url a given filename, URL or internal resource
+     * @param validate if {@code true}, XML validation will be performed
+     * @return the root element of the resource
+     * @throws SAXException if any XML error occurs
+     * @throws IOException if any I/O error occurs
+     */
+
+    static Root readPatchFile(String url, boolean validate) throws SAXException, IOException {
+        try {
+            URI uri = new URI(url);
+            String fileName = new File(uri.getPath()).getName();
+            url = "josmdir://" + fileName + ".local";
+
+            Parser parser = new Parser();
+            try (CachedFile cf = new CachedFile(url)) {
+                Logging.debug("Reading local preset patches from {0}", cf.getFile().toPath());
+                try (InputStreamReader r = UTFInputStreamReader.create(cf.getInputStream())) {
+                    ContentHandler handler = parser;
+                    if (validate) {
+                        handler = buildParserWithValidation(parser, NAMESPACE, SCHEMA_SOURCE);
+                    }
+                    start(new BufferedReader(r), handler, url);
+                }
+            }
+            return parser.getRoot();
+        } catch (URISyntaxException e) {
+            Logging.error("readPatchFile: cannot parse url {0}", url);
+            return null;
+        } catch (IOException e) {
+            return null; // there is no local patch file, do nothing
+        }
+    }
+
+    /**
+     * Reads all tagging presets from the given XML resources. Convenience function.
+     *
      * @param sources Collection of tagging presets sources.
      * @param validate if {@code true}, presets will be validated against XML schema
-     * @return Collection of all presets successfully read
+     * @return the root elements of the XML resources
      */
-    public static Collection<TaggingPreset> readAll(Collection<String> sources, boolean validate) {
+    public static Collection<Root> readAll(Collection<String> sources, boolean validate) {
         return readAll(sources, validate, true);
     }
 
     /**
-     * Reads all tagging presets from the given sources.
+     * Reads all tagging presets from the given XML resources.
+     *
      * @param sources Collection of tagging presets sources.
      * @param validate if {@code true}, presets will be validated against XML schema
      * @param displayErrMsg if {@code true}, a blocking error message is displayed in case of I/O exception.
-     * @return Collection of all presets successfully read
+     * @return the root elements of the XML resources
      */
-    public static Collection<TaggingPreset> readAll(Collection<String> sources, boolean validate, boolean displayErrMsg) {
-        HashSetWithLast<TaggingPreset> allPresets = new HashSetWithLast<>();
+    public static Collection<Root> readAll(Collection<String> sources, boolean validate, boolean displayErrMsg) {
+        Collection<Root> result = new ArrayList<>();
         for (String source : sources) {
             try {
-                readAll(source, validate, allPresets);
+                result.add(read(source, validate));
             } catch (IOException e) {
                 Logging.log(Logging.LEVEL_ERROR, e);
                 Logging.error(source);
@@ -434,7 +409,7 @@ public final class TaggingPresetReader {
                 }
             }
         }
-        return allPresets;
+        return result;
     }
 
     /**
@@ -443,8 +418,16 @@ public final class TaggingPresetReader {
      * @param displayErrMsg if {@code true}, a blocking error message is displayed in case of I/O exception.
      * @return Collection of all presets successfully read
      */
-    public static Collection<TaggingPreset> readFromPreferences(boolean validate, boolean displayErrMsg) {
+    public static Collection<Root> readFromPreferences(boolean validate, boolean displayErrMsg) {
         return readAll(getPresetSources(), validate, displayErrMsg);
+    }
+
+    /**
+     * Returns the set of preset source URLs.
+     * @return The set of preset source URLs.
+     */
+    public static Set<String> getPresetSources() {
+        return new PresetPrefHelper().getActiveUrls();
     }
 
     /**
@@ -471,7 +454,6 @@ public final class TaggingPresetReader {
         TaggingPresetReader.loadIcons = loadIcons;
     }
 
-    private TaggingPresetReader() {
-        // Hide default constructor for utils classes
-    }
+    // fix checkstyle HideUtilityClassConstructor
+    private TaggingPresetReader() {}
 }

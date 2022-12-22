@@ -188,7 +188,7 @@ public class ParallelWayAction extends MapMode implements ModifierExListener {
         mv.removeMouseMotionListener(this);
         mv.removeTemporaryLayer(temporaryLayer);
         MapFrame map = MainApplication.getMap();
-        map.statusLine.setDist(-1);
+        map.statusLine.setDist((Double) null);
         map.keyDetector.removeModifierExListener(this);
         removeWayHighlighting(sourceWays);
         pWays = null;

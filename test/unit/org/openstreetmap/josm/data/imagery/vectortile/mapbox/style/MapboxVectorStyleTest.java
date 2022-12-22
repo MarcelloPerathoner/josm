@@ -51,6 +51,7 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -178,9 +179,12 @@ public class MapboxVectorStyleTest {
                 Color color = new Color(scalar * x, scalar * y, scalar * x * y);
                 int finalX = x;
                 int finalY = y;
-                BufferedImage image = (BufferedImage) assertDoesNotThrow(
-                  () -> ImageProvider.get(new File("test_style", MessageFormat.format("({0},{1})", finalX, finalY)).getPath()))
-                  .getImage();
+                BufferedImage image = (BufferedImage) assertDoesNotThrow(() ->
+                    ImageProvider.get(
+                        "test_style",
+                        MessageFormat.format("({0},{1})", finalX, finalY),
+                        ImageSizes.ORIGINAL
+                    ).getImage());
                 assertEquals(3 * hiDpiScalar, image.getWidth(null));
                 assertEquals(3 * hiDpiScalar, image.getHeight(null));
                 for (int x2 = 0; x2 < image.getWidth(null); x2++) {

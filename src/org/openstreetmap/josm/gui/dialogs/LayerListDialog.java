@@ -41,6 +41,7 @@ import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
@@ -213,6 +214,8 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         //
         layerList = new LayerList(model);
         TableHelper.setFont(layerList, getClass());
+        Icon prototypeIcon = ImageProvider.get("dialogs/layerlist", "eye", ImageSizes.LAYER);
+        TableHelper.setRowHeight(layerList, prototypeIcon);
         layerList.setSelectionModel(selectionModel);
         popupHandler = new PopupMenuHandler();
         layerList.addMouseListener(popupHandler);
@@ -223,30 +226,33 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         layerList.setTableHeader(null);
         layerList.setShowGrid(false);
         layerList.setIntercellSpacing(new Dimension(0, 0));
-        layerList.getColumnModel().getColumn(0).setCellRenderer(new ActiveLayerCellRenderer());
-        layerList.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new ActiveLayerCheckBox()));
-        layerList.getColumnModel().getColumn(0).setMaxWidth(12);
-        layerList.getColumnModel().getColumn(0).setPreferredWidth(12);
-        layerList.getColumnModel().getColumn(0).setResizable(false);
+        int width = prototypeIcon.getIconWidth() * 12 / 10;
+        TableColumnModel cm = layerList.getColumnModel();
+        cm.getColumn(0).setCellRenderer(new ActiveLayerCellRenderer());
+        cm.getColumn(0).setCellEditor(new DefaultCellEditor(new ActiveLayerCheckBox()));
+        cm.getColumn(0).setMaxWidth(width);
+        cm.getColumn(0).setPreferredWidth(width);
+        cm.getColumn(0).setResizable(false);
 
-        layerList.getColumnModel().getColumn(1).setCellRenderer(new NativeScaleLayerCellRenderer());
-        layerList.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(new NativeScaleLayerCheckBox()));
-        layerList.getColumnModel().getColumn(1).setMaxWidth(12);
-        layerList.getColumnModel().getColumn(1).setPreferredWidth(12);
-        layerList.getColumnModel().getColumn(1).setResizable(false);
+        cm.getColumn(1).setCellRenderer(new NativeScaleLayerCellRenderer());
+        cm.getColumn(1).setCellEditor(new DefaultCellEditor(new NativeScaleLayerCheckBox()));
+        cm.getColumn(1).setMaxWidth(width);
+        cm.getColumn(1).setPreferredWidth(width);
+        cm.getColumn(1).setResizable(false);
 
-        layerList.getColumnModel().getColumn(2).setCellRenderer(new OffsetLayerCellRenderer());
-        layerList.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new OffsetLayerCheckBox()));
-        layerList.getColumnModel().getColumn(2).setMaxWidth(16);
-        layerList.getColumnModel().getColumn(2).setPreferredWidth(16);
-        layerList.getColumnModel().getColumn(2).setResizable(false);
+        cm.getColumn(2).setCellRenderer(new OffsetLayerCellRenderer());
+        cm.getColumn(2).setCellEditor(new DefaultCellEditor(new OffsetLayerCheckBox()));
+        cm.getColumn(2).setMaxWidth(width);
+        cm.getColumn(2).setPreferredWidth(width);
+        cm.getColumn(2).setResizable(false);
 
-        layerList.getColumnModel().getColumn(3).setCellRenderer(new LayerVisibleCellRenderer());
-        layerList.getColumnModel().getColumn(3).setCellEditor(new LayerVisibleCellEditor(new LayerVisibleCheckBox()));
-        layerList.getColumnModel().getColumn(3).setResizable(false);
+        cm.getColumn(3).setCellRenderer(new LayerVisibleCellRenderer());
+        cm.getColumn(3).setCellEditor(new LayerVisibleCellEditor(new LayerVisibleCheckBox()));
+        cm.getColumn(3).setResizable(false);
 
-        layerList.getColumnModel().getColumn(4).setCellRenderer(new LayerNameCellRenderer());
-        layerList.getColumnModel().getColumn(4).setCellEditor(new LayerNameCellEditor(new DisableShortcutsOnFocusGainedTextField()));
+        cm.getColumn(4).setCellRenderer(new LayerNameCellRenderer());
+        cm.getColumn(4).setCellEditor(new LayerNameCellEditor(new DisableShortcutsOnFocusGainedTextField()));
+
         // Disable some default JTable shortcuts to use JOSM ones (see #5678, #10458)
         for (KeyStroke ks : new KeyStroke[] {
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, PlatformManager.getPlatform().getMenuShortcutKeyMaskEx()),
@@ -464,15 +470,22 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         }
     }
 
-    private static class ActiveLayerCheckBox extends JCheckBox {
-        ActiveLayerCheckBox() {
-            setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    private static class LayerCheckBox extends JCheckBox {
+        LayerCheckBox(String subdir, String name) {
+            ImageIcon active = ImageProvider.get(subdir, name, ImageSizes.LAYER);
             ImageIcon blank = createBlankIcon();
-            ImageIcon active = ImageProvider.get("dialogs/layerlist", "active");
             setIcon(blank);
             setSelectedIcon(active);
             setRolloverIcon(blank);
             setRolloverSelectedIcon(active);
+            setSize(ImageSizes.LAYER.getImageDimension());
+            setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        }
+    }
+
+    private static class ActiveLayerCheckBox extends LayerCheckBox {
+        ActiveLayerCheckBox() {
+            super("dialogs/layerlist", "active");
         }
     }
 
@@ -488,7 +501,7 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         LayerVisibleCheckBox() {
             iconEye = new EyeIcon(/* ICON(dialogs/layerlist/) */ "eye");
             iconEyeTranslucent = new EyeIcon(/* ICON(dialogs/layerlist/) */ "eye-translucent", true);
-            setIcon(ImageProvider.get("dialogs/layerlist", "eye-off"));
+            setIcon(ImageProvider.get("dialogs/layerlist", "eye-off", ImageSizes.LAYER));
             setSelectedIcon(iconEye);
             isTranslucent = false;
         }
@@ -528,7 +541,7 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
             }
 
             EyeIcon(String name, boolean translucent) {
-                super(ImageProvider.get("dialogs/layerlist", name).getImage());
+                super(ImageProvider.get("dialogs/layerlist", name, ImageSizes.LAYER).getImage());
                 this.translucent = translucent;
             }
 
@@ -552,23 +565,15 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         }
     }
 
-    private static class NativeScaleLayerCheckBox extends JCheckBox {
+    private static class NativeScaleLayerCheckBox extends LayerCheckBox {
         NativeScaleLayerCheckBox() {
-            setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            ImageIcon blank = createBlankIcon();
-            ImageIcon active = ImageProvider.get("dialogs/layerlist", "scale");
-            setIcon(blank);
-            setSelectedIcon(active);
+            super("dialogs/layerlist", "scale");
         }
     }
 
-    private static class OffsetLayerCheckBox extends JCheckBox {
+    private static class OffsetLayerCheckBox extends LayerCheckBox {
         OffsetLayerCheckBox() {
-            setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            ImageIcon blank = createBlankIcon();
-            ImageIcon withOffset = ImageProvider.get("dialogs/layerlist", "offset");
-            setIcon(blank);
-            setSelectedIcon(withOffset);
+            super("dialogs/layerlist", "offset");
         }
     }
 
@@ -775,7 +780,6 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
         /** manages list selection state*/
         private final DefaultListSelectionModel selectionModel;
         private final CopyOnWriteArrayList<LayerListModelListener> listeners;
-        private LayerList layerList;
         private final MainLayerManager layerManager;
 
         /**
@@ -787,10 +791,6 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
             this.layerManager = layerManager;
             this.selectionModel = selectionModel;
             listeners = new CopyOnWriteArrayList<>();
-        }
-
-        void setLayerList(LayerList layerList) {
-            this.layerList = layerList;
         }
 
         /**
@@ -927,10 +927,6 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
             layer.addPropertyChangeListener(this);
             fireTableDataChanged();
             int idx = getLayers().indexOf(layer);
-            Icon icon = layer.getIcon();
-            if (layerList != null && icon != null) {
-                layerList.setRowHeight(idx, Math.max(layerList.getRowHeight(), icon.getIconHeight()));
-            }
             selectionModel.setSelectionInterval(idx, idx);
             ensureSelectedIsVisible();
             if (layer instanceof AbstractTileSourceLayer<?>) {
@@ -1225,7 +1221,6 @@ public class LayerListDialog extends ToggleDialog implements DisplaySettingsChan
 
         LayerList(LayerListModel dataModel) {
             super(dataModel);
-            dataModel.setLayerList(this);
             if (!GraphicsEnvironment.isHeadless()) {
                 setDragEnabled(true);
             }

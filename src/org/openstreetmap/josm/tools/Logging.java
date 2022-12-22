@@ -436,6 +436,17 @@ public final class Logging {
     }
 
     /**
+     * Returns a stack trace as string
+     *
+     * @return the stack trace
+     */
+    public static String getStackTrace() {
+        StringWriter sb = new StringWriter();
+        new Throwable().printStackTrace(new PrintWriter(sb));
+        return sb.toString();
+    }
+
+    /**
      * Returns a human-readable message of error, also usable for developers.
      * @param t The error
      * @return The human-readable error message

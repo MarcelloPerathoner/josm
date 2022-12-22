@@ -20,7 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.Character.UnicodeBlock;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +47,10 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.help.ContextSensitiveHelpAction;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.tagging.TagEditorPanel;
+import org.openstreetmap.josm.gui.tagging.TagTable;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
+import org.openstreetmap.josm.gui.tagging.ac.DefaultAutoCompListener;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.MultiLineFlowLayout;
 import org.openstreetmap.josm.gui.util.WindowGeometry;
@@ -146,8 +150,29 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
         pnlSettings.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
         JPanel pnlTagEditorBorder = new JPanel(new BorderLayout());
         pnlTagEditorBorder.setBorder(BorderFactory.createTitledBorder(tr("Changeset tags:")));
-        pnlTagEditor = new TagEditorPanel(model, null, Changeset.MAX_CHANGESET_TAG_LENGTH);
+        pnlTagEditor = new TagEditorPanel(model, Changeset.MAX_CHANGESET_TAG_LENGTH);
         pnlTagEditorBorder.add(pnlTagEditor, BorderLayout.CENTER);
+
+        // setting up the tag table
+        AutoCompComboBox<String> keyEditor = new AutoCompComboBox<>();
+        AutoCompComboBox<String> valueEditor = new AutoCompComboBox<>();
+        KeyAutoCompManager keyAutoCompManager = new KeyAutoCompManager();
+        ValueAutoCompManager valueAutoCompManager = new ValueAutoCompManager();
+
+        keyEditor.getEditorComponent().setMaxTextLength(Changeset.MAX_CHANGESET_TAG_LENGTH);
+        keyEditor.getEditorComponent().enableUndoRedo(false);
+        keyEditor.getEditorComponent().addAutoCompListener(keyAutoCompManager);
+        keyEditor.addPopupMenuListener(keyAutoCompManager);
+
+        valueEditor.getEditorComponent().setMaxTextLength(Changeset.MAX_CHANGESET_TAG_LENGTH);
+        valueEditor.getEditorComponent().enableUndoRedo(false);
+        valueEditor.getEditorComponent().addAutoCompListener(valueAutoCompManager);
+        valueEditor.addPopupMenuListener(valueAutoCompManager);
+
+        TagTable tagTable = pnlTagEditor.getTable();
+        tagTable.setKeyEditor(keyEditor);
+        tagTable.setValueEditor(valueEditor);
+        tagTable.setRowHeight(keyEditor.getEditorComponent().getPreferredSize().height);
 
         pnlChangesetManagement = new ChangesetManagementPanel();
         pnlUploadStrategySelectionPanel = new UploadStrategySelectionPanel();
@@ -241,55 +266,33 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
      * this in the constructor because the dialog is a singleton.
      *
      * @param dataSet The Dataset we want to upload
+     * @param toUpload The primitves to upload
      * @since 18173
      */
-    public void initLifeCycle(DataSet dataSet) {
+    public void initLifeCycle(DataSet dataSet, APIDataSet toUpload) {
         Map<String, String> map = new HashMap<>();
-        this.dataSet = dataSet;
         pnlBasicUploadSettings.initLifeCycle(map);
         pnlChangesetManagement.initLifeCycle();
         model.clear();
-        model.putAll(map);          // init with tags from history
-        model.putAll(this.dataSet); // overwrite with tags from the dataset
+        model.putAll(map);     // init with tags from history
+        model.putAll(dataSet); // overwrite with tags from the dataset
         if (Config.getPref().getBoolean("upload.source.obtainautomatically", false)
         && this.dataSet.getChangeSetTags().containsKey(UploadDialogModel.SOURCE)) {
             model.put(UploadDialogModel.SOURCE, pnlBasicUploadSettings.getSourceFromLayer());
         }
 
         tpConfigPanels.setSelectedIndex(0);
-        pnlTagEditor.initAutoCompletion(MainApplication.getLayerManager().getEditLayer());
         pnlUploadStrategySelectionPanel.initFromPreferences();
 
         // update the summary
         UploadParameterSummaryPanel sumPnl = pnlBasicUploadSettings.getUploadParameterSummaryPanel();
         sumPnl.setUploadStrategySpecification(pnlUploadStrategySelectionPanel.getUploadStrategySpecification());
         sumPnl.setCloseChangesetAfterNextUpload(pnlChangesetManagement.isCloseChangesetAfterUpload());
-    }
 
-    /**
-     * Sets the collection of primitives to upload
-     *
-     * @param toUpload the dataset with the objects to upload. If null, assumes the empty
-     * set of objects to upload
-     *
-     */
-    public void setUploadedPrimitives(APIDataSet toUpload) {
-        UploadParameterSummaryPanel sumPnl = pnlBasicUploadSettings.getUploadParameterSummaryPanel();
-        if (toUpload == null) {
-            if (pnlUploadedObjects != null) {
-                List<OsmPrimitive> emptyList = Collections.emptyList();
-                pnlUploadedObjects.setUploadedPrimitives(emptyList, emptyList, emptyList);
-                sumPnl.setNumObjects(0);
-            }
-            return;
-        }
         List<OsmPrimitive> l = toUpload.getPrimitives();
         pnlBasicUploadSettings.setUploadedPrimitives(l);
-        pnlUploadedObjects.setUploadedPrimitives(
-                toUpload.getPrimitivesToAdd(),
-                toUpload.getPrimitivesToUpdate(),
-                toUpload.getPrimitivesToDelete()
-        );
+        pnlUploadedObjects.removeAll();
+        pnlUploadedObjects.build(toUpload);
         sumPnl.setNumObjects(l.size());
         pnlUploadStrategySelectionPanel.setNumUploadedObjects(l.size());
     }
@@ -554,6 +557,35 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
         }
     }
 
+    private static class KeyAutoCompManager extends DefaultAutoCompListener<String> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<String> model) {
+            model.replaceAllElements(Arrays.asList("comment", "source", "review_requested", "created_by", "imagery_used", "locale"));
+            // FIXME add more tags from user upload history?
+        }
+    }
+
+    private class ValueAutoCompManager extends DefaultAutoCompListener<String> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<String> model) {
+            TagTable table = pnlTagEditor.getTable();
+            String key = (String) table.getValueAt(table.getEditingRow(), table.convertColumnIndexToView(0));
+            if ("comment".equals(key)) {
+                model.prefs(x ->x, x -> x).load(BasicUploadSettingsPanel.COMMENT_HISTORY_KEY);
+                return;
+            }
+            if ("source".equals(key)) {
+                model.prefs(x -> x, x -> x).load(BasicUploadSettingsPanel.SOURCE_HISTORY_KEY, BasicUploadSettingsPanel.getDefaultSources());
+                return;
+            }
+            if ("review_requested".equals(key)) {
+                model.replaceAllElements(Arrays.asList("yes", ""));
+                return;
+            }
+            model.replaceAllElements(Arrays.asList(""));
+        }
+    }
+
     /* -------------------------------------------------------------------------- */
     /* Interface PropertyChangeListener                                           */
     /* -------------------------------------------------------------------------- */
@@ -641,8 +673,7 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
      * @since 14251
      */
     public void clean() {
-        setUploadedPrimitives(null);
-        dataSet = null;
+        pnlUploadedObjects.removeAll();
         synchronized (this) {
             if (this.changesetTagListener != null) {
                 this.changesetTagListener.stateChanged(null);

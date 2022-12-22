@@ -415,6 +415,7 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
 
         JScrollPane scrollPane = projPanel.getVerticalScrollPane();
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setOpaque(false);
         gui.createPreferenceTab(this).add(scrollPane, GBC.std().fill());
 
         selectedProjectionChanged(pc);

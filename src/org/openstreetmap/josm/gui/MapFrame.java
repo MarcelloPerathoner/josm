@@ -4,7 +4,6 @@ package org.openstreetmap.josm.gui;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -27,6 +26,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -37,11 +37,9 @@ import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
@@ -86,8 +84,10 @@ import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageResizeMode;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 /**
  * One Map frame with one dataset behind. This is the container gui class whose
@@ -650,20 +650,18 @@ public class MapFrame extends JPanel implements Destroyable, ActiveLayerChangeLi
 
         ListAllButtonsAction(Collection<? extends HideableButton> buttons) {
             this.buttons = buttons;
+            Icon icon = new ImageProvider("misc", "minimized")
+                .setSize(ImageSizes.TOOLBAR).setImageResizeMode(ImageResizeMode.PADDED).get();
+            putValue(SMALL_ICON, icon);
         }
 
         JButton createButton() {
-            button = new BasicArrowButton(SwingConstants.EAST, null, null, Color.BLACK, null) {
-
+            button = new JButton(this) {
                 @Override
-                public Dimension getMaximumSize() {
-                    final Dimension dimension = ImageProvider.ImageSizes.TOOLBAR.getImageDimension();
-                    dimension.width = Integer.MAX_VALUE;
-                    return dimension;
+                public Dimension getPreferredSize() {
+                    return ImageSizes.TOOLBAR.getImageDimension();
                 }
             };
-            button.setAction(this);
-            button.setAlignmentX(0.5f);
             button.setInheritsPopupMenu(true);
             return button;
         }

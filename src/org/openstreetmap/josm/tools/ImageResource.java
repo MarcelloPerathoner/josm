@@ -162,7 +162,7 @@ public class ImageResource {
      * @since 12722
      */
     ImageIcon getImageIcon(Dimension dim, boolean multiResolution, ImageResizeMode resizeMode) {
-        return getImageIconAlreadyScaled(GuiSizesHelper.getDimensionDpiAdjusted(dim), multiResolution, false, resizeMode);
+        return getImageIconAlreadyScaled(dim, multiResolution, false, resizeMode);
     }
 
     /**

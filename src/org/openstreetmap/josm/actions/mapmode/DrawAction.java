@@ -877,10 +877,10 @@ public class DrawAction extends MapMode implements MapViewPaintable, DataSelecti
             snapHelper.noSnapNow();
         }
 
+        showStatusInfo(null, null, null, snapHelper.isSnapOn());
+
         if (getCurrentBaseNode() == null || getCurrentBaseNode() == currentMouseNode)
             return; // Don't create zero length way segments.
-
-        showStatusInfo(Double.NaN, -1, -1, snapHelper.isSnapOn());
 
         double curHdg = Utils.toDegrees(getCurrentBaseNode().getEastNorth()
                 .heading(currentMouseEastNorth));
@@ -897,9 +897,9 @@ public class DrawAction extends MapMode implements MapViewPaintable, DataSelecti
         // status bar was filled by snapHelper
     }
 
-    static void showStatusInfo(double angle, double hdg, double distance, boolean activeFlag) {
+    static void showStatusInfo(Double angle, Double hdg, Double distance, boolean activeFlag) {
         MapFrame map = MainApplication.getMap();
-        map.statusLine.setAngleNaN(angle);
+        map.statusLine.setAngle(angle);
         map.statusLine.activateAnglePanel(activeFlag);
         map.statusLine.setHeading(hdg);
         map.statusLine.setDist(distance);

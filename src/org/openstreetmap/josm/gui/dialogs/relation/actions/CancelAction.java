@@ -45,7 +45,7 @@ public class CancelAction extends SavingAction {
     public void actionPerformed(ActionEvent e) {
         getMemberTable().stopHighlighting();
         Relation snapshot = getEditor().getRelationSnapshot();
-        if ((!getMemberTableModel().hasSameMembersAs(snapshot) || getTagModel().isDirty())
+        if ((!getMemberTableModel().hasSameMembersAs(snapshot) || !getTagModel().getTags().equals(snapshot.getKeys()))
          && !(snapshot == null && getTagModel().getTags().isEmpty())) {
             //give the user a chance to save the changes
             int ret = confirmClosingByCancel(this.editorAccess.getChangedRelation());

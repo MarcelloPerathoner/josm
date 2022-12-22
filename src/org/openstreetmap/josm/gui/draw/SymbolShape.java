@@ -8,7 +8,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.openstreetmap.josm.tools.GuiSizesHelper;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * A list of possible symbol shapes.
@@ -72,7 +72,7 @@ public enum SymbolShape {
      * @since 10875
      */
     public Shape shapeAround(double x, double y, double size) {
-        size = GuiSizesHelper.getSizeDpiAdjusted(size);
+        size = ImageProvider.adj(size);
         double radius = size / 2;
         Shape shape;
         switch (this) {

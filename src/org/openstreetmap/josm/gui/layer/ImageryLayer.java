@@ -216,7 +216,7 @@ public abstract class ImageryLayer extends Layer {
      */
     public JMenuItem getOffsetMenuItem() {
         JMenu subMenu = new JMenu(trc("layer", "Offset"));
-        subMenu.setIcon(ImageProvider.get("mapmode", "adjustimg"));
+        subMenu.setIcon(ImageProvider.get("mapmode", "adjustimg", ImageSizes.MENU));
         return (JMenuItem) getOffsetMenuItem(subMenu);
     }
 

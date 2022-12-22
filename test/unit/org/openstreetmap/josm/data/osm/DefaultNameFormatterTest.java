@@ -1,9 +1,6 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.data.osm;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -16,16 +13,12 @@ import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
-import org.openstreetmap.josm.testutils.annotations.BasicWiremock;
-import org.openstreetmap.josm.testutils.annotations.HTTP;
 import org.xml.sax.SAXException;
-
-import com.github.tomakehurst.wiremock.WireMockServer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -34,14 +27,16 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 // Preferences are needed for OSM primitives
 @BasicPreferences
-@BasicWiremock
-@HTTP
 class DefaultNameFormatterTest {
-    /**
-     * HTTP mock.
-     */
-    @BasicWiremock
-    WireMockServer wireMockServer;
+    private final TaggingPresets taggingPresets;
+
+    DefaultNameFormatterTest() throws IOException, SAXException {
+        taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
+    }
+
+    DefaultNameFormatter getFormatter() {
+        return new DefaultNameFormatter(taggingPresets);
+    }
 
     /**
      * Non-regression test for ticket <a href="https://josm.openstreetmap.de/ticket/9632">#9632</a>.
@@ -52,40 +47,36 @@ class DefaultNameFormatterTest {
     @Test
     @SuppressFBWarnings(value = "ITA_INEFFICIENT_TO_ARRAY")
     void testTicket9632() throws IllegalDataException, IOException, SAXException {
-        String source = "presets/Presets_BicycleJunction-preset.xml";
-        wireMockServer.stubFor(get(urlEqualTo("/" + source))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "text/xml")
-                    .withBodyFile(source)));
-        TaggingPresets.addTaggingPresets(TaggingPresetReader.readAll(wireMockServer.url(source), true));
 
-        Comparator<IRelation<?>> comparator = DefaultNameFormatter.getInstance().getRelationComparator();
+        DefaultNameFormatter f = new DefaultNameFormatter(TaggingPresetsTest.initFromResource(
+            TestUtils.getTestDataRoot() + "/__files/presets/Presets_BicycleJunction-preset.xml"));
+
+        Comparator<IRelation<?>> comparator = f.getRelationComparator();
 
         try (InputStream is = TestUtils.getRegressionDataStream(9632, "data.osm.zip")) {
             DataSet ds = OsmReader.parseDataSet(is, null);
 
+            // CHECKSTYLE.OFF: SingleSpaceSeparator
+            // CHECKSTYLE.OFF: ParenPad
+
             // Test with 3 known primitives causing the problem. Correct order is p1, p3, p2 with this preset
             Relation p1 = (Relation) ds.getPrimitiveById(2983382, OsmPrimitiveType.RELATION);
-            Relation p2 = (Relation) ds.getPrimitiveById(550315, OsmPrimitiveType.RELATION);
-            Relation p3 = (Relation) ds.getPrimitiveById(167042, OsmPrimitiveType.RELATION);
+            Relation p2 = (Relation) ds.getPrimitiveById( 550315, OsmPrimitiveType.RELATION);
+            Relation p3 = (Relation) ds.getPrimitiveById( 167042, OsmPrimitiveType.RELATION);
 
-            // route_master ("Bus 453", 6 members)
-            System.out.println("p1: "+DefaultNameFormatter.getInstance().format(p1)+" - "+p1);
-            // TMC ("A 6 Kaiserslautern - Mannheim [negative]", 123 members)
-            System.out.println("p2: "+DefaultNameFormatter.getInstance().format(p2)+" - "+p2);
-            // route(lcn Sal  Salier-Radweg(412 members)
-            System.out.println("p3: "+DefaultNameFormatter.getInstance().format(p3)+" - "+p3);
+            assertEquals("route_master (\"Bus 453\", 6 members)",                           f.format(p1));
+            assertEquals("TMC (\"A 6 Kaiserslautern - Mannheim [negative]\", 123 members)", f.format(p2));
+            assertEquals("route(lcn Sal  Salier-Radweg(412 members)",                       f.format(p3));
 
-            // CHECKSTYLE.OFF: SingleSpaceSeparator
-            assertEquals(comparator.compare(p1, p2), -1); // p1 < p2
-            assertEquals(comparator.compare(p2, p1),  1); // p2 > p1
+            assertEquals(-1, comparator.compare(p1, p2)); // p1 < p2
+            assertEquals( 1, comparator.compare(p2, p1)); // p2 > p1
+            assertEquals(-1, comparator.compare(p1, p3)); // p1 < p3
+            assertEquals( 1, comparator.compare(p3, p1)); // p3 > p1
+            assertEquals( 1, comparator.compare(p2, p3)); // p2 > p3
+            assertEquals(-1, comparator.compare(p3, p2)); // p3 < p2
 
-            assertEquals(comparator.compare(p1, p3), -1); // p1 < p3
-            assertEquals(comparator.compare(p3, p1),  1); // p3 > p1
-            assertEquals(comparator.compare(p2, p3),  1); // p2 > p3
-            assertEquals(comparator.compare(p3, p2), -1); // p3 < p2
             // CHECKSTYLE.ON: SingleSpaceSeparator
+            // CHECKSTYLE.ON: ParenPad
 
             Relation[] relations = new ArrayList<>(ds.getRelations()).toArray(new Relation[0]);
 
@@ -128,12 +119,12 @@ class DefaultNameFormatterTest {
                 getFormattedWayName("building=yes addr:housenumber=123 addr:housename=FooName"));
     }
 
-    static String getFormattedRelationName(String tagsString) {
-        return DefaultNameFormatter.getInstance().format(OsmUtils.createPrimitive("relation " + tagsString));
+    String getFormattedRelationName(String tagsString) {
+        return getFormatter().format(OsmUtils.createPrimitive("relation " + tagsString));
     }
 
-    static String getFormattedWayName(String tagsString) {
-        return DefaultNameFormatter.getInstance().format(OsmUtils.createPrimitive("way " + tagsString));
+    String getFormattedWayName(String tagsString) {
+        return getFormatter().format(OsmUtils.createPrimitive("way " + tagsString));
     }
 
     /**
@@ -142,12 +133,12 @@ class DefaultNameFormatterTest {
     @Test
     void testFormatAsHtmlUnorderedList() {
         assertEquals("<ul><li>incomplete</li></ul>",
-                DefaultNameFormatter.getInstance().formatAsHtmlUnorderedList(new Node(1)));
+            getFormatter().formatAsHtmlUnorderedList(new Node(1)));
 
         List<Node> nodes = IntStream.rangeClosed(1, 10).mapToObj(i -> new Node(i, 1))
                 .collect(Collectors.toList());
         assertEquals("<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>...</li></ul>",
-                DefaultNameFormatter.getInstance().formatAsHtmlUnorderedList(nodes, 5));
+            getFormatter().formatAsHtmlUnorderedList(nodes, 5));
     }
 
     /**
@@ -160,7 +151,7 @@ class DefaultNameFormatterTest {
                            "<strong>tourism</strong>=hotel<br>"+
                            "<strong>url</strong>=http://foo.bar<br>"+
                            "<strong>xml</strong>=&lt;tag/&gt;</html>",
-                DefaultNameFormatter.getInstance().buildDefaultToolTip(
+            getFormatter().buildDefaultToolTip(
                         TestUtils.newNode("tourism=hotel name:en=foo url=http://foo.bar xml=<tag/>")));
     }
 

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
@@ -23,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -331,7 +333,11 @@ public class PreferencesTable extends JTable {
             PrefEntry pe = (PrefEntry) value;
             StringSetting stg = (StringSetting) pe.getValue();
             String s = stg.getValue() == null ? "" : stg.getValue();
-            return super.getTableCellEditorComponent(table, s, isSelected, row, column);
+            Component editor = super.getTableCellEditorComponent(table, s, isSelected, row, column);
+            if (editor instanceof JTextField) {
+                ((JTextField) editor).setBorder(BorderFactory.createEmptyBorder());
+            }
+            return editor;
         }
     }
 }

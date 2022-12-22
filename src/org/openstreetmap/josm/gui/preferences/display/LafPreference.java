@@ -12,7 +12,6 @@ import java.time.format.FormatStyle;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -61,7 +60,7 @@ public class LafPreference implements SubPreferenceSetting {
     public static final StringProperty LAF = new StringProperty("laf", PlatformManager.getPlatform().getDefaultStyle());
 
     static final class LafListCellRenderer implements ListCellRenderer<LookAndFeelInfo> {
-        private final DefaultListCellRenderer def = new DefaultListCellRenderer();
+        private final ListCellRenderer<Object> def = new JosmComboBox<>().getRenderer();
 
         @Override
         public Component getListCellRendererComponent(JList<? extends LookAndFeelInfo> list, LookAndFeelInfo value,
@@ -239,6 +238,7 @@ public class LafPreference implements SubPreferenceSetting {
 
         JScrollPane scrollpane = panel.getVerticalScrollPane();
         scrollpane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        scrollpane.getViewport().setOpaque(false);
         gui.getDisplayPreference().addSubTab(this, tr("Look and Feel"), scrollpane);
     }
 

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.openstreetmap.josm.command.AddCommand;
@@ -26,8 +27,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.dialogs.relation.IRelationEditor;
 import org.openstreetmap.josm.gui.dialogs.relation.RelationDialogManager;
 import org.openstreetmap.josm.gui.dialogs.relation.RelationEditor;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -38,7 +38,7 @@ import org.openstreetmap.josm.tools.Utils;
 abstract class SavingAction extends AbstractRelationEditorAction {
     private static final long serialVersionUID = 1L;
 
-    protected final AutoCompletingTextField tfRole;
+    protected final JTextField tfRole;
 
     protected SavingAction(IRelationEditorActionAccess editorAccess, IRelationEditorUpdateOn... updateOn) {
         super(editorAccess, updateOn);
@@ -47,11 +47,11 @@ abstract class SavingAction extends AbstractRelationEditorAction {
 
     /**
      * apply updates to a new relation
-     * @param tagEditorModel tag editor model
+     * @param tagTableModel tag editor model
      */
-    protected void applyNewRelation(TagEditorModel tagEditorModel) {
+    protected void applyNewRelation(TagTableModel tagTableModel) {
         final Relation newRelation = new Relation();
-        tagEditorModel.applyToPrimitive(newRelation);
+        newRelation.setKeys(tagTableModel.getTags());
         getMemberTableModel().applyToRelation(newRelation);
         // If the user wanted to create a new relation, but hasn't added any members or
         // tags (specifically the "type" tag), don't add the relation
@@ -72,11 +72,11 @@ abstract class SavingAction extends AbstractRelationEditorAction {
 
     /**
      * Apply the updates for an existing relation which has been changed outside of the relation editor.
-     * @param tagEditorModel tag editor model
+     * @param tagTableModel tag editor model
      */
-    protected void applyExistingConflictingRelation(TagEditorModel tagEditorModel) {
+    protected void applyExistingConflictingRelation(TagTableModel tagTableModel) {
         Relation editedRelation = new Relation(editorAccess.getEditor().getRelation());
-        tagEditorModel.applyToPrimitive(editedRelation);
+        editedRelation.setKeys(tagTableModel.getTags());
         editorAccess.getMemberTableModel().applyToRelation(editedRelation);
         Conflict<Relation> conflict = new Conflict<>(editorAccess.getEditor().getRelation(), editedRelation);
         UndoRedoHandler.getInstance().add(new ConflictAddCommand(getLayer().getDataSet(), conflict));
@@ -84,12 +84,12 @@ abstract class SavingAction extends AbstractRelationEditorAction {
 
     /**
      * Apply the updates for an existing relation which has not been changed outside of the relation editor.
-     * @param tagEditorModel tag editor model
+     * @param tagTableModel tag editor model
      */
-    protected void applyExistingNonConflictingRelation(TagEditorModel tagEditorModel) {
+    protected void applyExistingNonConflictingRelation(TagTableModel tagTableModel) {
         Relation originRelation = editorAccess.getEditor().getRelation();
         Relation editedRelation = new Relation(originRelation);
-        tagEditorModel.applyToPrimitive(editedRelation);
+        editedRelation.setKeys(tagTableModel.getTags());
         getMemberTableModel().applyToRelation(editedRelation);
         List<Command> cmds = new ArrayList<>();
         if (!originRelation.getMembers().equals(editedRelation.getMembers())) {
@@ -193,7 +193,7 @@ abstract class SavingAction extends AbstractRelationEditorAction {
 
     protected boolean isEditorDirty() {
         Relation snapshot = editorAccess.getEditor().getRelationSnapshot();
-        return (snapshot != null && !getMemberTableModel().hasSameMembersAs(snapshot)) || getTagModel().isDirty()
+        return (snapshot != null && (!getMemberTableModel().hasSameMembersAs(snapshot) || !getTagModel().getTags().equals(snapshot.getKeys())))
                 || getEditor().getRelation() == null || getEditor().getRelation().getDataSet() == null;
     }
 }

@@ -10,32 +10,67 @@ import java.util.Collections;
 
 import javax.swing.JLabel;
 
+import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+
 /**
- * A hyperlink {@link JLabel}.
- * 
+ * A hyperlink {@link JLabel} that opens a preset dialog.
+ * <p>
  * To indicate that the user can click on the text, it displays an appropriate
  * mouse cursor and dotted underline when the mouse is inside the hover area.
+ * <p>
+ * Works in 3 environments:
+ * <ul>
+ * <li>in the {@link PresetListPanel} in the {@link PropertiesDialog}
+ * <li>in the {@link PresetListPanel} in a {@link GenericRelationEditor}
+ * <li>inside a {@link Link} element in a {@link TaggingPreset} dialog
+ * </ul>
+ * When called from a preset dialog, it will carry the yet unsaved changes into
+ * the next dialog.
  */
 public class TaggingPresetLabel extends JLabel {
-
-    protected final TaggingPreset t;
+    private final TaggingPreset preset;
+    private final TaggingPreset.Instance presetInstance;
+    private final TaggedHandler handler;
+    private final AutoCompletionManager manager;
 
     /**
-     * Constructs a new {@code PresetLabel}.
-     * @param t the tagging preset
+     * Constructor
+     *
+     * @param handler the data handler to pass to the new dialog
+     * @param preset the tagging preset to open in the new dialog when clicked
+     * @param presetInstance the preset instance of the old dialog
      */
-    public TaggingPresetLabel(TaggingPreset t) {
-        super(t.getName() + " …");
-        setIcon(t.getIcon());
-        addMouseListener(new PresetLabelMouseListener(this));
-        this.t = t;
+    public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, TaggingPreset.Instance presetInstance) {
+        super(preset.getName() + " …", preset.getIcon(), LEADING);
+        this.preset = preset;
+        this.presetInstance = presetInstance;
+        this.handler = handler;
+        this.manager = presetInstance.getAutoCompletionManager();
+        addMouseListener(new TaggingPresetMouseListener(this));
     }
 
     /**
-     * Small helper class that manages the highlighting of the label on hover as well as opening
-     * the corresponding preset when clicked
+     * Constructor
+     *
+     * @param handler the data handler to pass to the new dialog
+     * @param preset the tagging preset to open in the new dialog when clicked
+     * @param manager the autocompletion manager to pass to the new dialog
      */
-    public static class PresetLabelMouseListener implements MouseListener {
+    public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, AutoCompletionManager manager) {
+        super(preset.getName() + " …", preset.getIcon(), LEADING);
+        this.preset = preset;
+        this.presetInstance = null;
+        this.handler = handler;
+        this.manager = manager;
+        addMouseListener(new TaggingPresetMouseListener(this));
+    }
+
+    /**
+     * Underlines the label when hovered
+     */
+    class TaggingPresetMouseListener implements MouseListener {
         protected final JLabel label;
         protected final Font hover;
         protected final Font normal;
@@ -44,7 +79,7 @@ public class TaggingPresetLabel extends JLabel {
          * Constructs a new {@code PresetLabelMouseListener}.
          * @param lbl Label to highlight
          */
-        public PresetLabelMouseListener(JLabel lbl) {
+        TaggingPresetMouseListener(JLabel lbl) {
             label = lbl;
             lbl.setCursor(new Cursor(Cursor.HAND_CURSOR));
             normal = label.getFont();
@@ -53,7 +88,8 @@ public class TaggingPresetLabel extends JLabel {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            // Do nothing
+            preset.showDialog(presetInstance != null ?
+                new TaggingPreset.PresetLinkHandler((DataSetHandler) handler, presetInstance) : handler, manager);
         }
 
         @Override

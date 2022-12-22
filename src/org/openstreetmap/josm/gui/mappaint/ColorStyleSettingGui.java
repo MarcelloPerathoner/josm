@@ -59,12 +59,12 @@ public class ColorStyleSettingGui implements StyleSettingGui {
 
         @Override
         public int getIconWidth() {
-            return size.getAdjustedWidth();
+            return size.getWidth();
         }
 
         @Override
         public int getIconHeight() {
-            return size.getAdjustedHeight();
+            return size.getHeight();
         }
 
     }

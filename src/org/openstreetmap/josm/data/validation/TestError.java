@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -54,6 +56,8 @@ public class TestError implements Comparable<TestError> {
     private boolean selected;
     /** Supplying a command to fix the error */
     private final Supplier<Command> fixingCommand;
+    /** The offending keys */
+    private Set<String> keys;
 
     /**
      * A builder for a {@code TestError}.
@@ -68,12 +72,14 @@ public class TestError implements Comparable<TestError> {
         private String descriptionEn;
         private Collection<? extends OsmPrimitive> primitives;
         private Collection<?> highlighted;
+        private Set<String> keys;
         private Supplier<Command> fixingCommand;
 
         Builder(Test tester, Severity severity, int code) {
             this.tester = tester;
             this.severity = severity;
             this.code = code;
+            this.keys = new HashSet<>();
         }
 
         /**
@@ -114,6 +120,17 @@ public class TestError implements Comparable<TestError> {
             this.message = message;
             this.description = I18n.tr(marktrDescription, args);
             this.descriptionEn = new MessageFormat(marktrDescription, Locale.ENGLISH).format(args);
+            return this;
+        }
+
+        /**
+         * Sets the keys affected by this error.
+         *
+         * @param keys the keys affected by this error
+         * @return {@code this}
+         */
+        public Builder keys(Collection<String> keys) {
+            this.keys.addAll(keys);
             return this;
         }
 
@@ -255,6 +272,7 @@ public class TestError implements Comparable<TestError> {
         this.highlighted = builder.highlighted;
         this.code = builder.code;
         this.fixingCommand = builder.fixingCommand;
+        this.keys = builder.keys;
     }
 
     /**
@@ -394,6 +412,14 @@ public class TestError implements Comparable<TestError> {
      */
     public Test getTester() {
         return tester;
+    }
+
+    /**
+     * Gets the offending keys
+     * @return the keys
+     */
+    public Set<String> getKeys() {
+        return keys;
     }
 
     /**

@@ -356,11 +356,11 @@ class TagCheckerTest {
      */
     @Test
     void testObjectTypeNotSupportedByPreset() throws IOException {
-        List<TestError> errors = test(OsmUtils.createPrimitive("relation waterway=river"));
+        List<TestError> errors = test(OsmUtils.createPrimitive("relation type=waterway waterway=river"));
+        assertTrue(errors.isEmpty(), errors::toString);
+        errors = test(OsmUtils.createPrimitive("relation waterway=river"));
         assertEquals(1, errors.size());
         assertEquals(TagChecker.INVALID_PRESETS_TYPE, errors.get(0).getCode());
-        errors = test(OsmUtils.createPrimitive("relation type=waterway waterway=river"));
-        assertTrue(errors.isEmpty(), errors::toString);
     }
 
     /**

@@ -19,7 +19,7 @@ import org.openstreetmap.josm.gui.dialogs.relation.MemberTableModel;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTable;
 import org.openstreetmap.josm.gui.dialogs.relation.SelectionTableModel;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.io.NetworkManager;
 import org.openstreetmap.josm.io.OnlineResource;
 
@@ -114,7 +114,7 @@ public abstract class AbstractRelationEditorAction extends AbstractAction
         return editorAccess.getEditor();
     }
 
-    protected TagEditorModel getTagModel() {
+    protected TagTableModel getTagModel() {
         return editorAccess.getTagModel();
     }
 

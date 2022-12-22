@@ -4,8 +4,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 import static org.CustomMatchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -15,9 +14,9 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openstreetmap.josm.TestUtils;
-import org.openstreetmap.josm.gui.tagging.presets.items.Check;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.xml.sax.SAXException;
 
@@ -26,30 +25,15 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * Unit tests of {@link TaggingPresetReader} class.
  */
+@Execution(ExecutionMode.CONCURRENT)
 class TaggingPresetReaderTest {
 
     /**
-     * Setup rule
+     * Setup test.
      */
     @RegisterExtension
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public JOSMTestRules test = new JOSMTestRules();
-
-    /**
-     * #8954 - last checkbox in the preset is not added
-     * @throws SAXException if any XML error occurs
-     * @throws IOException if any I/O error occurs
-     */
-    @Test
-    void testTicket8954() throws SAXException, IOException {
-        String presetfile = TestUtils.getRegressionDataFile(8954, "preset.xml");
-        final Collection<TaggingPreset> presets = TaggingPresetReader.readAll(presetfile, false);
-        Assert.assertEquals("Number of preset items", 1, presets.size());
-        final TaggingPreset preset = presets.iterator().next();
-        Assert.assertEquals("Number of entries", 1, preset.data.size());
-        final TaggingPresetItem item = preset.data.get(0);
-        Assert.assertTrue("Entry is not checkbox", item instanceof Check);
-    }
 
     /**
      * Test nested chunks
@@ -58,11 +42,13 @@ class TaggingPresetReaderTest {
      */
     @Test
     void testNestedChunks() throws SAXException, IOException {
-        final Collection<TaggingPreset> presets = TaggingPresetReader.readAll(TestUtils.getTestDataRoot() + "preset_chunk.xml", true);
+        String presetfile = TestUtils.getTestDataRoot() + "preset_chunk.xml";
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromResource(presetfile);
+        final Collection<TaggingPreset> presets = taggingPresets.getAllPresets();
         assertThat(presets, hasSize(1));
         final TaggingPreset abc = presets.iterator().next();
-        assertTrue(abc.data.stream().allMatch(Key.class::isInstance));
-        final List<String> keys = abc.data.stream().map(x -> ((Key) x).key).collect(Collectors.toList());
+
+        final List<String> keys = abc.getAllItems(Key.class).stream().map(x -> x.getKey()).collect(Collectors.toList());
         assertEquals("[A1, A2, A3, B1, B2, B3, C1, C2, C3]", keys.toString());
     }
 
@@ -73,13 +59,12 @@ class TaggingPresetReaderTest {
      */
     @Test
     void testExternalEntityResolving() throws IOException {
-        try {
-            TaggingPresetReader.readAll(TestUtils.getTestDataRoot() + "preset_external_entity.xml", true);
-            fail("Reading a file with external entities should throw an SAXParseException!");
-        } catch (SAXException e) {
-            String expected = "DOCTYPE is disallowed when the feature \"http://apache.org/xml/features/disallow-doctype-decl\" set to true.";
-            assertEquals(expected, e.getMessage());
-        }
+        String presetfile = TestUtils.getTestDataRoot() + "preset_external_entity.xml";
+        Exception e = assertThrows(SAXException.class, () -> {
+            TaggingPresetReader.read(presetfile, true);
+        });
+
+        Assert.assertTrue(e.getMessage().contains("DOCTYPE is disallowed when"));
     }
 
     /**
@@ -90,8 +75,8 @@ class TaggingPresetReaderTest {
      */
     @Test
     void testReadDefaulPresets() throws SAXException, IOException {
-        String presetfile = "resource://data/defaultpresets.xml";
-        final Collection<TaggingPreset> presets = TaggingPresetReader.readAll(presetfile, true);
+        TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
+        final Collection<TaggingPreset> presets = taggingPresets.getAllPresets();
         Assert.assertTrue("Default presets are empty", presets.size() > 0);
     }
 }

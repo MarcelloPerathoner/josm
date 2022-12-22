@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18606'>
+  <tag key='josm.version' value='18606'/>
+  <list key='mirror.test/config/performance-josm.home/cache/images.https://upload.wikimedia.org/wikipedia/commons/1/18/OpenJDK_logo.svg'>
+    <entry value='1670190245370'/>
+    <entry value='test/config/performance-josm.home/cache/images/mirror_https___upload.wikimedia.org_wikipedia_commons_1_18_OpenJDK_logo.svg'/>
+  </list>
+</preferences>

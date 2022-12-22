@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.util.stream.IntStream;
 
+import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
@@ -173,16 +174,90 @@ public final class TableHelper {
      * @param parent the parent component used for determining the preference key
      * @see JTable#setFont(Font)
      * @see JTable#setRowHeight(int)
+     * @see javax.swing.plaf.basic.BasicTableUI#installDefaults()
      */
     public static void setFont(JTable table, Class<? extends Component> parent) {
         double fontFactor = Config.getPref().getDouble("gui.scale.table.font",
                 Config.getPref().getDouble("gui.scale.table." + parent.getSimpleName() + ".font", 1.0));
-        if (fontFactor == 1.0) {
-            return;
-        }
+
         Font font = table.getFont();
-        table.setFont(font.deriveFont((float) (font.getSize2D() * fontFactor)));
-        // need to setRowHeight, see comment in javax.swing.plaf.basic.BasicTableUI.installDefaults
-        table.setRowHeight((int) (table.getRowHeight() * fontFactor));
+        if (fontFactor != 1.0) {
+            table.setFont(font.deriveFont((float) (font.getSize2D() * fontFactor)));
+        }
+        // According to javax.swing.plaf.basic.BasicTableUI.installDefaults: "If the
+        // developer changes the font, it's there[sic!] responsability[sic!] to update
+        // the row height."
+        setRowHeight(table, null);
+    }
+
+    /**
+     * Sets an approximate row height for all table rows.
+     * <p>
+     * This is a fast and "close-enough" approach to setting the row height.  To set the
+     * exact row height you'd have to render and measure all cells.
+     * <p>
+     * If no icon is provided, the row height is set according to the font size alone.
+     * If an icon is provided, it should be of the same size as the icons expected to
+     * populate the table rows. The row height will be set to accomodate the font and
+     * the icon.
+     *
+     * @param table the table with the font already set
+     * @param prototypeIcon an icon of the same size as those used in the table (or null)
+     * @see #setRowHeights
+     */
+    public static void setRowHeight(JTable table, Icon prototypeIcon) {
+        int fontHeight = table.getFontMetrics(table.getFont()).getHeight();
+        int iconHeight = prototypeIcon != null ? prototypeIcon.getIconHeight() : 0;
+
+        table.setRowHeight(Math.max(fontHeight, iconHeight) + table.getRowMargin());
+    }
+
+    /**
+     * Sets the exact row height for each (variable height) table row.
+     * <p>
+     * This is the slow and exact approach to setting row heights and works with
+     * variable height rows too.  It is slow because it renders and measures the whole
+     * table.
+     * <p>
+     * This function must be called after every change in the table model.
+     *
+     * @param table the table with data already loaded
+     */
+    public static void setRowHeights(JTable table) {
+        for (int row = 0; row < table.getRowCount(); row++) {
+            int preferredHeight = 1;
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                preferredHeight = Math.max(preferredHeight, table.prepareRenderer(
+                    table.getCellRenderer(row, col), row, col).getPreferredSize().height);
+            }
+            table.setRowHeight(row, preferredHeight + table.getRowMargin());
+        }
+    }
+
+    /**
+     * Sets the exact column width for a given table column from data.
+     *
+     * @param table the table with data already loaded
+     * @param column the column index
+     */
+    public static void setColumnWidth(JTable table, int column) {
+        int preferredWidth = 1;
+        int rows = table.getRowCount();
+        for (int row = 0; row < rows; row++) {
+            preferredWidth = Math.max(preferredWidth, table.prepareRenderer(
+                table.getCellRenderer(row, column), row, column).getPreferredSize().width);
+        }
+        table.getColumnModel().getColumn(column).setPreferredWidth(preferredWidth);
+    }
+
+    /**
+     * Sets the exact column width for each table column from data.
+     *
+     * @param table the table with data already loaded
+     */
+    public static void setColumnWidths(JTable table) {
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            setColumnWidth(table, col);
+        }
     }
 }

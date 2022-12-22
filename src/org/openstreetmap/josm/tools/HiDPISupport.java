@@ -2,10 +2,7 @@
 package org.openstreetmap.josm.tools;
 
 import java.awt.Dimension;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.geom.AffineTransform;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,14 +54,14 @@ public final class HiDPISupport {
      * @return multi-resolution image if necessary and possible, the base image otherwise
      */
     public static Image getMultiResolutionImage(Image base, ImageResource ir, ImageResizeMode resizeMode) {
-        double uiScale = getHiDPIScale();
-        if (uiScale != 1.0 && baseMultiResolutionImageConstructor != null) {
+        double guiScale = ImageProvider.getGuiScale();
+        if (guiScale != 1.0 && baseMultiResolutionImageConstructor != null) {
             if (resizeMode == ImageResizeMode.BOUNDED) {
                 resizeMode = ImageResizeMode.AUTO;
             }
             ImageIcon zoomed = ir.getImageIconAlreadyScaled(new Dimension(
-                    (int) Math.round(base.getWidth(null) * uiScale),
-                    (int) Math.round(base.getHeight(null) * uiScale)), false, true, resizeMode);
+                    (int) Math.round(base.getWidth(null) * guiScale),
+                    (int) Math.round(base.getHeight(null) * guiScale)), false, true, resizeMode);
             Image mrImg = getMultiResolutionImage(Arrays.asList(base, zoomed.getImage()));
             if (mrImg != null) return mrImg;
         }
@@ -166,27 +163,6 @@ public final class HiDPISupport {
             }
         }
         return img;
-    }
-
-    /**
-     * Detect the GUI scale for HiDPI mode.
-     * <p>
-     * This method may not work as expected for a multi-monitor setup. It will
-     * only take the default screen device into account.
-     * @return the GUI scale for HiDPI mode, a value of 1.0 means standard mode.
-     */
-    public static double getHiDPIScale() {
-        if (GraphicsEnvironment.isHeadless())
-            return 1.0;
-        GraphicsConfiguration gc = GraphicsEnvironment
-                .getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().
-                getDefaultConfiguration();
-        AffineTransform transform = gc.getDefaultTransform();
-        if (!Utils.equalsEpsilon(transform.getScaleX(), transform.getScaleY())) {
-            Logging.warn("Unexpected ui transform: " + transform);
-        }
-        return transform.getScaleX();
     }
 
     /**

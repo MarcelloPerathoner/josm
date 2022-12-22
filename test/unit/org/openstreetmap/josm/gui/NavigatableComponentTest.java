@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -11,6 +12,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,6 +26,8 @@ import org.CustomMatchers;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.Bounds;
@@ -28,10 +36,17 @@ import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.GuiHelper;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
+import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -40,6 +55,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author Michael Zangl
  *
  */
+
+// We need prefs for the hit tests.
+@BasicPreferences
 class NavigatableComponentTest {
 
     private static final class NavigatableComponentMock extends NavigatableComponent {
@@ -282,4 +300,200 @@ class NavigatableComponentTest {
         };
     }
 
+    @Nested
+    class Hit_Tests {
+
+        DataSet ds;
+        Node n1;
+        Node n2;
+        Node n3;
+        Node n4;
+        Node n5;
+        Way w1;
+        Way w2;
+        Way w3;
+        Way w4;
+        Relation r1;
+        Relation r2;
+        Relation r3;
+        Relation r4;
+        int SnapDistance = 10;
+
+        @BeforeEach
+        public void setUp() {
+            Config.getPref().putInt("mappaint.node.snap-distance", SnapDistance);
+            Config.getPref().putInt("mappaint.segment.snap-distance", SnapDistance);
+            ds = new DataSet();
+            n1 = new Node(new EastNorth(0, 0));
+            n2 = new Node(new EastNorth(WIDTH, 0));
+            n3 = new Node(new EastNorth(0, SnapDistance));
+            n4 = new Node(new EastNorth(WIDTH, SnapDistance));
+            ds.addPrimitive(n1);
+            ds.addPrimitive(n2);
+            ds.addPrimitive(n3);
+            ds.addPrimitive(n4);
+            w1 = new Way();
+            w2 = new Way();
+            w3 = new Way();
+            w4 = new Way();
+            w1.addNode(n1);
+            w1.addNode(n2);
+            w2.addNode(n3);
+            w2.addNode(n4);
+            w3.addNode(n1);
+            w3.addNode(n4);
+            w4.addNode(n3);
+            w4.addNode(n2);
+            ds.addPrimitive(w1);
+            ds.addPrimitive(w2);
+            ds.addPrimitive(w3);
+            ds.addPrimitive(w4);
+            r1 = new Relation();
+            r2 = new Relation();
+            r3 = new Relation();
+            r4 = new Relation();
+            r1.addMember(new RelationMember("rel1", w1));
+            r2.addMember(new RelationMember("rel2", w2));
+            r3.addMember(new RelationMember("rel3", w3));
+            r4.addMember(new RelationMember("rel4", w4));
+            ds.addPrimitive(r1);
+            ds.addPrimitive(r2);
+            ds.addPrimitive(r3);
+            ds.addPrimitive(r4);
+            component.zoomTo(new EastNorth(WIDTH / 2, HEIGHT / 2), 1.0, true);
+
+            OsmDataLayer layer = new OsmDataLayer(ds, "test layer", null);
+            MainApplication.getLayerManager().addLayer(layer);
+            MainApplication.getLayerManager().setActiveLayer(layer);
+        }
+
+        final <T> void assertEqualsList(List<T> expected, List<T> found) {
+            Iterator<T> iter = expected.iterator();
+            for (T p : found) {
+                T n = iter.next();
+                if (p != n) {
+                    fail("Expected item " + p + " found item " + n);
+                    fail("Expected list " + expected + "\nfound list " + found);
+                    return;
+                }
+            }
+            if (iter.hasNext()) {
+                fail("Found too many items");
+            }
+        }
+
+        @Test
+        @DisplayName("Test Heron's Formula")
+        void testHeron() {
+            assertEquals(0.5, component.Heron(1.0, 1.0, 2.0));
+            assertEquals((12.0 / 5.0) * (12.0 / 5.0), component.Heron(9.0, 16.0, 25.0));
+            // reversing the way segment should give the *exact* same answer
+            assertEquals(component.Heron(9.0, 16.0, 25.0), component.Heron(16.0, 9.0, 25.0), 0);
+            assertEquals(component.Heron(Math.PI, Math.E, 1.0), component.Heron(Math.E, Math.PI, 1.0), 0);
+        }
+
+        @Test
+        void testNearestNodes() {
+            List<Node> l;
+            Point p;
+
+            p = new Point(component.getPoint(n1));
+            p.translate(0, 1); // move 1px down, n3 barely outside
+            l = component.getNearestNodes(p, null, x -> true);
+            assertEqualsList(Arrays.asList(n1), l);
+
+            p.translate(0, -2); // move 2px up, n3 barely inside
+            l = component.getNearestNodes(p, null, x -> true);
+            assertEqualsList(Arrays.asList(n1, n3), l);
+
+            p.translate(0, HEIGHT); // nothing here
+            l = component.getNearestNodes(p, null, x -> true);
+            assertEqualsList(new ArrayList<Node>(), l);
+        }
+
+        @Test
+        void testNearestNode() {
+            Point p;
+            Node n;
+
+            p = new Point(component.getPoint(n1));
+            p.translate(0, -1); // move 1px up
+
+            // prefer selected but there ain't any
+            n = component.getNearestNode(p, x -> true, true, null);
+            assertEquals(n1, n);
+
+            ds.setSelected(n3);
+
+            // don't prefer
+            n = component.getNearestNode(p, x -> true, false, null);
+            assertEquals(n1, n);
+
+            // prefer selected node n3
+            n = component.getNearestNode(p, x -> true, true, null);
+            assertEquals(n3, n);
+
+            // prefer node n3 as part of w2
+            n = component.getNearestNode(p, x -> true, false, Collections.singletonList(w2));
+            assertEquals(n3, n);
+
+            p.translate(0, HEIGHT); // nothing here
+            n = component.getNearestNode(p, x -> true, false, null);
+            assertEquals(null, n);
+        }
+
+        @Test
+        void testNearestWays() {
+            List<Way> l;
+            Point p;
+
+            p = new Point(component.getPoint(n1));
+            p.translate(WIDTH / 3, -1);
+            l = component.getNearestWays(p, null, x -> true);
+            assertEqualsList(Arrays.asList(w1, w3, w4, w2), l);
+
+            p = new Point(component.getPoint(n3));
+            p.translate(0, HEIGHT);
+            l = component.getNearestWays(p, null, x -> true);
+            assertEqualsList(new ArrayList<Way>(), l);
+        }
+
+        @Test
+        void testNearestWaySegment() {
+            WaySegment ws;
+            Point p;
+
+            p = new Point(component.getPoint(n1));
+            p.translate(WIDTH / 3, -1);
+            ws = component.getNearestWaySegment(p, x -> true, false, null);
+            assertEquals(w1, ws.getWay());
+
+            ds.setSelected(w2);
+            ws = component.getNearestWaySegment(p, x -> true, true, null);
+            assertEquals(w2, ws.getWay());
+
+            ws = component.getNearestWaySegment(p, x -> true, false, Collections.singletonList(r3));
+            assertEquals(w3, ws.getWay());
+        }
+
+        @Test
+        void testNearestAll() {
+            List<OsmPrimitive> l;
+            Point p;
+
+            p = new Point(component.getPoint(n1));
+            p.translate(1, 1); // move 1px down, n3 barely outside
+            l = component.getAllNearest(p, null, x -> true);
+            assertEqualsList(Arrays.asList(w1, w3, n1, r1, r3), l);
+
+            p.translate(0, -2); // move 2px up, n3 barely inside
+            l = component.getAllNearest(p, null, x -> true);
+            assertEqualsList(Arrays.asList(w3, w1, w4, w2, n1, n3, r3, r1, r4, r2), l);
+
+            p.translate(0, HEIGHT); // nothing here
+            l = component.getAllNearest(p, null, x -> true);
+            assertEqualsList(new ArrayList<OsmPrimitive>(), l);
+        }
+
+    }
 }

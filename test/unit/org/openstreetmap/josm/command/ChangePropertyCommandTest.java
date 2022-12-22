@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,12 +23,17 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.TagMap;
 import org.openstreetmap.josm.data.osm.User;
 import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.gui.MainApplicationTest;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.I18n;
+import org.xml.sax.SAXException;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+
+import org.junit.jupiter.api.AssertionFailureBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,8 +50,9 @@ class ChangePropertyCommandTest {
      * Set up the test data.
      */
     @BeforeEach
-    public void createTestData() {
+    public void createTestData() throws SAXException, IOException {
         testData = new CommandTestData();
+        MainApplicationTest.setTaggingPresets(TaggingPresetsTest.initFromDefaultPresets());
     }
 
     /**
@@ -178,6 +185,16 @@ class ChangePropertyCommandTest {
         assertEquals(2, new ChangePropertyCommand(Arrays.asList(node1, node2), tags).getObjectsNumber());
     }
 
+	static void assertMatches(String re_expected, String actual) {
+		if (!actual.matches(re_expected)) {
+            AssertionFailureBuilder.assertionFailure()
+                .message("Does not match")
+                .expected(re_expected)
+                .actual(actual)
+                .buildAndThrow();
+        }
+	}
+
     /**
      * Test {@link ChangePropertyCommand#getDescriptionText()}
      */
@@ -204,24 +221,24 @@ class ChangePropertyCommandTest {
         relation.put("existing", "existing");
 
         // nop
-        assertTrue(new ChangePropertyCommand(Arrays.asList(node2), tags).getDescriptionText()
-                .matches("Set.*tags for 0 objects"));
+        assertEquals("Set existing=new for 0 objects",
+            new ChangePropertyCommand(Arrays.asList(node2), tags).getDescriptionText());
 
         // change 1 key on 1 element.
-        assertTrue(new ChangePropertyCommand(Arrays.asList(node1, node2), tags).getDescriptionText()
-                .matches("Set existing=new for node.*xy.*"));
-        assertTrue(new ChangePropertyCommand(Arrays.asList(way, node2), tags).getDescriptionText()
-                .matches("Set existing=new for way.*xy.*"));
-        assertTrue(new ChangePropertyCommand(Arrays.asList(relation, node2), tags).getDescriptionText()
-                .matches("Set existing=new for relation.*xy.*"));
+        assertMatches("Set existing=new for node.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(node1, node2), tags).getDescriptionText());
+        assertMatches("Set existing=new for way.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(way, node2), tags).getDescriptionText());
+        assertMatches("Set existing=new for relation.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(relation, node2), tags).getDescriptionText());
 
         // remove 1 key on 1 element
-        assertTrue(new ChangePropertyCommand(Arrays.asList(node1, node3), tagsRemove).getDescriptionText()
-                .matches("Remove \"existing\" for node.*xy.*"));
-        assertTrue(new ChangePropertyCommand(Arrays.asList(way, node3), tagsRemove).getDescriptionText()
-                .matches("Remove \"existing\" for way.*xy.*"));
-        assertTrue(new ChangePropertyCommand(Arrays.asList(relation, node3), tagsRemove).getDescriptionText()
-                .matches("Remove \"existing\" for relation.*xy.*"));
+        assertMatches("Remove \"existing\" for node.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(node1, node3), tagsRemove).getDescriptionText());
+        assertMatches("Remove \"existing\" for way.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(way, node3), tagsRemove).getDescriptionText());
+        assertMatches("Remove \"existing\" for relation.*xy.*",
+            new ChangePropertyCommand(Arrays.asList(relation, node3), tagsRemove).getDescriptionText());
 
         // change 1 key on 3 elements
         assertEquals("Set existing=new for 3 objects",
@@ -264,7 +281,7 @@ class ChangePropertyCommandTest {
             OsmPrimitive node = part.iterator().next();
             assertTrue(nodesToExpect.remove(node));
 
-            assertTrue(c.getDescriptionText().matches(".*" + node.get("name") + ".*"));
+            assertMatches(".*" + node.get("name") + ".*", c.getDescriptionText());
         }
     }
 

@@ -20,7 +20,6 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.tagging.TagEditorPanel;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.testutils.mockers.JOptionPaneSimpleMocker;
 
@@ -120,15 +119,10 @@ public class GenericRelationEditorTest {
         DataSet ds = new DataSet();
         Relation relation = new Relation(1);
         ds.addPrimitive(relation);
-        OsmDataLayer layer = new OsmDataLayer(ds, "test", null);
-        IRelationEditor re = newRelationEditor(relation, layer);
 
-        AutoCompletingTextField tfRole = GenericRelationEditor.buildRoleTextField(re);
-        assertNotNull(tfRole);
+        TagEditorPanel tagEditorPanel = new TagEditorPanel(null, 0);
 
-        TagEditorPanel tagEditorPanel = new TagEditorPanel(relation, null);
-
-        JPanel top = GenericRelationEditor.buildTagEditorPanel(tagEditorPanel);
+        JPanel top = GenericRelationEditor.buildTagEditorPanel(null, tagEditorPanel);
         assertNotNull(top);
         assertNotNull(tagEditorPanel.getModel());
     }

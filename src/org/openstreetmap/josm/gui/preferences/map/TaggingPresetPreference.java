@@ -31,7 +31,6 @@ import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.PreferencePanel;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.ValidationListener;
 import org.openstreetmap.josm.gui.preferences.SourceEditor;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -58,7 +57,7 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
                         i++;
                         boolean canLoad = false;
                         try {
-                            TaggingPresetReader.readAll(source.url, false);
+                            TaggingPresetReader.read(source.url, false);
                             canLoad = true;
                         } catch (IOException e) {
                             Logging.log(Logging.LEVEL_WARN, tr("Could not read tagging preset source: {0}", source), e);
@@ -82,7 +81,7 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
                         String errorMessage = null;
 
                         try {
-                            TaggingPresetReader.readAll(source.url, true);
+                            TaggingPresetReader.read(source.url, true);
                         } catch (IOException e) {
                             // Should not happen, but at least show message
                             String msg = tr("Could not read tagging preset source: {0}", source);
@@ -170,8 +169,8 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public void addGui(PreferenceTabbedPane gui) {
-        useValidator = new JCheckBox(tr("Run data validator on user input"), TaggingPreset.USE_VALIDATOR.get());
-        sortMenu = new JCheckBox(tr("Sort presets menu alphabetically"), TaggingPresets.SORT_MENU.get());
+        useValidator = new JCheckBox(tr("Run data validator on user input"), TaggingPresets.USE_VALIDATOR.get());
+        sortMenu = new JCheckBox(tr("Sort presets menu alphabetically"), TaggingPresets.SORT_VALUES.get());
 
         final JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -251,10 +250,10 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public boolean ok() {
-        TaggingPreset.USE_VALIDATOR.put(useValidator.isSelected());
-        if (sources.finish() || TaggingPresets.SORT_MENU.put(sortMenu.isSelected())) {
-            TaggingPresets.destroy();
-            TaggingPresets.initialize();
+        TaggingPresets.USE_VALIDATOR.put(useValidator.isSelected());
+        if (sources.finish() || TaggingPresets.SORT_VALUES.put(sortMenu.isSelected())) {
+            MainApplication.getTaggingPresets().destroy();
+            MainApplication.getTaggingPresets().initialize();
         }
 
         return false;

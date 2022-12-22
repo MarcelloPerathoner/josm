@@ -241,8 +241,7 @@ public class UploadAction extends AbstractUploadAction {
         ChangesetUpdater.check();
 
         final UploadDialog dialog = UploadDialog.getUploadDialog();
-        dialog.setUploadedPrimitives(apiData);
-        dialog.initLifeCycle(layer.getDataSet());
+        dialog.initLifeCycle(layer.getDataSet(), apiData);
         Map<String, String> changesetTags = dialog.getChangeset().getKeys();
         Map<String, String> originalChangesetTags = new HashMap<>(changesetTags);
         for (UploadHook hook : UPLOAD_HOOKS) {

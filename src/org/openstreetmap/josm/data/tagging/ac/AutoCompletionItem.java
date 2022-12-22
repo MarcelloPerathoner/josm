@@ -4,14 +4,14 @@ package org.openstreetmap.josm.data.tagging.ac;
 import java.util.Objects;
 
 /**
- * Represents an entry in the set of auto completion values.
+ * Represents an immutable entry in the set of auto completion values.
  *
- *  An AutoCompletionItem has a <em>priority</em> and a <em>value</em>.
+ * An AutoCompletionItem has a <em>priority</em> and a <em>value</em>.
  *
- *  The priority helps to sort the auto completion items according to their importance. For instance,
- *  in an auto completion set for tag names, standard tag names would be assigned a higher
- *  priority than arbitrary tag names present in the current data set. There are three priority levels,
- *  {@link AutoCompletionPriority}.
+ * The priority helps to sort the auto completion items according to their importance. For instance,
+ * in an auto completion set for tag names, standard tag names would be assigned a higher priority
+ * than arbitrary tag names present in the current data set. There are three priority levels,
+ * {@link AutoCompletionPriority}.
  *
  * The value is a string which will be displayed in the auto completion list.
  * @since 12859 (copied from {@code gui.tagging.ac.AutoCompletionListItem})
@@ -19,7 +19,7 @@ import java.util.Objects;
 public class AutoCompletionItem implements Comparable<AutoCompletionItem> {
 
     /** the priority of this item */
-    private AutoCompletionPriority priority;
+    private final AutoCompletionPriority priority;
     /** the value of this item */
     private final String value;
 
@@ -56,14 +56,6 @@ public class AutoCompletionItem implements Comparable<AutoCompletionItem> {
      */
     public AutoCompletionPriority getPriority() {
         return priority;
-    }
-
-    /**
-     * Sets the priority.
-     * @param priority  the priority
-     */
-    public void setPriority(AutoCompletionPriority priority) {
-        this.priority = priority;
     }
 
     /**

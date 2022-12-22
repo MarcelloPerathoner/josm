@@ -36,8 +36,7 @@ public class AutoCompletionSet extends TreeSet<AutoCompletionItem> {
                 // if needed, remove/re-add the updated item to maintain set ordering
                 if (!item.getPriority().equals(newPriority)) {
                     super.remove(item);
-                    item.setPriority(newPriority);
-                    return super.add(item);
+                    return super.add(new AutoCompletionItem(item.getValue(), newPriority));
                 } else {
                     return false;
                 }

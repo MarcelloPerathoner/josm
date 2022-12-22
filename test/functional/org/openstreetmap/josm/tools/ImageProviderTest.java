@@ -14,7 +14,6 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -34,9 +33,8 @@ import org.openstreetmap.josm.JOSMFixture;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
-import org.openstreetmap.josm.gui.tagging.presets.items.Key;
+import org.openstreetmap.josm.gui.MainApplicationTest;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.xml.sax.SAXException;
 
@@ -85,7 +83,7 @@ class ImageProviderTest {
 
     @BeforeEach
     public void resetPixelDensity() {
-        GuiSizesHelper.setPixelDensity(1.0f);
+        ImageProvider.testSetGuiScale(1.0);
     }
 
     /**
@@ -134,17 +132,16 @@ class ImageProviderTest {
      */
     @Test
     void testTicket19551() throws SAXException {
-        TaggingPreset badPreset = new TaggingPreset();
-        badPreset.setType("node,way,relation,closedway");
-        Key key = new Key();
-        key.key = "amenity";
-        key.value = "fuel";
-        badPreset.data.add(key);
-        TaggingPreset goodPreset = new TaggingPreset();
-        goodPreset.setType("node,way,relation,closedway");
-        goodPreset.data.add(key);
-        goodPreset.iconName = "stop";
-        TaggingPresets.addTaggingPresets(Arrays.asList(goodPreset, badPreset));
+        MainApplicationTest.setTaggingPresets(
+            TaggingPresetsTest.initFromLiteral(
+                "<group name='group'>" +
+                "  <item type='node,way,relation,closedway'>" +
+                "    <key key='amenity' value='fuel' />" +
+                "  </item>" +
+                "  <item type='node,way,relation,closedway' icon_name='stop' />" +
+                "    <key key='amenity' value='fuel' />" +
+                "  <item name='baz' />" +
+                "</group>"));
         Node node = new Node(LatLon.ZERO);
         node.put("amenity", "fuel");
         assertDoesNotThrow(() -> OsmPrimitiveImageProvider.getResource(node, Collections.emptyList()));
@@ -219,21 +216,19 @@ class ImageProviderTest {
      */
     @Test
     void testGetImageIconBounded() {
-        int scale = 2;
-        GuiSizesHelper.setPixelDensity(scale);
-
         ImageProvider imageProvider = new ImageProvider("open").setOptional(true);
+        ImageProvider.testSetGuiScale(2.0);
         ImageResource resource = imageProvider.getResource();
-        Dimension iconDimension = ImageProvider.ImageSizes.SMALLICON.getImageDimension();
+        Dimension iconDimension = ImageProvider.ImageSizes.SMALLICON.getUnscaledDimension();
         ImageIcon icon = resource.getImageIconBounded(iconDimension);
         Image image = icon.getImage();
         List<Image> resolutionVariants = HiDPISupport.getResolutionVariants(image);
         if (resolutionVariants.size() > 1) {
             assertEquals(2, resolutionVariants.size());
-            int expectedVirtualWidth = ImageProvider.ImageSizes.SMALLICON.getVirtualWidth();
-            assertEquals(expectedVirtualWidth * scale, resolutionVariants.get(0).getWidth(null));
-            assertEquals((int) Math.round(expectedVirtualWidth * scale * HiDPISupport.getHiDPIScale()),
-                         resolutionVariants.get(1).getWidth(null));
+            assertEquals(ImageProvider.ImageSizes.SMALLICON.getUnscaledWidth(),
+                    resolutionVariants.get(0).getWidth(null));
+            assertEquals(ImageProvider.ImageSizes.SMALLICON.getWidth(),
+                    resolutionVariants.get(1).getWidth(null));
         }
     }
 
@@ -245,11 +240,12 @@ class ImageProviderTest {
     @ParameterizedTest
     @ValueSource(floats = {1.0f, 1.5f, 3.0f})
     void testGetCursorImageForCrosshair(float guiScale) throws IOException {
-        GuiSizesHelper.setPixelDensity(guiScale);
+        ImageProvider.testSetGuiScale(guiScale);
         Point hotSpot = new Point();
-        final UnaryOperator<Dimension> bestCursorSizeFunction = dim -> dim;
+        UnaryOperator<Dimension> bestCursorSizeFunction = dim -> dim;
         Image image = ImageProvider.getCursorImage("crosshair", null, bestCursorSizeFunction, hotSpot);
-        assertCursorDimensionsCorrect(new Point.Double(10.0, 10.0), image, bestCursorSizeFunction, hotSpot);
+        assertCursorDimensionsCorrect(new Point.Double(10.0, 10.0), image,
+            ImageProvider.CURSOR_SIZE_HOTSPOT_IS_RELATIVE_TO, hotSpot);
         assertImageEquals("cursor", getReferenceFile("cursor-crosshair-" + Math.round(guiScale * 10)),
                 ((BufferedImage) image), 0, 0, null);
     }
@@ -262,25 +258,27 @@ class ImageProviderTest {
     @ParameterizedTest
     @ValueSource(floats = {1.0f, 1.5f, 3.0f})
     void testGetCursorImageWithOverlay(float guiScale) throws IOException {
-        GuiSizesHelper.setPixelDensity(guiScale);
+        ImageProvider.testSetGuiScale(guiScale);
         Point hotSpot = new Point();
         UnaryOperator<Dimension> bestCursorSizeFunction = dim -> dim;
         Image image = ImageProvider.getCursorImage("normal", "selection", bestCursorSizeFunction, hotSpot);
-        bestCursorSizeFunction = dim -> new Dimension((int) (dim.width * guiScale), (int) (dim.height * guiScale));
-        assertCursorDimensionsCorrect(new Point.Double(3.0, 2.0), image, bestCursorSizeFunction, hotSpot);
+        assertCursorDimensionsCorrect(new Point.Double(3.0, 2.0), image,
+            ImageProvider.CURSOR_SIZE_HOTSPOT_IS_RELATIVE_TO * guiScale, hotSpot);
         assertImageEquals("cursor", getReferenceFile("cursor-normal-selection-" + Math.round(guiScale * 10)),
                 ((BufferedImage) image), 0, 0, null);
     }
 
     private void assertCursorDimensionsCorrect(Point.Double originalHotspot, Image image,
-                                               UnaryOperator<Dimension> bestCursorSizeFunction, Point hotSpot) {
-        int originalCursorSize = ImageProvider.CURSOR_SIZE_HOTSPOT_IS_RELATIVE_TO;
-        Dimension bestCursorSize = bestCursorSizeFunction.apply(new Dimension(originalCursorSize, originalCursorSize));
-        Image bestCursorImage = HiDPISupport.getResolutionVariant(image, bestCursorSize.width, bestCursorSize.height);
+                                               double bestCursorSize, Point hotSpot) {
+
+        // Here we are checking if getCursorImage() built a correct MRI
+        Image bestCursorImage = HiDPISupport.getResolutionVariant(image, bestCursorSize, bestCursorSize);
         int bestCursorImageWidth = bestCursorImage.getWidth(null);
-        assertEquals((int) Math.round(bestCursorSize.getWidth()), bestCursorImageWidth);
+        assertEquals((int) Math.round(bestCursorSize), bestCursorImageWidth);
         int bestCursorImageHeight = bestCursorImage.getHeight(null);
-        assertEquals((int) Math.round(bestCursorSize.getHeight()), bestCursorImageHeight);
+        assertEquals((int) Math.round(bestCursorSize), bestCursorImageHeight);
+
+        int originalCursorSize = ImageProvider.CURSOR_SIZE_HOTSPOT_IS_RELATIVE_TO;
         assertEquals(originalHotspot.x / originalCursorSize * bestCursorImageWidth, hotSpot.x, 1 /* at worst one pixel off */);
         assertEquals(originalHotspot.y / originalCursorSize * bestCursorImageHeight, hotSpot.y, 1 /* at worst one pixel off */);
     }

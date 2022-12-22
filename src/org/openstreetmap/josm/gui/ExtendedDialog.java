@@ -77,6 +77,7 @@ import org.openstreetmap.josm.tools.Utils;
 public class ExtendedDialog extends JDialog implements IExtendedDialog {
     private final boolean disposeOnClose;
     private volatile int result;
+    /** The return value if the user closed by ESC or X-button */
     public static final int DialogClosedOtherwise = 0;
     private boolean toggleable;
     private String rememberSizePref = "";
@@ -164,6 +165,15 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         }
         this.disposeOnClose = disposeOnClose;
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                // catch the X-button in the dialog caption
+                result = ExtendedDialog.DialogClosedOtherwise;
+                rememberWindowGeometry(new WindowGeometry(ExtendedDialog.this));
+            }
+        });
     }
 
     private static Frame searchRealParent(Component parent) {
@@ -339,7 +349,7 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
 
         gc.gridy = y;
         gc.anchor = GridBagConstraints.CENTER;
-            gc.insets = new Insets(5, 5, 5, 5);
+        gc.insets = new Insets(5, 5, 5, 5);
         cp.add(buttonsPanel, gc);
         if (placeContentInScrollPane) {
             JScrollPane pane = new JScrollPane(cp);
@@ -407,7 +417,7 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
     }
 
     /**
-     * Makes the dialog listen to ESC keypressed
+     * Closes the dialog on ESC
      */
     private void setupEscListener() {
         Action actionListener = new AbstractAction() {
@@ -429,7 +439,7 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
     }
 
     protected final void rememberWindowGeometry(WindowGeometry geometry) {
-        if (geometry != null) {
+        if (geometry != null && !rememberSizePref.isEmpty()) {
             geometry.remember(rememberSizePref);
         }
     }

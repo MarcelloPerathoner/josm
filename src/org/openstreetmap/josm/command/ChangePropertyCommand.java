@@ -160,7 +160,7 @@ public class ChangePropertyCommand extends Command {
     public boolean executeCommand() {
         if (objects.isEmpty())
             return true;
-        final DataSet dataSet = objects.get(0).getDataSet();
+        final DataSet dataSet = getAffectedDataSet();
         if (dataSet != null) {
             dataSet.beginUpdate();
         }
@@ -221,7 +221,7 @@ public class ChangePropertyCommand extends Command {
                 }
                 text = tr(msg, entry.getKey(), entry.getValue(), primitive.getDisplayName(DefaultNameFormatter.getInstance()));
             }
-        } else if (objects.size() > 1 && tags.size() == 1) {
+        } else if (tags.size() == 1) {
             Map.Entry<String, String> entry = tags.entrySet().iterator().next();
             if (Utils.isEmpty(entry.getValue())) {
                 /* I18n: plural form for objects, but value < 2 not possible! */

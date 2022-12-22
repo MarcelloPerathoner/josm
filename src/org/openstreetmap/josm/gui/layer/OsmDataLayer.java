@@ -700,9 +700,10 @@ public class OsmDataLayer extends AbstractOsmDataLayer implements Listener, Data
                 counter.deletedRelations, counter.incompleteRelations);
 
         p.add(new JLabel(tr("{0} consists of:", getName())), GBC.eol());
-        p.add(new JLabel(nodeText, ImageProvider.get("data", "node"), JLabel.HORIZONTAL), GBC.eop().insets(15, 0, 0, 0));
-        p.add(new JLabel(wayText, ImageProvider.get("data", "way"), JLabel.HORIZONTAL), GBC.eop().insets(15, 0, 0, 0));
-        p.add(new JLabel(relationText, ImageProvider.get("data", "relation"), JLabel.HORIZONTAL), GBC.eop().insets(15, 0, 0, 0));
+        p.add(new JLabel(nodeText, ImageProvider.get("data", "node", ImageSizes.LAYER), JLabel.HORIZONTAL), GBC.eop().insets(15, 0, 0, 0));
+        p.add(new JLabel(wayText, ImageProvider.get("data", "way", ImageSizes.LAYER), JLabel.HORIZONTAL), GBC.eop().insets(15, 0, 0, 0));
+        p.add(new JLabel(relationText, ImageProvider.get("data", "relation", ImageSizes.LAYER), JLabel.HORIZONTAL),
+            GBC.eop().insets(15, 0, 0, 0));
         p.add(new JLabel(tr("API version: {0}", (data.getVersion() != null) ? data.getVersion() : tr("unset"))),
                 GBC.eop().insets(15, 0, 0, 0));
         addConditionalInformation(p, tr("Layer is locked"), isLocked());
@@ -1288,7 +1289,7 @@ public class OsmDataLayer extends AbstractOsmDataLayer implements Listener, Data
     @Override
     public AbstractUploadDialog getUploadDialog() {
         UploadDialog dialog = UploadDialog.getUploadDialog();
-        dialog.setUploadedPrimitives(new APIDataSet(data));
+        dialog.initLifeCycle(data, new APIDataSet(data));
         return dialog;
     }
 

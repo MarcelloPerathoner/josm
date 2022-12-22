@@ -248,6 +248,7 @@ public class FilterDialog extends ToggleDialog implements DataSetListener, MapMo
      */
     protected void build() {
         userTable = new UserTable(filterModel);
+        TableHelper.setFont(userTable, FilterDialog.class);
 
         userTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

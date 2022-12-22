@@ -24,6 +24,7 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.MapViewState;
@@ -340,7 +341,7 @@ class DrawSnapHelper {
         MapView mapView = MainApplication.getMap().mapView;
         EastNorth p0 = drawAction.getCurrentBaseNode().getEastNorth();
         EastNorth snapPoint = currentEN;
-        double angle = Double.NaN;
+        Double angle = null;
 
         double activeBaseHeading = (customBaseHeading >= 0) ? customBaseHeading : baseHeading;
 
@@ -350,7 +351,7 @@ class DrawSnapHelper {
                 angle += 360;
             }
             if (angle > 360) {
-                angle = 0;
+                angle = 0d;
             }
 
             double nearestAngle;
@@ -398,7 +399,7 @@ class DrawSnapHelper {
                 angle += 360;
             }
             if (angle > 360) {
-                angle = 0;
+                angle = 0d;
             }
         }
         DrawAction.showStatusInfo(angle, hdg, distance, isSnapOn());
@@ -439,7 +440,7 @@ class DrawSnapHelper {
         double de = p.east()-e0;
         double dn = p.north()-n0;
         double l = de*pe+dn*pn;
-        double delta = MainApplication.getMap().mapView.getDist100Pixel()/20;
+        double delta = MainApplication.getMap().mapView.getDist100Pixel() / (20 * ProjectionRegistry.getProjection().getMetersPerUnit());
         if (!absoluteFix && l < delta) {
             active = false;
             return p;

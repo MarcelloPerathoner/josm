@@ -234,8 +234,8 @@ public class MapCSSRendererTest {
             return;
         }
         final BufferedImage reference = ImageIO.read(referenceImageFile);
-        assertEquals(image.getWidth(), reference.getWidth());
-        assertEquals(image.getHeight(), reference.getHeight());
+        assertEquals(reference.getWidth(), image.getWidth());
+        assertEquals(reference.getHeight(), image.getHeight());
 
         StringBuilder differences = new StringBuilder();
         ArrayList<Point> differencePoints = new ArrayList<>();

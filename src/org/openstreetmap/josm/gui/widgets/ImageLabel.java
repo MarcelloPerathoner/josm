@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -13,14 +14,25 @@ import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 /**
- * A small user interface component that consists of an image label and
- * a fixed text content to the right of the image.
+ * A label for the JOSM status bar.
+ * <p>
+ * This label
+ * <ul>
+ * <li>resizes itself according to the text length
+ * <li>keeps the new width even if the text gets smaller again
+ * <li>icon is left-aligned
+ * <li>text is right-aligned
+ * </ul>
+ * Use this in the statusline to display rapidly changing information like latitude and
+ * longitude of the mouse pointer.
+ *
  * @since 5965
  */
 public class ImageLabel extends JPanel {
-    private final JLabel imgLabel = new JLabel();
-    private final JLabel tf = new JLabel();
-    private int charCount;
+    private final JLabel iconLabel;
+    private final JLabel textLabel;
+    private final int gap = 4;
+    private int charCount = 0;
 
     /**
      * Constructs a new {@code ImageLabel}.
@@ -31,20 +43,23 @@ public class ImageLabel extends JPanel {
      */
     public ImageLabel(String img, String tooltip, int charCount, Color background) {
         setLayout(new GridBagLayout());
+
+        iconLabel = new JLabel();
+        textLabel = new JLabel();
+        add(iconLabel, GBC.std().grid(0, 0).weight(0, 0));
+        add(textLabel, GBC.eol().grid(1, 0).weight(1, 0).fill(GBC.HORIZONTAL).insets(gap, 0, 0, 0));
+
         setBackground(background);
-        add(imgLabel, GBC.std().anchor(GBC.WEST).insets(0, 1, 1, 0));
+        setOpaque(true);
+        setBorder(BorderFactory.createEmptyBorder(gap / 2, gap, gap / 2, gap));
         setIcon(img);
-        add(tf, GBC.std().fill(GBC.BOTH).anchor(GBC.WEST).insets(2, 1, 1, 0));
         setToolTipText(tooltip);
         setCharCount(charCount);
     }
 
-    /**
-     * Sets the text to display.
-     * @param t text to display
-     */
-    public void setText(String t) {
-        tf.setText(t);
+    @Override
+    public Dimension getPreferredSize() {
+        return maxDimension(getMinimumSize(), super.getPreferredSize());
     }
 
     /**
@@ -52,29 +67,24 @@ public class ImageLabel extends JPanel {
      * @param img Image name (without extension) to find in {@code statusline} directory
      */
     public void setIcon(String img) {
-        imgLabel.setIcon(ImageProvider.get("statusline/", img, ImageSizes.STATUSLINE));
+        iconLabel.setIcon(ImageProvider.get("statusline/", img, ImageSizes.STATUSLINE));
     }
 
     /**
-     * Sets the foreground color of the text.
-     * @param fg text color
+     * Set the text to display.
+     * @param text the new text
      */
-    @Override
-    public void setForeground(Color fg) {
-        super.setForeground(fg);
-        if (tf != null) {
-            tf.setForeground(fg);
-        }
+    public void setText(String text) {
+        textLabel.setText(text);
+        setMinimumSize(maxDimension(getMinimumSize(), super.getPreferredSize()));
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(25 + charCount*tf.getFontMetrics(tf.getFont()).charWidth('0'), super.getPreferredSize().height);
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-        return new Dimension(25 + charCount*tf.getFontMetrics(tf.getFont()).charWidth('0'), super.getMinimumSize().height);
+    /**
+     * Set the horizontal alignment.
+     * @param horizontalAlignment the horizontal alignment
+     */
+    public void setHorizontalAlignment(int horizontalAlignment) {
+        textLabel.setHorizontalAlignment(horizontalAlignment);
     }
 
     /**
@@ -93,5 +103,16 @@ public class ImageLabel extends JPanel {
      */
     public final void setCharCount(int charCount) {
         this.charCount = charCount;
+        setMinimumSize(null);
+        String repeatedZeroes = new String(new char[charCount]).replace('\0', '0');
+        setText(repeatedZeroes);
+        textLabel.setText("");
+    }
+
+    private Dimension maxDimension(Dimension a, Dimension b) {
+        return new Dimension(
+            Math.max(a.width, b.width),
+            Math.max(a.height, b.height)
+        );
     }
 }

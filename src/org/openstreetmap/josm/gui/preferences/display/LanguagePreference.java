@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.swing.Box;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -114,14 +113,7 @@ public class LanguagePreference extends DefaultTabPreferenceSetting {
     }
 
     private static class LanguageCellRenderer implements ListCellRenderer<Locale> {
-        private final DefaultListCellRenderer dispatch;
-
-        /**
-         * Constructs a new {@code LanguageCellRenderer}.
-         */
-        LanguageCellRenderer() {
-            this.dispatch = new DefaultListCellRenderer();
-        }
+        private final ListCellRenderer<Object> dispatch = new JosmComboBox<>().getRenderer();
 
         @Override
         public Component getListCellRendererComponent(JList<? extends Locale> list, Locale l,

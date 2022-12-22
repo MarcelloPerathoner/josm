@@ -42,12 +42,14 @@ import org.openstreetmap.josm.tools.Utils;
  */
 public class JosmTextField extends JTextField implements Destroyable, ComponentListener, FocusListener, PropertyChangeListener {
 
-    private final PopupMenuLauncher launcher;
+    private PopupMenuLauncher launcher;
     private String hint;
     private Icon icon;
     private Point iconPos;
     private Insets originalMargin;
     private OrientationAction orientationAction;
+    /** Selects the whole text if focus is gained from another component in JOSM. */
+    private boolean selectAllOnFocusGained = true;
 
     /**
      * Constructs a new <code>JosmTextField</code> that uses the given text
@@ -165,6 +167,22 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
     }
 
     /**
+     * Getter of {@link #selectAllOnFocusGained}
+     * @return the status of the field.
+     */
+    public boolean isSelectAllOnFocusGained() {
+        return selectAllOnFocusGained;
+    }
+
+    /**
+     * Setter of {@link #selectAllOnFocusGained}
+     * @param selectAllOnFocusGained the new state
+     */
+    public void setSelectAllOnFocusGained(boolean selectAllOnFocusGained) {
+        this.selectAllOnFocusGained = selectAllOnFocusGained;
+    }
+
+    /**
      * Replies the hint displayed when no text has been entered.
      * @return the hint
      * @since 7505
@@ -241,6 +259,14 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
     }
 
     /**
+     * Enables / disables the undo / redo functionality.
+     * @param undoRedo enable if true
+     */
+    public void enableUndoRedo(boolean undoRedo) {
+        launcher = TextContextualPopupMenu.enableMenuFor(this, undoRedo);
+    }
+
+    /**
      * Empties the internal undo manager.
      * @since 14977
      */
@@ -289,6 +315,7 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
     public void drawHint(Graphics g) {
         int x;
         try {
+            // FIXME: Java9 replace with modelToView2D
             x = modelToView(0).x;
         } catch (BadLocationException exc) {
             return; // can't happen
@@ -319,7 +346,7 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
         if (map != null) {
             map.keyDetector.setEnabled(false);
         }
-        if (e != null && e.getOppositeComponent() != null) {
+        if (selectAllOnFocusGained && e != null && e.getOppositeComponent() != null) {
             // Select all characters when the change of focus occurs inside JOSM only.
             // When switching from another application, it is annoying, see #13747
             selectAll();

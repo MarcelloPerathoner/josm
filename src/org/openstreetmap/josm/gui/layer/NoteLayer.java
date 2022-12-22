@@ -170,8 +170,8 @@ public class NoteLayer extends AbstractModifiableLayer implements MouseListener,
 
     @Override
     public void paint(Graphics2D g, MapView mv, Bounds box) {
-        final int iconHeight = ImageProvider.ImageSizes.SMALLICON.getAdjustedHeight();
-        final int iconWidth = ImageProvider.ImageSizes.SMALLICON.getAdjustedWidth();
+        final int iconHeight = ImageProvider.ImageSizes.SMALLICON.getHeight();
+        final int iconWidth = ImageProvider.ImageSizes.SMALLICON.getWidth();
 
         for (Note note : noteData.getNotes()) {
             Point p = mv.getPoint(note.getLatLon());
@@ -422,7 +422,7 @@ public class NoteLayer extends AbstractModifiableLayer implements MouseListener,
         Point clickPoint = e.getPoint();
         double snapDistance = 10;
         double minDistance = Double.MAX_VALUE;
-        final int iconHeight = ImageProvider.ImageSizes.SMALLICON.getAdjustedHeight();
+        final int iconHeight = ImageProvider.ImageSizes.SMALLICON.getHeight();
         Note closestNote = null;
         for (Note note : noteData.getNotes()) {
             Point notePoint = MainApplication.getMap().mapView.getPoint(note.getLatLon());

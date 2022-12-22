@@ -53,6 +53,7 @@ public abstract class AbstractExtendedSourceEntryTestCase {
     }
 
     protected boolean isIgnoredSubstring(ExtendedSourceEntry source, String substring) {
-        return errorsToIgnore.parallelStream().anyMatch(x -> substring.contains(x) || source.url.contains(x));
+        return errorsToIgnore.parallelStream().anyMatch(x ->
+            (substring != null && substring.contains(x)) || (source.url != null && source.url.contains(x)));
     }
 }

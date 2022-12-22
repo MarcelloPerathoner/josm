@@ -53,7 +53,8 @@ class ImportHandlerTest {
     @Test
     void testBadRequestNoParam() throws Exception {
         Exception e = assertThrows(RequestHandlerBadRequestException.class, () -> newHandler(null).handle());
-        assertEquals("MalformedURLException: null", e.getMessage());
+        // Newer JRE sends different message
+        assertEquals("MalformedURLException: ", e.getMessage().substring(0, 23));
     }
 
     /**

@@ -58,6 +58,7 @@ import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.gui.widgets.PopupMenuLauncher;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.OpenBrowser;
 import org.openstreetmap.josm.tools.Shortcut;
 import org.openstreetmap.josm.tools.Utils;
@@ -309,11 +310,11 @@ public class NotesDialog extends ToggleDialog implements LayerChangeListener, No
                 }
                 ImageIcon icon;
                 if (note.getId() < 0) {
-                    icon = ImageProvider.get("dialogs/notes", "note_new", ImageProvider.ImageSizes.SMALLICON);
+                    icon = ImageProvider.get("dialogs/notes", "note_new", ImageSizes.TABLE);
                 } else if (note.getState() == State.CLOSED) {
-                    icon = ImageProvider.get("dialogs/notes", "note_closed", ImageProvider.ImageSizes.SMALLICON);
+                    icon = ImageProvider.get("dialogs/notes", "note_closed", ImageSizes.TABLE);
                 } else {
-                    icon = ImageProvider.get("dialogs/notes", "note_open", ImageProvider.ImageSizes.SMALLICON);
+                    icon = ImageProvider.get("dialogs/notes", "note_open", ImageSizes.TABLE);
                 }
                 jlabel.setIcon(icon);
             }
@@ -385,7 +386,7 @@ public class NotesDialog extends ToggleDialog implements LayerChangeListener, No
                 return;
             }
             NoteInputDialog dialog = new NoteInputDialog(MainApplication.getMainFrame(), tr("Comment on note"), tr("Add comment"));
-            dialog.showNoteDialog(tr("Add comment to note:"), ImageProvider.get("dialogs/notes", "note_comment"));
+            dialog.showNoteDialog(tr("Add comment to note:"), ImageProvider.get("dialogs/notes", "note_comment", ImageSizes.SMALLICON));
             if (dialog.getValue() != 1) {
                 return;
             }
@@ -409,7 +410,7 @@ public class NotesDialog extends ToggleDialog implements LayerChangeListener, No
         @Override
         public void actionPerformed(ActionEvent e) {
             NoteInputDialog dialog = new NoteInputDialog(MainApplication.getMainFrame(), tr("Close note"), tr("Close note"));
-            dialog.showNoteDialog(tr("Close note with message:"), ImageProvider.get("dialogs/notes", "note_closed"));
+            dialog.showNoteDialog(tr("Close note with message:"), ImageProvider.get("dialogs/notes", "note_closed", ImageSizes.SMALLICON));
             if (dialog.getValue() != 1) {
                 return;
             }
@@ -463,7 +464,7 @@ public class NotesDialog extends ToggleDialog implements LayerChangeListener, No
         @Override
         public void actionPerformed(ActionEvent e) {
             NoteInputDialog dialog = new NoteInputDialog(MainApplication.getMainFrame(), tr("Reopen note"), tr("Reopen note"));
-            dialog.showNoteDialog(tr("Reopen note with message:"), ImageProvider.get("dialogs/notes", "note_open"));
+            dialog.showNoteDialog(tr("Reopen note with message:"), ImageProvider.get("dialogs/notes", "note_open", ImageSizes.SMALLICON));
             if (dialog.getValue() != 1) {
                 return;
             }

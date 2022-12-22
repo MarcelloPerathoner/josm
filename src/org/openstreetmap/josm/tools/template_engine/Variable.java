@@ -1,9 +1,17 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.tools.template_engine;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.openstreetmap.josm.tools.LanguageInfo;
 
 /**
  * {@link TemplateEntry} that inserts the value of a variable.
@@ -17,6 +25,8 @@ import java.util.Objects;
 public class Variable implements TemplateEntry {
 
     private static final String SPECIAL_VARIABLE_PREFIX = "special:";
+    private static final String SPECIAL_LOCAL_PREFIX = "local:";
+    private static final String SPECIAL_MULTI_LANG_PREFIX = "mergelang:";
     private static final String SPECIAL_VALUE_EVERYTHING = "everything";
 
     private final String variableName;
@@ -38,33 +48,110 @@ public class Variable implements TemplateEntry {
         }
     }
 
+    private List<String> varAsList(TemplateEngineDataProvider dataProvider, String name) {
+        String val = (String) dataProvider.getTemplateValue(name, false);
+        if (val == null || val.isEmpty())
+            return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(val.split(";")));
+    }
+
+    /**
+     * Merges multiple language tags
+     * <p>
+     * This function merges multiple language tags accounting for multiple values in each tag.
+     * <p>
+     * Paramter string format: {@code nameTemplate,delimiter,lang[,lang[...]]}  In the nameTemplate
+     * part {@code '%'} is substituted by {@code lang}.
+     * <p>
+     * Example:
+     * <p>
+     * {@code special:mergelang:destination:lang:%:forward, - ,de,it} will merge
+     * {@code destination:lang:de:forward} and {@code destination:lang:it:forward} using a delimiter
+     * of {@code ' - '}.
+     * <p>
+     * If {@code destination:lang:de:forward=Bozen;Brixen} and
+     * {@code destination:lang:it:forward=Bolzano;Bressanone} the returned value will be:
+     * {@code Bozen - Bolzano;Brixen - Bressanone}.
+     *
+     * @param parameters the parameter string
+     * @param dataProvider the data provider
+     * @return the merged string
+     */
+    private String mergeLang(String parameters, TemplateEngineDataProvider dataProvider) {
+        String paramDelimiter = ",";
+        List<String> params = new ArrayList<>(Arrays.asList(parameters.split(paramDelimiter)));
+        String nameTemplate = params.remove(0);
+        String delimiter = params.remove(0);
+
+        // list of languages, tokens
+        List<List<String>> values = new ArrayList<>();
+        int nLangs = params.size();
+        int nTokens = 0;
+        for (String lang : params) {
+            List<String> langAsList = varAsList(dataProvider, nameTemplate.replace("%", lang));
+            values.add(langAsList);
+            nTokens = Math.max(nTokens, langAsList.size());
+        }
+        List<String> pieces = new ArrayList<>();
+        for (int i = 0; i < nTokens; ++i) {
+            if (i > 0)
+                pieces.add(";");  // String.join doesn't handle a trailing empty piece correctly
+            // eliminates duplicates and keeps insertion order
+            Set<String> seen = new LinkedHashSet<>();
+            for (int j = 0; j < nLangs; ++j) {
+                try {
+                    String v = values.get(j).get(i).trim();
+                    if (!v.isEmpty())
+                        seen.add(values.get(j).get(i).trim());
+                } catch (IndexOutOfBoundsException e) {
+                    // not all langs need to be filled
+                    continue; // make checkstyle happy
+                }
+            }
+            pieces.add(String.join(delimiter, seen));
+        }
+        return String.join("", pieces);
+    }
+
+    private String getValue(TemplateEngineDataProvider dataProvider) {
+        if (special) {
+            String result = "";
+            if (variableName.startsWith(SPECIAL_LOCAL_PREFIX)) {
+                // in a 'de_DE' locale 'special:local:description' will yield the value of
+                // 'description:de_DE' if existent else of 'description:de' else of 'description'
+                String tmpName = variableName.substring(SPECIAL_LOCAL_PREFIX.length());
+                for (String lang : LanguageInfo.getLanguageCodes(null)) {
+                    result = (String) dataProvider.getTemplateValue(tmpName + ':' + lang, false);
+                    if (result != null)
+                        return result;
+                }
+                return (String) dataProvider.getTemplateValue(tmpName, false);
+            }
+            if (variableName.startsWith(SPECIAL_MULTI_LANG_PREFIX)) {
+                return mergeLang(variableName.substring(SPECIAL_MULTI_LANG_PREFIX.length()), dataProvider);
+            }
+            if (SPECIAL_VALUE_EVERYTHING.equals(variableName)) {
+                ArrayList<String> keys = new ArrayList<>(dataProvider.getTemplateKeys());
+                Collections.sort(keys);
+                return keys.stream().map(key -> key + "=" + dataProvider.getTemplateValue(key, false))
+                        .collect(Collectors.joining(", "));
+            }
+        }
+        return (String) dataProvider.getTemplateValue(variableName, special);
+    }
+
     @Override
     public void appendText(StringBuilder result, TemplateEngineDataProvider dataProvider) {
-        if (special && SPECIAL_VALUE_EVERYTHING.equals(variableName)) {
-            Collection<String> keys = dataProvider.getTemplateKeys();
-            boolean first = true;
-            for (String key: keys) {
-                if (!first) {
-                    result.append(", ");
-                } else {
-                    first = false;
-                }
-                result.append(key).append('=').append(dataProvider.getTemplateValue(key, false));
-            }
-        } else {
-            Object value = dataProvider.getTemplateValue(variableName, special);
-            if (value != null) {
-                result.append(value);
-            }
+        String value = getValue(dataProvider);
+        if (value != null) {
+            result.append(value);
         }
     }
 
     @Override
     public boolean isValid(TemplateEngineDataProvider dataProvider) {
-        if (special && SPECIAL_VALUE_EVERYTHING.equals(variableName))
-            return true;
-        else
-            return dataProvider.getTemplateValue(variableName, special) != null;
+        String value = getValue(dataProvider);
+        return value != null;
     }
 
     @Override

@@ -401,7 +401,7 @@ public class UploadPrimitivesTask extends AbstractUploadTask {
                         // return to the upload dialog
                         //
                         toUpload.removeProcessed(processedPrimitives);
-                        UploadDialog.getUploadDialog().setUploadedPrimitives(toUpload);
+                        UploadDialog.getUploadDialog().initLifeCycle(null, toUpload);
                         UploadDialog.getUploadDialog().setVisible(true);
                         break;
                     }

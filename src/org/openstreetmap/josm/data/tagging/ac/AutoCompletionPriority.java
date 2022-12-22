@@ -134,6 +134,32 @@ public class AutoCompletionPriority implements Comparable<AutoCompletionPriority
     }
 
     /**
+     * Alternate compare: Being in the standard beats being in the DataSet.
+     * @param me first object to compare
+     * @param you second object to compare
+     * @return -1, 0, or +1
+     */
+    public static int altCompare(AutoCompletionPriority me, AutoCompletionPriority you) {
+        int ui = Integer.compare(you.userInput, me.userInput);
+        if (ui != 0)
+            return ui;
+
+        int sel = Boolean.compare(me.selected, you.selected);
+        if (sel != 0)
+            return sel;
+
+        int std = Boolean.compare(me.inStandard, you.inStandard);
+        if (std != 0)
+            return std;
+
+        int ds = Boolean.compare(me.inDataSet, you.inDataSet);
+        if (ds != 0)
+            return ds;
+
+        return 0;
+    }
+
+    /**
      * Merges two priorities.
      * The resulting priority is always &gt;= the original ones.
      * @param other other priority

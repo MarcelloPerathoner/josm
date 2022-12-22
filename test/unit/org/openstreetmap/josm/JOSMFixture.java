@@ -24,6 +24,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainApplicationTest;
 import org.openstreetmap.josm.gui.MainInitialization;
 import org.openstreetmap.josm.gui.layer.LayerManagerTest.TestLayer;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.io.CertificateAmendment;
 import org.openstreetmap.josm.io.OsmApi;
@@ -38,6 +39,7 @@ import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.PlatformManager;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.date.DateUtils;
+import org.xml.sax.SAXException;
 
 /**
  * Fixture to define a proper and safe environment before running tests.
@@ -163,6 +165,13 @@ public class JOSMFixture {
         assertTrue(MainApplication.getLayerManager().getLayers().isEmpty());
         assertNull(MainApplication.getLayerManager().getEditLayer());
         assertNull(MainApplication.getLayerManager().getActiveLayer());
+
+        try {
+            // Toolbar needs presets
+            MainApplicationTest.setTaggingPresets(TaggingPresetsTest.initFromDefaultPresets());
+        } catch (SAXException | IOException e) {
+            MainApplicationTest.setTaggingPresets(null);
+        }
 
         initContentPane();
         initMainPanel(false);

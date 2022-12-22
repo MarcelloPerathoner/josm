@@ -18,8 +18,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,15 +52,12 @@ import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test.TagTest;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.data.validation.util.Entities;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetItem;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetListener;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
-import org.openstreetmap.josm.gui.tagging.presets.items.Check;
-import org.openstreetmap.josm.gui.tagging.presets.items.CheckGroup;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
 import org.openstreetmap.josm.gui.widgets.EditableList;
 import org.openstreetmap.josm.io.CachedFile;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -90,7 +85,6 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
     private static volatile HashSet<String> additionalPresetsValueData;
     /** often used tags which are not in presets */
     private static final MultiMap<String, String> oftenUsedTags = new MultiMap<>();
-    private static final Map<TaggingPreset, List<TaggingPresetItem>> presetIndex = new LinkedHashMap<>();
 
     private static final Pattern UNWANTED_NON_PRINTING_CONTROL_CHARACTERS = Pattern.compile(
             "[\\x00-\\x09\\x0B\\x0C\\x0E-\\x1F\\x7F\\u200e-\\u200f\\u202a-\\u202e]");
@@ -225,7 +219,7 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
 
     @Override
     public void initialize() throws IOException {
-        TaggingPresets.addListener(this);
+        MainApplication.getTaggingPresets().addTaggingPresetListener(this);
         initializeData();
         initializePresets();
         analysePresets();
@@ -235,10 +229,10 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
      * Add presets that contain only numerical values to the ignore list
      */
     private static void analysePresets() {
-        for (String key : TaggingPresets.getPresetKeys()) {
+        for (String key : MainApplication.getTaggingPresets().getPresetKeys()) {
             if (isKeyIgnored(key))
                 continue;
-            Set<String> values = TaggingPresets.getPresetValues(key);
+            Set<String> values = MainApplication.getTaggingPresets().getPresetValues(key);
             boolean allNumerical = !Utils.isEmpty(values)
                     && values.stream().allMatch(TagChecker::isNum);
             if (allNumerical) {
@@ -263,7 +257,6 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         harmonizedKeys.clear();
         ignoreForLevenshtein.clear();
         oftenUsedTags.clear();
-        presetIndex.clear();
         ignoreForOuterMPSameTagCheck.clear();
 
         StringBuilder errorSources = new StringBuilder();
@@ -384,26 +377,12 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         if (!Config.getPref().getBoolean(PREF_CHECK_VALUES, true))
             return;
 
-        Collection<TaggingPreset> presets = TaggingPresets.getTaggingPresets();
+        Collection<TaggingPreset> presets = MainApplication.getTaggingPresets().getAllPresets();
         if (!presets.isEmpty()) {
             initAdditionalPresetsValueData();
-            for (TaggingPreset p : presets) {
-                List<TaggingPresetItem> minData = new ArrayList<>();
-                for (TaggingPresetItem i : p.data) {
-                    if (i instanceof KeyedItem) {
-                        if (!"none".equals(((KeyedItem) i).match))
-                            minData.add(i);
-                        addPresetValue((KeyedItem) i);
-                    } else if (i instanceof CheckGroup) {
-                        for (Check c : ((CheckGroup) i).checks) {
-                            addPresetValue(c);
-                        }
-                    }
-                }
-                if (!minData.isEmpty()) {
-                    presetIndex .put(p, minData);
-                }
-            }
+        }
+        for (String key : MainApplication.getTaggingPresets().getPresetKeys()) {
+            addToKeyDictionary(key);
         }
     }
 
@@ -413,12 +392,6 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         additionalPresetsValueData.addAll(Config.getPref().getList(
                 ValidatorPrefHelper.PREFIX + ".knownkeys",
                 Arrays.asList("is_in", "int_ref", "fixme", "population")));
-    }
-
-    private static void addPresetValue(KeyedItem ky) {
-        if (ky.key != null && ky.getValues() != null) {
-            addToKeyDictionary(ky.key);
-        }
     }
 
     /**
@@ -544,8 +517,8 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
      *  else a set which might be empty.
      */
     private static Set<String> getPresetValues(String key) {
-        if (TaggingPresets.isKeyInPresets(key)) {
-            return TaggingPresets.getPresetValues(key);
+        if (MainApplication.getTaggingPresets().isKeyInPresets(key)) {
+            return MainApplication.getTaggingPresets().getPresetValues(key);
         }
         if (additionalPresetsValueData.contains(key))
             return Collections.emptySet();
@@ -562,7 +535,7 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
      */
     @Deprecated
     public static boolean isKeyInPresets(String key) {
-        return TaggingPresets.isKeyInPresets(key);
+        return MainApplication.getTaggingPresets().isKeyInPresets(key);
     }
 
     /**
@@ -651,37 +624,41 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         }
 
         if (p instanceof Relation && p.hasTag("type", "multipolygon")) {
-        checkMultipolygonTags(p);
+            checkMultipolygonTags(p);
         }
 
         if (checkPresetsTypes) {
+            // Note: Since I had to refactor this test and it had no comments
+            // whatsoever, I just surmised what it should do, so here we go:
+            //
+            // This test fails if the preset system has presets matching the tags of the
+            // primitive but none that match the tags *and the type* of the primitive.
             TagMap tags = p.getKeys();
-            TaggingPresetType presetType = TaggingPresetType.forPrimitive(p);
-            EnumSet<TaggingPresetType> presetTypes = EnumSet.of(presetType);
+            // Logging.info("tags = {0}", tags.toString());
 
-            Collection<TaggingPreset> matchingPresets = presetIndex.entrySet().stream()
-                    .filter(e -> TaggingPresetItem.matches(e.getValue(), tags))
-                    .map(Entry::getKey)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            Collection<TaggingPreset> matchingPresetsOK = matchingPresets.stream().filter(
-                    tp -> tp.typeMatches(presetTypes)).collect(Collectors.toList());
-            Collection<TaggingPreset> matchingPresetsKO = matchingPresets.stream().filter(
-                    tp -> !tp.typeMatches(presetTypes)).collect(Collectors.toList());
+            TaggingPresets taggingPresets = MainApplication.getTaggingPresets();
 
-            for (TaggingPreset tp : matchingPresetsKO) {
-                // Potential error, unless matching tags are all known by a supported preset
-                Map<String, String> matchingTags = tp.data.stream()
-                    .filter(i -> Boolean.TRUE.equals(i.matches(tags)))
-                    .filter(i -> i instanceof KeyedItem).map(i -> ((KeyedItem) i).key)
-                    .collect(Collectors.toMap(k -> k, tags::get));
-                if (matchingPresetsOK.stream().noneMatch(
-                        tp2 -> matchingTags.entrySet().stream().allMatch(
-                                e -> tp2.data.stream().anyMatch(
-                                        i -> i instanceof KeyedItem && ((KeyedItem) i).key.equals(e.getKey()))))) {
+            /* all presets that match the tags */
+            Collection<TaggingPreset> presetsMatchingTags = taggingPresets.getMatchingPresets(null, tags, false);
+            // Logging.info("presetsMatchingTags = {0}", presetsMatchingTags.size());
+
+            if (presetsMatchingTags.size() > 0) {
+                // if we get here those tags are known to the preset system
+                // now let's see if the preset system supports the primitive type
+
+                TaggingPresetType presetType = TaggingPresetType.forPrimitive(p);
+                // Logging.info("taggingPresetType = {0}", presetType.toString());
+
+                /* all presets that match the tags *and* the type */
+                Collection<TaggingPreset> presetsMatchingType =
+                    taggingPresets.getMatchingPresets(EnumSet.of(presetType), tags, false);
+                // Logging.info("presetsMatchingType = {0}", presetsMatchingType.size());
+
+                if (presetsMatchingType.size() == 0) {
                     errors.add(TestError.builder(this, Severity.OTHER, INVALID_PRESETS_TYPE)
                             .message(tr("Object type not in preset"),
-                                    marktr("Object type {0} is not supported by tagging preset: {1}"),
-                                    tr(presetType.getName()), tp.getLocaleName())
+                                    marktr("Object type {0} is not supported by any tagging preset"),
+                                    tr(presetType.getName()))
                             .primitives(p)
                             .build());
                 }
@@ -884,7 +861,7 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         if (!checkValues || key == null || Utils.isEmpty(value))
             return;
         if (additionalPresetsValueData != null && !isTagIgnored(key, value)) {
-            if (!TaggingPresets.isKeyInPresets(key)) {
+            if (!MainApplication.getTaggingPresets().isKeyInPresets(key)) {
                 spellCheckKey(withErrors, p, key);
             } else if (!isTagInPresets(key, value)) {
                 if (oftenUsedTags.contains(key, value)) {
@@ -908,7 +885,7 @@ public class TagChecker extends TagTest implements TaggingPresetListener {
         if (ignoreDataEquals.contains(prettifiedKey)) {
             fixedKey = prettifiedKey;
         } else {
-            fixedKey = TaggingPresets.isKeyInPresets(prettifiedKey) ? prettifiedKey : harmonizedKeys.get(prettifiedKey);
+            fixedKey = MainApplication.getTaggingPresets().isKeyInPresets(prettifiedKey) ? prettifiedKey : harmonizedKeys.get(prettifiedKey);
         }
         if (fixedKey == null && ignoreDataTag.stream().anyMatch(a -> a.getKey().equals(prettifiedKey))) {
             fixedKey = prettifiedKey;

@@ -29,8 +29,9 @@ import org.openstreetmap.josm.data.osm.history.HistoryNode;
 import org.openstreetmap.josm.data.osm.history.HistoryOsmPrimitive;
 import org.openstreetmap.josm.data.osm.history.HistoryRelation;
 import org.openstreetmap.josm.data.osm.history.HistoryWay;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetNameTemplateList;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.I18n;
@@ -52,6 +53,13 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
     private static final List<String> HIGHWAY_RAILWAY_WATERWAY_LANDUSE_BUILDING = Arrays.asList(
             marktr("highway"), marktr("railway"), marktr("waterway"), marktr("landuse"), marktr("building"));
 
+    /** If not null use these TaggingPresets else use global TaggingPresets. For unit testing. */
+    private TaggingPresets taggingPresets;
+
+    DefaultNameFormatter(TaggingPresets taggingPresets) {
+        this.taggingPresets = taggingPresets;
+    }
+
     /**
      * Replies the unique instance of this formatter
      *
@@ -59,7 +67,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
      */
     public static synchronized DefaultNameFormatter getInstance() {
         if (instance == null) {
-            instance = new DefaultNameFormatter();
+            instance = new DefaultNameFormatter(null);
         }
         return instance;
     }
@@ -156,6 +164,17 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
     }
 
     /**
+     * Returns the first preset with a name_template matching the given primitive
+     *
+     * @param primitive the primitive to match
+     * @return the preset or null
+     */
+    TaggingPreset getPresetFor(IPrimitive primitive) {
+        return (taggingPresets != null ? taggingPresets : MainApplication.getTaggingPresets())
+            .getFirstMatchingPresetWithNameTemplate(primitive);
+    }
+
+    /**
      * Formats a name for an {@link IPrimitive}.
      *
      * @param osm the primitive
@@ -173,7 +192,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
         if (node.isIncomplete()) {
             name.append(tr("incomplete"));
         } else {
-            TaggingPreset preset = TaggingPresetNameTemplateList.getInstance().findPresetTemplate(node);
+            TaggingPreset preset = getPresetFor(node);
             if (preset == null || !(node instanceof TemplateEngineDataProvider)) {
                 String n = formatLocalName(node);
                 if (n == null) {
@@ -185,7 +204,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
                 }
                 name.append(n);
             } else {
-                preset.nameTemplate.appendText(name, (TemplateEngineDataProvider) node);
+                preset.getNameTemplate().appendText(name, (TemplateEngineDataProvider) node);
             }
             if (node.isLatLonKnown() && Config.getPref().getBoolean("osm-primitives.showcoor")) {
                 name.append(" \u200E(");
@@ -228,7 +247,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
         if (way.isIncomplete()) {
             name.append(tr("incomplete"));
         } else {
-            TaggingPreset preset = TaggingPresetNameTemplateList.getInstance().findPresetTemplate(way);
+            TaggingPreset preset = getPresetFor(way);
             if (preset == null || !(way instanceof TemplateEngineDataProvider)) {
                 String n;
                 n = formatLocalName(way);
@@ -253,7 +272,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
 
                 name.append(n);
             } else {
-                preset.nameTemplate.appendText(name, (TemplateEngineDataProvider) way);
+                preset.getNameTemplate().appendText(name, (TemplateEngineDataProvider) way);
             }
 
             int nodesNo = way.getRealNodesCount();
@@ -323,7 +342,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
         if (relation.isIncomplete()) {
             name.append(tr("incomplete"));
         } else {
-            TaggingPreset preset = TaggingPresetNameTemplateList.getInstance().findPresetTemplate(relation);
+            TaggingPreset preset = getPresetFor(relation);
 
             formatRelationNameAndType(relation, name, preset);
 
@@ -356,7 +375,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
             }
             result.append(" (").append(relationName).append(", ");
         } else {
-            preset.nameTemplate.appendText(result, (TemplateEngineDataProvider) relation);
+            preset.getNameTemplate().appendText(result, (TemplateEngineDataProvider) relation);
             result.append('(');
         }
         return result;
@@ -365,8 +384,8 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
     private final Comparator<IRelation<?>> relationComparator = (r1, r2) -> {
         //TODO This doesn't work correctly with formatHooks
 
-        TaggingPreset preset1 = TaggingPresetNameTemplateList.getInstance().findPresetTemplate(r1);
-        TaggingPreset preset2 = TaggingPresetNameTemplateList.getInstance().findPresetTemplate(r2);
+        TaggingPreset preset1 = getPresetFor(r1);
+        TaggingPreset preset2 = getPresetFor(r2);
 
         if (preset1 != null || preset2 != null) {
             String name11 = formatRelationNameAndType(r1, new StringBuilder(), preset1).toString();
@@ -505,7 +524,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
               .append(Utils.escapeReservedCharactersHTML(key))
               .append("</strong>=");
             String value = tags.get(key);
-            while (!value.isEmpty()) {
+            while (!Utils.isEmpty(value)) {
                 sb.append(Utils.escapeReservedCharactersHTML(value.substring(0, Math.min(50, value.length()))));
                 if (value.length() > 50) {
                     sb.append("<br>");

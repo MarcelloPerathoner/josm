@@ -59,6 +59,8 @@ public class JosmComboBox<E> extends JComboBox<E> implements PopupMenuListener, 
     /** greyed text to display in the editor when the selected value is empty */
     private String hint;
 
+    private boolean fakeWidth;
+
     /**
      * Creates a {@code JosmComboBox} with a {@link JosmComboBoxModel} data model.
      * The default data model is an empty list of objects.
@@ -302,6 +304,30 @@ public class JosmComboBox<E> extends JComboBox<E> implements PopupMenuListener, 
     }
 
     /**
+     * Make popup wider than combobox.
+     */
+    @Override
+    public Dimension getSize() {
+        Dimension dim = super.getSize();
+        if (fakeWidth)
+            dim.width = Math.max(getPreferredSize().width, dim.width);
+        return dim;
+    }
+
+    /**
+     * Helper to make popup wider than combobox.
+     */
+    @Override
+    public void doLayout() {
+        try {
+            fakeWidth = false;
+            super.doLayout();
+        } finally {
+            fakeWidth = true;
+        }
+    }
+
+    /**
      * Get the dropdown list component
      *
      * @return the list or null
@@ -392,19 +418,19 @@ public class JosmComboBox<E> extends JComboBox<E> implements PopupMenuListener, 
         int freeAbove = bounds.y - screenBounds.y;
         int freeBelow = (screenBounds.y + screenBounds.height) - (bounds.y + bounds.height);
 
-        try {
-            // First try an implementation-dependent method to get the exact number.
-            @SuppressWarnings("unchecked")
-            JList<E> jList = getList();
-
+        int maxRowCount = 8; // default
+        @SuppressWarnings("unchecked")
+        JList<E> jList = getList();
+        if (jList != null) {
             // Calculate the free space available on screen
             Insets insets = jList.getInsets();
             // A small fudge factor that accounts for the displacement of the popup relative to the
             // combobox and the popup shadow.
             int fudge = 4;
             int free = Math.max(freeAbove, freeBelow) - (insets.top + insets.bottom) - fudge;
-            if (jList.getParent() instanceof JScrollPane) {
-                JScrollPane scroller = (JScrollPane) jList.getParent();
+            Component parent = getParent();
+            if (parent instanceof JScrollPane) {
+                JScrollPane scroller = (JScrollPane) parent;
                 Border border = scroller.getViewportBorder();
                 if (border != null) {
                     insets = border.getBorderInsets(null);
@@ -427,11 +453,10 @@ public class JosmComboBox<E> extends JComboBox<E> implements PopupMenuListener, 
                 if (h >= free)
                     break;
             }
-            setMaximumRowCount(i);
-            // Logging.debug("free = {0}, h = {1}, i = {2}, bounds = {3}, screenBounds = {4}", free, h, i, bounds, screenBounds);
-        } catch (Exception ex) {
-            setMaximumRowCount(8); // the default
+            maxRowCount = i;
         }
+        // Logging.debug("free = {0}, h = {1}, i = {2}, bounds = {3}, screenBounds = {4}", free, h, i, bounds, screenBounds);
+        setMaximumRowCount(maxRowCount);
     }
 
     @Override

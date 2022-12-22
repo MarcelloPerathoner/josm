@@ -4,15 +4,19 @@ package org.openstreetmap.josm.gui.tagging.ac;
 import java.util.EventListener;
 
 /**
- * The listener interface for receiving autoComp events.
- * The class that is interested in processing an autoComp event
- * implements this interface, and the object created with that
- * class is registered with a component, using the component's
- * <code>addAutoCompListener</code> method. When the autoComp event
- * occurs, that object's <code>autoCompPerformed</code> method is
- * invoked.
+ * The listener interface for receiving AutoCompEvent events.
+ * <p>
+ * The class that is interested in processing an {@link AutoCompEvent} implements this interface,
+ * and the object created with that class is registered with an autocompleting component using the
+ * autocompleting component's {@link AutoCompTextField#addAutoCompListener addAutoCompListener}
+ * method.
+ * <p>
+ * Before the autocompletion searches for candidates, the listener's {@code autoCompBefore} method
+ * is invoked. It can be used to initialize the {@link AutoCompComboBoxModel}. After the
+ * autocompletion occured the listener's {@code autoCompPerformed} method is invoked. It is used eg.
+ * for adjusting the selection of an {@link AutoCompComboBox} after its {@link AutoCompTextField}
+ * has autocompleted.
  *
- * @see AutoCompEvent
  * @since 18221
  */
 public interface AutoCompListener extends EventListener {

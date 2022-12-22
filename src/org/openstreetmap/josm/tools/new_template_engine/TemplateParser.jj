@@ -1,0 +1,188 @@
+// License: GPL. For details, see LICENSE file.
+options {
+    STATIC = false;
+    OUTPUT_DIRECTORY = "parsergen";
+}
+
+PARSER_BEGIN(TemplateParser)
+package org.openstreetmap.josm.tools.new_template_engine;
+
+// import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import org.openstreetmap.josm.data.osm.search.SearchCompiler;
+import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
+import org.openstreetmap.josm.data.osm.search.SearchParseError;
+
+import org.openstreetmap.josm.tools.template_engine.*;
+
+import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.StringReader;
+
+class TEL extends ArrayList<TemplateEntry> {};
+
+/**
+ * New Template parser built with javacc.
+ */
+public class TemplateParser {
+    public static void main (String args[]) throws ParseError {      
+        new TemplateParser("test { var_2 } more ?{ x=y 'a' | a=b \"i:j\"=\"a b\" 'c{z}d' | 'b'} foo").parse();
+        new TemplateParser("test?{'a{b}c{d}e'|'a{b}c'|'a{d}e'}foo").parse();
+        new TemplateParser("test !{ abc=def 'a{b}c{d}e'} ?{'{x}'} foo").parse();
+    }
+
+    /**
+     * Constructor which initializes the parser from a String.
+     * @param in input
+     */
+    public TemplateParser(String in) {
+        this(new BufferedReader(new StringReader(in)));
+    }
+
+    /**
+     * Parse method compatible with old template parser.
+     */
+
+    public TemplateEntry parse() throws ParseError {
+        try {
+            return Template();
+        } catch (ParseException e) {
+            throw new ParseError (e.getMessage ());
+        }
+    }
+
+    public TemplateEntry compound(TEL entries) {
+        TemplateEntry[] tmp = new TemplateEntry[entries.size()];
+        return CompoundTemplateEntry.fromArray(entries.toArray (tmp));
+    }   
+
+    public Match compile(Token tok) throws ParseException {
+        try {
+            return SearchCompiler.compile(tok.image.trim()); 
+        } catch (SearchParseError e) {
+            throw new ParseException (e.getMessage());
+        }
+    }
+}
+
+PARSER_END(TemplateParser)
+
+TOKEN: {
+        <APOS:             "'">
+    |   <PIPE:             "|">
+    |   <O_OPENBRACE:      "{">
+    |   <O_CLOSEBRACE:     "}">
+    |   <O_SWITCH:         "?">
+    |   <O_CONTEXT_SWITCH: "!">
+    |   <TEXT:             (~["{","}","!","?","|","'"]) +>
+}
+
+TemplateEntry QuotedTemplate() : 
+{
+    TemplateEntry t;
+}
+{
+    <APOS> 
+    t = Template()
+    <APOS>
+    {
+        return t;   
+    }
+}
+
+TemplateEntry Template() : 
+{ 
+    TEL entries = new TEL();
+    Token tok; 
+}
+{
+    ( 
+        tok = <TEXT> 
+        {
+            entries.add (new StaticText (tok.image));
+        }
+    | 
+        Variable (entries) 
+    | 
+        Switch (entries) 
+    | 
+        ContextSwitch (entries) 
+    )*
+    {
+        return compound(entries);
+    }
+}
+
+void Variable(TEL entries) : 
+{ 
+    Token tok;
+}
+{
+    <O_OPENBRACE> 
+    tok = <TEXT>
+    {
+        entries.add (new Variable (tok.image.trim()));
+    }
+    <O_CLOSEBRACE>
+}
+
+/** A switch with cases */
+void Switch(TEL parent_entries) : 
+{
+    TEL entries = new TEL();
+}
+{
+    <O_SWITCH> <O_OPENBRACE>
+    Case(entries) ( <PIPE> Case(entries) )* 
+    <O_CLOSEBRACE>
+    {
+        parent_entries.add (new Condition (entries));
+    }
+}
+
+/** One case of a switch. */
+void Case(TEL entries) : 
+{ 
+    Token tok = new Token (); 
+    TemplateEntry t;
+}
+{
+    (
+        tok = <TEXT> 
+    )?
+    t = QuotedTemplate()
+    {
+        if (tok.image.trim().isEmpty()) {
+            entries.add(new SearchExpressionCondition(compile(tok), t));
+        } else {
+            entries.add (t);
+        }
+    }
+    (" ")*
+}
+
+/** A context switch */
+void ContextSwitch(TEL entries) : 
+{ 
+    Token tok; 
+    TemplateEntry t;
+}
+{
+    <O_CONTEXT_SWITCH> <O_OPENBRACE>
+    tok = <TEXT>
+    t = QuotedTemplate() 
+    <O_CLOSEBRACE>
+    {   
+        try {
+            entries.add(new ContextSwitchTemplate(compile(tok), t, tok.beginColumn));
+        } catch (ParseError e) {
+            throw new ParseException(e.getMessage());
+        }
+    }
+}
+

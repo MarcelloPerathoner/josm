@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -42,6 +43,7 @@ import org.openstreetmap.josm.gui.PrimitiveRenderer;
 import org.openstreetmap.josm.gui.help.ContextSensitiveHelpAction;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.util.GuiHelper;
+import org.openstreetmap.josm.gui.util.TableHelper;
 import org.openstreetmap.josm.gui.util.WindowGeometry;
 import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.tools.GBC;
@@ -49,6 +51,7 @@ import org.openstreetmap.josm.tools.I18n;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.Utils;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 /**
  * This dialog is used to get a user confirmation that a collection of primitives can be removed
@@ -82,6 +85,8 @@ public class DeleteFromRelationConfirmationDialog extends JDialog implements Tab
 
     protected JPanel buildRelationMemberTablePanel() {
         JTable table = new JTable(model, new RelationMemberTableColumnModel());
+        Icon icon = ImageProvider.get("data", "relation", ImageSizes.TABLE);
+        TableHelper.setRowHeight(table, icon);
         JPanel pnl = new JPanel(new GridBagLayout());
         pnl.add(new JScrollPane(table), GBC.eol().fill());
         JTable deletedRelationsTable = new JTable(this.deletedRelationsModel, new RelationDeleteTableColumnModel());

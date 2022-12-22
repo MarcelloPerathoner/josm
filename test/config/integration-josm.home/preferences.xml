@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18606'>
+  <tag key='josm.version' value='18606'/>
+  <list key='mirror.https://josm.openstreetmap.de/josmfile?page_Presets/un_mappers&amp;zip_1'>
+    <entry value='1671314492470'/>
+    <entry value='test/config/unit-josm.home/cache/mirror_https___josm.openstreetmap.de_josmfile_page_Presets_un_mappers_zip_1'/>
+  </list>
+</preferences>

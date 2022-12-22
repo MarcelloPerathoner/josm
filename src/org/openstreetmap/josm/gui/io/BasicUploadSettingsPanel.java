@@ -37,7 +37,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.io.UploadTextComponentValidator.UploadAreaValidator;
 import org.openstreetmap.josm.gui.io.UploadTextComponentValidator.UploadCommentValidator;
 import org.openstreetmap.josm.gui.io.UploadTextComponentValidator.UploadSourceValidator;
-import org.openstreetmap.josm.gui.tagging.TagModel;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.widgets.HistoryComboBox;
 import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -207,8 +207,8 @@ public class BasicUploadSettingsPanel extends JPanel implements ActionListener, 
      * @since 18173
      */
     private String get(String key) {
-        TagModel tm = model.get(key);
-        return tm == null ? "" : tm.getValue();
+        TagTableModel.ValueType vt = model.get(key);
+        return vt == null ? "" : vt.toString();
     }
 
     /**

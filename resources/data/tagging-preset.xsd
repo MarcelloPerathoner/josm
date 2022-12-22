@@ -88,6 +88,7 @@
                 <element name="group" type="tns:group" />
                 <element name="item" type="tns:item" />
                 <element name="separator" type="tns:separator" />
+                <element name="presets" type="tns:root" />
             </choice>
         </sequence>
         <attributeGroup ref="tns:attributes.icon" />

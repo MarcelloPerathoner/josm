@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18606'>
+  <tag key='changesetdialog.lastHeight' value='0'/>
+  <tag key='commandstack.lastHeight' value='0'/>
+  <tag key='conflict.lastHeight' value='0'/>
+  <tag key='filter.lastHeight' value='0'/>
+  <tag key='josm.version' value='18606'/>
+  <tag key='layerlist.lastHeight' value='0'/>
+  <tag key='mapstyle.lastHeight' value='0'/>
+  <tag key='minimap.lastHeight' value='0'/>
+  <tag key='notes/note_open.lastHeight' value='0'/>
+  <tag key='propertiesdialog.lastHeight' value='0'/>
+  <tag key='relationlist.lastHeight' value='0'/>
+  <tag key='selectionlist.lastHeight' value='0'/>
+  <tag key='toggleDialogs.width' value='-5'/>
+  <tag key='userlist.lastHeight' value='0'/>
+  <tag key='validator.lastHeight' value='0'/>
+</preferences>

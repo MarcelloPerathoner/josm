@@ -39,14 +39,12 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.search.PushbackTokenizer.Range;
 import org.openstreetmap.josm.data.osm.search.PushbackTokenizer.Token;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.MapCSSParser;
 import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.ParseException;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetMenu;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetSeparator;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.Geometry;
@@ -1910,9 +1908,9 @@ public class SearchCompiler {
              */
             boolean matchStrictly = wildCardIdx == -1 || wildCardIdx != length;
 
-            this.presets = TaggingPresets.getTaggingPresets()
+            this.presets = MainApplication.getTaggingPresets().getAllPresets()
                     .stream()
-                    .filter(preset -> !(preset instanceof TaggingPresetMenu || preset instanceof TaggingPresetSeparator))
+                    .filter(preset -> preset.getClass() == TaggingPreset.class)
                     .filter(preset -> presetNameMatch(presetName, preset, matchStrictly))
                     .collect(Collectors.toList());
 
@@ -1926,20 +1924,25 @@ public class SearchCompiler {
             return this.presets.stream().anyMatch(preset -> preset.test(osm));
         }
 
+        /**
+         * Returns true if this preset's fullName matches the glob.
+         * @param glob the name to match. "/*" matches all names
+         * @param preset the preset
+         * @return true if this preset's fullName matches the glob.
+         */
+        private static boolean presetNameMatchesGlob(String glob, TaggingPreset preset) {
+            if (glob.endsWith("/*")) {
+                glob = glob.substring(0, glob.length() - 2);
+                return glob.equalsIgnoreCase(preset.getGroupName());
+            }
+            return glob.equalsIgnoreCase(preset.getRawName());
+        }
+
         private static boolean presetNameMatch(String name, TaggingPreset preset, boolean matchStrictly) {
             if (matchStrictly) {
                 return name.equalsIgnoreCase(preset.getRawName());
             }
-
-            try {
-                String groupSuffix = name.substring(0, name.length() - 2); // try to remove '/*'
-                TaggingPresetMenu group = preset.group;
-
-                return group != null && groupSuffix.equalsIgnoreCase(group.getRawName());
-            } catch (StringIndexOutOfBoundsException ex) {
-                Logging.trace(ex);
-                return false;
-            }
+            return presetNameMatchesGlob(name, preset);
         }
 
         @Override

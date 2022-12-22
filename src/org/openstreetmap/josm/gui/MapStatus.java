@@ -21,8 +21,6 @@ import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -55,6 +53,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -64,7 +63,6 @@ import org.openstreetmap.josm.data.SystemOfMeasurement.SoMChangeListener;
 import org.openstreetmap.josm.data.coor.ILatLon;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.coor.conversion.CoordinateFormatManager;
-import org.openstreetmap.josm.data.coor.conversion.DMSCoordinateFormat;
 import org.openstreetmap.josm.data.coor.conversion.ICoordinateFormat;
 import org.openstreetmap.josm.data.coor.conversion.ProjectedCoordinateFormat;
 import org.openstreetmap.josm.data.osm.DataSelectionListener;
@@ -243,30 +241,32 @@ public final class MapStatus extends JPanel implements
     /** The {@link ICoordinateFormat} set in the previous update */
     private transient ICoordinateFormat previousCoordinateFormat;
     private final ImageLabel latText = new ImageLabel("lat",
-            null, DMSCoordinateFormat.INSTANCE.latToString(LatLon.SOUTH_POLE).length(), PROP_BACKGROUND_COLOR.get());
+            null,
+            10, PROP_BACKGROUND_COLOR.get());
     private final ImageLabel lonText = new ImageLabel("lon",
-            null, DMSCoordinateFormat.INSTANCE.lonToString(new LatLon(0, 180)).length(), PROP_BACKGROUND_COLOR.get());
+            null,
+            10, PROP_BACKGROUND_COLOR.get());
     private final ImageLabel headingText = new ImageLabel("heading",
             tr("The (compass) heading of the line segment being drawn."),
-            DECIMAL_FORMAT.format(360).length() + 1, PROP_BACKGROUND_COLOR.get());
+            5, PROP_BACKGROUND_COLOR.get());
     private final ImageLabel angleText = new ImageLabel("angle",
             tr("The angle between the previous and the current way segment."),
-            DECIMAL_FORMAT.format(360).length() + 1, PROP_BACKGROUND_COLOR.get());
+            5, PROP_BACKGROUND_COLOR.get());
     private final ImageLabel distText = new ImageLabel("dist",
-            tr("The length of the new way segment being drawn."), 10, PROP_BACKGROUND_COLOR.get());
+            tr("The length of the new way segment being drawn."),
+            5, PROP_BACKGROUND_COLOR.get());
     private final ImageLabel nameText = new ImageLabel("name",
             tr("The name of the object at the mouse pointer."),
-            getNameLabelCharacterCount(MainApplication.getMainFrame()), PROP_BACKGROUND_COLOR.get());
+            40, PROP_BACKGROUND_COLOR.get());
     private final JosmTextField helpText = new JosmTextField(null, null, 0, false);
     private final JProgressBar progressBar = new JProgressBar();
-    private final transient ComponentAdapter mvComponentAdapter;
     /**
      * The progress monitor for displaying a background progress
      */
     public final transient BackgroundProgressMonitor progressMonitor = new BackgroundProgressMonitor();
 
     // Distance value displayed in distText, stored if refresh needed after a change of system of measurement
-    private double distValue;
+    private Double distValue;
 
     // Determines if angle panel is enabled or not
     private boolean angleEnabled;
@@ -811,6 +811,7 @@ public final class MapStatus extends JPanel implements
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         updateSystemOfMeasurement(som);
+                        distText.setCharCount(5);
                     }
                 });
                 somItems.add(item);
@@ -821,6 +822,8 @@ public final class MapStatus extends JPanel implements
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         CoordinateFormatManager.setCoordinateFormat(format);
+                        latText.setCharCount(10);
+                        lonText.setCharCount(10);
                     }
                 });
                 coordinateFormatItems.add(item);
@@ -928,6 +931,10 @@ public final class MapStatus extends JPanel implements
         add(angleText, GBC.std().insets(3, 0, 0, 0));
         add(distText, GBC.std().insets(3, 0, 0, 0));
 
+        headingText.setHorizontalAlignment(SwingConstants.TRAILING);
+        distText.setHorizontalAlignment(SwingConstants.TRAILING);
+        angleText.setHorizontalAlignment(SwingConstants.TRAILING);
+
         if (Config.getPref().getBoolean("statusbar.change-system-of-measurement-on-click", true)) {
             distText.addMouseListener(new MouseAdapter() {
                 @Override
@@ -962,15 +969,6 @@ public final class MapStatus extends JPanel implements
         Config.getPref().addPreferenceChangeListener(this);
         DatasetEventManager.getInstance().addDatasetListener(this, FireMode.IN_EDT);
         SelectionEventManager.getInstance().addSelectionListenerForEdt(this);
-
-        mvComponentAdapter = new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                nameText.setCharCount(getNameLabelCharacterCount(MainApplication.getMainFrame()));
-                revalidate();
-            }
-        };
-        mv.addComponentListener(mvComponentAdapter);
 
         // The background thread
         thread = new Thread(collector, "Map Status Collector");
@@ -1084,23 +1082,11 @@ public final class MapStatus extends JPanel implements
     }
 
     /**
-     * Sets the angle to display in the angle panel. Values less than 0 yield "--".
-     * @param a The angle
-     * @see #setAngleNaN
-     * @see #setAngleText
+     * Sets the angle to display in the angle panel. Null values yield "--".
+     * @param angle The angle
      */
-    public void setAngle(double a) {
-        angleText.setText(a < 0 ? "--" : DECIMAL_FORMAT.format(a) + " \u00B0");
-    }
-
-    /**
-     * Sets the angle to display in the angle panel. NaN yields "--".
-     * @param a The angle
-     * @see #setAngle
-     * @see #setAngleText
-     */
-    public void setAngleNaN(double a) {
-        angleText.setText(!Double.isFinite(a) ? "--" : DECIMAL_FORMAT.format(a) + " \u00B0");
+    public void setAngle(Double angle) {
+        angleText.setText(angle == null ? "--" : DECIMAL_FORMAT.format(angle) + " \u00B0");
     }
 
     /**
@@ -1115,17 +1101,17 @@ public final class MapStatus extends JPanel implements
      * Sets the heading to display in the heading panel
      * @param h The heading
      */
-    public void setHeading(double h) {
-        headingText.setText(h < 0 ? "--" : DECIMAL_FORMAT.format(h) + " \u00B0");
+    public void setHeading(Double h) {
+        headingText.setText(h == null ? "--" : DECIMAL_FORMAT.format(h) + " \u00B0");
     }
 
     /**
      * Sets the distance text to the given value
      * @param dist The distance value to display, in meters
      */
-    public void setDist(double dist) {
+    public void setDist(Double dist) {
         distValue = dist;
-        distText.setText(dist < 0 ? "--" : NavigatableComponent.getDistText(dist, DECIMAL_FORMAT, DISTANCE_THRESHOLD.get()));
+        distText.setText(dist == null ? "--" : NavigatableComponent.getDistText(dist, DECIMAL_FORMAT, DISTANCE_THRESHOLD.get()));
     }
 
     /**
@@ -1134,7 +1120,7 @@ public final class MapStatus extends JPanel implements
      * @since 5991
      */
     public void setDist(Collection<Way> ways) {
-        double dist = -1;
+        Double dist = null;
         // Compute total length of selected way(s) until an arbitrary limit set to 250 ways
         // in order to prevent performance issue if a large number of ways are selected (old behaviour kept in that case, see #8403)
         int maxWays = Math.max(1, Config.getPref().getInt("selection.max-ways-for-statusline", 250));
@@ -1165,7 +1151,6 @@ public final class MapStatus extends JPanel implements
         Config.getPref().removePreferenceChangeListener(this);
         DatasetEventManager.getInstance().removeDatasetListener(this);
         SelectionEventManager.getInstance().removeSelectionListener(this);
-        mv.removeComponentListener(mvComponentAdapter);
 
         // MapFrame gets destroyed when the last layer is removed, but the status line background
         // thread that collects the information doesn't get destroyed automatically.
@@ -1203,11 +1188,6 @@ public final class MapStatus extends JPanel implements
         PROP_FOREGROUND_COLOR.get();
         PROP_ACTIVE_BACKGROUND_COLOR.get();
         PROP_ACTIVE_FOREGROUND_COLOR.get();
-    }
-
-    private static int getNameLabelCharacterCount(Component parent) {
-        int w = parent != null ? parent.getWidth() : 800;
-        return Math.min(80, 20 + Math.max(0, w-1280) * 60 / (1920-1280));
     }
 
     private void refreshDistText(Collection<? extends OsmPrimitive> newSelection) {

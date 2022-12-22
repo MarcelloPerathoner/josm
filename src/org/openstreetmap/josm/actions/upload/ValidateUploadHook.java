@@ -3,7 +3,6 @@ package org.openstreetmap.josm.actions.upload;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,7 +110,7 @@ public class ValidateUploadHook implements UploadHook {
         HtmlPanel pnlMessage = new HtmlPanel();
         pnlMessage.setText("<html><body>"
                 + tr("The JOSM data validator partially checked the objects to be"
-                + " uploaded and found some problems. Try fixing them, but do not"
+                + " uploaded and found some problems.<br>Try fixing them, but do not"
                 + " harm valid data. When in doubt ignore the findings.<br>"
                 + " You can see the findings in the Validator Results panel too."
                 + " Further checks on all data can be started from that panel.")
@@ -127,7 +126,6 @@ public class ValidateUploadHook implements UploadHook {
                 + tr("Informational hints, expect many false entries.")+"</td></tr>"
                 + "</table>"
         );
-        pnlMessage.setPreferredSize(new Dimension(500, 150));
         p.add(pnlMessage, GBC.eol().fill(GBC.HORIZONTAL));
         p.add(new JScrollPane(errorPanel), GBC.eol().fill(GBC.BOTH));
 

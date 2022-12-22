@@ -346,7 +346,6 @@ public class CombinePrimitiveResolverDialog extends JDialog {
         getContentPane().add(pnlButtons, BorderLayout.SOUTH);
         getContentPane().validate();
         adjustDividerLocation();
-        pnlRelationMemberConflictResolver.prepareForEditing();
     }
 
     /**

@@ -6,24 +6,33 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 
+import javax.swing.ImageIcon;
 import javax.swing.JTable;
 
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 /**
- * This class renders the link column of the member table. It shows if the way segments are connected or not.
+ * This class renders the link column of the member table. It shows if the way segments
+ * in a relation are connected or not.
  */
 public class MemberTableLinkedCellRenderer extends MemberTableCellRenderer {
 
-    private static final Image ARROW_UP = ImageProvider.get("dialogs/relation", "arrowup").getImage();
-    private static final Image ARROW_DOWN = ImageProvider.get("dialogs/relation", "arrowdown").getImage();
-    private static final Image CORNERS = ImageProvider.get("dialogs/relation", "roundedcorners").getImage();
-    private static final Image ROUNDABOUT_RIGHT = ImageProvider.get("dialogs/relation", "roundabout_right_tiny").getImage();
-    private static final Image ROUNDABOUT_LEFT = ImageProvider.get("dialogs/relation", "roundabout_left_tiny").getImage();
+    /** padding around cell border  */
+    private static final int padding = ImageProvider.adj(2);
+    /** size of the small black "connected" rectangle */
+    private static final int smallRectSize = padding;
+    /** size of the big red "unconnected" rectangle */
+    private static final int bigRectSize = 2 * padding;
+
+    private static final ImageIcon ARROW_UP = ImageProvider.get("dialogs/relation", "arrowup", ImageSizes.RELATION_LINK);
+    private static final ImageIcon ARROW_DOWN = ImageProvider.get("dialogs/relation", "arrowdown", ImageSizes.RELATION_LINK);
+    private static final ImageIcon ROUNDABOUT_RIGHT = ImageProvider.get("dialogs/relation", "roundabout_right_tiny", ImageSizes.TABLE);
+    private static final ImageIcon ROUNDABOUT_LEFT = ImageProvider.get("dialogs/relation", "roundabout_left_tiny", ImageSizes.TABLE);
+
     private transient WayConnectionType value = new WayConnectionType();
 
     @Override
@@ -45,24 +54,33 @@ public class MemberTableLinkedCellRenderer extends MemberTableCellRenderer {
         if (value == null || !value.isValid())
             return;
 
-        int ymax = this.getSize().height - 1;
-        int xloop = 10;
-        int xowloop = 0;
+        int w = this.getSize().width;
+        int h = this.getSize().height;
+
+        int ymax = h - 1;
+
+        /** x-coordinate for basic line */
+        int xoff = w / 2;
+
+        /** x-coordinate for the "return" line in a loop (or 0 if there is no loop) */
+        int xloop = 0;
+
+        /** offset from xoff for lines in forward/backward split route (or 0 if there is no split) */
+        int xfbsplit = 0;
+
+        assert !(value.isOnewayLoopForwardPart && value.isOnewayLoopBackwardPart);
+
         if (value.isOnewayLoopForwardPart) {
-            xowloop = -3;
-        }
-        if (value.isOnewayLoopBackwardPart) {
-            xowloop = 3;
+            xfbsplit = -w / 8;
+        } else if (value.isOnewayLoopBackwardPart) {
+            xfbsplit = w / 8;
         }
 
-        int xoff = this.getSize().width / 2;
         if (value.isLoop) {
-            xoff -= xloop / 2 - 1;
+            xloop = 3 * w / 4;
         }
-        int w = 2;
-        int p = 2 + w + 1;
-        int y1 = computePreviousY(g, xloop, xowloop, xoff, w, p);
-        int y2 = computeNextY(g, ymax, xloop, xowloop, xoff, w, p);
+        int y1 = drawCellTop(g, xloop, value.isOnewayHead ? xoff : xoff + xfbsplit);
+        int y2 = drawCellBottom(g, ymax, xloop, value.isOnewayTail ? xoff : xoff + xfbsplit);
 
         /* vertical lines */
         if (value.onewayFollowsNext && value.onewayFollowsPrevious) {
@@ -71,142 +89,137 @@ public class MemberTableLinkedCellRenderer extends MemberTableCellRenderer {
         } else {
             g.setColor(getForeground().brighter());
         }
-        if (value.isLoop) {
-            g.drawLine(xoff+xloop, y1, xoff+xloop, y2);
+        if (xloop != 0) {
+            // draw the closed loop line
+            // draw this first so changes to y1, y2 won't affect it
+            g.drawLine(xloop, y1, xloop, y2);
         }
-
-        if (value.isOnewayHead) {
-            setDotted(g);
-            y1 = 7;
-
-            int[] xValues = {xoff - xowloop + 1, xoff - xowloop + 1, xoff};
-            int[] yValues = {ymax, y1+1, 1};
-            g.drawPolyline(xValues, yValues, 3);
-            unsetDotted(g);
-            g.drawLine(xoff + xowloop, y1+1, xoff, 1);
-        }
-
-        if (value.isOnewayTail) {
-            setDotted(g);
-            y2 = ymax - 7;
-
-            int[] xValues = {xoff+1, xoff - xowloop + 1, xoff - xowloop + 1};
-            int[] yValues = {ymax-1, y2, y1};
-            g.drawPolyline(xValues, yValues, 3);
-            unsetDotted(g);
-            g.drawLine(xoff + xowloop, y2, xoff, ymax-1);
-        }
-
-        if ((value.isOnewayLoopForwardPart || value.isOnewayLoopBackwardPart) && !value.isOnewayTail && !value.isOnewayHead) {
-            setDotted(g);
-            g.drawLine(xoff - xowloop+1, y1, xoff - xowloop+1, y2 + 1);
-            unsetDotted(g);
-        }
-
-        if (!value.isOnewayLoopForwardPart && !value.isOnewayLoopBackwardPart) {
+        if (xfbsplit == 0) {
+            // no split
             g.drawLine(xoff, y1, xoff, y2);
-        }
-
-        g.drawLine(xoff+xowloop, y1, xoff+xowloop, y2);
-
-        /* special icons */
-        Image arrow = getArrow();
-        if (value.direction == Direction.ROUNDABOUT_LEFT) {
-            g.drawImage(ROUNDABOUT_LEFT, xoff-6, 1, null);
-        } else if (value.direction == Direction.ROUNDABOUT_RIGHT) {
-            g.drawImage(ROUNDABOUT_RIGHT, xoff-6, 1, null);
-        }
-
-        if (!value.isOnewayLoopForwardPart && !value.isOnewayLoopBackwardPart &&
-                (arrow != null)) {
-            g.drawImage(arrow, xoff-3, (y1 + y2) / 2 - 2, null);
-        }
-
-        if (value.isOnewayLoopBackwardPart && value.isOnewayLoopForwardPart) {
-            if (arrow == ARROW_DOWN) {
-                arrow = ARROW_UP;
-            } else if (arrow == ARROW_UP) {
-                arrow = ARROW_DOWN;
+        } else {
+            // in a forward/backward split
+            int pad = ImageProvider.adj(6);
+            // CHECKSTYLE.OFF: SingleSpaceSeparator
+            int xplain = xoff + xfbsplit;
+            int xdots  = xoff - xfbsplit;
+            int[] xPlain = {xoff, xplain, xplain};
+            int[] xDots  = {xoff, xdots,  xdots};
+            int[] yHead  = {1,    pad,        y2};
+            int[] yTail  = {ymax, ymax - pad, y1};
+            // CHECKSTYLE.ON: SingleSpaceSeparator
+            if (value.isOnewayHead) {
+                // this is the start of a forward/backward split
+                y1 = pad;
+                setDotted(g);
+                g.drawPolyline(xDots, yHead, 3);
+                unsetDotted(g);
+                g.drawPolyline(xPlain, yHead, 3);
+            } else if (value.isOnewayTail) {
+                // this is the end of a forward/backward split
+                y2 = ymax - pad;
+                setDotted(g);
+                g.drawPolyline(xDots, yTail, 3);
+                unsetDotted(g);
+                g.drawPolyline(xPlain, yTail, 3);
+            } else {
+                // this is in the middle of a forward/backward split
+                setDotted(g);
+                g.drawLine(xdots, y1, xdots, y2);
+                unsetDotted(g);
+                g.drawLine(xplain, y1, xplain, y2);
             }
         }
 
-        if (arrow != null) {
-            g.drawImage(arrow, xoff+xowloop-3, (y1 + y2) / 2 - 2, null);
+        /* draw arrow and roundabout icons */
+        if (value.direction == Direction.ROUNDABOUT_LEFT) {
+            drawCenteredIcon(g, ROUNDABOUT_LEFT, xoff, (y1 + y2) / 2);
+        } else if (value.direction == Direction.ROUNDABOUT_RIGHT) {
+            drawCenteredIcon(g, ROUNDABOUT_RIGHT, xoff, (y1 + y2) / 2);
+        } else {
+            drawCenteredIcon(g, getArrowIcon(), xoff + xfbsplit, (y1 + y2) / 2);
         }
     }
 
-    private int computePreviousY(Graphics g, int xloop, int xowloop, int xoff, int w, int p) {
+    private void drawCenteredRect(Graphics g, int x, int y, int size) {
+        g.fillRect(x - size / 2, y - size / 2, size, size);
+    }
+
+    private void drawTopCenteredRect(Graphics g, int x, int y, int size) {
+        g.fillRect(x - size / 2, y, size, size);
+    }
+
+    private void drawBottomCenteredRect(Graphics g, int x, int y, int size) {
+        g.fillRect(x - size / 2, y - size, size, size);
+    }
+
+    private void drawCenteredIcon(Graphics g, ImageIcon icon, int x, int y) {
+        if (icon != null) {
+            int iconHeight = icon.getIconHeight();
+            int iconWidth = icon.getIconWidth();
+            int iconX = x - iconWidth / 2;
+            int iconY = y - iconHeight / 2;
+            g.drawImage(icon.getImage(), iconX, iconY, null);
+        }
+    }
+
+    private int drawCellTop(Graphics g, int xloop, int xoff) {
         int y1;
 
         if (value.linkPrev) {
+            // linked, draw the small black rectangle
+            y1 = 0;
             if (value.onewayFollowsPrevious) {
                 g.setColor(getForeground());
             } else {
                 g.setColor(getForeground().brighter());
             }
-            if (value.isOnewayHead) {
-                g.fillRect(xoff - 1, 0, 3, 1);
-            } else {
-                g.fillRect(xoff - 1 + xowloop, 0, 3, 1);
-            }
-            y1 = 0;
+            drawCenteredRect(g, xoff, 0, smallRectSize);
         } else {
             if (value.isLoop) {
+                // not linked but first in roundtrip
                 g.setColor(getForeground());
-                y1 = 5;
-                g.drawImage(CORNERS, xoff, y1-3, xoff+3, y1, 0, 0, 3, 3, new Color(0, 0, 0, 0), null);
-                g.drawImage(CORNERS, xoff+xloop-2, y1-3, xoff+xloop+1, y1, 2, 0, 5, 3, new Color(0, 0, 0, 0), null);
-                g.drawLine(xoff+3, y1-3, xoff+xloop-3, y1-3);
+                y1 = padding;
+                g.drawArc(xoff, 0, xloop, padding, 0, 180);
             } else {
+                // not linked, draw the big red rectangle
                 g.setColor(Color.red);
-                if (value.isOnewayHead) {
-                    g.drawRect(xoff-1, p - 3 - w, w, w);
-                } else {
-                    g.drawRect(xoff-1 + xowloop, p - 1 - w, w, w);
-                }
-                y1 = p;
+                drawTopCenteredRect(g, xoff, padding, bigRectSize);
+                y1 = padding + bigRectSize;
             }
         }
         return y1;
     }
 
-    private int computeNextY(Graphics g, int ymax, int xloop, int xowloop, int xoff, int w, int p) {
+    private int drawCellBottom(Graphics g, int ymax, int xloop, int xoff) {
         int y2;
 
         if (value.linkNext) {
+            // linked, draw the small black rectangle
             if (value.onewayFollowsNext) {
                 g.setColor(getForeground());
             } else {
                 g.setColor(getForeground().brighter());
             }
-            if (value.isOnewayTail) {
-                g.fillRect(xoff - 1, ymax, 3, 1);
-            } else {
-                g.fillRect(xoff - 1 + xowloop, ymax, 3, 1);
-            }
+            drawCenteredRect(g, xoff, ymax, smallRectSize);
             y2 = ymax;
         } else {
-            if (value.isLoop) {
+            if (xloop != 0) {
+                // not linked but last in roundtrip
                 g.setColor(getForeground());
-                y2 = ymax - 5;
-                g.fillRect(xoff-1, y2+2, 3, 3);
-                g.drawLine(xoff, y2, xoff, y2+2);
-                g.drawImage(CORNERS, xoff+xloop-2, y2+1, xoff+xloop+1, y2+4, 2, 2, 5, 5, new Color(0, 0, 0, 0), null);
-                g.drawLine(xoff+3-1, y2+3, xoff+xloop-3, y2+3);
+                y2 = ymax - padding;
+                g.drawArc(xoff, y2, xloop - xoff, padding, 180, 180);
             } else {
+                // not linked, draw the big red rectangle
                 g.setColor(Color.red);
-                if (value.isOnewayTail) {
-                    g.drawRect(xoff-1, ymax - p + 3, w, w);
-                } else {
-                    g.drawRect(xoff-1 + xowloop, ymax - p + 1, w, w);
-                }
-                y2 = ymax - p;
+                drawBottomCenteredRect(g, xoff, ymax - padding, bigRectSize);
+                y2 = ymax - bigRectSize - padding;
             }
         }
         return y2;
     }
 
-    private Image getArrow() {
+    private ImageIcon getArrowIcon() {
         if (!value.ignoreOneway) {
             switch (value.direction) {
             case FORWARD:

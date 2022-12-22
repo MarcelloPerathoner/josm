@@ -49,7 +49,7 @@ public class AutoCompTextField<E> extends JosmTextField implements TableCellEdit
         model = new AutoCompComboBoxModel<>();
         docFilter = new MaxLengthDocumentFilter();
         ((AbstractDocument) getDocument()).setDocumentFilter(docFilter);
-        addKeyListener(this);
+        // addKeyListener(this);
         tableCellEditorSupport = new CellEditorSupport(this);
     }
 
@@ -141,27 +141,29 @@ public class AutoCompTextField<E> extends JosmTextField implements TableCellEdit
     /**
      * Autocompletes what the user typed in.
      * <p>
-     * Gets the user input from the editor, finds the best matching item in the model, sets the
-     * editor text to it, and highlights the autocompleted part. If there is no matching item, removes the
-     * list selection.
+     * Gets the user input from the editor, finds the best matching item in the model,
+     * sets the editor text to it, and selects the autocompleted part.
      *
-     * @param oldText the text before the last keypress was processed
+     * @param oldText the unselected part of the text before the last keypress
      */
     private void autocomplete(String oldText) {
+        if (getSelectionStart() != getSelectionEnd())
+            // Do not autocomplete if some text is selected.  New text entered replaces
+            // the selection, so there should be no selection if any new text was added,
+            // but control characters may leave the old selection intact.
+            return;
         String newText = getText();
-        if (getSelectionEnd() != newText.length())
-            // selection not at the end
+        if (oldText.length() >= newText.length())
+            // do not autocomplete if no text was added
             return;
-        // if the user typed some control character (eg. Alt+A) the selection may still be there
-        String unSelected = newText.substring(0, getSelectionStart());
-        if (unSelected.length() <= oldText.length())
-            // do not autocomplete on control or deleted chars
+        if (getCaretPosition() != newText.length())
+            // do not autocomplete if the caret is not at the end of the text
             return;
-        if (getInputMethodRequests().getCommittedTextLength() != getDocument().getLength()) {
+        if (getInputMethodRequests().getCommittedTextLength() != getDocument().getLength())
             // do not autocomplete if there is uncommitted text (breaks Microsoft Japanese IME, see #21507)
             return;
-        }
         if (!AUTOCOMPLETE_NUMBERS && IS_NUMBER.matcher(newText).matches())
+            // do not autocomplete text consisting of numbers only
             return;
 
         fireAutoCompEvent(AutoCompEvent.AUTOCOMP_BEFORE, null);
@@ -254,6 +256,18 @@ public class AutoCompTextField<E> extends JosmTextField implements TableCellEdit
     /* ------------------------------------------------------------------------------------ */
     /* KeyListener interface                                                                */
     /* ------------------------------------------------------------------------------------ */
+
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        if (e.getID() == KeyEvent.KEY_TYPED) {
+            final String oldText = getText().substring(0, getSelectionStart());
+            // Let the JTextField do its job first.
+            super.processKeyEvent(e);
+            autocomplete(oldText);
+        } else {
+            super.processKeyEvent(e);
+        }
+    }
 
     /**
      * Listens to key events and eventually schedules an autocomplete.

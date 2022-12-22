@@ -3,15 +3,12 @@ package org.openstreetmap.josm.gui.io;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.gui.tagging.TagEditorModel;
-import org.openstreetmap.josm.gui.tagging.TagModel;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -20,7 +17,7 @@ import org.openstreetmap.josm.tools.Utils;
  *
  * @since 18173
  */
-public class UploadDialogModel extends TagEditorModel {
+public class UploadDialogModel extends TagTableModel {
     /** the "created_by" changeset OSM key */
     private static final String CREATED_BY = "created_by";
     /** the "comment" changeset OSM key */
@@ -32,29 +29,28 @@ public class UploadDialogModel extends TagEditorModel {
     /** whether to extract hashtags from comment */
     private final boolean hashtags = Config.getPref().getBoolean("upload.changeset.hashtags", true);
 
-    /** a lock to prevent loops  */
-    private boolean locked;
+    /**
+     * Constructor
+     */
+    public UploadDialogModel() {
+        super(null);
+    }
 
     @Override
-    public void fireTableDataChanged() {
-        if (!locked) {
-            try {
-                locked = true;
-                // add "hashtags" if any
-                if (hashtags) {
-                    put("hashtags", findHashTags(getValue(COMMENT)));
-                }
-                // add/update "created_by"
-                final String createdBy = getValue(CREATED_BY);
-                if (createdBy.isEmpty()) {
-                    put(CREATED_BY, agent);
-                } else if (!createdBy.contains(agent)) {
-                    put(CREATED_BY, createdBy + ';' + agent);
-                }
-                super.fireTableDataChanged();
-            } finally {
-                locked = false;
-            }
+    public void ensureTags() {
+        super.ensureTags();
+        // careful! never delete any tags here or you'll loop
+        if (hashtags) {
+            String hashTag = findHashTags(getValue(COMMENT));
+            if (hashTag != null)
+                put("hashtags", hashTag);
+        }
+        // add/update "created_by"
+        final String createdBy = getValue(CREATED_BY);
+        if (createdBy.isEmpty()) {
+            put(CREATED_BY, agent);
+        } else if (!createdBy.contains(agent)) {
+            put(CREATED_BY, createdBy + ';' + agent);
         }
     }
 
@@ -62,11 +58,10 @@ public class UploadDialogModel extends TagEditorModel {
      * Get the value of a key.
      *
      * @param key The key to retrieve
-     * @return The value (may be null)
+     * @return The value
      */
     public String getValue(String key) {
-        TagModel tag = get(key);
-        return tag == null ? "" : tag.getValue();
+        return get(key).toString();
     }
 
     /**
@@ -75,12 +70,12 @@ public class UploadDialogModel extends TagEditorModel {
      * @return the hashtags separated by ";" or null
      */
     String findHashTags(String comment) {
-        String hashtags = String.join(";",
+        String hashTags = String.join(";",
             Arrays.stream(comment.split("\\s", -1))
                 .map(s -> Utils.strip(s, ",;"))
                 .filter(s -> s.matches("#[a-zA-Z0-9][-_a-zA-Z0-9]+"))
                 .collect(Collectors.toList()));
-        return hashtags.isEmpty() ? null : hashtags;
+        return hashTags.isEmpty() ? null : hashTags;
     }
 
     /**
@@ -107,60 +102,6 @@ public class UploadDialogModel extends TagEditorModel {
     }
 
     /**
-     * Inserts/updates/deletes a tag.
-     *
-     * Existing keys are updated. Others are added. A value of {@code null}
-     * deletes the key.
-     *
-     * @param key The key of the tag to insert.
-     * @param value The value of the tag to insert.
-     */
-    private void doPut(String key, String value) {
-        List<TagModel> l = tags.stream().filter(tm -> tm.getName().equals(key)).collect(Collectors.toList());
-        if (!l.isEmpty()) {
-            if (value != null)
-                for (TagModel tm : l) {
-                    tm.setValue(value);
-                }
-            else
-                tags.removeIf(tm -> tm.getName().equals(key));
-        } else if (value != null) {
-            tags.add(new TagModel(key, value));
-        }
-    }
-
-    /**
-     * Inserts/updates/deletes a tag.
-     *
-     * Existing keys are updated. Others are added. A value of {@code null}
-     * deletes the key.
-     *
-     * @param key The key of the tag to insert.
-     * @param value The value of the tag to insert.
-     */
-    public void put(String key, String value) {
-        commitPendingEdit();
-        doPut(key, value);
-        setDirty(true);
-        fireTableDataChanged();
-    }
-
-    /**
-     * Inserts/updates/deletes all tags from {@code map}.
-     *
-     * Existing keys are updated. Others are added. A value of {@code null}
-     * deletes the key.
-     *
-     * @param map a map of tags to insert or update
-     */
-    public void putAll(Map<String, String> map) {
-        commitPendingEdit();
-        map.forEach((key, value) -> doPut(key, value));
-        setDirty(true);
-        fireTableDataChanged();
-    }
-
-    /**
      * Inserts all tags from a {@code DataSet}.
      *
      * @param dataSet The DataSet to take tags from.
@@ -168,7 +109,9 @@ public class UploadDialogModel extends TagEditorModel {
     public void putAll(DataSet dataSet) {
         if (dataSet != null) {
             putAll(dataSet.getChangeSetTags());
-            put(COMMENT, addHashTagsFromDataSet(getValue(COMMENT), dataSet));
+            String comment = addHashTagsFromDataSet(getValue(COMMENT), dataSet);
+            if (!Utils.isEmpty(comment))
+                put(COMMENT, comment);
         }
     }
 

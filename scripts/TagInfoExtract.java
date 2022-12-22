@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.json.Json;
@@ -71,8 +70,8 @@ import org.openstreetmap.josm.gui.preferences.map.TaggingPresetPreference;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
-import org.openstreetmap.josm.gui.tagging.presets.items.CheckGroup;
-import org.openstreetmap.josm.gui.tagging.presets.items.KeyedItem;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.io.CachedFile;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -166,7 +165,7 @@ public class TagInfoExtract {
         Path baseDir = Paths.get("");
         Path imageDir = Paths.get("taginfo-img");
         String imageUrlPrefix;
-        CachedFile inputFile;
+        String inputUrl;
         Path outputFile;
         boolean noexit;
 
@@ -174,18 +173,18 @@ public class TagInfoExtract {
             mode = Mode.valueOf(value.toUpperCase(Locale.ENGLISH));
             switch (mode) {
                 case MAPPAINT:
-                    inputFile = new CachedFile("resource://styles/standard/elemstyles.mapcss");
+                    inputUrl = "resource://styles/standard/elemstyles.mapcss";
                     break;
                 case PRESETS:
-                    inputFile = new CachedFile("resource://data/defaultpresets.xml");
+                    inputUrl = "resource://data/defaultpresets.xml";
                     break;
                 default:
-                    inputFile = null;
+                    inputUrl = null;
             }
         }
 
         void setInputFile(String value) {
-            inputFile = new CachedFile(value);
+            inputUrl = value;
         }
 
         void setOutputFile(String value) {
@@ -254,12 +253,10 @@ public class TagInfoExtract {
 
         @Override
         void run() throws IOException, OsmTransferException, SAXException {
-            try (BufferedReader reader = options.inputFile.getContentReader()) {
-                Collection<TaggingPreset> presets = TaggingPresetReader.readAll(reader, true);
-                List<TagInfoTag> tags = convertPresets(presets, "", true);
-                Logging.info("Converting {0} internal presets", tags.size());
-                writeJson("JOSM main presets", "Tags supported by the default presets in the OSM editor JOSM", tags);
-            }
+            TaggingPresets taggingPresets = TaggingPresetsTest.initFromResource(options.inputUrl);
+            List<TagInfoTag> tags = convertPresets(taggingPresets.getAllPresets(), "", true);
+            Logging.info("Converting {0} internal presets", tags.size());
+            writeJson("JOSM main presets", "Tags supported by the default presets in the OSM editor JOSM", tags);
         }
 
         List<TagInfoTag> convertPresets(Iterable<TaggingPreset> presets, String descriptionPrefix, boolean addImages) {
@@ -267,47 +264,38 @@ public class TagInfoExtract {
             final Map<Tag, TagInfoTag> requiredTags = new LinkedHashMap<>();
             final Map<Tag, TagInfoTag> optionalTags = new LinkedHashMap<>();
             for (TaggingPreset preset : presets) {
-                preset.data.stream()
-                        .flatMap(item -> item instanceof KeyedItem
-                                ? Stream.of(((KeyedItem) item))
-                                : item instanceof CheckGroup
-                                ? ((CheckGroup) item).checks.stream()
-                                : Stream.empty())
-                        .forEach(item -> {
-                            for (String value : values(item)) {
-                                Set<TagInfoTag.Type> types = TagInfoTag.Type.forPresetTypes(preset.types);
-                                if (item.isKeyRequired()) {
-                                    fillTagsMap(requiredTags, item, value, preset.getName(), types,
-                                            descriptionPrefix + TagInfoTag.REQUIRED_FOR_COUNT + ": ",
-                                            addImages && preset.iconName != null ? options.findImageUrl(preset.iconName) : null);
-                                } else {
-                                    fillTagsMap(optionalTags, item, value, preset.getName(), types,
-                                            descriptionPrefix + TagInfoTag.OPTIONAL_FOR_COUNT + ": ", null);
-                                }
-                            }
-                        });
+                Set<TagInfoTag.Type> types = TagInfoTag.Type.forPresetTypes(preset.getTypes());
+                for (String key : preset.getAllKeys()) {
+                    boolean required = preset.isKeyRequired(key);
+                    Collection<String> values = preset.getAllValues(key);
+                    for (String value : (values.isEmpty() || values.size() > 50) ? Collections.singleton((String) null) : values) {
+                        if (required) {
+                            fillTagsMap(requiredTags, key, value, preset.getName(), types,
+                                    descriptionPrefix + TagInfoTag.REQUIRED_FOR_COUNT + ": ",
+                                    addImages && preset.getIconName() != null ? options.findImageUrl(preset.getIconName()) : null);
+                        } else {
+                            fillTagsMap(optionalTags, key, value, preset.getName(), types,
+                                    descriptionPrefix + TagInfoTag.OPTIONAL_FOR_COUNT + ": ", null);
+                        }
+                    }
+                }
             }
             tags.addAll(requiredTags.values());
             tags.addAll(optionalTags.values());
             return tags;
         }
 
-        private void fillTagsMap(Map<Tag, TagInfoTag> optionalTags, KeyedItem item, String value,
+        private void fillTagsMap(Map<Tag, TagInfoTag> optionalTags, String key, String value,
                 String presetName, Set<TagInfoTag.Type> types, String descriptionPrefix, String iconUrl) {
-            optionalTags.compute(new Tag(item.key, value), (osmTag, tagInfoTag) -> {
+            optionalTags.compute(new Tag(key, value), (osmTag, tagInfoTag) -> {
                 if (tagInfoTag == null) {
-                    return new TagInfoTag(descriptionPrefix + presetName, item.key, value, types, iconUrl);
+                    return new TagInfoTag(descriptionPrefix + presetName, key, value, types, iconUrl);
                 } else {
                     tagInfoTag.descriptions.add(presetName);
                     tagInfoTag.objectTypes.addAll(types);
                     return tagInfoTag;
                 }
             });
-        }
-
-        private Collection<String> values(KeyedItem item) {
-            final Collection<String> values = item.getValues();
-            return values.isEmpty() || values.size() > 50 ? Collections.singleton(null) : values;
         }
     }
 
@@ -325,9 +313,9 @@ public class TagInfoExtract {
                 }
                 try {
                     Logging.info("Loading {0}", source.url);
-                    Collection<TaggingPreset> presets = TaggingPresetReader.readAll(source.url, false);
-                    final List<TagInfoTag> t = convertPresets(presets, source.title + " ", false);
-                    Logging.info("Converted {0} presets of {1} to {2} tags", presets.size(), source.title, t.size());
+                    TaggingPresets taggingPresets = TaggingPresetsTest.initFromResource(source.url);
+                    final List<TagInfoTag> t = convertPresets(taggingPresets.getAllPresets(), source.title + " ", false);
+                    Logging.info("Converted {0} presets of {1} to {2} tags", taggingPresets.getAllPresets().size(), source.title, t.size());
                     tags.addAll(t);
                 } catch (Exception ex) {
                     Logging.warn("Skipping {0} due to error", source.url);
@@ -355,7 +343,7 @@ public class TagInfoExtract {
          * @throws ParseException in case of parsing error
          */
         private void parseStyleSheet() throws IOException, ParseException {
-            try (BufferedReader reader = options.inputFile.getContentReader()) {
+            try (BufferedReader reader = new CachedFile(options.inputUrl).getContentReader()) {
                 MapCSSParser parser = new MapCSSParser(reader, MapCSSParser.LexicalState.DEFAULT);
                 styleSource = new MapCSSStyleSource("");
                 styleSource.url = "";

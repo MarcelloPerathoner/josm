@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,9 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.data.osm.Tag;
+import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 
 /**
@@ -35,15 +34,15 @@ class MemberTableModelTest {
     @Test
     void testTicket12443() {
         final Node n = new Node(1);
-        assertNotNull(new MemberTableModel(null, null, new TaggingPresetHandler() {
+        assertNotNull(new MemberTableModel(null, null, new TaggedHandler() {
             @Override
-            public void updateTags(List<Tag> tags) {
+            public void update(String oldKey, String newKey, String value) {
                 // Do nothing
             }
 
             @Override
-            public Collection<OsmPrimitive> getSelection() {
-                return Collections.singleton(n);
+            public Collection<Tagged> get() {
+                return Collections.<Tagged>singleton(n);
             }
         }).getRelationMemberForPrimitive(n));
     }
@@ -64,14 +63,14 @@ class MemberTableModelTest {
                 .toArray(RelationMember[]::new));
         final OsmDataLayer osmDataLayer = new OsmDataLayer(new DataSet(), "testTicket12617", null);
         osmDataLayer.getDataSet().addPrimitiveRecursive(relation);
-        final MemberTableModel model = new MemberTableModel(relation, osmDataLayer, new TaggingPresetHandler() {
+        final MemberTableModel model = new MemberTableModel(relation, osmDataLayer, new TaggedHandler() {
             @Override
-            public Collection<OsmPrimitive> getSelection() {
+            public Collection<OsmPrimitive> get() {
                 return Collections.singleton(relation);
             }
 
             @Override
-            public void updateTags(List<Tag> tags) {
+            public void update(String oldKey, String newKey, String value) {
                 // Do nothing
             }
         });

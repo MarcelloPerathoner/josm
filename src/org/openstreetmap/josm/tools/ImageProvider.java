@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
@@ -14,6 +15,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Transparency;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.FilteredImageSource;
@@ -36,6 +38,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -141,6 +144,7 @@ public class ImageProvider {
          */
         LAYER(Config.getPref().getInt("iconsize.layer", 16)),
         /** Table icon size
+         * For icons displayed in table rows.
          * @since 15049
          */
         TABLE(SMALLICON),
@@ -157,7 +161,8 @@ public class ImageProvider {
          */
         SETTINGS_TAB(Config.getPref().getInt("iconsize.settingstab", 48)),
         /**
-         * The default image size
+         * The default image size.
+         * Used if no explicit size is given.
          * @since 9705
          */
         DEFAULT(Config.getPref().getInt("iconsize.default", 24)),
@@ -180,60 +185,97 @@ public class ImageProvider {
          * HTML inline image
          * @since 16872
          */
-        HTMLINLINE(24, 24);
+        HTMLINLINE(24, 24),
+        /**
+         * Relation editor linked column
+         * @since XXX
+         */
+        RELATION_LINK(8, 8),
+        /**
+         * The original image size
+         * @since XXX
+         */
+        ORIGINAL(-1, -1);
 
-        private final int virtualWidth;
-        private final int virtualHeight;
+        /**
+         * The unadjusted width.
+         * <p>
+         * This value should be used only for testing.
+         */
+        private final int unscaledWidth;
+        private final int unscaledHeight;
 
         ImageSizes(int imageSize) {
-            this.virtualWidth = imageSize;
-            this.virtualHeight = imageSize;
+            this.unscaledWidth = imageSize;
+            this.unscaledHeight = imageSize;
         }
 
         ImageSizes(int width, int height) {
-            this.virtualWidth = width;
-            this.virtualHeight = height;
+            this.unscaledWidth = width;
+            this.unscaledHeight = height;
         }
 
         ImageSizes(ImageSizes that) {
-            this.virtualWidth = that.virtualWidth;
-            this.virtualHeight = that.virtualHeight;
+            this.unscaledWidth = that.unscaledWidth;
+            this.unscaledHeight = that.unscaledHeight;
         }
 
         /**
-         * Returns the image width in virtual pixels
-         * @return the image width in virtual pixels
+         * Returns the image width in pixels
+         * @return the image width in pixels
+         * @since XXX
+         */
+        public int getWidth() {
+            return adj(unscaledWidth);
+        }
+
+        /**
+         * Returns the image height in pixels
+         * @return the image height in pixels
+         * @since XXX
+         */
+        public int getHeight() {
+            return adj(unscaledHeight);
+        }
+
+        /**
+         * Returns the scaled image width
+         * @return the scaled width in pixels
          * @since 9705
+         * @deprecated use getWidth
          */
-        public int getVirtualWidth() {
-            return virtualWidth;
-        }
-
-        /**
-         * Returns the image height in virtual pixels
-         * @return the image height in virtual pixels
-         * @since 9705
-         */
-        public int getVirtualHeight() {
-            return virtualHeight;
-        }
-
-        /**
-         * Returns the image width in pixels to use for display
-         * @return the image width in pixels to use for display
-         * @since 10484
-         */
+        @Deprecated
         public int getAdjustedWidth() {
-            return GuiSizesHelper.getSizeDpiAdjusted(virtualWidth);
+            return getWidth();
         }
 
         /**
-         * Returns the image height in pixels to use for display
-         * @return the image height in pixels to use for display
-         * @since 10484
+         * Returns the scaled image height
+         * @return the scaled height in pixels
+         * @since 9705
+         * @deprecated use getHeight
          */
+        @Deprecated
         public int getAdjustedHeight() {
-            return GuiSizesHelper.getSizeDpiAdjusted(virtualHeight);
+            return getHeight();
+        }
+
+        /**
+         * Returns the unscaled image width
+         * @return the unscaled width in pixels
+         * @since xxx
+         */
+        public int getUnscaledWidth() {
+            return unscaledWidth;
+        }
+
+        /**
+         * Returns the unscaled image height
+         * @return the unscaled height in pixels
+         * @since xxx
+         */
+        public int getUnscaledHeight() {
+            return unscaledHeight;
         }
 
         /**
@@ -242,7 +284,18 @@ public class ImageProvider {
          * @since 9705
          */
         public Dimension getImageDimension() {
-            return new Dimension(virtualWidth, virtualHeight);
+            return new Dimension(getWidth(), getHeight());
+        }
+
+        /**
+         * Returns the unscaled image size
+         * <p>
+         * Use for testing
+         * @return the unscaled image size
+         * @since xxx
+         */
+        public Dimension getUnscaledDimension() {
+            return new Dimension(unscaledWidth, unscaledHeight);
         }
     }
 
@@ -288,6 +341,8 @@ public class ImageProvider {
     protected boolean isDisabled;
     /** <code>true</code> if multi-resolution image is requested */
     protected boolean multiResolution = true;
+    /** The image resize mode to use. */
+    protected ImageResizeMode imageResizeMode = ImageResizeMode.AUTO;
 
     private static SVGUniverse svgUniverse;
 
@@ -301,6 +356,76 @@ public class ImageProvider {
 
     private static final ExecutorService IMAGE_FETCHER =
             Executors.newSingleThreadExecutor(Utils.newThreadFactory("image-fetcher-%d", Thread.NORM_PRIORITY));
+
+    /**
+     * The actual screen resolution is guiScale * 96 dpi.
+     * <p>
+     * Note: Java 2D specifies a default user-space scale of 72 dpi.  JOSM uses a
+     * default of 96 dpi instead.
+     */
+    private static double guiScale = getGuiScaleFromSystem();
+
+    private static double getGuiScaleFromSystem() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        if (GraphicsEnvironment.isHeadless()) {
+            return 1.0d;
+        } else {
+            GraphicsConfiguration gc =
+                ge.getDefaultScreenDevice().getDefaultConfiguration();
+            AffineTransform at = gc.getNormalizingTransform();
+            double guiScale = at.getScaleY() * 72.0 / 96.0;
+            Logging.info("guiScale = {0}", guiScale);
+            Logging.info("Vertical screen resolution = {0} dpi", guiScale * 96.0);
+            return guiScale;
+        }
+    }
+
+    /**
+     * Returns the gui scale
+     * @return the gui scale
+     */
+    public static double getGuiScale() {
+        return guiScale;
+    }
+
+    /**
+     * Set the gui scale for testing purposes.
+     * @param newGuiScale the gui scale to set
+     */
+    public static void testSetGuiScale(double newGuiScale) {
+        guiScale = newGuiScale;
+    }
+
+    /**
+     * Returns the size adjusted for display resolution.
+     * <p>
+     * Returns the size an image should have in order to display at the same physical
+     * size on the user's monitor as an image with the given size would display on a
+     * 96dpi monitor.
+     * <p>
+     * Java automatically scales fonts and control sizes.  Use this function to adjust
+     * sizes that are not automatically adjusted by Java, eg.  images, borders, gaps,
+     * spacing, etc.
+     *
+     * @param size the size on a 96 dpi screen
+     * @return scaled size (may be unmodified)
+     * @since XXX
+     */
+    public static int adj(int size) {
+        return (int) Math.round(size * guiScale);
+    }
+
+    /**
+     * Returns the size adjusted for display resolution.
+     *
+     * @param size the size on a 96 dpi screen
+     * @return adapted size (may be unmodified)
+     * @since XXX
+     * @seealso int adj(int)
+     */
+    public static double adj(double size) {
+        return size * guiScale;
+    }
 
     /**
      * Constructs a new {@code ImageProvider} from a filename in a given directory.
@@ -345,6 +470,7 @@ public class ImageProvider {
         this.overlayInfo = image.overlayInfo;
         this.isDisabled = image.isDisabled;
         this.multiResolution = image.multiResolution;
+        this.imageResizeMode = image.imageResizeMode;
     }
 
     /**
@@ -616,6 +742,16 @@ public class ImageProvider {
     }
 
     /**
+     * Set the image resize mode to use.
+     * @param imageResizeMode the image resize mode
+     * @return the current object, for chaining
+     */
+    public ImageProvider setImageResizeMode(ImageResizeMode imageResizeMode) {
+        this.imageResizeMode = imageResizeMode;
+        return this;
+    }
+
+    /**
      * Determines if this icon is located on a remote location (http, https, wiki).
      * @return {@code true} if this icon is located on a remote location (http, https, wiki)
      * @since 13250
@@ -639,7 +775,7 @@ public class ImageProvider {
         if (virtualMaxWidth != -1 || virtualMaxHeight != -1)
             return ir.getImageIcon(new Dimension(virtualMaxWidth, virtualMaxHeight), multiResolution, null);
         else
-            return ir.getImageIcon(new Dimension(virtualWidth, virtualHeight), multiResolution, ImageResizeMode.AUTO);
+            return ir.getImageIcon(new Dimension(virtualWidth, virtualHeight), multiResolution, imageResizeMode);
     }
 
     /**
@@ -725,15 +861,17 @@ public class ImageProvider {
     }
 
     /**
-     * Load an image with a given file name.
+     * Returns a Future for the ImageResource.
      *
-     * @param subdir subdirectory the image lies in
-     * @param name The icon name (base name with or without '.png' or '.svg' extension)
-     * @return The requested Image.
-     * @throws RuntimeException if the image cannot be located
+     * This method returns immediately and loads the image asynchronously.
+     *
+     * @return the future of the requested image
+     * @since xxx
      */
-    public static ImageIcon get(String subdir, String name) {
-        return new ImageProvider(subdir, name).get();
+    public CompletableFuture<ImageResource> getResourceFuture() {
+        return isRemote()
+                ? CompletableFuture.supplyAsync(this::getResource, IMAGE_FETCHER)
+                : CompletableFuture.completedFuture(getResource());
     }
 
     /**
@@ -744,7 +882,19 @@ public class ImageProvider {
      * @see #get(String, String)
      */
     public static ImageIcon get(String name) {
-        return new ImageProvider(name).get();
+        return new ImageProvider(name).setSize(ImageSizes.DEFAULT).get();
+    }
+
+    /**
+     * Load an image with a given file name.
+     *
+     * @param subdir subdirectory the image lies in
+     * @param name The icon name (base name with or without '.png' or '.svg' extension)
+     * @return The requested Image.
+     * @throws RuntimeException if the image cannot be located
+     */
+    public static ImageIcon get(String subdir, String name) {
+        return new ImageProvider(subdir, name).setSize(ImageSizes.DEFAULT).get();
     }
 
     /**
@@ -761,17 +911,23 @@ public class ImageProvider {
         return new ImageProvider(subdir, name).setSize(size).get();
     }
 
+    static Map<ImageSizes, ImageIcon> emptyIconCache = new HashMap<>();
+
     /**
-     * Load an empty image with a given size.
+     * Returns an empty icon of a  given size.
      *
      * @param size Target icon size
      * @return The requested Image.
      * @since 10358
      */
     public static ImageIcon getEmpty(ImageSizes size) {
-        Dimension iconRealSize = GuiSizesHelper.getDimensionDpiAdjusted(size.getImageDimension());
-        return new ImageIcon(new BufferedImage(iconRealSize.width, iconRealSize.height,
-            BufferedImage.TYPE_INT_ARGB));
+        if (!emptyIconCache.containsKey(size)) {
+            emptyIconCache.put(size,
+                new ImageIcon(new BufferedImage(size.getWidth(),
+                    size.getHeight(), BufferedImage.TYPE_INT_ARGB))
+            );
+        }
+        return emptyIconCache.get(size);
     }
 
     /**
@@ -952,7 +1108,7 @@ public class ImageProvider {
     private static ImageResource getIfAvailableHttp(String url, ImageType type) {
         try (CachedFile cf = new CachedFile(url).setDestDir(
                 new File(Config.getDirs().getCacheDirectory(true), "images").getPath());
-             InputStream is = cf.getInputStream()) {
+                InputStream is = cf.getInputStream()) {
             switch (type) {
             case SVG:
                 SVGDiagram svg = null;
@@ -1447,6 +1603,18 @@ public class ImageProvider {
         }
         ImageResource resource = OsmPrimitiveImageProvider.getResource(primitive, OsmPrimitiveImageProvider.Options.DEFAULT);
         return resource != null ? resource.getPaddedIcon(iconSize) : null;
+    }
+
+    /**
+     * Returns an {@link ImageIcon} for the given OSM object, at the specified size.
+     * This is a slow operation.
+     * @param primitive Object for which an icon shall be fetched. The icon is chosen based on tags.
+     * @param iconSize Target size of icon. Icon is padded if required.
+     * @return Icon for {@code primitive} that fits in cell.
+     * @since XXX
+     */
+    public static ImageIcon getPadded(OsmPrimitive primitive, ImageSizes iconSize) {
+        return getPadded(primitive, iconSize.getImageDimension());
     }
 
     /**
@@ -1949,7 +2117,7 @@ public class ImageProvider {
      * @since 13984
      */
     public static ImageIcon createBlankIcon(ImageSizes size) {
-        return new ImageIcon(new BufferedImage(size.getAdjustedWidth(), size.getAdjustedHeight(), BufferedImage.TYPE_INT_ARGB));
+        return new ImageIcon(new BufferedImage(size.getWidth(), size.getHeight(), BufferedImage.TYPE_INT_ARGB));
     }
 
     @Override

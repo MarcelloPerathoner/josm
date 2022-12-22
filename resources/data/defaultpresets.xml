@@ -101,29 +101,6 @@
         <combo key="gauge" text="Gauge (mm)" values="1676,1668,1638,1600,1588,1581,1524,1520,1495,1458,1450,1435,1372,1219,1067,1000,914,900,891,762,760,750,610,600" length="4" />
         <reference ref="railway_electrified_yesno" />
     </chunk>
-    <chunk id="check_access_nomotor">
-        <optional text="Non-motorized traffic:">
-            <checkgroup columns="3">
-                <check key="foot" text="Foot" icon="presets/vehicle/restriction/plain/foot.svg" />
-                <check key="bicycle" text="Bicycle" icon="presets/vehicle/restriction/plain/bicycle.svg" />
-                <check key="horse" text="Horse" icon="presets/vehicle/restriction/plain/horse.svg" />
-            </checkgroup>
-        <space />
-        <reference ref="wheelchair" />
-        </optional>
-    </chunk>
-    <chunk id="check_access_motor">
-        <optional text="Motor vehicle traffic:">
-            <combo key="motor_vehicle" text="Motor vehicles" values="yes,destination,delivery,permissive,permit,private,agricultural,forestry,no" values_sort="false" />
-            <space />
-            <checkgroup columns="2">
-                <check key="motorcar" text="Motorcar" icon="presets/vehicle/restriction/plain/motorcar.svg" />
-                <check key="motorcycle" text="Motorcycle" icon="presets/vehicle/restriction/plain/motorcycle.svg" />
-                <check key="moped" text="Moped" icon="presets/vehicle/restriction/plain/moped.svg" />
-                <check key="mofa" text="Mofa" icon="presets/vehicle/restriction/plain/mofa.svg" />
-            </checkgroup>
-        </optional>
-    </chunk>
     <chunk id="check_crossing_access">
         <checkgroup columns="2">
             <check key="bicycle" text="Cross by bicycle" icon="presets/vehicle/restriction/plain/bicycle.svg" disable_off="true" />
@@ -193,6 +170,29 @@
         <text key="name" text="Name" />
         <text key="brand" text="Brand" />
         <reference ref="oh_wheelchair" />
+    </chunk>
+    <chunk id="check_access_nomotor">
+        <optional text="Non-motorized traffic:">
+            <checkgroup columns="3">
+                <check key="foot" text="Foot" icon="presets/vehicle/restriction/plain/foot.svg" />
+                <check key="bicycle" text="Bicycle" icon="presets/vehicle/restriction/plain/bicycle.svg" />
+                <check key="horse" text="Horse" icon="presets/vehicle/restriction/plain/horse.svg" />
+            </checkgroup>
+        <space />
+        <reference ref="wheelchair" />
+        </optional>
+    </chunk>
+    <chunk id="check_access_motor">
+        <optional text="Motor vehicle traffic:">
+            <combo key="motor_vehicle" text="Motor vehicles" values="yes,destination,delivery,permissive,permit,private,agricultural,forestry,no" values_sort="false" />
+            <space />
+            <checkgroup columns="2">
+                <check key="motorcar" text="Motorcar" icon="presets/vehicle/restriction/plain/motorcar.svg" />
+                <check key="motorcycle" text="Motorcycle" icon="presets/vehicle/restriction/plain/motorcycle.svg" />
+                <check key="moped" text="Moped" icon="presets/vehicle/restriction/plain/moped.svg" />
+                <check key="mofa" text="Mofa" icon="presets/vehicle/restriction/plain/mofa.svg" />
+            </checkgroup>
+        </optional>
     </chunk>
     <chunk id="color">
         <combo key="colour" text="Color (HTML name or hexadecimal code)" values="black,blue,brown,gray,green,orange,purple,red,silver,white,yellow,#CD853F" values_context="color" />

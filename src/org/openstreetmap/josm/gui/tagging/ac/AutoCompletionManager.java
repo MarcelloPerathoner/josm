@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,8 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
@@ -39,29 +40,24 @@ import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerOrderChangeEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.tagging.presets.Role;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
-import org.openstreetmap.josm.gui.tagging.presets.items.Roles.Role;
-import org.openstreetmap.josm.tools.CheckParameterUtil;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
 import org.openstreetmap.josm.tools.MultiMap;
-import org.openstreetmap.josm.tools.Utils;
 
 /**
- * AutoCompletionManager holds a cache of keys with a list of
- * possible auto completion values for each key.
- *
+ * AutoCompletionManager holds a cache of keys with a list of possible auto completion values for
+ * each key.
+ * <p>
  * Each DataSet can be assigned one AutoCompletionManager instance such that
  * <ol>
  *   <li>any key used in a tag in the data set is part of the key list in the cache</li>
  *   <li>any value used in a tag for a specific key is part of the autocompletion list of this key</li>
  * </ol>
  *
- * Building up auto completion lists should not
- * slow down tabbing from input field to input field. Looping through the complete
- * data set in order to build up the auto completion list for a specific input
- * field is not efficient enough, hence this cache.
- *
- * TODO: respect the relation type for member role autocompletion
+ * Building up auto completion lists should not slow down tabbing from input field to input field.
+ * Looping through the complete data set in order to build up the auto completion list for a
+ * specific input field is not efficient enough, hence this cache.
  */
 public class AutoCompletionManager implements DataSetListener {
 
@@ -105,41 +101,104 @@ public class AutoCompletionManager implements DataSetListener {
         }
     }
 
+    /**
+     * A MultiMap that on default returns an empty set instead of null.
+     * @param <A> the key type
+     * @param <B> the value type
+     */
+    static class BetterMultiMap<A, B> extends MultiMap<A, B> {
+        @Override
+        public Set<B> get(A key) {
+            Set<B> s = super.get(key);
+            return s == null ? Collections.emptySet() : s;
+        }
+    }
+
+    /**
+     * Compares two AutoCompletionItems alphabetically.
+     */
+    public static final Comparator<AutoCompletionItem> ALPHABETIC_COMPARATOR =
+        (ac1, ac2) -> String.CASE_INSENSITIVE_ORDER.compare(ac1.getValue(), ac2.getValue());
+
+    /**
+     * Compares two AutoCompletionItems on priority, then alphabetically.
+     */
+    public static final Comparator<AutoCompletionItem> PRIORITY_COMPARATOR =
+        Comparator.<AutoCompletionItem, AutoCompletionPriority>comparing(
+                AutoCompletionItem::getPriority, AutoCompletionPriority::altCompare)
+            .reversed()
+            .thenComparing(ALPHABETIC_COMPARATOR);
+
     /** If the dirty flag is set true, a rebuild is necessary. */
-    protected boolean dirty;
+    private boolean dirty;
     /** The data set that is managed */
-    protected DataSet ds;
-
+    private DataSet ds;
     /**
-     * the cached tags given by a tag key and a list of values for this tag
-     * only accessed by getTagCache(), rebuild() and cachePrimitiveTags()
-     * use getTagCache() accessor
+     * The tag cache subdivided for {@link TaggingPresetType tagging preset type} and key.
      */
-    protected MultiMap<String, String> tagCache;
-
+    private final Map<TaggingPresetType, MultiMap<String, String>> PRESET_TAG_CACHE = new HashMap<>();
     /**
-     * the same as tagCache but for the preset keys and values can be accessed directly
+     * The primitive cache subdivided for {@link #classifyPrimitive(Map) classification} and tag key.
      */
-    static final MultiMap<String, String> PRESET_TAG_CACHE = new MultiMap<>();
-
+    private final Map<String, MultiMap<String, String>> CATEGORY_TAG_CACHE = new HashMap<>();
+    /**
+     * The cached relations further subdivided by {@link #classifyRelation(Map) relation type}.
+     */
+    private final MultiMap<String, Relation> RELATION_CACHE = new BetterMultiMap<>();
     /**
      * Cache for tags that have been entered by the user.
      */
-    static final Set<UserInputTag> USER_INPUT_TAG_CACHE = new LinkedHashSet<>();
+    private static final Set<UserInputTag> USER_INPUT_TAG_CACHE = new LinkedHashSet<>();
 
-    /**
-     * the cached list of member roles
-     * only accessed by getRoleCache(), rebuild() and cacheRelationMemberRoles()
-     * use getRoleCache() accessor
-     */
-    protected Set<String> roleCache;
-
-    /**
-     * the same as roleCache but for the preset roles can be accessed directly
-     */
-    static final Set<String> PRESET_ROLE_CACHE = new HashSet<>();
-
+    /** Cached instances of AutoCompletionManager for each DataSet */
     private static final Map<DataSet, AutoCompletionManager> INSTANCES = new HashMap<>();
+
+    /** All known primitive types. This is an attempt to categorize primitives starting at the most `rootish´ tag. */
+    private static Set<String> ALL_PRIMITIVE_TYPES = new HashSet<>(Arrays.asList(new String[]{
+        "advertising",
+        "aerialway",
+        "aeroway",
+        "airmark",
+        "amenity",
+        "attraction",
+        "barrier",
+        "bicycle_road",
+        "boundary",
+        "building",
+        "bridge",
+        "cemetery",
+        /* "covered", */
+        "craft",
+        "cycleway",
+        "emergency",
+        "geological",
+        "golf",
+        "healthcare",
+        "highway",
+        "historic",
+        /* "junction", */
+        "landuse",
+        "leisure",
+        "man_made",
+        "military",
+        "mountain_pass",
+        "natural",
+        "office",
+        "pipeline",
+        "place",
+        "power",
+        "public_transport",
+        "railway",
+        "route",
+        "shop",
+        /* "sport", */
+        "telecom",
+        "tourism",
+        "traffic_calming",
+        "traffic_sign",
+        "tunnel",
+        "waterway"
+    }));
 
     /**
      * Constructs a new {@code AutoCompletionManager}.
@@ -151,61 +210,113 @@ public class AutoCompletionManager implements DataSetListener {
         this.dirty = true;
     }
 
-    protected MultiMap<String, String> getTagCache() {
-        if (dirty) {
-            rebuild();
-            dirty = false;
-        }
-        return tagCache;
+    Map<TaggingPresetType, MultiMap<String, String>> getPresetTagCache() {
+        rebuild();
+        return PRESET_TAG_CACHE;
     }
 
-    protected Set<String> getRoleCache() {
-        if (dirty) {
-            rebuild();
-            dirty = false;
-        }
-        return roleCache;
+    MultiMap<String, String> getPresetTagCache(TaggingPresetType type) {
+        return getPresetTagCache().getOrDefault(type, new BetterMultiMap<String, String>());
+    }
+
+    MultiMap<String, String> getCategoryTagCache(String category) {
+        rebuild();
+        return CATEGORY_TAG_CACHE.getOrDefault(category, new BetterMultiMap<String, String>());
+    }
+
+    MultiMap<String, Relation> getRelationCache() {
+        rebuild();
+        return RELATION_CACHE;
     }
 
     /**
      * initializes the cache from the primitives in the dataset
      */
-    protected void rebuild() {
-        tagCache = new MultiMap<>();
-        roleCache = new HashSet<>();
-        cachePrimitives(ds.allNonDeletedCompletePrimitives());
+    void rebuild() {
+        if (dirty) {
+            PRESET_TAG_CACHE.clear();
+            CATEGORY_TAG_CACHE.clear();
+            RELATION_CACHE.clear();
+            cachePrimitives(ds.allNonDeletedCompletePrimitives());
+            dirty = false;
+        }
     }
 
-    protected void cachePrimitives(Collection<? extends OsmPrimitive> primitives) {
+    /**
+     * Cache tags of a collection of primitives.
+     *
+     * @param primitives the primitives to cache
+     */
+    void cachePrimitives(Collection<? extends OsmPrimitive> primitives) {
         for (OsmPrimitive primitive : primitives) {
-            cachePrimitiveTags(primitive);
+            cachePrimitive(primitive);
             if (primitive instanceof Relation) {
-                cacheRelationMemberRoles((Relation) primitive);
+                RELATION_CACHE.put(classifyRelation(primitive.getKeys()), (Relation) primitive);
             }
         }
     }
 
     /**
-     * make sure, the keys and values of all tags held by primitive are
-     * in the auto completion cache
+     * Cache the tags of one primitive.
      *
      * @param primitive an OSM primitive
      */
-    protected void cachePrimitiveTags(OsmPrimitive primitive) {
-        primitive.visitKeys((p, key, value) -> tagCache.put(key, value));
+    void cachePrimitive(OsmPrimitive primitive) {
+        MultiMap<String, String> mmap =
+            PRESET_TAG_CACHE.computeIfAbsent(TaggingPresetType.forPrimitive(primitive), key -> new BetterMultiMap<>());
+        primitive.visitKeys((p, key, value) -> mmap.put(key, value));
+        classifyPrimitive(primitive.getKeys()).forEach(category -> {
+            MultiMap<String, String> mmap2 = CATEGORY_TAG_CACHE.computeIfAbsent(category, key -> new BetterMultiMap<>());
+            primitive.visitKeys((p, key, value) -> mmap2.put(key, value));
+        });
     }
 
     /**
-     * Caches all member roles of the relation <code>relation</code>
+     * Returns the primitive type.
+     * <p>
+     * This is used to categorize the primitives in the dataset.  A primitive with the keys:
+     * <ul>
+     * <li>highway=service
+     * </ul>
+     * will return a primitive type of {@code "highway"}.
      *
-     * @param relation the relation
+     * @param tags the tags on the primitive
+     * @return the primitive type or {@code ""}
      */
-    protected void cacheRelationMemberRoles(Relation relation) {
-        for (RelationMember m: relation.getMembers()) {
-            if (m.hasRole()) {
-                roleCache.add(m.getRole());
-            }
-        }
+    public static Set<String> classifyPrimitive(Map<String, String> tags) {
+        return intersection(tags.keySet(), ALL_PRIMITIVE_TYPES);
+    }
+
+    /**
+     * Returns the relation type.
+     * <p>
+     * This is used to categorize the relations in the dataset.  A relation with the keys:
+     * <ul>
+     * <li>type=route
+     * <li>route=hiking
+     * </ul>
+     * will return a relation type of {@code "route.hiking"}.
+     *
+     * @param tags the tags on the relation
+     * @return the relation type or {@code ""}
+     */
+    public String classifyRelation(Map<String, String> tags) {
+        if (tags == null) return "";
+        String type = tags.get("type");
+        if (type == null) return "";
+        String subtype = tags.get(type);
+        if (subtype == null) return type;
+        return type + "." + subtype;
+    }
+
+    /**
+     * Construct a role out of a relation member
+     *
+     * @param member the relation member
+     * @return the Role
+     */
+    private Role mkRole(RelationMember member) {
+        return new Role(member.getRole(), EnumSet.of(TaggingPresetType.forPrimitiveType(member.getDisplayType())));
     }
 
     /**
@@ -221,15 +332,10 @@ public class AutoCompletionManager implements DataSetListener {
     }
 
     /**
-     * replies the keys held by the cache
-     *
-     * @return the list of keys held by the cache
+     * Returns the user input history.
+     * @return the keys in the user input history
      */
-    protected List<String> getDataKeys() {
-        return new ArrayList<>(getTagCache().keySet());
-    }
-
-    protected Collection<String> getUserInputKeys() {
+    public static Collection<String> getUserInputKeys() {
         List<String> keys = USER_INPUT_TAG_CACHE.stream()
                 .filter(tag -> !tag.defaultKey)
                 .map(tag -> tag.key)
@@ -239,17 +345,11 @@ public class AutoCompletionManager implements DataSetListener {
     }
 
     /**
-     * replies the auto completion values allowed for a specific key. Replies
-     * an empty list if key is null or if key is not in {@link #getTagKeys()}.
-     *
-     * @param key OSM key
-     * @return the list of auto completion values
+     * Returns the user input history.
+     * @param key the key for which to retrieve values
+     * @return the values in the user input history
      */
-    protected List<String> getDataValues(String key) {
-        return new ArrayList<>(getTagCache().getValues(key));
-    }
-
-    protected static Collection<String> getUserInputValues(String key) {
+    public static Collection<String> getUserInputValues(String key) {
         List<String> values = USER_INPUT_TAG_CACHE.stream()
                 .filter(tag -> Objects.equals(key, tag.key))
                 .map(tag -> tag.value)
@@ -259,48 +359,339 @@ public class AutoCompletionManager implements DataSetListener {
     }
 
     /**
-     * Replies the list of member roles
+     * Returns a collection of all member roles in the dataset.
+     * <p>
+     * Member roles are distinct on role name and primitive type they apply to. So there will be a
+     * role "platform" for nodes and a role "platform" for ways.
      *
-     * @return the list of member roles
+     * @return the collection of member roles
      */
-    public List<String> getMemberRoles() {
-        return new ArrayList<>(getRoleCache());
+    public Set<Role> getAllMemberRoles() {
+        return getRelationCache().getAllValues().stream()
+            .flatMap(rel -> rel.getMembers().stream()).map(r -> mkRole(r)).collect(Collectors.toSet());
     }
 
     /**
-     * Populates the {@link AutoCompletionList} with the currently cached member roles.
+     * Returns a collection of all roles in the dataset for one relation type.
+     * <p>
+     * Member roles are distinct on role name and primitive type they apply to. So there will be a
+     * role "platform" for nodes and a role "platform" for ways.
      *
-     * @param list the list to populate
+     * @param relationType the {@link #classifyRelation(Map) relation type}
+     * @return the collection of member roles
      */
-    public void populateWithMemberRoles(AutoCompletionList list) {
-        list.add(TaggingPresets.getPresetRoles(), AutoCompletionPriority.IS_IN_STANDARD);
-        list.add(getRoleCache(), AutoCompletionPriority.IS_IN_DATASET);
+    public Set<Role> getMemberRoles(String relationType) {
+        Set<Relation> relations = getRelationCache().get(relationType);
+        if (relations == null)
+            return Collections.emptySet();
+        return relations.stream().flatMap(rel -> rel.getMembers().stream()).map(r -> mkRole(r)).collect(Collectors.toSet());
     }
 
     /**
-     * Populates the {@link AutoCompletionList} with the roles used in this relation
-     * plus the ones defined in its applicable presets, if any. If the relation type is unknown,
-     * then all the roles known globally will be added, as in {@link #populateWithMemberRoles(AutoCompletionList)}.
+     * Returns key suggestions for a given relation type.
+     * <p>
+     * Returns all keys in the dataset used on a given {@link #classifyRelation(Map) relation type}.
      *
-     * @param list the list to populate
-     * @param r the relation to get roles from
-     * @throws IllegalArgumentException if list is null
-     * @since 7556
+     * @param tags current tags in the tag editor panel, used to determine the relation type
+     * @return the suggestions
      */
-    public void populateWithMemberRoles(AutoCompletionList list, Relation r) {
-        CheckParameterUtil.ensureParameterNotNull(list, "list");
-        Collection<TaggingPreset> presets = r != null ? TaggingPresets.getMatchingPresets(null, r.getKeys(), false) : Collections.emptyList();
-        if (r != null && !Utils.isEmpty(presets)) {
-            for (TaggingPreset tp : presets) {
-                if (tp.roles != null) {
-                    list.add(Utils.transform(tp.roles.roles, (Function<Role, String>) x -> x.key), AutoCompletionPriority.IS_IN_STANDARD);
-                }
+    public Set<String> getKeysForRelation(Map<String, String> tags) {
+        Set<String> set = new HashSet<>();
+        Set<Relation> relations = tags != null ? getRelationCache().get(classifyRelation(tags)) : getRelationCache().getAllValues();
+        if (relations == null)
+            return set;
+        return relations.stream().flatMap(rel -> rel.getKeys().entrySet().stream()).map(e -> e.getKey()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns value suggestions for a given relation type and key.
+     * <p>
+     * Returns all values in the dataset used with a given key on a given
+     * {@link #classifyRelation(Map) relation type}.
+     * <p>
+     * {@code tags} are used to determine the relation type. If {@code null} then the
+     * values found on all relations are returned.
+     *
+     * @param tags current tags in the tag editor panel, or null
+     * @param key the key to get values for
+     * @return the suggestions
+     */
+    public Set<String> getValuesForRelation(Map<String, String> tags, String key) {
+        Set<String> result = new HashSet<>();
+        String category = classifyRelation(tags);
+        Set<Relation> relations = category != null ? getRelationCache().get(category) : getRelationCache().getAllValues();
+
+        Set<String> altKeys = new HashSet<>();
+        for (TaggingPreset preset : getPresets(EnumSet.of(TaggingPresetType.RELATION), tags)) {
+            altKeys.addAll(preset.getAlternativeAutocompleteKeys(key));
+        }
+
+        relations.forEach(rel -> {
+            result.add(rel.get(key));
+            for (String altKey : altKeys) {
+                result.add(rel.get(altKey));
             }
-            list.add(r.getMemberRoles(), AutoCompletionPriority.IS_IN_DATASET);
-        } else {
-            populateWithMemberRoles(list);
+        });
+
+        result.remove(null);
+        return result;
+    }
+
+    /**
+     * Returns role suggestions for a given relation type.
+     * <p>
+     * Returns all roles in the dataset for a given {@link TaggingPresetType role type} used with a given
+     * {@link #classifyRelation(Map) relation type}.
+     *
+     * @param tags current tags in the tag editor panel, used to determine the relation type
+     * @param roleTypes all roles returned will match all of the types in this set.
+     * @return the suggestions
+     */
+    public Set<String> getRolesForRelation(Map<String, String> tags, EnumSet<TaggingPresetType> roleTypes) {
+        Set<String> set = new HashSet<>();
+        Set<Relation> relations = tags != null ? getRelationCache().get(classifyRelation(tags)) : getRelationCache().getAllValues();
+        if (relations == null)
+            return set;
+        return relations.stream().flatMap(rel -> rel.getMembers().stream())
+            .map(member -> mkRole(member)).filter(role -> role.appliesToAll(roleTypes)).map(role -> role.toString())
+            .collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns all presets of type {@code types} matched by {@code tags}.
+     *
+     * @param types the preset types to include, (node / way / relation ...) or null to include all types
+     * @param tags match presets using these tags or null to match all presets
+     * @return the matched presets
+     */
+    private Collection<TaggingPreset> getPresets(Collection<TaggingPresetType> types, Map<String, String> tags) {
+        if (tags == null || tags.isEmpty())
+            return MainApplication.getTaggingPresets().getMatchingPresets(types);
+        return MainApplication.getTaggingPresets().getMatchingPresets(types, tags, false);
+    }
+
+    /**
+     * Returns the first key found in each of the presets matched by {@code tags}.
+     *
+     * @param types the preset types to include, (node / way / relation ...) or null to include all types
+     * @param tags match presets using these tags or null to match all presets
+     * @return the suggested keys
+     * @since xxx
+     */
+    public Set<String> getPresetsFirstKey(Collection<TaggingPresetType> types, Map<String, String> tags) {
+        Set<String> set = new HashSet<>();
+
+        for (TaggingPreset preset : getPresets(types, tags)) {
+            Collection<String> keys = preset.getAllKeys();
+            if (!keys.isEmpty())
+                set.add(keys.iterator().next());
+        }
+        return set;
+    }
+
+    /**
+     * Returns all keys found in the presets matched by {@code tags}.
+     *
+     * @param types the preset types to include, (node / way / relation ...) or null to include all types
+     * @param tags match presets using these tags or null to match all presets
+     * @return the suggested keys
+     * @since xxx
+     */
+    public Set<String> getPresetsAllKeys(Collection<TaggingPresetType> types, Map<String, String> tags) {
+        Set<String> set = new HashSet<>();
+
+        for (TaggingPreset preset : getPresets(types, tags)) {
+            set.addAll(preset.getAllKeys());
+        }
+        return set;
+    }
+
+    /**
+     * Returns all values for {@code key} found in the presets matched by {@code tags}.
+     *
+     * @param types the preset types to include, (node / way / relation ...) or null to include all types
+     * @param tags match presets using these tags or null to match all presets
+     * @param key the key to return values for
+     * @return the suggested values
+     * @since xxx
+     */
+    public Set<String> getPresetValues(Collection<TaggingPresetType> types, Map<String, String> tags, String key) {
+        Set<String> set = new HashSet<>();
+        for (TaggingPreset preset : getPresets(types, tags)) {
+            set.addAll(preset.getAllValues(key));
+        }
+        return set;
+    }
+
+    /**
+     * Returns all roles found in the presets matched by {@code tags}.
+     *
+     * @param tags match presets using these tags or null to match all presets
+     * @param roleTypes the role types to include, (node / way / relation ...) or null to include all types
+     * @return the suggested roles
+     * @since xxx
+     */
+    public Set<String> getPresetRoles(Map<String, String> tags, Collection<TaggingPresetType> roleTypes) {
+        Set<String> set = new HashSet<>();
+
+        for (TaggingPreset preset : getPresets(EnumSet.of(TaggingPresetType.RELATION), tags)) {
+            for (Role role : preset.getAllRoles()) {
+                if (role.appliesToAll(roleTypes))
+                    set.add(role.getKey());
+            }
+        }
+        return set;
+    }
+
+    /**
+     * Returns all keys common to all given {@link #classifyPrimitive(Map) primitive categories}.
+     * <p>
+     * For each given preset type:
+     *   find the union of all keys used on any primitive of that type
+     * then return the intersection of all unions thus found.
+     * <p>
+     * Use case: suggest keys the user may put on a given selection of primitives.
+     *
+     * @param categories the categories
+     * @return the keys
+     * @since xxx
+     */
+    public Set<String> getDataSetKeys(Collection<String> categories) {
+        return categories.stream().map(t -> getCategoryTagCache(t).keySet())
+            // intersect all key sets
+            .reduce((a, b) -> intersection(a, b)).orElse(Collections.emptySet());
+    }
+
+    /**
+     * Returns all values of the given key on the given {@link #classifyPrimitive(Map) primitive categories}.
+     * <p>
+     * Use case: suggest values for a given selection of primitives and a given key
+     *
+     * @param categories the categories
+     * @param key the key
+     * @return the values
+     * @since xxx
+     */
+    public Set<String> getDataSetValues(Collection<String> categories, String key) {
+        Set<String> result = new HashSet<>();
+        categories.forEach(cat -> {
+            result.addAll(getCategoryTagCache(cat).get(key));
+        });
+        return result;
+    }
+
+    /**
+     * Fills a combobox dropdown with all known keys.
+     */
+    public class NaiveKeyAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            Map<String, AutoCompletionPriority> map = merge(
+                toMap(MainApplication.getTaggingPresets().getPresetKeys(), AutoCompletionPriority.IS_IN_STANDARD),
+                toMap(getDataSetKeys(), AutoCompletionPriority.IS_IN_DATASET),
+                toMap(getUserInputKeys(), AutoCompletionPriority.UNKNOWN)
+            );
+            map.merge("source", AutoCompletionPriority.IS_IN_STANDARD, AutoCompletionPriority::mergeWith);
+            model.replaceAllElements(toList(map, ALPHABETIC_COMPARATOR));
         }
     }
+
+    /**
+     * Fills a combobox dropdown with all known values for a given key or given keys.
+     */
+    public class NaiveValueAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
+        Set<String> keys;
+
+        /**
+         * Constructor
+         * @param key The given key
+         */
+        public NaiveValueAutoCompManager(String key) {
+            this.keys = new HashSet<>();
+            this.keys.add(key);
+        }
+
+        /**
+         * Constructor
+         * @param keys The given keys
+         */
+        public NaiveValueAutoCompManager(Collection<String> keys) {
+            this.keys = new HashSet<>(keys);
+        }
+
+        @Override
+        protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
+            Map<String, AutoCompletionPriority> map = new HashMap<>();
+
+            for (String key : keys) {
+                map = merge(
+                    map,
+                    toMap(MainApplication.getTaggingPresets().getPresetValues(key), AutoCompletionPriority.IS_IN_STANDARD),
+                    toMap(getDataSetValues(key), AutoCompletionPriority.IS_IN_DATASET),
+                    toMap(getUserInputValues(key), AutoCompletionPriority.UNKNOWN)
+                );
+            }
+            model.replaceAllElements(toList(map, ALPHABETIC_COMPARATOR));
+        }
+    }
+
+    /***************************/
+    /* Compatibility Functions */
+    /***************************/
+
+    /**
+     * Returns all keys used in the dataset.
+     * <p>
+     * Compatibility function.
+     *
+     * @return the keys
+     * @since xxx
+     */
+    private Collection<String> getDataSetKeys() {
+        Set<String> result = new HashSet<>();
+        getPresetTagCache().values().forEach(mm -> {
+            result.addAll(mm.keySet());
+        });
+        return result;
+    }
+
+    /**
+     * Returns all values used in the dataset for the given key.
+     * <p>
+     * Compatibility function.
+     *
+     * @param key the key
+     * @return the values
+     * @since xxx
+     */
+    private Collection<String> getDataSetValues(String key) {
+        Set<String> result = new HashSet<>();
+        getPresetTagCache().values().forEach(mm -> {
+            result.addAll(mm.getValues(key));
+        });
+        return result;
+    }
+
+    /**
+     * Returns all cached {@link AutoCompletionItem}s for all member roles.
+     * @return the currently cached roles, sorted by priority and alphabet
+     * @since xxx
+     */
+    public List<AutoCompletionItem> getAllRoles() {
+        Map<String, AutoCompletionPriority> map = new HashMap<>();
+
+        MainApplication.getTaggingPresets().getPresetRoles().forEach(role -> map.merge(role.getKey(),
+            AutoCompletionPriority.IS_IN_STANDARD, AutoCompletionPriority::mergeWith));
+        getAllMemberRoles().forEach(role -> map.merge(role.getKey(),
+            AutoCompletionPriority.IS_IN_DATASET, AutoCompletionPriority::mergeWith));
+
+        return toList(map, ALPHABETIC_COMPARATOR);
+    }
+
+    /*
+     * Populate {@link AutoCompletionList} functions.
+     * Only for backward compatibility.
+     */
 
     /**
      * Populates the an {@link AutoCompletionList} with the currently cached tag keys
@@ -308,9 +699,9 @@ public class AutoCompletionManager implements DataSetListener {
      * @param list the list to populate
      */
     public void populateWithKeys(AutoCompletionList list) {
-        list.add(TaggingPresets.getPresetKeys(), AutoCompletionPriority.IS_IN_STANDARD);
+        list.add(MainApplication.getTaggingPresets().getPresetKeys(), AutoCompletionPriority.IS_IN_STANDARD);
         list.add(new AutoCompletionItem("source", AutoCompletionPriority.IS_IN_STANDARD));
-        list.add(getDataKeys(), AutoCompletionPriority.IS_IN_DATASET);
+        list.add(getDataSetKeys(), AutoCompletionPriority.IS_IN_DATASET);
         list.addUserInput(getUserInputKeys());
     }
 
@@ -332,8 +723,8 @@ public class AutoCompletionManager implements DataSetListener {
      */
     public void populateWithTagValues(AutoCompletionList list, List<String> keys) {
         for (String key : keys) {
-            list.add(TaggingPresets.getPresetValues(key), AutoCompletionPriority.IS_IN_STANDARD);
-            list.add(getDataValues(key), AutoCompletionPriority.IS_IN_DATASET);
+            list.add(MainApplication.getTaggingPresets().getPresetValues(key), AutoCompletionPriority.IS_IN_STANDARD);
+            list.add(getDataSetValues(key), AutoCompletionPriority.IS_IN_DATASET);
             list.addUserInput(getUserInputValues(key));
         }
     }
@@ -342,30 +733,6 @@ public class AutoCompletionManager implements DataSetListener {
         List<AutoCompletionItem> list = new ArrayList<>(set);
         list.sort(comparator);
         return list;
-    }
-
-    /**
-     * Returns all cached {@link AutoCompletionItem}s for given keys.
-     *
-     * @param keys retrieve the items for these keys
-     * @return the currently cached items, sorted by priority and alphabet
-     * @since 18221
-     */
-    public List<AutoCompletionItem> getAllForKeys(List<String> keys) {
-        Map<String, AutoCompletionPriority> map = new HashMap<>();
-
-        for (String key : keys) {
-            for (String value : TaggingPresets.getPresetValues(key)) {
-                map.merge(value, AutoCompletionPriority.IS_IN_STANDARD, AutoCompletionPriority::mergeWith);
-            }
-            for (String value : getDataValues(key)) {
-                map.merge(value, AutoCompletionPriority.IS_IN_DATASET, AutoCompletionPriority::mergeWith);
-            }
-            for (String value : getUserInputValues(key)) {
-                map.merge(value, AutoCompletionPriority.UNKNOWN, AutoCompletionPriority::mergeWith);
-            }
-        }
-        return map.entrySet().stream().map(e -> new AutoCompletionItem(e.getKey(), e.getValue())).sorted().collect(Collectors.toList());
     }
 
     /**
@@ -435,7 +802,6 @@ public class AutoCompletionManager implements DataSetListener {
 
     /*
      * Implementation of the DataSetListener interface
-     *
      */
 
     @Override
@@ -502,8 +868,9 @@ public class AutoCompletionManager implements DataSetListener {
                     ds.removeDataSetListener(AutoCompletionManager.this);
                     MainApplication.getLayerManager().removeLayerChangeListener(this);
                     dirty = true;
-                    tagCache = null;
-                    roleCache = null;
+                    PRESET_TAG_CACHE.clear();
+                    CATEGORY_TAG_CACHE.clear();
+                    RELATION_CACHE.clear();
                     ds = null;
                 }
             }
@@ -529,5 +896,67 @@ public class AutoCompletionManager implements DataSetListener {
      */
     public static AutoCompletionManager of(DataSet dataSet) {
         return INSTANCES.computeIfAbsent(dataSet, ds -> new AutoCompletionManager(ds).registerListeners());
+    }
+
+    /****************************************/
+    /* Helper and data conversion functions */
+    /****************************************/
+
+    /**
+     * Return the intersection of two sets.
+     *
+     * @param <T> the type of the sets
+     * @param set1 the first set
+     * @param set2 the second set
+     * @return the intersection of both sets
+     */
+    public static <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
+        return set1.stream().filter(set2::contains).collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns the union of two sets.
+     *
+     * @param <T> the type of the sets
+     * @param set1 the first set
+     * @param set2 the second set
+     * @return the union of both sets
+     */
+    public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
+        return Stream.concat(set1.stream(), set2.stream()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Merges two or more {@code Map<String, AutoCompletionPriority>}. The result will have the
+     * priorities merged.
+     *
+     * @param maps two or more maps to merge
+     * @return the merged map
+     */
+    @SafeVarargs
+    public static final Map<String, AutoCompletionPriority> merge(Map<String, AutoCompletionPriority>... maps) {
+        return Stream.of(maps).flatMap(m -> m.entrySet().stream())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, AutoCompletionPriority::mergeWith));
+    }
+
+    /**
+     * Turns a {@code Map<String, AutoCompletionPriority>} into a sorted {@code List<AutoCompletionItem>}.
+     * @param map the input map
+     * @param comparator the sort order
+     * @return the list of items
+     */
+    public static List<AutoCompletionItem> toList(Map<String, AutoCompletionPriority> map, Comparator<AutoCompletionItem> comparator) {
+        return map.entrySet().stream().map(e -> new AutoCompletionItem(e.getKey(), e.getValue()))
+            .sorted(comparator).collect(Collectors.toList());
+    }
+
+    /**
+     * Turns a collection of String into a collection of AutoCompletionItems with a given priority.
+     * @param values the values
+     * @param priority the priority
+     * @return the list of items
+     */
+    public static Map<String, AutoCompletionPriority> toMap(Collection<String> values, AutoCompletionPriority priority) {
+        return values.stream().collect(Collectors.toMap(k -> k, v -> priority));
     }
 }

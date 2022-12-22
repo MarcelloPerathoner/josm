@@ -44,6 +44,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -69,6 +70,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
@@ -149,15 +151,17 @@ public abstract class SourceEditor extends JPanel {
         this.canEnable = sourceType == SourceType.MAP_PAINT_STYLE || sourceType == SourceType.TAGCHECKER_RULE;
 
         DefaultListSelectionModel selectionModel = new DefaultListSelectionModel();
+
         this.availableSourcesModel = new AvailableSourcesModel();
-        this.tblAvailableSources = new ScrollHackTable(availableSourcesModel);
-        // This add/remove listener code is needed to fix #20849. Java fires table listeners in the reverse order
-        // in which they were added, and we need the model to have been updated before we call the adjustColumnWidth code.
-        // So we remove the JTable and re-add it as a listener after we add the column width adjustment
-        availableSourcesModel.addTableModelListener(e -> TableHelper.adjustColumnWidth(tblAvailableSources, 0, 800));
-        availableSourcesModel.removeTableModelListener(this.tblAvailableSources);
-        availableSourcesModel.addTableModelListener(this.tblAvailableSources);
+        this.tblAvailableSources = new JTable();
+        availableSourcesModel.addTableModelListener(e -> {
+            TableHelper.setColumnWidth(tblAvailableSources, 0);
+        });
+        // Note: The model must be set after the setColumnWidth listener. See #20849
+        this.tblAvailableSources.setModel(availableSourcesModel);
         this.tblAvailableSources.setAutoCreateRowSorter(true);
+        TableHelper.setFont(tblAvailableSources, getClass());
+
         this.tblAvailableSources.setSelectionModel(selectionModel);
         final FancySourceEntryTableCellRenderer availableSourcesEntryRenderer = new FancySourceEntryTableCellRenderer();
         this.tblAvailableSources.getColumnModel().getColumn(0).setCellRenderer(availableSourcesEntryRenderer);
@@ -167,7 +171,8 @@ public abstract class SourceEditor extends JPanel {
 
         selectionModel = new DefaultListSelectionModel();
         activeSourcesModel = new ActiveSourcesModel(selectionModel);
-        tblActiveSources = new ScrollHackTable(activeSourcesModel);
+        tblActiveSources = new JTable(activeSourcesModel);
+        TableHelper.setFont(tblActiveSources, getClass());
         tblActiveSources.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tblActiveSources.setSelectionModel(selectionModel);
         Stream.of(tblAvailableSources, tblActiveSources).forEach(t -> {
@@ -178,25 +183,24 @@ public abstract class SourceEditor extends JPanel {
             t.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         });
         SourceEntryTableCellRenderer sourceEntryRenderer = new SourceEntryTableCellRenderer();
+        TableColumnModel cm = tblActiveSources.getColumnModel();
         if (canEnable) {
-            tblActiveSources.getColumnModel().getColumn(0).setMaxWidth(1);
-            tblActiveSources.getColumnModel().getColumn(0).setResizable(false);
-            tblActiveSources.getColumnModel().getColumn(1).setCellRenderer(sourceEntryRenderer);
+            cm.getColumn(0).setPreferredWidth(40);
+            cm.getColumn(0).setResizable(false);
+            cm.getColumn(1).setCellRenderer(sourceEntryRenderer);
         } else {
-            tblActiveSources.getColumnModel().getColumn(0).setCellRenderer(sourceEntryRenderer);
+            cm.getColumn(0).setCellRenderer(sourceEntryRenderer);
         }
 
         activeSourcesModel.addTableModelListener(e -> {
             availableSourcesEntryRenderer.updateSources(activeSourcesModel.getSources());
+            TableHelper.setColumnWidth(tblActiveSources, canEnable ? 1 : 0);
             tblAvailableSources.repaint();
         });
         tblActiveSources.addPropertyChangeListener(evt -> {
             availableSourcesEntryRenderer.updateSources(activeSourcesModel.getSources());
             tblAvailableSources.repaint();
         });
-        // Force Swing to show horizontal scrollbars for the JTable
-        // Yes, this is a little ugly, but should work
-        activeSourcesModel.addTableModelListener(e -> TableHelper.adjustColumnWidth(tblActiveSources, canEnable ? 1 : 0, 800));
         activeSourcesModel.setActiveSources(getInitialSourcesList());
 
         final EditActiveSourceAction editActiveSourceAction = new EditActiveSourceAction();
@@ -353,7 +357,6 @@ public abstract class SourceEditor extends JPanel {
         tblIconPaths.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tblIconPaths.setTableHeader(null);
         tblIconPaths.getColumnModel().getColumn(0).setCellEditor(new FileOrUrlCellEditor(false));
-        tblIconPaths.setRowHeight(20);
         tblIconPaths.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         iconPathsModel.setIconPaths(getInitialIconPathsList());
 
@@ -1318,6 +1321,8 @@ public abstract class SourceEditor extends JPanel {
                 new Color(200, 200, 200));
 
         private final Map<String, SourceEntry> entryByUrl = new HashMap<>();
+        private final ImageSizes iconSize = ImageSizes.TABLE;
+        private final ImageIcon iconEmpty = ImageProvider.getEmpty(iconSize);
 
         @Override
         public Component getTableCellRendererComponent(JTable list, Object object, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -1326,14 +1331,15 @@ public abstract class SourceEditor extends JPanel {
                 final ExtendedSourceEntry value = (ExtendedSourceEntry) object;
                 String s = value.toString();
                 setText(s);
+                setIconTextGap(10);
                 setToolTipText(value.getTooltip());
                 if (!isSelected) {
                     final SourceEntry sourceEntry = entryByUrl.get(value.url);
                     GuiHelper.setBackgroundReadable(this, sourceEntry == null ? UIManager.getColor("Table.background") :
                         sourceEntry.active ? SOURCE_ENTRY_ACTIVE_BACKGROUND_COLOR.get() : SOURCE_ENTRY_INACTIVE_BACKGROUND_COLOR.get());
                 }
-                final ImageSizes size = ImageSizes.TABLE;
-                setIcon(value.icon == null ? ImageProvider.getEmpty(size) : value.icon.getImageIconBounded(size.getImageDimension()));
+                setIcon(value.icon == null ? iconEmpty :
+                    value.icon.getPaddedIcon(iconSize.getImageDimension()));
             }
             return this;
         }
@@ -1617,6 +1623,7 @@ public abstract class SourceEditor extends JPanel {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             setInitialValue((String) value);
+            tfFileName.setBorder(BorderFactory.createEmptyBorder());
             tfFileName.selectAll();
             return this;
         }

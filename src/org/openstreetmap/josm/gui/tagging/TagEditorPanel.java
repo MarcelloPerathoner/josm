@@ -2,31 +2,21 @@
 package org.openstreetmap.josm.gui.tagging;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.Collections;
 
-import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.gui.dialogs.properties.HelpAction;
 import org.openstreetmap.josm.gui.dialogs.properties.HelpTagAction;
-import org.openstreetmap.josm.gui.dialogs.properties.PresetListPanel;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
-import org.openstreetmap.josm.spi.preferences.Config;
-import org.openstreetmap.josm.tools.CheckParameterUtil;
 
 /**
  * TagEditorPanel is a {@link JPanel} which can be embedded as UI component in
@@ -37,12 +27,9 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
  */
 public class TagEditorPanel extends JPanel {
     /** the tag editor model */
-    private TagEditorModel model;
+    private final TagTableModel model;
     /** the tag table */
     private final TagTable tagTable;
-
-    private PresetListPanel presetListPanel;
-    private final transient TaggingPresetHandler presetHandler;
 
     /**
      * builds the panel with the table for editing tags
@@ -52,22 +39,7 @@ public class TagEditorPanel extends JPanel {
     protected JPanel buildTagTableEditorPanel() {
         JPanel pnl = new JPanel(new BorderLayout());
         pnl.add(new JScrollPane(tagTable), BorderLayout.CENTER);
-        if (presetHandler != null) {
-            presetListPanel = new PresetListPanel();
-            if (Config.getPref().getBoolean("relation.editor.presets.visible", true)) {
-                pnl.add(presetListPanel, BorderLayout.NORTH);
-            }
-        }
         return pnl;
-    }
-
-    /**
-     * Sets the next component to request focus after navigation (with tab or enter).
-     * @param nextFocusComponent next component to request focus after navigation (with tab or enter)
-     * @see TagTable#setNextFocusComponent
-     */
-    public void setNextFocusComponent(Component nextFocusComponent) {
-        tagTable.setNextFocusComponent(nextFocusComponent);
     }
 
     /**
@@ -79,26 +51,18 @@ public class TagEditorPanel extends JPanel {
         JPanel pnl = new JPanel();
         pnl.setLayout(new BoxLayout(pnl, BoxLayout.Y_AXIS));
 
-        buildButton(pnl, tagTable.getAddAction());
-        buildButton(pnl, tagTable.getDeleteAction());
-        buildButton(pnl, tagTable.getPasteAction());
+        ActionMap am = tagTable.getActionMap();
+        buildButton(pnl, am.get("add"));
+        buildButton(pnl, am.get("delete"));
+        buildButton(pnl, am.get("paste"));
 
         return pnl;
     }
 
-    private void buildButton(JPanel pnl, AbstractAction action) {
+    private void buildButton(JPanel pnl, Action action) {
         JButton btn = new JButton(action);
-        pnl.add(btn);
         btn.setMargin(new Insets(0, 0, 0, 0));
-        tagTable.addComponentNotStoppingCellEditing(btn);
-    }
-
-    /**
-     * Returns the paste action.
-     * @return the paste action
-     */
-    public AbstractAction getPasteAction() {
-        return tagTable.getPasteAction();
+        pnl.add(btn);
     }
 
     /**
@@ -127,44 +91,18 @@ public class TagEditorPanel extends JPanel {
         gc.weighty = 1.0;
         gc.anchor = GridBagConstraints.CENTER;
         add(tablePanel, gc);
-
-        if (presetHandler != null) {
-            model.addTableModelListener(e -> updatePresets());
-        }
-
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                tagTable.requestFocusInCell(0, 0);
-            }
-        });
-    }
-
-    /**
-     * Creates a new tag editor panel. The editor model is created
-     * internally and can be retrieved with {@link #getModel()}.
-     * @param primitive primitive to consider
-     * @param presetHandler tagging preset handler
-     */
-    public TagEditorPanel(OsmPrimitive primitive, TaggingPresetHandler presetHandler) {
-        this(new TagEditorModel().forPrimitive(primitive), presetHandler, 0);
     }
 
     /**
      * Creates a new tag editor panel with a supplied model. If {@code model} is null, a new model is created.
      *
      * @param model the tag editor model
-     * @param presetHandler tagging preset handler
      * @param maxCharacters maximum number of characters allowed, 0 for unlimited
      */
-    public TagEditorPanel(TagEditorModel model, TaggingPresetHandler presetHandler, final int maxCharacters) {
-        this.model = model;
-        this.presetHandler = presetHandler;
-        if (this.model == null) {
-            this.model = new TagEditorModel();
-        }
-        this.tagTable = new TagTable(this.model, maxCharacters);
+    public TagEditorPanel(TagTableModel model, final int maxCharacters) {
+        this.model = (model == null) ? new TagTableModel(null) : model;
 
+        this.tagTable = new TagTable(this.model, maxCharacters);
         setupKeyboardShortcuts();
         build();
     }
@@ -172,8 +110,8 @@ public class TagEditorPanel extends JPanel {
     private void setupKeyboardShortcuts() {
         // F1 button = custom help action
         final HelpAction helpTagAction = new HelpTagAction(tagTable,
-                viewRow -> this.model.get(tagTable.convertRowIndexToModel(viewRow)).getName(),
-                viewRow -> Collections.singletonMap(this.model.get(tagTable.convertRowIndexToModel(viewRow)).getValue(), 1));
+                viewRow -> tagTable.getKey(viewRow),
+                viewRow -> Collections.singletonMap(model.get(tagTable.getKey(viewRow)).toString(), 1));
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(HelpAction.getKeyStroke(), "onHelp");
         getActionMap().put("onHelp", helpTagAction);
     }
@@ -183,43 +121,22 @@ public class TagEditorPanel extends JPanel {
      *
      * @return the tag editor model used by this panel
      */
-    public TagEditorModel getModel() {
+    public TagTableModel getModel() {
         return model;
     }
 
     /**
-     * Initializes the auto completion infrastructure used in this
-     * tag editor panel. {@code layer} is the data layer from whose data set
-     * tag values are proposed as auto completion items.
-     *
-     * @param layer the data layer. Must not be null.
-     * @throws IllegalArgumentException if {@code layer} is null
+     * Returns the JTable
+     * @return the JTable
      */
-    public void initAutoCompletion(OsmDataLayer layer) {
-        CheckParameterUtil.ensureParameterNotNull(layer, "layer");
-
-        AutoCompletionManager autocomplete = AutoCompletionManager.of(layer.data);
-        AutoCompletionList acList = new AutoCompletionList();
-
-        TagCellEditor editor = (TagCellEditor) tagTable.getColumnModel().getColumn(0).getCellEditor();
-        editor.setAutoCompletionManager(autocomplete);
-        editor.setAutoCompletionList(acList);
-        editor = (TagCellEditor) tagTable.getColumnModel().getColumn(1).getCellEditor();
-        editor.setAutoCompletionManager(autocomplete);
-        editor.setAutoCompletionList(acList);
+    public TagTable getTable() {
+        return tagTable;
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         tagTable.setEnabled(enabled);
         super.setEnabled(enabled);
-    }
-
-    private void updatePresets() {
-        presetListPanel.updatePresets(
-                model.getTaggingPresetTypes(),
-                model.getTags(), presetHandler);
-        validate();
     }
 
     /**

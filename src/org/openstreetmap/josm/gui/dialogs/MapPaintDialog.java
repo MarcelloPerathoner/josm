@@ -49,6 +49,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.actions.JosmAction;
@@ -121,7 +122,8 @@ public class MapPaintDialog extends ToggleDialog {
         model = new StylesModel();
 
         cbWireframe = new JCheckBox();
-        JLabel wfLabel = new JLabel(tr("Wireframe View"), ImageProvider.get("dialogs/mappaint", "wireframe_small"), JLabel.HORIZONTAL);
+        JLabel wfLabel = new JLabel(tr("Wireframe View"),
+            ImageProvider.get("dialogs/mappaint", "wireframe_small", ImageSizes.SMALLICON), JLabel.HORIZONTAL);
         wfLabel.setFont(wfLabel.getFont().deriveFont(Font.PLAIN));
         wfLabel.setLabelFor(cbWireframe);
 
@@ -139,16 +141,20 @@ public class MapPaintDialog extends ToggleDialog {
         cbWireframe.setBorder(new EmptyBorder(new Insets(1, 1, 1, 1)));
 
         tblStyles = new ScrollableTable(model);
+        TableHelper.setFont(tblStyles, MapPaintDialog.class);
+        TableHelper.setRowHeight(tblStyles, ImageProvider.get("dialogs/mappaint", "wireframe_small", ImageSizes.TABLE));
         tblStyles.setSelectionModel(selectionModel);
         tblStyles.addMouseListener(new PopupMenuHandler());
         tblStyles.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tblStyles.setBackground(UIManager.getColor("Panel.background"));
         tblStyles.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tblStyles.setTableHeader(null);
-        tblStyles.getColumnModel().getColumn(0).setMaxWidth(1);
-        tblStyles.getColumnModel().getColumn(0).setResizable(false);
-        tblStyles.getColumnModel().getColumn(0).setCellRenderer(new MyCheckBoxRenderer());
-        tblStyles.getColumnModel().getColumn(1).setCellRenderer(new StyleSourceRenderer());
+        TableColumnModel cm = tblStyles.getColumnModel();
+        cm.getColumn(0).setPreferredWidth(40);
+        cm.getColumn(0).setMaxWidth(40);
+        cm.getColumn(0).setResizable(false);
+        cm.getColumn(0).setCellRenderer(new MyCheckBoxRenderer());
+        cm.getColumn(1).setCellRenderer(new StyleSourceRenderer());
         tblStyles.setShowGrid(false);
         tblStyles.setIntercellSpacing(new Dimension(0, 0));
 

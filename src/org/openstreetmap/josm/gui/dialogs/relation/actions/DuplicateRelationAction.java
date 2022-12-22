@@ -32,7 +32,7 @@ public class DuplicateRelationAction extends AbstractRelationEditorAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         Relation copy = new Relation();
-        getTagModel().applyToPrimitive(copy);
+        copy.setKeys(editorAccess.getTagModel().getTags());
         editorAccess.getMemberTableModel().applyToRelation(copy);
         if (!GraphicsEnvironment.isHeadless()) {
             RelationEditor.getEditor(getLayer(), copy, editorAccess.getMemberTableModel().getSelectedMembers()).setVisible(true);

@@ -48,9 +48,11 @@ import org.openstreetmap.josm.gui.SplashScreen.SplashProgressMonitor;
 import org.openstreetmap.josm.gui.layer.GpxLayer;
 import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.preferences.display.LafPreference;
+import org.openstreetmap.josm.gui.progress.NullProgressMonitor;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.plugins.PluginClassLoader;
+import org.openstreetmap.josm.plugins.PluginDownloadTask;
 import org.openstreetmap.josm.plugins.PluginHandler;
-import org.openstreetmap.josm.plugins.PluginHandlerTestIT;
 import org.openstreetmap.josm.plugins.PluginInformation;
 import org.openstreetmap.josm.plugins.PluginListParseException;
 import org.openstreetmap.josm.plugins.PluginListParser;
@@ -119,6 +121,39 @@ public class MainApplicationTest {
         MainApplication.toolbar = new ToolbarPreferences();
     }
 
+    /**
+     * Download plugins
+     * @param plugins plugins to download
+     */
+    public static void downloadPlugins(Collection<PluginInformation> plugins) {
+        // Update the locally installed plugins
+        PluginDownloadTask pluginDownloadTask = new PluginDownloadTask(NullProgressMonitor.INSTANCE, plugins, null);
+        // Increase default timeout to avoid random network errors on big jar files
+        int defTimeout = Config.getPref().getInt("socket.timeout.read", 30);
+        Config.getPref().putInt("socket.timeout.read", 2 * defTimeout);
+        pluginDownloadTask.run();
+        // Restore default timeout
+        Config.getPref().putInt("socket.timeout.read", defTimeout);
+        assertTrue(pluginDownloadTask.getFailedPlugins().isEmpty(), pluginDownloadTask.getFailedPlugins()::toString);
+        assertEquals(plugins.size(), pluginDownloadTask.getDownloadedPlugins().size());
+
+        // Update Plugin info for downloaded plugins
+        PluginHandler.refreshLocalUpdatedPluginInfo(pluginDownloadTask.getDownloadedPlugins());
+    }
+
+    /**
+     * Set tagging presets.
+     * <p>
+     * This is a helper function to set {@link MainApplication#taggingPresets}.  Since
+     * MainApplication is global to all tests, your test should not run in parallel with other
+     * tests if it uses this.
+     *
+     * @param taggingPresets the tagging presets to set
+     */
+    public static void setTaggingPresets(TaggingPresets taggingPresets) {
+        MainApplication.taggingPresets = taggingPresets;
+    }
+
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING")
     private void testShow(final String arg, String expected) throws InterruptedException, IOException {
         PrintStream old = System.out;
@@ -184,7 +219,7 @@ public class MainApplicationTest {
             });
             Collection<PluginInformation> plugins = MainApplication.updateAndLoadEarlyPlugins(null, monitor);
             if (plugins.isEmpty()) {
-                PluginHandlerTestIT.downloadPlugins(Arrays.asList(
+                downloadPlugins(Arrays.asList(
                         newPluginInformation("buildings_tools"),
                         newPluginInformation("log4j")));
                 plugins = MainApplication.updateAndLoadEarlyPlugins(null, monitor);

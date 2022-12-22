@@ -205,6 +205,36 @@ public class JosmComboBoxModel<E> extends AbstractListModel<E> implements Mutabl
     }
 
     /**
+     * Replaces all current elements with elements from the collection.
+     * <p>
+     * This is the same as {@link #removeAllElements} followed by {@link #addAllElements} but
+     * minimizes event firing and tries to keep the current selection.  Use this when all elements
+     * are reinitialized programmatically like in an {@code autoCompBefore} event.
+     *
+     * @param newElements The new elements.
+     */
+    public void replaceAllElements(Collection<E> newElements) {
+        Object oldSelected = selected;
+        int index0 = elements.size();
+        elements.clear();
+        newElements.forEach(e -> doAddElement(e));
+        int index1 = elements.size();
+        int index2 = Math.min(index0, index1);
+        if (0 < index2) {
+            fireContentsChanged(this, 0, index2 - 1);
+        }
+        if (index2 < index0) {
+            fireIntervalRemoved(this, index2, index0 - 1);
+        }
+        if (index2 < index1) {
+            fireIntervalAdded(this, index2, index1 - 1);
+        }
+        // re-select the old selection if possible
+        int index = elements.indexOf(oldSelected);
+        setSelectedItem(index == -1 ? null : getElementAt(index));
+    }
+
+    /**
      * Adds an element to the top of the list.
      * <p>
      * If the element is already in the model, moves it to the top.  If the model gets too big,
