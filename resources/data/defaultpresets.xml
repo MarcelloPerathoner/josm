@@ -25,7 +25,6 @@
         <combo key="surface" text="Surface" values="artificial_turf,asphalt,clay,concrete,acrylic,grass,sand,tartan,ground" />
     </chunk>
     <chunk id="riding_surface">
-        <combo key="leisure" text="Type" values="horse_riding,pitch,sports_centre,stadium,track" values_context="riding" />
         <combo key="surface" text="Surface" values="grass,sand,clay,dirt,fine_gravel,ground,mud,unpaved,compacted" />
     </chunk>
     <chunk id="highway_base">
@@ -643,6 +642,25 @@
             <check key="communication:microwave" text="Microwave" />
             <check key="communication:gsm-r" text="GSM-R" />
         </checkgroup>
+    </chunk>
+    <chunk id="crossing_markings">
+        <multiselect key="crossing:markings" text="Markings" values_sort="false" values_context="crossing:markings">
+            <list_entry value="no" />
+            <list_entry value="yes" />
+            <list_entry value="surface" />
+            <list_entry value="lines" />
+            <list_entry value="lines:paired" />
+            <list_entry value="dashes" />
+            <list_entry value="dots" />
+            <list_entry value="zebra" />
+            <list_entry value="zebra:double" />
+            <list_entry value="zebra:paired" />
+            <list_entry value="zebra:bicolor" />
+            <list_entry value="ladder" />
+            <list_entry value="ladder:skewed" />
+            <list_entry value="ladder:paired" />
+            <list_entry value="pictograms" />
+        </multiselect>
     </chunk>
     <!-- Link chunks -->
     <chunk id="link_contact_address">
@@ -1461,6 +1479,7 @@
                 <list_entry value="traffic_signals" icon="presets/vehicle/crossing_traffic_signals.svg" />
                 <list_entry value="unmarked" icon="presets/vehicle/crossing_unmarked.svg" />
             </combo>
+            <reference ref="crossing_markings" />
             <combo key="crossing_ref" text="Crossing type name (UK)" values="zebra,pelican,toucan,puffin,pegasus,tiger" values_searchable="true" />
             <combo key="kerb" text="Kerb" values="flush,lowered,no,raised,rolled,yes" values_context="kerb" />
             <combo key="supervised" text="Crossing attendant" delimiter="|" values="yes|no|06:00-20:00|Mo-Fr 09:00-18:00,Sa 08:00-14:00|May-Sep 09:30-12:30,14:15-19:30" values_i18n="false" values_sort="false" />
@@ -2553,6 +2572,7 @@
                 <check key="crossing:light" text="Traffic lights" />
                 <check key="crossing:bell" text="Sound signals" />
                 <combo key="crossing:barrier" text="Barrier" values="yes,no,half,full,double_half" values_context="crossing:barrier" />
+                <reference ref="crossing_markings" />
             </optional>
         </item> <!-- Crossing -->
         <item name="Turntable" icon="presets/transport/railway/turntable.svg" type="node,closedway" preset_name_label="true">
@@ -4051,14 +4071,16 @@
             <reference ref="POI_access" />
             <reference ref="link_contact_address_payment" />
         </item> <!-- Sauna -->
-        <item name="Horse Riding" icon="presets/leisure/horse_riding.svg" type="node,closedway,multipolygon" preset_name_label="true">
+        <item name="Horse Riding Center" icon="presets/leisure/horse_riding.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Tag:leisure=horse_riding" />
             <space />
             <key key="leisure" value="horse_riding" />
             <reference ref="name_operator_oh_wheelchair" />
             <reference ref="fee" />
             <reference ref="link_contact_address_payment" />
-        </item> <!-- Horse Riding -->
+            <preset_link preset_name="Equestrian Sport" text="Similar but different tags:" />
+            <preset_link preset_name="Horse Racing" text="Similar but different tags:" />
+        </item> <!-- Horse Riding Center -->
         <item name="Club" icon="presets/leisure/club.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Key:club" />
             <space />
@@ -5115,6 +5137,16 @@
                 <reference ref="common_advertising" />
             </optional>
         </item> <!-- Poster box -->
+        <separator/>
+        <item name="Animal breeding" icon="presets/misc/animal_breeding.svg" type="node,closedway,multipolygon" preset_name_label="true">
+            <link wiki="Tag:amenity=animal_breeding" />
+            <space />
+            <key key="amenity" value="animal_breeding" />
+            <reference ref="name_operator" />
+            <multiselect key="animal_breeding" text="Animals bred" values="alpaca;bird;cat;chicken;cow;dog;donkey;fish;goat:sheep;horse;pig;poultry;rabbit" values_context="animal_breeding" />
+            <reference ref="oh_wheelchair" />
+            <reference ref="link_contact_address_payment" />
+        </item> <!-- Animal breeding -->
     </group> <!-- Facilities -->
   </group>  <!-- Facilities -->
   <group name="Sports" icon="presets/sport/soccer.svg">
@@ -5363,19 +5395,35 @@
             <combo key="leisure" text="Type" values="pitch,sports_centre,stadium,track" values_context="racing" />
             <reference ref="sport_surface" />
         </item> <!-- Dog Racing -->
-        <item name="Equestrian" icon="presets/sport/equestrian.svg" type="node,closedway,multipolygon" preset_name_label="true">
+        <item name="Equestrian Sport" icon="presets/sport/equestrian.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Tag:sport=equestrian" />
             <space />
             <key key="sport" value="equestrian" />
             <text key="name" text="Name" />
+            <combo key="leisure" text="Type" default="pitch" values_context="riding" values_sort="false">
+                <list_entry value="pitch" display_value="Horse Riding Arena" icon="presets/sport/pitch.svg" />
+                <list_entry value="horse_riding" display_value="Horse Riding Center" icon="presets/leisure/horse_riding.svg" />
+                <list_entry value="sports_centre" display_value="Sports Centre" icon="presets/sport/sports_centre.svg" />
+                <list_entry value="stadium" display_value="Stadium" icon="presets/sport/stadium.svg" />
+                <list_entry value="track" display_value="Racetrack" icon="presets/sport/track.svg" />
+            </combo>        
             <reference ref="riding_surface" />
-        </item> <!-- Equestrian -->
+            <preset_link preset_name="Horse Riding Center" text="Similar but different tags:" />
+            <preset_link preset_name="Horse Racing" text="Similar but different tags:" />
+        </item> <!-- Equestrian Sport -->
         <item name="Horse Racing" icon="presets/sport/riding.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Tag:sport=horse_racing" />
             <space />
             <key key="sport" value="horse_racing" />
             <text key="name" text="Name" />
+            <combo key="leisure" text="Type" values_context="riding" values_sort="false">
+                <list_entry value="sports_centre" display_value="Sports Centre" icon="presets/sport/sports_centre.svg" />
+                <list_entry value="stadium" display_value="Stadium" icon="presets/sport/stadium.svg" />
+                <list_entry value="track" display_value="Racetrack" icon="presets/sport/track.svg" />
+            </combo>        
             <reference ref="riding_surface" />
+            <preset_link preset_name="Equestrian Sport" text="Similar but different tags:" />
+            <preset_link preset_name="Horse Riding Center" text="Similar but different tags:" />
         </item> <!-- Horse Racing -->
         <item name="Gymnastics" icon="presets/sport/gymnastics.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Tag:sport=gymnastics" />
@@ -5682,7 +5730,7 @@
         <item name="Building" icon="presets/landmark/building.svg" type="node,closedway,multipolygon" preset_name_label="true">
             <link wiki="Key:building" />
             <space />
-            <combo key="building" text="Building" values="allotment_house,bakehouse,barn,basilica,boathouse,bunker,cabin,carport,cathedral,chapel,church,college,commercial,construction,cowshed,digester,farm_auxiliary,fire_station,garage,garages,gasometer,gatehouse,grandstand,greenhouse,hangar,hospital,industrial,kindergarten,kiosk,manufacture,monastery,mosque,office,pavilion,parking,public,retail,roof,ruins,school,service,shed,silo,sports_centre,stable,storage_tank,sty,supermarket,synagogue,temple,tent,toilets,train_station,transformer_tower,transportation,university,warehouse,yes" values_context="building" default="yes" match="keyvalue!" values_searchable="true" />
+            <combo key="building" text="Building" values="allotment_house,bakehouse,barn,basilica,boathouse,bunker,cabin,carport,cathedral,chapel,church,college,commercial,construction,cowshed,digester,farm_auxiliary,fire_station,garage,garages,gasometer,gatehouse,grandstand,greenhouse,hangar,hospital,industrial,kindergarten,kiosk,manufacture,monastery,mosque,office,pavilion,parking,public,retail,riding_hall,roof,ruins,school,service,shed,silo,sports_centre,sports_hall,stable,storage_tank,sty,supermarket,synagogue,temple,tent,toilets,train_station,transformer_tower,transportation,university,warehouse,yes" values_context="building" default="yes" match="keyvalue!" values_searchable="true" />
             <optional>
                 <reference ref="name_operator" />
                 <combo key="building:levels" text="Levels above ground" values="1,2,3,4,5,6,7,8,9,10,11" text_context="building" />
@@ -5706,7 +5754,7 @@
         <item name="Building part" icon="presets/landmark/building.svg" type="closedway,multipolygon" preset_name_label="true">
             <link wiki="Key:building:part" />
             <space />
-            <combo key="building:part" text="Building part" values="allotment_house,bakehouse,barn,college,commercial,construction,cowshed,farm_auxiliary,garage,garages,greenhouse,hangar,hospital,industrial,office,parking,retail,roof,ruins,school,shed,supermarket,toilets,transportation,university,warehouse,yes" values_context="building" default="yes" match="keyvalue!" values_searchable="true" />
+            <combo key="building:part" text="Building part" values="allotment_house,bakehouse,barn,college,commercial,construction,cowshed,farm_auxiliary,garage,garages,greenhouse,hangar,hospital,industrial,office,parking,retail,riding_hall,roof,ruins,school,shed,sports_centre,sports_hall,supermarket,toilets,transportation,university,warehouse,yes" values_context="building" default="yes" match="keyvalue!" values_searchable="true" />
             <combo key="building:levels" text="Levels above ground" values="1,2,3,4,5,6,7,8,9,10,11" text_context="building" />
             <combo key="building:min_level" text="Skipped Levels" values="1,2,3,4,5,6,7,8,9,10" text_context="building" />
             <combo key="building:levels:underground" text="Levels below ground" values="1,2,3,4,5,6,7,8,9,10,11" text_context="building" />
@@ -6981,7 +7029,7 @@
             <link wiki="Tag:historic=archaeological_site" />
             <space />
             <key key="historic" value="archaeological_site" />
-            <combo key="site_type" text="Type" values="tumulus,megalith,fortification,settlement,necropolis,city" />
+            <combo key="archaeological_site" text="Type" values="baths,catacombs,city,crannog,enclosure,fortification,geoglyph,grave_field,petroglyph,hut_circle,megalith,necropolis,roman_circus,roman_theater,roman_villa,settlement,tumulus" />
             <reference ref="name_oh_wheelchair" />
         </item> <!-- Archaeological Site -->
         <item name="Battlefield" icon="presets/sightseeing/battlefield.svg" type="node,closedway,multipolygon" preset_name_label="true">
