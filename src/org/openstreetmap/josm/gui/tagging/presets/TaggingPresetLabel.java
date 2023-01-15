@@ -17,8 +17,7 @@ import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 /**
  * A hyperlink {@link JLabel} that opens a preset dialog.
  * <p>
- * To indicate that the user can click on the text, it displays an appropriate
- * mouse cursor and dotted underline when the mouse is inside the hover area.
+ * On mouse hover it displays an appropriate mouse cursor and a dotted underline.
  * <p>
  * Works in 3 environments:
  * <ul>

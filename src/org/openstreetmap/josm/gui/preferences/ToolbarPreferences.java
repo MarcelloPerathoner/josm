@@ -4,13 +4,10 @@ package org.openstreetmap.josm.gui.preferences;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -54,6 +51,7 @@ import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.MenuElement;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.PopupMenuEvent;
@@ -81,6 +79,7 @@ import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetListener;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.ReorderableTableModel;
+import org.openstreetmap.josm.gui.util.TableHelper;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -927,71 +926,45 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
 
             final JPanel left = new JPanel(new GridBagLayout());
             left.add(new JLabel(tr("Toolbar")), GBC.eol());
-            left.add(new JScrollPane(selectedList), GBC.std().fill(GBC.BOTH));
+            left.add(new JScrollPane(selectedList), GBC.eol().fill());
 
             final JPanel right = new JPanel(new GridBagLayout());
             right.add(new JLabel(tr("Available")), GBC.eol());
-            right.add(new JScrollPane(actionsTree), GBC.eol().fill(GBC.BOTH));
+            right.add(new JScrollPane(actionsTree), GBC.eol().fill());
 
-            final JPanel buttons = new JPanel(new GridLayout(6, 1));
-            buttons.add(upButton);
-            buttons.add(addButton);
-            buttons.add(removeButton);
-            buttons.add(downButton);
+            JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
+            toolbar.setFloatable(false);
+            toolbar.setBorderPainted(false);
+            toolbar.setOpaque(false);
+            toolbar.add(upButton);
+            toolbar.add(addButton);
+            toolbar.add(removeButton);
+            toolbar.add(downButton);
             updateEnabledState();
 
-            final JPanel p = new JPanel();
-            p.setLayout(new LayoutManager() {
-                @Override
-                public void addLayoutComponent(String name, Component comp) {
-                    // Do nothing
-                }
+            final JPanel p = new JPanel(new GridBagLayout());
 
-                @Override
-                public void removeLayoutComponent(Component comp) {
-                    // Do nothing
-                }
-
-                @Override
-                public Dimension minimumLayoutSize(Container parent) {
-                    Dimension l = left.getMinimumSize();
-                    Dimension r = right.getMinimumSize();
-                    Dimension b = buttons.getMinimumSize();
-                    return new Dimension(l.width+b.width+10+r.width, l.height+b.height+10+r.height);
-                }
-
-                @Override
-                public Dimension preferredLayoutSize(Container parent) {
-                    Dimension l = new Dimension(200, 200);
-                    Dimension r = new Dimension(200, 200);
-                    return new Dimension(l.width+r.width+10+buttons.getPreferredSize().width, Math.max(l.height, r.height));
-                }
-
-                @Override
-                public void layoutContainer(Container parent) {
-                    Dimension d = p.getSize();
-                    Dimension b = buttons.getPreferredSize();
-                    int width = (d.width-10-b.width)/2;
-                    left.setBounds(new Rectangle(0, 0, width, d.height));
-                    right.setBounds(new Rectangle(width+10+b.width, 0, width, d.height));
-                    buttons.setBounds(new Rectangle(width+5, d.height/2-b.height/2, b.width, b.height));
-                }
-            });
-            p.add(left);
-            p.add(buttons);
-            p.add(right);
+            final JPanel tablesPanel = new JPanel(new GridBagLayout());
+            left.setPreferredSize(new Dimension(1,1));  // hack! make those 2 the same width
+            right.setPreferredSize(new Dimension(1,1)); // now fill() will expand them to the same size
+            tablesPanel.add(left, GBC.std().fill());
+            tablesPanel.add(toolbar, GBC.std().anchor(GridBagConstraints.CENTER));
+            tablesPanel.add(right, GBC.eol().fill());
+            p.add(tablesPanel, GBC.eop().fill());
 
             actionParametersPanel = new JPanel(new GridBagLayout());
-            actionParametersPanel.add(new JLabel(tr("Action parameters")), GBC.eol().insets(0, 10, 0, 20));
+            actionParametersPanel.add(new JLabel(tr("Action parameters")), GBC.eop());
             actionParametersTable.getColumnModel().getColumn(0).setHeaderValue(tr("Parameter name"));
             actionParametersTable.getColumnModel().getColumn(1).setHeaderValue(tr("Parameter value"));
-            actionParametersPanel.add(actionParametersTable.getTableHeader(), GBC.eol().fill(GBC.HORIZONTAL));
-            actionParametersPanel.add(actionParametersTable, GBC.eol().fill(GBC.BOTH).insets(0, 0, 0, 10));
+            actionParametersPanel.add(actionParametersTable.getTableHeader(), GBC.eol().fill(GridBagConstraints.HORIZONTAL));
+            actionParametersPanel.add(actionParametersTable, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
             actionParametersPanel.setVisible(false);
+            TableHelper.setRowHeight(actionParametersTable);
+
+            p.add(actionParametersPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
 
             JPanel panel = gui.createPreferenceTab(this);
-            panel.add(p, GBC.eol().fill(GBC.BOTH));
-            panel.add(actionParametersPanel, GBC.eol().fill(GBC.HORIZONTAL));
+            panel.add(decorate(p), GBC.eol().fill());
             selected.removeAllElements();
             for (ActionDefinition actionDefinition: getDefinedActions()) {
                 selected.addElement(actionDefinition);
@@ -1067,7 +1040,7 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
                         action.getClass().getName()));
                         continue;
                     } else if (!(tb instanceof String)) {
-                        if (!(tb instanceof Boolean) || (Boolean) tb) {
+                        if (!(tb instanceof Boolean) || (boolean) tb) {
                             Logging.info(tr("Strange toolbar value: {0}",
                             action.getClass().getName()));
                         }

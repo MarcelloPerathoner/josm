@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 
@@ -176,11 +176,11 @@ abstract class Item {
     /**
      * Creates the Swing components for this preset item and adds them to the panel.
      *
-     * @param p The panel where components must be added
+     * @param c The parent component where our components must be added
      * @param parent The instance of the parent Composite
      * @return {@code true} if this item adds semantic tagging elements, {@code false} otherwise.
      */
-    boolean addToPanel(JPanel p, Composite.Instance parent) {
+    boolean addToPanel(JComponent c, Composite.Instance parent) {
         return false;
     }
 

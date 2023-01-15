@@ -20,7 +20,6 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionPriority;
@@ -102,7 +101,7 @@ final class Combo extends ComboMultiSelect {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         TaggingPreset.Instance presetInstance = parentInstance.getPresetInstance();
         Usage usage = Usage.determineTextUsage(presetInstance.getSelected(), key);
         seenValues.clear();

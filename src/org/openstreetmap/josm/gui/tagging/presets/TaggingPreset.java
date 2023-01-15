@@ -2,14 +2,9 @@
 package org.openstreetmap.josm.gui.tagging.presets;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
-import static org.openstreetmap.josm.tools.I18n.trn;
-import static org.openstreetmap.josm.tools.I18n.marktr;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,15 +21,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
@@ -51,23 +43,17 @@ import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
-import org.openstreetmap.josm.data.preferences.NamedColorProperty;
-import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.gui.dialogs.relation.RelationEditor;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
-import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.CloneDataSetHandler;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
-import org.openstreetmap.josm.tools.GBC;
-import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ListenerList;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Pair;
-import org.openstreetmap.josm.tools.StreamUtils;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.template_engine.TemplateEngineDataProvider;
 import org.openstreetmap.josm.tools.template_engine.TemplateEntry;
@@ -85,7 +71,7 @@ import org.openstreetmap.josm.tools.template_engine.TemplateEntry;
  */
 public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimitive> {
     /** Show the preset name and icon in the dialog if true */
-    private final boolean showPresetName;
+    boolean showPresetName;
     /** The OSM primitive types this preset can be applied to. */
     private final Set<TaggingPresetType> types;
     /**
@@ -98,9 +84,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     /** The match_expression */
     private final Match matchExpression;
     /** Minimum width in em */
-    private final int minWidth;
-    /** Same size as on JButton set from action. */
-    private final ImageProvider.ImageSizes ICONSIZE = ImageProvider.ImageSizes.LARGEICON;
+    final int minWidth;
     /** A cache of all items relevant to the matching algorithm. */
     private final List<KeyedItem> matchItemsCache = new ArrayList<>();
     /**
@@ -255,7 +239,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         /** whether to fire data changed events or not */
         private boolean fireDataChange;
         /** The swing dialog */
-        private TaggingPresetDialog dialog;
+        TaggingPresetDialog dialog;
 
         Instance(TaggingPreset item, TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
             super(item, null);
@@ -396,8 +380,22 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             return result;
         }
 
+        /**
+         * Fills in the tags.
+         * @param tags a map of tags
+         */
+        public void fillIn(Map<String, String> tags) {
+            tags.forEach((key, value) -> {
+                Item.Instance itemInstance = getInstance(key);
+                if (itemInstance != null)
+                    itemInstance.setValue(value);
+            });
+            fireChangeEvent(this);
+        }
+
         @Override
         public void highlight(Color color, String tooltip) {
+            // override this
         }
 
         /**
@@ -419,10 +417,9 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             }
             for (Item.Instance instance : instances.values()) {
                 Item item = instance.getItem();
-                if (item instanceof InteractiveItem) {
-                    if (key == null || ((InteractiveItem) item).getKey().equals(key)) {
-                        instance.highlight(color, message);
-                    }
+                if (item instanceof InteractiveItem &&
+                        (key == null || ((InteractiveItem) item).getKey().equals(key))) {
+                    instance.highlight(color, message);
                 }
             }
         }
@@ -479,6 +476,14 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         }
 
         /**
+         * Adds a new change listener
+         * @param listener the listener to add
+         */
+        public void removeListener(ChangeListener listener) {
+            listeners.removeListener(listener);
+        }
+
+        /**
          * Notifies all listeners that a preset item input has changed.
          * @param source the source of this event
          */
@@ -505,6 +510,12 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         public boolean evaluateCondition(SearchCompiler.Match condition) {
             return condition.match(Tagged.ofMap(getCurrentTags()));
         }
+    }
+
+    JPanel buildPresetPanel(Instance instance){
+        JPanel panel = new JPanel(new GridBagLayout());
+        addToPanel(panel, instance);
+        return panel;
     }
 
     @Override
@@ -547,50 +558,6 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     }
 
     /**
-     * Build the panel at the head of the preset dialog.
-     * @return the panel
-     */
-    JPanel buildHeadPanel() {
-        final JPanel headPanel = new JPanel(new GridBagLayout());
-        JLabel label;
-        int x = 0;
-        GBC gbc = GBC.std().insets(0, 0, 5, 0);
-
-        // the preset icon
-        if (showPresetName) {
-            headPanel.add(new JLabel(getIcon(Action.LARGE_ICON_KEY)), gbc.grid(x++, 0));
-        }
-        // the supported types icons
-        for (TaggingPresetType t : types) {
-            label = new JLabel(ImageProvider.get(t.getIconName(), ICONSIZE));
-            label.setToolTipText(tr("Elements of type {0} are supported.", tr(t.getName())));
-            headPanel.add(label, gbc.grid(x++, 0));
-        }
-        // the "also sets" icon
-        final List<Key> keys = getAllItems(Key.class);
-        if (!keys.isEmpty()) {
-            label = new JLabel(ImageProvider.get("pastetags", ICONSIZE));
-            label.setToolTipText("<html>" + tr("This preset also sets: {0}",
-                keys.stream().map(k -> {
-                    return k.getKey() + "=" + k.getValue(); }).collect(StreamUtils.toHtmlList())));
-            headPanel.add(label, gbc.grid(x++, 0));
-        }
-        // add horizontal glue
-        headPanel.add(new JLabel(), gbc.grid(x++, 0).fill(GBC.HORIZONTAL));
-
-        // the "pin" button
-        JToggleButton tb = new JToggleButton(new ToolbarButtonAction());
-        tb.setFocusable(false);
-        headPanel.add(tb, GBC.std(x++, 0).anchor(GBC.LINE_END));
-
-        // the full name of the preset
-        if (showPresetName) {
-            headPanel.add(new JLabel(getName()), GBC.std(0, 1).insets(0, 5, 0, 0).fill(GBC.HORIZONTAL).span(GBC.REMAINDER));
-        }
-        return headPanel;
-    }
-
-    /**
      * Shows the preset dialog and applies edits.
      * <p>
      * This function constructs and shows a dialog and applies any changes to the
@@ -603,7 +570,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     public int showDialog(TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
         TaggingPresetDialog dialog = prepareDialog(handler, autoCompletionManager);
         if (dialog != null)
-            dialog.showDialog();
+            dialog.setVisible(true);
         return processAnswer(dialog);
     }
 
@@ -611,14 +578,16 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
      * Prepares the dialog for showing.
      * @param handler a handler or null
      * @param autoCompletionManager an ac manager or null
-     * @return the dialog ready for showing
+     * @return the dialog ready for showing or null if it cannot be shown
      */
     public TaggingPresetDialog prepareDialog(TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
+        if (!isShowable())
+            return null;
+
         Instance instance = new Instance(this, handler, autoCompletionManager);
         Collection<? extends Tagged> selected = instance.getSelected();
-        TaggingPresetDialog dialog = new TaggingPresetDialog(this, instance);
-        instance.dialog = dialog;
 
+        // sanity checks
         boolean showNewRelation = types.contains(TaggingPresetType.RELATION);
         if (handler != null && selected.isEmpty() && !showNewRelation) {
             new Notification(
@@ -638,83 +607,9 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                     .show();
                 return null;
             }
-            selected = filtered;
         }
 
-        int size = selected.size();
-        if (handler == null) {
-            dialog.setTitle(this.getName());
-        } else if (size > 0) {
-            dialog.setTitle(trn("Change {0} object", "Change {0} objects", size, size));
-            dialog.disableApplyButton = handler != null && handler.isReadOnly();
-        } else {
-            dialog.setTitle(tr("New Relation"));
-            dialog.showNewRelationButton = true;
-            dialog.disableApplyButton = true;
-        }
-
-        if (showPresetName)
-            dialog.setIconImage(getIcon(Action.SMALL_ICON).getImage());
-
-        JPanel panel = new JPanel(new GridBagLayout()) {
-            /**
-             * This hack allows the items to have their own orientation.
-             *
-             * The problem is that
-             * {@link org.openstreetmap.josm.gui.ExtendedDialog#showDialog ExtendedDialog} calls
-             * {@code applyComponentOrientation} very late in the dialog construction process thus
-             * overwriting the orientation the components have chosen for themselves.
-             *
-             * This stops the propagation of {@code applyComponentOrientation}, thus all
-             * {@code TaggingPresetItem}s may (and have to) set their own orientation.
-             */
-            @Override
-            public void applyComponentOrientation(ComponentOrientation o) {
-                setComponentOrientation(o);
-            }
-        };
-        JPanel headPanel = buildHeadPanel();
-        panel.add(headPanel, GBC.eol().fill(GBC.HORIZONTAL));
-        addToPanel(panel, instance);
-
-        // the validator crashes if a primitive is not in a dataset
-        if (TaggingPresets.USE_VALIDATOR.get() && handler instanceof DataSetHandler) {
-            final Color ERROR_BACKGROUND = new NamedColorProperty(
-                marktr("Input validation: error"), Color.RED).get();
-            new TaggingPresetValidator(instance, (DataSetHandler) handler, (errors) -> {
-                instance.highlight(null, null, null);
-                Map<String, String> key2msg = new HashMap<>();
-                for (TestError e : errors) {
-                    String message = e.getDescription() == null ? e.getMessage() :
-                            tr("<html>{0}<br>{1}", e.getMessage(), e.getDescription());
-                    e.getKeys().forEach(k -> key2msg.put(k, message));
-                }
-                key2msg.forEach((k, msg) -> instance.highlight(k, ERROR_BACKGROUND, msg));
-            });
-        }
-
-        // set preferred size
-        if (minWidth > 0) {
-            FontMetrics fontMetrics = panel.getFontMetrics(panel.getFont());
-            int emWidth = fontMetrics.charWidth('m');
-            Dimension dim = panel.getPreferredSize();
-            dim.width = emWidth * minWidth;
-            panel.setPreferredSize(dim);
-            dim = panel.getMinimumSize();
-            dim.width = emWidth * minWidth;
-            panel.setMinimumSize(dim);
-        }
-
-        dialog.setContent(panel);
-
-        if (isShowable()) {
-            dialog.setupDialog();
-            // trigger initial updates once
-            instance.setFireDataChanged(true);
-            instance.fireChangeEvent(instance);
-            return dialog;
-        }
-        return null;
+        return new TaggingPresetDialog(instance);
     }
 
     /**
@@ -726,15 +621,13 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     public int processAnswer(TaggingPresetDialog dialog) {
         if (dialog == null)
             return TaggingPresetDialog.DIALOG_ANSWER_CANCEL;
-        int answer = dialog.getValue();
+        int answer = dialog.answer;
         if (answer == TaggingPresetDialog.DIALOG_ANSWER_CANCEL)
             return answer;
 
         Instance instance = dialog.presetInstance;
         TaggedHandler handler = instance.getHandler();
         Collection<? extends Tagged> selected = instance.getSelected();
-
-        instance.recalculateAll();
 
         if (answer == TaggingPresetDialog.DIALOG_ANSWER_APPLY && !instance.getSelected().isEmpty()) {
             // commit the changed tags
@@ -746,14 +639,13 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             Relation calculated = null;
             Map<String, String> currentTags = instance.getCurrentTags();
             String type = currentTags.get("type");
-            if ("boundary".equals(type) || "multipolygon".equals(type)) {
-                if (handler instanceof DataSetHandler) {
-                    Collection<OsmPrimitive> primitives = ((DataSetHandler) handler).get();
-                    Collection<Way> ways = Utils.filteredCollection(primitives, Way.class);
-                    Pair<Relation, Relation> res = CreateMultipolygonAction.createMultipolygonRelation(ways, true);
-                    if (res != null) {
-                        calculated = res.b;
-                    }
+            if (("boundary".equals(type) || "multipolygon".equals(type)) &&
+                    handler instanceof DataSetHandler) {
+                Collection<OsmPrimitive> primitives = ((DataSetHandler) handler).get();
+                Collection<Way> ways = Utils.filteredCollection(primitives, Way.class);
+                Pair<Relation, Relation> res = CreateMultipolygonAction.createMultipolygonRelation(ways, true);
+                if (res != null) {
+                    calculated = res.b;
                 }
             }
             final Relation r = calculated != null ? calculated : new Relation();
@@ -792,7 +684,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
      * @return {@code true} if a dialog can be shown for this preset
      */
     public boolean isShowable() {
-        return getAllItems(Item::isInteractive, true).size() > 0;
+        return !getAllItems(Item::isInteractive, true).isEmpty();
     }
 
     /**
@@ -812,7 +704,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                 .filter(role -> role.getMemberExpression() != null && role.getMemberExpression().match(osm))
                 .filter(role -> role.appliesTo(TaggingPresetType.forPrimitive(osm)))
                 .findFirst()
-                .map(i -> i.getKey())
+                .map(Role::getKey)
                 .orElse("");
     }
 
@@ -881,7 +773,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                 Boolean m = item.matches(tags);
                 if (Boolean.FALSE == m)
                     return false;
-                if (Boolean.TRUE == m)
+                if (Boolean.TRUE == m) // NOSONAR wrong, it can also be null
                      positiveMatches++;
             }
             return positiveMatches > 0;
@@ -901,9 +793,8 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         Set<String> keys = new HashSet<>();
         for (KeyedItem item : matchItemsCache) {
             Boolean m = item.matches(tags);
-            if (Boolean.TRUE == m)
-                if (!onlyRequiredKeys || item.isKeyRequired())
-                    keys.add(item.getKey());
+            if (Boolean.TRUE == m && (!onlyRequiredKeys || item.isKeyRequired()))
+                keys.add(item.getKey());
         }
         return keys;
     }
@@ -931,30 +822,6 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                     AutoCompletionManager.of(dataSet)
                 ));
             }
-        }
-    }
-
-    /**
-     * Action that "pins" the preset to the main toolbar
-     */
-    public class ToolbarButtonAction extends AbstractAction {
-        private final int toolbarIndex;
-
-        /**
-         * Constructs a new {@code ToolbarButtonAction}.
-         */
-        public ToolbarButtonAction() {
-            super("");
-            new ImageProvider("dialogs", "pin").getResource().attachImageIcon(this, true);
-            putValue(SHORT_DESCRIPTION, tr("Add or remove toolbar button"));
-            List<String> t = new ArrayList<>(ToolbarPreferences.getToolString());
-            toolbarIndex = t.indexOf(getToolbarString());
-            putValue(SELECTED_KEY, toolbarIndex >= 0);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent ae) {
-            MainApplication.getToolbar().addCustomButton(getToolbarString(), toolbarIndex, true);
         }
     }
 }

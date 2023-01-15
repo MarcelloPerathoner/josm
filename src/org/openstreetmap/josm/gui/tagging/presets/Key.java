@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
 import org.openstreetmap.josm.data.osm.Tag;
 
@@ -46,7 +46,7 @@ final class Key extends KeyedItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         parentInstance.putInstance(this, new Instance(this, parentInstance));
         return false;
     }

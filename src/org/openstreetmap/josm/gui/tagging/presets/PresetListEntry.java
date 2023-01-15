@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
 import org.openstreetmap.josm.gui.widgets.JosmListCellRenderer;
@@ -161,7 +161,7 @@ final class PresetListEntry extends Item {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         return false;
     }
 

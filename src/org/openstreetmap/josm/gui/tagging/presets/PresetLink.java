@@ -5,8 +5,8 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
@@ -58,15 +58,14 @@ final class PresetLink extends TextItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         TaggingPreset.Instance presetInstance = parentInstance.getPresetInstance();
-        TaggingPresetDialog dialog = presetInstance.getDialog();
         TaggedHandler handler = presetInstance.getHandler();
         if (handler instanceof DataSetHandler) {
             for (TaggingPreset preset : MainApplication.getTaggingPresets().getAllPresets()) {
                 if (presetName.equals(preset.getBaseName())) {
                     JLabel lbl = new TaggingPresetLabel(handler, preset, presetInstance);
-                    lbl.applyComponentOrientation(dialog.getDefaultComponentOrientation());
+                    lbl.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
                     p.add(lbl, GBC.eol());
                     break;
                 }

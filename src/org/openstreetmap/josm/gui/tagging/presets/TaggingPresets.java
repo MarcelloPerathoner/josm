@@ -30,7 +30,14 @@ import org.openstreetmap.josm.gui.preferences.map.TaggingPresetPreference;
 import org.openstreetmap.josm.tools.MultiMap;
 
 /**
- * Class holding Tagging Presets and allowing to manage them.
+ * The Tagging Presets System.
+ * <p>
+ * The preset system has many uses:
+ * <ul>
+ * <li>To let users edit osm primitives in an easy intuitive way,
+ * <li>to generate custom names for primitives, and
+ * <li>to give information about standard tags for a given primitive.
+ * </ul>
  * <p>
  * TaggingPresets used to be a global static class, but that caused troubles with unit
  * testing, especially:
@@ -211,6 +218,9 @@ public final class TaggingPresets {
 
     /**
      * Replies a new collection of all presets matching the parameters.
+     * <p>
+     * To open a dialog, request only showable presets. To obtain information about
+     * standard tags request all presets.
      *
      * @param types the preset types (or null to match any preset type)
      * @param tags the tags to perform matching on

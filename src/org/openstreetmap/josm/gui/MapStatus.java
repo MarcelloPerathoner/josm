@@ -135,28 +135,28 @@ public final class MapStatus extends JPanel implements
      * @since 6789
      */
     public static final NamedColorProperty PROP_BACKGROUND_COLOR = new NamedColorProperty(
-            marktr("Status bar background"), ColorHelper.html2color("#b8cfe5"));
+            marktr("Status bar background"), UIManager.getColor("ToolBar.background")); // ColorHelper.html2color("#b8cfe5"));
 
     /**
      * Property for map status background color (active state).
      * @since 6789
      */
     public static final NamedColorProperty PROP_ACTIVE_BACKGROUND_COLOR = new NamedColorProperty(
-            marktr("Status bar background: active"), ColorHelper.html2color("#aaff5e"));
+            marktr("Status bar background: active"), UIManager.getColor("ToolBar.light")); // ColorHelper.html2color("#aaff5e"));
 
     /**
      * Property for map status foreground color.
      * @since 6789
      */
     public static final NamedColorProperty PROP_FOREGROUND_COLOR = new NamedColorProperty(
-            marktr("Status bar foreground"), Color.black);
+            marktr("Status bar foreground"), UIManager.getColor("ToolBar.foreground")); // Color.black);
 
     /**
      * Property for map status foreground color (active state).
      * @since 6789
      */
     public static final NamedColorProperty PROP_ACTIVE_FOREGROUND_COLOR = new NamedColorProperty(
-            marktr("Status bar foreground: active"), Color.black);
+            marktr("Status bar foreground: active"), UIManager.getColor("ToolBar.foreground")); // Color.black);
 
     /**
      * The MapView this status belongs to.

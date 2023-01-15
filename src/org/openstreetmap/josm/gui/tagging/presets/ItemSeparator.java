@@ -3,7 +3,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.JSeparator;
 
 import org.openstreetmap.josm.tools.GBC;
@@ -29,7 +29,7 @@ final class ItemSeparator extends Item {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         p.add(new JSeparator(), GBC.eol().fill(GBC.HORIZONTAL).insets(0, 5, 0, 5));
         return false;
     }

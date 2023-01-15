@@ -26,7 +26,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -84,10 +83,9 @@ import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
-import org.openstreetmap.josm.tools.ImageResizeMode;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
-import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
 /**
  * One Map frame with one dataset behind. This is the container gui class whose
@@ -650,19 +648,16 @@ public class MapFrame extends JPanel implements Destroyable, ActiveLayerChangeLi
 
         ListAllButtonsAction(Collection<? extends HideableButton> buttons) {
             this.buttons = buttons;
-            Icon icon = new ImageProvider("misc", "minimized")
-                .setSize(ImageSizes.TOOLBAR).setImageResizeMode(ImageResizeMode.PADDED).get();
-            putValue(SMALL_ICON, icon);
+            new ImageProvider("misc", "minimized")
+                .setSize(ImageSizes.TOOLBAR)
+                // .setImageResizeMode(ImageResizeMode.PADDED)
+                .getResource().attachImageIcon(this);
         }
 
         JButton createButton() {
-            button = new JButton(this) {
-                @Override
-                public Dimension getPreferredSize() {
-                    return ImageSizes.TOOLBAR.getImageDimension();
-                }
-            };
+            button = new JButton(this);
             button.setInheritsPopupMenu(true);
+            button.setAlignmentX(0.5f);
             return button;
         }
 

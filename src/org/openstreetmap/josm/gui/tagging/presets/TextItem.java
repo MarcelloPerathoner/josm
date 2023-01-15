@@ -7,6 +7,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import org.openstreetmap.josm.tools.ImageProvider;
+
 /**
  * A tagging preset item displaying a localizable text.
  * @since 6190
@@ -73,7 +75,8 @@ abstract class TextItem extends Item {
      * @since 17605
      */
     ImageIcon getIcon() {
-        return icon == null ? null : TaggingPresetUtils.loadImageIcon(icon, TaggingPresetReader.getZipIcons(), iconSize);
+        return icon == null ? null : TaggingPresetUtils.loadImageIcon(
+            icon, TaggingPresetReader.getZipIcons(), iconSize);
     }
 
     @Override

@@ -11,7 +11,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -315,7 +314,7 @@ public class RemoteEntry implements IImageEntry<RemoteEntry>, ImageMetadata {
 
     @Override
     public void selectImage(ImageViewerDialog imageViewerDialog, IImageEntry<?> entry) {
-        imageViewerDialog.displayImages(Collections.singletonList(entry));
+        IImageEntry.super.selectImage(imageViewerDialog, entry);
     }
 
     @Override

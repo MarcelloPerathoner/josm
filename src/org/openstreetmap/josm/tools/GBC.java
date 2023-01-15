@@ -107,6 +107,17 @@ public final class GBC extends GridBagConstraints {
     }
 
     /**
+     * Adds insets to this GBC.
+     * @param insets The insets in all directions.
+     * @return This constraint for chaining.
+     * @since xxx
+     */
+    public GBC insets(Insets insets) {
+        this.insets = insets;
+        return this;
+    }
+
+    /**
      * Specifies how to distribute extra horizontal space.
      * @param weightx   Weight in horizontal direction
      * @param weighty   Weight in vertical direction
@@ -130,6 +141,17 @@ public final class GBC extends GridBagConstraints {
         short maxx = x > 0 ? Short.MAX_VALUE : 0;
         short maxy = y > 0 ? Short.MAX_VALUE : 0;
         return new Box.Filler(new Dimension(x, y), new Dimension(x, y), new Dimension(maxx, maxy));
+    }
+
+    /**
+     * This is a helper to easily create a skip with a fixed value.
+     * @param x The width
+     * @param y The height
+     * @return the skip component
+     */
+    public static Component skip(int x, int y) {
+        Dimension dimen = new Dimension (x, y);
+        return new Box.Filler(dimen, dimen, dimen);
     }
 
     /**

@@ -20,7 +20,7 @@ import javax.swing.JRadioButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
+import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.gui.widgets.SelectAllOnFocusGainedDecorator;
 import org.openstreetmap.josm.plugins.PluginHandler;
@@ -91,8 +91,8 @@ public class PluginUpdatePolicyPanel extends JPanel {
         rbVersionBasedUpatePolicy.put(Policy.NEVER, btn);
         bgVersionBasedUpdatePolicy.add(btn);
 
-        JMultilineLabel lbl = new JMultilineLabel(
-                tr("Please decide whether JOSM shall automatically update active plugins at startup after an update of JOSM itself."));
+        JPanel lbl = new HtmlPanel(
+            tr("Please decide whether JOSM shall automatically update active plugins at startup after an update of JOSM itself."));
         gc.gridy = 0;
         pnl.add(lbl, gc);
         for (Policy p: Policy.values()) {
@@ -137,7 +137,7 @@ public class PluginUpdatePolicyPanel extends JPanel {
         rbTimeBasedUpatePolicy.put(Policy.NEVER, btn);
         bgTimeBasedUpdatePolicy.add(btn);
 
-        JMultilineLabel lbl = new JMultilineLabel(
+        JPanel lbl = new HtmlPanel(
                 tr("Please decide whether JOSM shall automatically update active plugins after a certain period of time."));
         gc.gridy = 0;
         pnl.add(lbl, gc);

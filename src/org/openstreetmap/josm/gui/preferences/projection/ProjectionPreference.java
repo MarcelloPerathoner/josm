@@ -3,8 +3,8 @@ package org.openstreetmap.josm.gui.preferences.projection;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-import java.awt.Component;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,12 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
@@ -330,10 +328,8 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
     private final JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
 
     private final JLabel projectionCodeLabel = new JLabel(tr("Projection code"));
-    private final Component projectionCodeGlue = GBC.glue(5, 0);
     private final JLabel projectionCode = new JLabel();
     private final JLabel projectionNameLabel = new JLabel(tr("Projection name"));
-    private final Component projectionNameGlue = GBC.glue(5, 0);
     private final JLabel projectionName = new JLabel();
     private final JLabel bounds = new JLabel();
 
@@ -341,13 +337,6 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
      * This is the panel holding all projection preferences
      */
     private final VerticallyScrollablePanel projPanel = new VerticallyScrollablePanel(new GridBagLayout());
-
-    /**
-     * The GridBagConstraints for the Panel containing the ProjectionSubPrefs.
-     * This is required twice in the code, creating it here keeps both occurrences
-     * in sync
-     */
-    private static final GBC projSubPrefPanelGBC = GBC.std().fill(GBC.BOTH).weight(1.0, 1.0);
 
     /**
      * Constructs a new {@code ProjectionPreference}.
@@ -370,25 +359,33 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
 
         unitsCombo.setSelectedItem(SystemOfMeasurement.getSystemOfMeasurement());
 
-        projPanel.add(new JLabel(tr("Projection method")), GBC.std().insets(5, 5, 0, 5));
-        projPanel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(projectionCombo, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(projectionCodeLabel, GBC.std().insets(25, 5, 0, 5));
-        projPanel.add(projectionCodeGlue, GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(projectionCode, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(projectionNameLabel, GBC.std().insets(25, 5, 0, 5));
-        projPanel.add(projectionNameGlue, GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(projectionName, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(new JLabel(tr("Bounds")), GBC.std().insets(25, 5, 0, 5));
-        projPanel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(bounds, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(projSubPrefPanelWrapper, GBC.eol().fill(GBC.HORIZONTAL).insets(20, 5, 5, 5));
+        Insets rightMargin = new Insets(0, 0, 0, 10);
+        GBC std = GBC.std().insets(rightMargin);
+        GBC eol = GBC.eol();
+        Insets indent = addInsets(getIndent(), rightMargin);
+        GBC ind = GBC.std().insets(indent);
+
+        projPanel.add(new JLabel(tr("Projection method")), std);
+        projPanel.add(projectionCombo, GBC.eol().weight(1, 0));
+        projPanel.add(vSkip(), eol);
+
+        projPanel.add(projectionCodeLabel, ind);
+        projPanel.add(projectionCode, eol);
+
+        projPanel.add(projectionNameLabel, ind);
+        projPanel.add(projectionName, eol);
+
+        projPanel.add(new JLabel(tr("Bounds")), ind);
+        projPanel.add(bounds, eol);
+        projPanel.add(vSkip(), eol);
+
+        projPanel.add(projSubPrefPanelWrapper, GBC.eol().insets(indent));
 
         projectionCodeLabel.setLabelFor(projectionCode);
         projectionNameLabel.setLabelFor(projectionName);
 
         JButton btnSetAsDefault = new JButton(tr("Set as default"));
-        projPanel.add(btnSetAsDefault, GBC.eol().insets(5, 10, 5, 5));
+        projPanel.add(btnSetAsDefault, GBC.eop());
         btnSetAsDefault.addActionListener(e -> {
             ProjectionChoice pc2 = (ProjectionChoice) projectionCombo.getSelectedItem();
             String id = pc2.getId();
@@ -404,19 +401,16 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
         });
         ExpertToggleAction.addVisibilitySwitcher(btnSetAsDefault);
 
-        projPanel.add(new JSeparator(), GBC.eol().fill(GBC.HORIZONTAL).insets(0, 5, 0, 10));
-        projPanel.add(new JLabel(tr("Display coordinates as")), GBC.std().insets(5, 5, 0, 5));
-        projPanel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(coordinatesCombo, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(new JLabel(tr("System of measurement")), GBC.std().insets(5, 5, 0, 5));
-        projPanel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        projPanel.add(unitsCombo, GBC.eop().fill(GBC.HORIZONTAL).insets(0, 5, 5, 5));
-        projPanel.add(GBC.glue(1, 1), GBC.std().fill(GBC.HORIZONTAL).weight(1.0, 1.0));
+        projPanel.add(new JSeparator(), GBC.eop());
 
-        JScrollPane scrollPane = projPanel.getVerticalScrollPane();
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getViewport().setOpaque(false);
-        gui.createPreferenceTab(this).add(scrollPane, GBC.std().fill());
+        projPanel.add(new JLabel(tr("Display coordinates as")), std);
+        projPanel.add(coordinatesCombo, eol);
+        projPanel.add(vSkip(), eol);
+
+        projPanel.add(new JLabel(tr("System of measurement")), std);
+        projPanel.add(unitsCombo, eol);
+
+        gui.createPreferenceTab(this).add(decorateScrollable(projPanel), GBC.eol().fill());
 
         selectedProjectionChanged(pc);
     }
@@ -437,10 +431,8 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
             showName = ((SubPrefsOptions) pc).showProjectionName();
         }
         projectionCodeLabel.setVisible(showCode);
-        projectionCodeGlue.setVisible(showCode);
         projectionCode.setVisible(showCode);
         projectionNameLabel.setVisible(showName);
-        projectionNameGlue.setVisible(showName);
         projectionName.setVisible(showName);
     }
 
@@ -520,7 +512,7 @@ public class ProjectionPreference extends DefaultTabPreferenceSetting {
         // Replace old panel with new one
         projSubPrefPanelWrapper.removeAll();
         projSubPrefPanel = pc.getPreferencePanel(listener);
-        projSubPrefPanelWrapper.add(projSubPrefPanel, projSubPrefPanelGBC);
+        projSubPrefPanelWrapper.add(projSubPrefPanel, GBC.eop().fill());
         projPanel.revalidate();
         projSubPrefPanel.repaint();
         updateMeta(pc);

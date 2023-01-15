@@ -116,6 +116,11 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
 
     private UpdateImageThread updateImageThreadInstance;
 
+    /** The future completed when the image has loaded. */
+    transient Future<?> imageLoadingFuture;
+    boolean mayInterruptIfRunning = false;
+
+
     private class UpdateImageThread extends Thread {
         private boolean restart;
 
@@ -309,9 +314,10 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
                     selectedRect = null;
                     errorLoading = false;
                 }
-                ImageDisplay.this.repaint();
+                // ImageDisplay.this.repaint(); already done in updateProcessedImage()
             } catch (IOException ex) {
-                Logging.error(ex);
+                if (ex.getCause().getClass() != InterruptedException.class)
+                    Logging.error(ex);
             }
         }
     }
@@ -634,8 +640,11 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
      * @since 18246 (signature)
      */
     public Future<?> setImage(IImageEntry<?> entry) {
+        if (imageLoadingFuture != null)
+            imageLoadingFuture.cancel(mayInterruptIfRunning);
         LoadImageRunnable runnable = setImage0(entry);
-        return runnable != null && !MainApplication.worker.isShutdown() ? MainApplication.worker.submit(runnable) : null;
+        imageLoadingFuture = runnable != null && !MainApplication.worker.isShutdown() ? MainApplication.worker.submit(runnable) : null;
+        return imageLoadingFuture;
     }
 
     protected LoadImageRunnable setImage0(IImageEntry<?> entry) {
@@ -794,30 +803,18 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
         if (osdText != null) {
             FontMetrics metrics = g.getFontMetrics(g.getFont());
             int ascent = metrics.getAscent();
-            Color bkground = new Color(255, 255, 255, 128);
-            int lastPos = 0;
-            int pos = osdText.indexOf('\n');
+            Color bkground = getBackground();
+            Color foreground = getForeground();
             int x = 3;
             int y = 3;
-            String line;
-            while (pos > 0) {
-                line = osdText.substring(lastPos, pos);
+            for (String line : osdText.split("\\R")) { // Java8 newline
                 Rectangle2D lineSize = metrics.getStringBounds(line, g);
                 g.setColor(bkground);
                 g.fillRect(x, y, (int) lineSize.getWidth(), (int) lineSize.getHeight());
-                g.setColor(Color.black);
+                g.setColor(foreground);
                 g.drawString(line, x, y + ascent);
                 y += (int) lineSize.getHeight();
-                lastPos = pos + 1;
-                pos = osdText.indexOf('\n', lastPos);
             }
-
-            line = osdText.substring(lastPos);
-            Rectangle2D lineSize = g.getFontMetrics(g.getFont()).getStringBounds(line, g);
-            g.setColor(bkground);
-            g.fillRect(x, y, (int) lineSize.getWidth(), (int) lineSize.getHeight());
-            g.setColor(Color.black);
-            g.drawString(line, x, y + ascent);
         }
     }
 

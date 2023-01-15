@@ -16,9 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
-import org.openstreetmap.josm.gui.widgets.OrientationAction;
 import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.Logging;
@@ -107,16 +105,16 @@ abstract class ComboMultiSelect extends InteractiveItem {
     /**
      * Adds the label to the panel
      *
-     * @param p the panel
+     * @param c the panel
      * @return the label
      */
-    JLabel addLabel(JPanel p) {
+    JLabel addLabel(JComponent c) {
         final JLabel label = new JLabel(tr("{0}:", localeText));
         addIcon(label);
         label.setToolTipText(getKeyTooltipText());
         label.setComponentPopupMenu(getPopupMenu());
-        label.applyComponentOrientation(OrientationAction.getDefaultComponentOrientation());
-        p.add(label, GBC.std().insets(0, 0, 10, 0));
+        label.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
+        c.add(label, GBC.std().insets(0, 0, 10, 0));
         return label;
     }
 

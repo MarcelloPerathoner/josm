@@ -3,16 +3,15 @@ package org.openstreetmap.josm.gui.preferences.remotecontrol;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,6 +23,7 @@ import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.util.GuiHelper;
+import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
 import org.openstreetmap.josm.io.remotecontrol.PermissionPrefWithDefault;
 import org.openstreetmap.josm.io.remotecontrol.RemoteControl;
@@ -66,42 +66,33 @@ public final class RemoteControlPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public void addGui(final PreferenceTabbedPane gui) {
+        VerticallyScrollablePanel remote = new VerticallyScrollablePanel(new GridBagLayout());
 
-        JPanel remote = new VerticallyScrollablePanel(new GridBagLayout());
+        GBC eop = GBC.eop();
+        Insets indent = getIndent();
 
-        final JLabel descLabel = new JLabel("<html>"
-                + tr("Allows JOSM to be controlled from other applications, e.g. from a web browser.")
-                + "</html>");
-        descLabel.setFont(descLabel.getFont().deriveFont(Font.PLAIN));
-        remote.add(descLabel, GBC.eol().insets(5, 5, 0, 10).fill(GBC.HORIZONTAL));
-
-        final JLabel portLabel = new JLabel("<html>"
-                + tr("JOSM will always listen at <b>port {0}</b> (http) on localhost."
-                + "<br>This port is not configurable because it is referenced by external applications talking to JOSM.",
-                Config.getPref().get("remote.control.port", "8111")) + "</html>");
-        portLabel.setFont(portLabel.getFont().deriveFont(Font.PLAIN));
-        remote.add(portLabel, GBC.eol().insets(5, 5, 0, 10).fill(GBC.HORIZONTAL));
+        final JPanel descLabel = new HtmlPanel(
+            tr("Allows JOSM to be controlled from other applications, e.g. from a web browser.")
+            + tr("JOSM will always listen at <b>port {0}</b> (http) on localhost."
+            + "<p>This port is not configurable because it is referenced by external applications talking to JOSM.",
+            Config.getPref().get("remote.control.port", "8111")));
+        remote.add(descLabel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
 
         enableRemoteControl = new JCheckBox(tr("Enable remote control"), RemoteControl.PROP_REMOTECONTROL_ENABLED.get());
-        remote.add(enableRemoteControl, GBC.eol());
+        remote.add(enableRemoteControl, eop);
 
-        final JPanel wrapper = new JPanel(new GridBagLayout());
-        wrapper.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.gray)));
+        JPanel wrapper = new JPanel(new GridBagLayout());
 
-        remote.add(wrapper, GBC.eol().fill(GBC.HORIZONTAL).insets(5, 5, 5, 5));
-
-        wrapper.add(new JSeparator(), GBC.eop().fill(GBC.HORIZONTAL).insets(15, 5, 15, 5));
-
-        wrapper.add(new JLabel(tr("Permitted actions:")), GBC.eol().insets(5, 0, 0, 0));
+        wrapper.add(new JLabel(tr("Permitted actions:")), eop);
+        GBC ind = GBC.eol().insets(indent);
         for (JCheckBox p : prefs.values()) {
-            wrapper.add(p, GBC.eol().insets(15, 5, 0, 0).fill(GBC.HORIZONTAL));
+            wrapper.add(p, ind);
         }
 
-        wrapper.add(new JSeparator(), GBC.eop().fill(GBC.HORIZONTAL).insets(15, 5, 15, 5));
-        wrapper.add(loadInNewLayer, GBC.eol().fill(GBC.HORIZONTAL));
-        wrapper.add(alwaysAskUserConfirm, GBC.eol().fill(GBC.HORIZONTAL));
+        wrapper.add(new JSeparator(), eop);
 
-        remote.add(Box.createVerticalGlue(), GBC.eol().fill(GBC.VERTICAL));
+        wrapper.add(loadInNewLayer, GBC.eol());
+        wrapper.add(alwaysAskUserConfirm, GBC.eol());
 
         loadInNewLayer.setSelected(RequestHandler.LOAD_IN_NEW_LAYER.get());
         alwaysAskUserConfirm.setSelected(RequestHandler.GLOBAL_CONFIRMATION.get());
@@ -109,7 +100,9 @@ public final class RemoteControlPreference extends DefaultTabPreferenceSetting {
         ActionListener remoteControlEnabled = e -> GuiHelper.setEnabledRec(wrapper, enableRemoteControl.isSelected());
         enableRemoteControl.addActionListener(remoteControlEnabled);
         remoteControlEnabled.actionPerformed(null);
-        createPreferenceTabWithScrollPane(gui, remote);
+        remote.add(wrapper, GBC.eol().insets(getIndentForText()));
+
+        gui.createPreferenceTab(this).add(decorateScrollable(remote), GBC.eol().fill());
     }
 
     @Override

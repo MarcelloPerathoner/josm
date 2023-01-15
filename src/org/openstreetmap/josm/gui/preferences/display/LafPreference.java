@@ -4,19 +4,18 @@ package org.openstreetmap.josm.gui.preferences.display;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.ListCellRenderer;
@@ -32,7 +31,7 @@ import org.openstreetmap.josm.gui.MapMover;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.dialogs.properties.PropertiesDialog;
-
+import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
@@ -83,7 +82,6 @@ public class LafPreference implements SubPreferenceSetting {
      * ComboBox with all look and feels.
      */
     private JosmComboBox<LookAndFeelInfo> lafCombo;
-    VerticallyScrollablePanel panel;
     private final JCheckBox showSplashScreen = new JCheckBox(tr("Show splash screen at startup"));
     private final JCheckBox showUser = new JCheckBox(tr("Show user name in title"));
     private final JCheckBox showID = new JCheckBox(tr("Show object ID in selection lists"));
@@ -130,19 +128,21 @@ public class LafPreference implements SubPreferenceSetting {
 
         lafCombo.setRenderer(new LafListCellRenderer());
 
-        panel = new VerticallyScrollablePanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        VerticallyScrollablePanel panel = new VerticallyScrollablePanel(new GridBagLayout());
+        GBC std = GBC.std();
+        GBC eol = GBC.eol();
 
         // First the most important setting "Look and Feel" that changes the most
-        panel.add(new JLabel(tr("Look and Feel")), GBC.std().insets(20, 0, 0, 0));
-        panel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        panel.add(lafCombo, GBC.eol().fill(GBC.HORIZONTAL));
-        panel.add(new JSeparator(), GBC.eol().fill(GBC.HORIZONTAL).insets(0, 10, 0, 10));
+        panel.add(new JLabel(tr("Look and Feel")), std);
+        panel.add(DefaultTabPreferenceSetting.hGlue(), std);
+        panel.add(lafCombo, eol);
+        panel.add(DefaultTabPreferenceSetting.vSkip(), eol);
+
+        panel.add(new JSeparator(), GBC.eop().fill(GridBagConstraints.HORIZONTAL));
 
         // Show splash screen on startup
         showSplashScreen.setToolTipText(tr("Show splash screen at startup"));
         showSplashScreen.setSelected(Config.getPref().getBoolean("draw.splashscreen", true));
-        panel.add(showSplashScreen, GBC.eop().insets(20, 0, 0, 0));
 
         // Show user name in title
         showUser.setToolTipText(tr("Show user name in title"));
@@ -163,33 +163,37 @@ public class LafPreference implements SubPreferenceSetting {
         // Show localized names
         showLocalizedName.setToolTipText(tr("Show localized name in selection lists, if available"));
         showLocalizedName.setSelected(Config.getPref().getBoolean("osm-primitives.localize-name", true));
-        ExpertToggleAction.addVisibilitySwitcher(showLocalizedName);
 
+        // Modeless working
         modeless.setToolTipText(tr("Do not require to switch modes (potlatch style workflow)"));
         modeless.setSelected(MapFrame.MODELESS.get());
-        ExpertToggleAction.addVisibilitySwitcher(modeless);
 
-        panel.add(showUser, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(showID, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(showVersion, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(showCoor, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(showLocalizedName, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(modeless, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(showSplashScreen, eol);
+        panel.add(showUser, eol);
+        panel.add(showID, eol);
+        panel.add(showVersion, eol);
+        panel.add(showCoor, eol);
+        panel.add(showLocalizedName, eol);
+        panel.add(modeless, eol);
+
+        ExpertToggleAction.addVisibilitySwitcher(showLocalizedName);
+        ExpertToggleAction.addVisibilitySwitcher(modeless);
 
         previewPropsOnHover.setToolTipText(
                 tr("Show tags and relation memberships of objects in the properties dialog when hovering over them with the mouse pointer"));
         previewPropsOnHover.setSelected(PropertiesDialog.PROP_PREVIEW_ON_HOVER.get());
-        panel.add(previewPropsOnHover, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(previewPropsOnHover, eol);
+        previewPropsOnHover.addActionListener(l -> previewPrioritizeSelection.setEnabled(previewPropsOnHover.isSelected()));
 
+        Insets indent = DefaultTabPreferenceSetting.getIndent();
         previewPrioritizeSelection.setToolTipText(
             tr("Always show information for selected objects when something is selected instead of the hovered object"));
         previewPrioritizeSelection.setSelected(PropertiesDialog.PROP_PREVIEW_ON_HOVER_PRIORITIZE_SELECTION.get());
-        panel.add(previewPrioritizeSelection, GBC.eop().insets(40, 0, 0, 0));
-        previewPropsOnHover.addActionListener(l -> previewPrioritizeSelection.setEnabled(previewPropsOnHover.isSelected()));
+        panel.add(previewPrioritizeSelection, GBC.eol().insets(indent));
 
         dynamicButtons.setToolTipText(tr("Display buttons in right side menus only when mouse is inside the element"));
         dynamicButtons.setSelected(ToggleDialog.PROP_DYNAMIC_BUTTONS.get());
-        panel.add(dynamicButtons, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(dynamicButtons, eol);
 
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         isoDates.setToolTipText(tr("Format dates according to {0}. Today''s date will be displayed as {1} instead of {2}",
@@ -197,28 +201,26 @@ public class LafPreference implements SubPreferenceSetting {
                 today.toString(),
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(today)));
         isoDates.setSelected(DateUtils.PROP_ISO_DATES.get());
-        panel.add(isoDates, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(isoDates, eol);
 
         dialogGeometry.setSelected(WindowGeometry.GUI_GEOMETRY_ENABLED.get());
-        panel.add(dialogGeometry, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(dialogGeometry, eol);
 
         nativeFileChoosers.setToolTipText(
                 tr("Use file choosers that behave more like native ones. They look nicer but do not support some features like file filters"));
         nativeFileChoosers.setSelected(FileChooserManager.PROP_USE_NATIVE_FILE_DIALOG.get());
-        panel.add(nativeFileChoosers, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(nativeFileChoosers, eol);
 
         zoomReverseWheel.setToolTipText(
                 tr("Check if you feel opposite direction more convenient"));
         zoomReverseWheel.setSelected(MapMover.PROP_ZOOM_REVERSE_WHEEL.get());
-        panel.add(zoomReverseWheel, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(zoomReverseWheel, eol);
 
         zoomIntermediateSteps.setToolTipText(
                 tr("Divide intervals between native resolution levels to smaller steps if they are much larger than zoom ratio"));
         zoomIntermediateSteps.setSelected(NavigatableComponent.PROP_ZOOM_INTERMEDIATE_STEPS.get());
         ExpertToggleAction.addVisibilitySwitcher(zoomIntermediateSteps);
-        panel.add(zoomIntermediateSteps, GBC.eop().insets(20, 0, 0, 0));
-
-        panel.add(Box.createVerticalGlue(), GBC.eol().insets(0, 10, 0, 0));
+        panel.add(zoomIntermediateSteps, eol);
 
         double logZoomLevel = Math.log(2) / Math.log(NavigatableComponent.PROP_ZOOM_RATIO.get());
         logZoomLevel = Math.max(1, logZoomLevel);
@@ -232,14 +234,12 @@ public class LafPreference implements SubPreferenceSetting {
         spinZoomRatio.setToolTipText(zoomRatioToolTipText);
         labelZoomRatio.setToolTipText(zoomRatioToolTipText);
         labelZoomRatio.setLabelFor(spinZoomRatio);
-        panel.add(labelZoomRatio, GBC.std().insets(20, 0, 0, 0));
-        panel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        panel.add(spinZoomRatio, GBC.eol());
+        panel.add(labelZoomRatio, std);
+        panel.add(DefaultTabPreferenceSetting.hGlue(), std);
+        panel.add(spinZoomRatio, eol);
 
-        JScrollPane scrollpane = panel.getVerticalScrollPane();
-        scrollpane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        scrollpane.getViewport().setOpaque(false);
-        gui.getDisplayPreference().addSubTab(this, tr("Look and Feel"), scrollpane);
+        getTabPreferenceSetting(gui).addSubTab(
+            this, tr("Look and Feel"), DefaultTabPreferenceSetting.decorateScrollable(panel));
     }
 
     @Override

@@ -5,10 +5,8 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.GridBagLayout;
 
-import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
@@ -57,78 +55,81 @@ public final class AudioPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public void addGui(PreferenceTabbedPane gui) {
-        JPanel audio = new VerticallyScrollablePanel(new GridBagLayout());
+        VerticallyScrollablePanel audio = new VerticallyScrollablePanel(new GridBagLayout());
+
+        GBC std = GBC.std();
+        GBC eol = GBC.eol().weight(1, 0); // or all items will be centered because none is filling
+        GBC eop = GBC.eop();
+        GBC ieol = GBC.eol().insets(getIndent());
 
         // audioMenuVisible
         audioMenuVisible.setSelected(!Config.getPref().getBoolean("audio.menuinvisible"));
         audioMenuVisible.setToolTipText(tr("Show or hide the audio menu entry on the main menu bar."));
-        audio.add(audioMenuVisible, GBC.eol().insets(0, 0, 0, 0));
+        audio.add(audioMenuVisible, eol);
 
         // audioTraceVisible
         markerAudioTraceVisible.setSelected(Config.getPref().getBoolean("marker.traceaudio", true));
         markerAudioTraceVisible.setToolTipText(
                 tr("Display a moving icon representing the point on the synchronized track where the audio currently playing was recorded."));
-        audio.add(markerAudioTraceVisible, GBC.eol().insets(0, 0, 0, 0));
+        audio.add(markerAudioTraceVisible, eol);
 
         // buttonLabels
         markerButtonLabels.setSelected(Config.getPref().getBoolean("marker.buttonlabels", true));
         markerButtonLabels.setToolTipText(tr("Put text labels against audio (and image and web) markers as well as their button icons."));
-        audio.add(markerButtonLabels, GBC.eol().insets(0, 0, 0, 0));
+        audio.add(markerButtonLabels, eop);
 
-        audio.add(new JLabel(tr("When importing audio, make markers from...")), GBC.eol());
+        audio.add(new JLabel(tr("When importing audio, make markers from...")), eol);
 
         // audioMarkersFromExplicitWaypoints
         audioMarkersFromExplicitWaypoints.setSelected(Config.getPref().getBoolean("marker.audiofromexplicitwaypoints", true));
         audioMarkersFromExplicitWaypoints.setToolTipText(tr("When importing audio, apply it to any waypoints in the GPX layer."));
-        audio.add(audioMarkersFromExplicitWaypoints, GBC.eol().insets(10, 0, 0, 0));
+        audio.add(audioMarkersFromExplicitWaypoints, ieol);
 
         // audioMarkersFromUntimedWaypoints
         audioMarkersFromUntimedWaypoints.setSelected(Config.getPref().getBoolean("marker.audiofromuntimedwaypoints", true));
         audioMarkersFromUntimedWaypoints.setToolTipText(tr("When importing audio, apply it to any waypoints in the GPX layer."));
-        audio.add(audioMarkersFromUntimedWaypoints, GBC.eol().insets(10, 0, 0, 0));
+        audio.add(audioMarkersFromUntimedWaypoints, ieol);
 
         // audioMarkersFromNamedTrackpoints
         audioMarkersFromNamedTrackpoints.setSelected(Config.getPref().getBoolean("marker.audiofromnamedtrackpoints", false));
         audioMarkersFromNamedTrackpoints.setToolTipText(
                 tr("Automatically create audio markers from trackpoints (rather than explicit waypoints) with names or descriptions."));
-        audio.add(audioMarkersFromNamedTrackpoints, GBC.eol().insets(10, 0, 0, 0));
+        audio.add(audioMarkersFromNamedTrackpoints, ieol);
 
         // audioMarkersFromWavTimestamps
         audioMarkersFromWavTimestamps.setSelected(Config.getPref().getBoolean("marker.audiofromwavtimestamps", false));
         audioMarkersFromWavTimestamps.setToolTipText(
                 tr("Create audio markers at the position on the track corresponding to the modified time of each audio WAV file imported."));
-        audio.add(audioMarkersFromWavTimestamps, GBC.eol().insets(10, 0, 0, 0));
+        audio.add(audioMarkersFromWavTimestamps, ieol);
 
         // audioMarkersFromStart
         audioMarkersFromStart.setSelected(Config.getPref().getBoolean("marker.audiofromstart"));
         audioMarkersFromStart.setToolTipText(
                 tr("Automatically create audio markers from trackpoints (rather than explicit waypoints) with names or descriptions."));
-        audio.add(audioMarkersFromStart, GBC.eol().insets(10, 0, 0, 0));
+        audio.add(audioMarkersFromStart, ieol);
 
         audioForwardBackAmount.setText(Config.getPref().get("audio.forwardbackamount", "10.0"));
         audioForwardBackAmount.setToolTipText(tr("The number of seconds to jump forward or back when the relevant button is pressed"));
-        audio.add(new JLabel(tr("Forward/back time (seconds)")), GBC.std());
-        audio.add(audioForwardBackAmount, GBC.eol().fill(GBC.HORIZONTAL).insets(5, 0, 0, 5));
+        audio.add(new JLabel(tr("Forward/back time (seconds)")), GBC.std().insets(0, 0, 10, 0));
+        audio.add(audioForwardBackAmount, eol);
 
         audioFastForwardMultiplier.setText(Config.getPref().get("audio.fastfwdmultiplier", "1.3"));
         audioFastForwardMultiplier.setToolTipText(tr("The amount by which the speed is multiplied for fast forwarding"));
-        audio.add(new JLabel(tr("Fast forward multiplier")), GBC.std());
-        audio.add(audioFastForwardMultiplier, GBC.eol().fill(GBC.HORIZONTAL).insets(5, 0, 0, 5));
+        audio.add(new JLabel(tr("Fast forward multiplier")), std);
+        audio.add(audioFastForwardMultiplier, eol);
 
         audioLeadIn.setText(Config.getPref().get("audio.leadin", "1.0"));
         audioLeadIn.setToolTipText(
                 tr("Playback starts this number of seconds before (or after, if negative) the audio track position requested"));
-        audio.add(new JLabel(tr("Lead-in time (seconds)")), GBC.std());
-        audio.add(audioLeadIn, GBC.eol().fill(GBC.HORIZONTAL).insets(5, 0, 0, 5));
+        audio.add(new JLabel(tr("Lead-in time (seconds)")), std);
+        audio.add(audioLeadIn, eol);
 
         audioCalibration.setText(Config.getPref().get("audio.calibration", "1.0"));
         audioCalibration.setToolTipText(tr("The ratio of voice recorder elapsed time to true elapsed time"));
-        audio.add(new JLabel(tr("Voice recorder calibration")), GBC.std());
-        audio.add(audioCalibration, GBC.eol().fill(GBC.HORIZONTAL).insets(5, 0, 0, 5));
+        audio.add(new JLabel(tr("Voice recorder calibration")), std);
+        audio.add(audioCalibration, eol);
 
-        audio.add(Box.createVerticalGlue(), GBC.eol().fill(GBC.VERTICAL));
-
-        createPreferenceTabWithScrollPane(gui, audio);
+        gui.createPreferenceTab(this).add(decorateScrollable(audio), GBC.eol().fill());
     }
 
     @Override

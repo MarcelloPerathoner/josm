@@ -3,7 +3,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
 import org.openstreetmap.josm.tools.Logging;
 
@@ -40,7 +40,7 @@ final class If extends Case {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         if (matches(parentInstance.getPresetInstance().getHandler())) {
             Logging.info("Matched map_css: {0}", mapCss);
             return super.addToPanel(p, parentInstance);

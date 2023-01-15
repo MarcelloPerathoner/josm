@@ -61,7 +61,7 @@ public class AuthenticationPreferencesPanel extends VerticallyScrollablePanel im
 
         // -- radio button for basic authentication
         gc.anchor = GridBagConstraints.NORTHWEST;
-        gc.fill = GridBagConstraints.HORIZONTAL;
+        // gc.fill = GridBagConstraints.HORIZONTAL;
         gc.gridx = 1;
         gc.weightx = 1.0;
         gc.insets = new Insets(0, 0, 0, 3);

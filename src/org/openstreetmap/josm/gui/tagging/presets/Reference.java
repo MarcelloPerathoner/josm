@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
 /**
  * A reference to be satisfied by a {@link Chunk}
@@ -70,7 +70,7 @@ final class Reference extends Item {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         return getChunk().addToPanel(p, parentInstance);
     }
 

@@ -3,8 +3,8 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.tools.GBC;
 
@@ -27,7 +27,7 @@ final class Space extends Item {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         p.add(new JLabel(" "), GBC.eol()); // space
         return false;
     }

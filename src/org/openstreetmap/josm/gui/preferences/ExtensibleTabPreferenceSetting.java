@@ -3,6 +3,8 @@ package org.openstreetmap.josm.gui.preferences;
 
 import static java.awt.GridBagConstraints.BOTH;
 
+import javax.swing.JTabbedPane;
+
 import org.openstreetmap.josm.gui.widgets.HideableTabbedPane;
 import org.openstreetmap.josm.tools.GBC;
 

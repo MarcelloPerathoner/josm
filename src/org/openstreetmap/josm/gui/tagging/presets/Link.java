@@ -7,7 +7,7 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.openstreetmap.josm.gui.dialogs.properties.HelpAction;
@@ -57,10 +57,10 @@ final class Link extends TextItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         UrlLabel label = buildUrlLabel();
         if (label != null) {
-            label.applyComponentOrientation(parentInstance.getPresetInstance().getDialog().getDefaultComponentOrientation());
+            label.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
             p.add(label, GBC.eol().insets(0, 10, 0, 0).anchor(GBC.LINE_START));
         }
         return false;

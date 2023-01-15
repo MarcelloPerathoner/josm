@@ -39,7 +39,7 @@ public final class ShortcutPreference extends DefaultTabPreferenceSetting {
         JPanel p = gui.createPreferenceTab(this);
 
         PrefJPanel prefpanel = new PrefJPanel();
-        p.add(prefpanel, GBC.eol().fill(GBC.BOTH));
+        p.add(decorate(prefpanel), GBC.eol().fill());
         if (defaultFilter != null) {
             prefpanel.filter(defaultFilter);
         }

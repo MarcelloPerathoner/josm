@@ -3,7 +3,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
 /**
  * A {@code <switch>} statement.
@@ -43,7 +43,7 @@ final class Switch extends Composite {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         for (Item item : items) {
             if (item instanceof Conditional) {
                 Conditional cond = (Conditional) item;

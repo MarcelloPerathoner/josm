@@ -198,7 +198,9 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
             }
         }
         if (getInvalidGeoImages().size() == data.size()) {
-            ImageViewerDialog.getInstance().displayImages(Collections.singletonList(this.data.getFirstImage()));
+            ImageEntry firstImage = this.data.getFirstImage();
+            if (firstImage != null)
+                ImageViewerDialog.getInstance().displayImages(this, Collections.singletonList(firstImage));
         }
     }
 
@@ -260,7 +262,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
                     }
                 } else {
                     data.setSelectedImage(img);
-                    ImageViewerDialog.getInstance().displayImages(Collections.singletonList(img));
+                    ImageViewerDialog.getInstance().displayImages(GeoImageLayer.this, Collections.singletonList(img));
                 }
                 GeoImageLayer.this.invalidate(); // Needed to update which image is being shown in the image viewer in the mapview
             }

@@ -17,7 +17,6 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,7 +56,7 @@ final class Text extends InteractiveItem {
     /** Calculates the field's value once when pressed */
     private JButton calcButton;
     /** Automatically calculate the field's value */
-    private JCheckBox calcLockButton;
+    private JToggleButton calcLockButton;
 
     /**
      * Private constructor. Use {@link #fromXML} instead.
@@ -83,9 +82,8 @@ final class Text extends InteractiveItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         TaggingPreset.Instance presetInstance = parentInstance.getPresetInstance();
-        TaggingPresetDialog dialog = presetInstance.getDialog();
 
         AutoCompTextField<AutoCompletionItem> textField;
         AutoCompComboBoxEditor<AutoCompletionItem> editor = null;
@@ -195,8 +193,8 @@ final class Text extends InteractiveItem {
             });
             pnl.add(calcButton, GBC.std().fill(GBC.VERTICAL));
 
-            calcLockButton = new JCheckBox("auto", instance.getCalcLockValue());
-            calcLockButton.setToolTipText(tr("Enable automatic calculation for this field"));
+            calcLockButton = new JToggleButton("auto", instance.getCalcLockValue());
+            calcLockButton.setToolTipText(tr("Enable automatic recalculation for this field"));
             calcLockButton.setFocusable(false);
             minimizeMargins(calcLockButton);
             calcLockButton.addActionListener(e -> {
@@ -212,7 +210,7 @@ final class Text extends InteractiveItem {
         label.setLabelFor(component);
         p.add(label, GBC.std().insets(0, 0, 10, 0).weight(0, 0));
         p.add(component, GBC.eol().fill(GBC.HORIZONTAL).weight(1, 0));
-        label.applyComponentOrientation(dialog.getDefaultComponentOrientation());
+        label.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
         component.setToolTipText(getKeyTooltipText());
         component.applyComponentOrientation(OrientationAction.getNamelikeOrientation(key));
 

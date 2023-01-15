@@ -31,7 +31,7 @@ import org.openstreetmap.josm.gui.oauth.AdvancedOAuthPropertiesPanel;
 import org.openstreetmap.josm.gui.oauth.AuthorizationProcedure;
 import org.openstreetmap.josm.gui.oauth.OAuthAuthorizationWizard;
 import org.openstreetmap.josm.gui.oauth.TestAccessTokenTask;
-import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
+import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.io.OsmApi;
 import org.openstreetmap.josm.io.auth.CredentialsManager;
@@ -76,9 +76,9 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
 
         cbUseForAllRequests.setText(tr("Use OAuth for all requests to {0}", OsmApi.getOsmApi().getServerUrl()));
         cbUseForAllRequests.setToolTipText(tr("For user-based bandwidth limit instead of IP-based one"));
-        pnl.add(cbUseForAllRequests, GBC.eol().fill(GBC.HORIZONTAL));
+        pnl.add(cbUseForAllRequests, GBC.eol().weight(1, 0));
 
-        pnl.add(cbShowAdvancedParameters, GBC.eol().fill(GBC.HORIZONTAL));
+        pnl.add(cbShowAdvancedParameters, GBC.eol());
         cbShowAdvancedParameters.setSelected(false);
         cbShowAdvancedParameters.addItemListener(
                 evt -> pnlAdvancedProperties.setVisible(evt.getStateChange() == ItemEvent.SELECTED)
@@ -174,10 +174,9 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
             setLayout(new GridBagLayout());
 
             // A message explaining that the user isn't authorised yet
-            JMultilineLabel lbl = new JMultilineLabel(
+            JPanel lbl = new HtmlPanel(
                     tr("You do not have an Access Token yet to access the OSM server using OAuth. Please authorize first."));
-            add(lbl, GBC.eol().anchor(GBC.NORTHWEST).fill(GBC.HORIZONTAL));
-            lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN));
+            add(lbl, GBC.eol().anchor(GridBagConstraints.NORTHWEST).fill(GridBagConstraints.HORIZONTAL));
 
             // Action for authorising now
             add(new JButton(new AuthoriseNowAction(AuthorizationProcedure.FULLY_AUTOMATIC)), GBC.eol());
@@ -187,7 +186,7 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
             ExpertToggleAction.addVisibilitySwitcher(authManually);
 
             // filler - grab remaining space
-            add(new JPanel(), GBC.std().fill(GBC.BOTH));
+            add(new JPanel(), GBC.std().fill());
         }
     }
 
@@ -215,9 +214,8 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
             gc.fill = GridBagConstraints.HORIZONTAL;
             gc.weightx = 1.0;
             gc.gridwidth = 2;
-            JMultilineLabel lbl = new JMultilineLabel(tr("You already have an Access Token to access the OSM server using OAuth."));
+            JPanel lbl = new HtmlPanel(tr("You already have an Access Token to access the OSM server using OAuth."));
             add(lbl, gc);
-            lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN));
 
             // -- access token key
             gc.gridy = 1;
@@ -248,6 +246,7 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
             gc.gridx = 0;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
+            gc.fill = GridBagConstraints.NONE;
             add(cbSaveToPreferences, gc);
             cbSaveToPreferences.setSelected(OAuthAccessTokenHolder.getInstance().isSaveToPreferences());
 
@@ -266,14 +265,8 @@ public class OAuthAuthenticationPreferencesPanel extends JPanel implements Prope
             gc.gridx = 0;
             gc.gridwidth = 2;
             gc.weightx = 1.0;
+            gc.fill = GridBagConstraints.HORIZONTAL;
             add(buildAdvancedPropertiesPanel(), gc);
-
-            // filler - grab the remaining space
-            gc.gridy = 6;
-            gc.fill = GridBagConstraints.BOTH;
-            gc.weightx = 1.0;
-            gc.weighty = 1.0;
-            add(new JPanel(), gc);
         }
 
         protected final void refreshView() {

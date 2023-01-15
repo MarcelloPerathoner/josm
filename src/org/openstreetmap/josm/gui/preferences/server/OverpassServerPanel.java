@@ -3,10 +3,9 @@ package org.openstreetmap.josm.gui.preferences.server;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,11 +30,9 @@ public class OverpassServerPanel extends JPanel {
         super(new GridBagLayout());
         ExpertToggleAction.addVisibilitySwitcher(this);
         final JPanel panel = this;
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        panel.add(new JLabel(tr("Overpass server: ")), GBC.std().insets(5, 5, 5, 5));
-        panel.add(overpassServer, GBC.eop().fill(GBC.HORIZONTAL));
+        panel.add(new JLabel(tr("Overpass server: ")), GBC.std().insets(0, 0, 10, 0));
+        panel.add(overpassServer, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
         panel.add(forMultiFetch, GBC.eop());
-        panel.add(Box.createVerticalGlue(), GBC.eol().fill());
     }
 
     /**

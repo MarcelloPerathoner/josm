@@ -104,12 +104,9 @@ public class PluginListPanel extends VerticallyScrollablePanel {
         gbc.weighty = 1.0;
 
         HtmlPanel hint = new HtmlPanel();
-        hint.setText(
-                "<html>"
-                + (model.getAvailablePlugins().isEmpty() ?
-                        tr("Please click on <strong>Download list</strong> to download and display a list of available plugins.") :
-                        tr("The filter returned no results."))
-                + "</html>"
+        hint.setText((model.getAvailablePlugins().isEmpty() ?
+            tr("Please click on <strong>Download list</strong> to download and display a list of available plugins.") :
+            tr("The filter returned no results."))
         );
         hint.putClientProperty("plugin", "empty");
         hint.setVisible(false);

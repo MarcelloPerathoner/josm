@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -23,6 +22,7 @@ import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.widgets.JosmComboBox;
 import org.openstreetmap.josm.gui.widgets.JosmComboBoxModel;
+import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.I18n;
@@ -47,7 +47,7 @@ public class LanguagePreference extends DefaultTabPreferenceSetting {
     }
 
     LanguagePreference() {
-        super(/* ICON(preferences/) */ "language", tr("Language"), tr("Change the language of JOSM."));
+        super(/* ICON(preferences/) */ LANGUAGE, tr("Language"), tr("Change the language of JOSM."));
     }
 
     /** the combo box with the available locales */
@@ -62,13 +62,14 @@ public class LanguagePreference extends DefaultTabPreferenceSetting {
         langCombo = new JosmComboBox<>(model);
         langCombo.setRenderer(new LanguageCellRenderer());
 
-        final JPanel panel = new JPanel(new GridBagLayout());
-        panel.add(new JLabel(tr("Language")), GBC.std().insets(20, 0, 0, 0));
-        panel.add(GBC.glue(5, 0), GBC.std().fill(GBC.HORIZONTAL));
-        panel.add(langCombo, GBC.eol().fill(GBC.HORIZONTAL));
-        panel.add(Box.createVerticalGlue(), GBC.eol().fill(GBC.BOTH));
+        VerticallyScrollablePanel panel = new VerticallyScrollablePanel(new GridBagLayout());
 
-        createPreferenceTabWithScrollPane(gui, panel);
+        panel.add(new JLabel(tr("Language")), GBC.std());
+        panel.add(hGlue(), GBC.std());
+        panel.add(langCombo, GBC.eol().weight(1, 0));
+
+        JPanel tab = gui.createPreferenceTab(this, false);
+        tab.add(decorateScrollable(panel), GBC.eol().fill());
     }
 
     @Override

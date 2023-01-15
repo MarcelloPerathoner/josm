@@ -4,12 +4,10 @@ package org.openstreetmap.josm.gui.preferences.display;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
@@ -22,6 +20,7 @@ import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.widgets.JosmComboBox;
+import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 
@@ -74,8 +73,7 @@ public class DrawingPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public void addGui(PreferenceTabbedPane gui) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        VerticallyScrollablePanel panel = new VerticallyScrollablePanel(new GridBagLayout());
 
         // directionHint
         directionHint.addActionListener(e -> {
@@ -154,35 +152,36 @@ public class DrawingPreference extends DefaultTabPreferenceSetting {
         autoFilterRules.setSelectedItem(AutoFilterManager.getInstance().getAutoFilterRule(AutoFilterManager.PROP_AUTO_FILTER_RULE.get()));
 
         JLabel performanceLabel = new JLabel(tr("Options that affect drawing performance"));
+        Insets indent  = getIndent();
+        Insets indent2 = addInsets(indent, indent);
+        GBC eol = GBC.eol().insets(indent).weight(1, 0); // or all items will be centered because none is filling
+        GBC eop = GBC.eop().insets(indent);
 
-        panel.add(new JLabel(tr("Segment drawing options")),
-                GBC.eop().insets(5, 10, 0, 0));
-        panel.add(directionHint, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(headArrow, GBC.eop().insets(40, 0, 0, 0));
-        panel.add(onewayArrow, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(segmentOrderNumber, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(segmentOrderNumberOnSelectedWay, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(new JLabel(tr("Segment drawing options")), GBC.eol());
+        panel.add(directionHint, eol);
+        panel.add(headArrow, GBC.eol().insets(indent2));
+        panel.add(onewayArrow, eol);
+        panel.add(segmentOrderNumber, eol);
+        panel.add(segmentOrderNumberOnSelectedWay, eop);
 
-        panel.add(new JLabel(tr("Select and draw mode options")),
-                GBC.eop().insets(5, 10, 0, 0));
-        panel.add(virtualNodes, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(drawHelperLine, GBC.eop().insets(20, 0, 0, 0));
+        panel.add(new JLabel(tr("Select and draw mode options")), GBC.eol());
+        panel.add(virtualNodes, eol);
+        panel.add(drawHelperLine, eop);
 
-        panel.add(performanceLabel, GBC.eop().insets(5, 10, 0, 0));
-        panel.add(useAntialiasing, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(useWireframeAntialiasing, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(useHighlighting, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(outlineOnly, GBC.eol().insets(20, 0, 0, 0));
-        panel.add(hideLabelsWhileDragging, GBC.eol().insets(20, 0, 0, 0));
+        panel.add(performanceLabel, GBC.eol());
+        panel.add(useAntialiasing, eol);
+        panel.add(useWireframeAntialiasing, eol);
+        panel.add(useHighlighting, eol);
+        panel.add(outlineOnly, eol);
+        panel.add(hideLabelsWhileDragging, eop);
 
-        panel.add(new JLabel(tr("Other options")),
-                GBC.eop().insets(5, 10, 0, 0));
-        panel.add(sourceBounds, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(inactive, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(discardableKeys, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(autoFilters, GBC.eop().insets(20, 0, 0, 0));
-        panel.add(lblRule, GBC.std().insets(40, 0, 0, 0));
-        panel.add(autoFilterRules, GBC.eop().fill(GBC.HORIZONTAL).insets(5, 0, 0, 0));
+        panel.add(new JLabel(tr("Other options")), GBC.eol());
+        panel.add(sourceBounds, eol);
+        panel.add(inactive, eol);
+        panel.add(discardableKeys, eol);
+        panel.add(autoFilters, eol);
+        panel.add(lblRule, GBC.std().insets(addInsets(getIndentForText(), new Insets(0, 0, 0, 10))));
+        panel.add(autoFilterRules, GBC.eol());
 
         ExpertToggleAction.addVisibilitySwitcher(performanceLabel);
         ExpertToggleAction.addVisibilitySwitcher(useAntialiasing);
@@ -192,8 +191,7 @@ public class DrawingPreference extends DefaultTabPreferenceSetting {
         ExpertToggleAction.addVisibilitySwitcher(hideLabelsWhileDragging);
         ExpertToggleAction.addVisibilitySwitcher(discardableKeys);
 
-        panel.add(Box.createVerticalGlue(), GBC.eol().fill(GBC.BOTH));
-        createPreferenceTabWithScrollPane(gui, panel);
+        gui.createPreferenceTab(this).add(decorateScrollable(panel), GBC.eol().fill());
     }
 
     @Override

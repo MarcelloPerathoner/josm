@@ -43,7 +43,7 @@ public class ImageMarker extends ButtonMarker {
     @Override
     public void actionPerformed(ActionEvent ev) {
         this.parentLayer.setCurrentMarker(this);
-        ImageViewerDialog.getInstance().displayImages(Collections.singletonList(getRemoteEntry()));
+        ImageViewerDialog.getInstance().displayImages(this.parentLayer, Collections.singletonList(getRemoteEntry()));
     }
 
     RemoteEntry getRemoteEntry() {

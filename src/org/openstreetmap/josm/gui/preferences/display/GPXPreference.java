@@ -8,6 +8,7 @@ import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
+import org.openstreetmap.josm.tools.GBC;
 
 /**
  * "GPS Points" drawing preferences.
@@ -34,7 +35,7 @@ public class GPXPreference extends DefaultTabPreferenceSetting {
     public void addGui(PreferenceTabbedPane gui) {
         gpxPanel = new GPXSettingsPanel();
         gui.addValidationListener(gpxPanel);
-        createPreferenceTabWithScrollPane(gui, gpxPanel);
+        gui.createPreferenceTab(this).add(decorateScrollable(gpxPanel), GBC.eol().fill());
     }
 
     @Override

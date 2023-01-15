@@ -1,7 +1,6 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.preferences.server;
 
-import static java.awt.GridBagConstraints.HORIZONTAL;
 import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trc;
 
@@ -20,14 +19,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 
-import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
+import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.gui.widgets.JosmPasswordField;
 import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
@@ -79,7 +77,7 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
 
         gc.anchor = GridBagConstraints.LINE_START;
         gc.insets = new Insets(5, 5, 0, 0);
-        gc.fill = HORIZONTAL;
+        gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 0.0;
         pnl.add(new JLabel(tr("Host:")), gc);
 
@@ -101,9 +99,9 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         gc.gridy = 2;
         gc.gridx = 0;
         gc.gridwidth = 2;
-        gc.fill = HORIZONTAL;
+        gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 1.0;
-        pnl.add(new JMultilineLabel(tr("Please enter a username and a password if your proxy requires authentication.")), gc);
+        pnl.add(new HtmlPanel(tr("Please enter a username and a password if your proxy requires authentication.")), gc);
 
         gc.gridy = 3;
         gc.gridx = 0;
@@ -128,14 +126,6 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         pnl.add(tfProxyHttpPassword, gc);
         tfProxyHttpPassword.setMinimumSize(tfProxyHttpPassword.getPreferredSize());
 
-        // add an extra spacer, otherwise the layout is broken
-        gc.gridy = 5;
-        gc.gridx = 0;
-        gc.gridwidth = 2;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        pnl.add(new JPanel(), gc);
         return pnl;
     }
 
@@ -149,7 +139,7 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         GridBagConstraints gc = new GridBagConstraints();
         gc.anchor = GridBagConstraints.LINE_START;
         gc.insets = new Insets(5, 5, 0, 0);
-        gc.fill = HORIZONTAL;
+        gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 0.0;
         pnl.add(new JLabel(tr("Host:")), gc);
 
@@ -168,19 +158,11 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         pnl.add(tfProxySocksPort, gc);
         tfProxySocksPort.setMinimumSize(tfProxySocksPort.getPreferredSize());
 
-        // add an extra spacer, otherwise the layout is broken
-        gc.gridy = 2;
-        gc.gridx = 0;
-        gc.gridwidth = 2;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        pnl.add(new JPanel(), gc);
         return pnl;
     }
 
-    protected final JPanel buildProxySettingsPanel() {
-        JPanel pnl = new JPanel(new GridBagLayout());
+    protected final JPanel buildProxySettingsPanel(JPanel pnl) {
+        GBC eop = GBC.eop().fill(GridBagConstraints.HORIZONTAL);
 
         ButtonGroup bgProxyPolicy = new ButtonGroup();
         rbProxyPolicy = new EnumMap<>(ProxyPolicy.class);
@@ -192,30 +174,34 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         }
 
         // radio button "No proxy"
-        pnl.add(newRadioButton(ProxyPolicy.NO_PROXY, tr("No proxy")), GBC.eop().anchor(GBC.NORTHWEST));
+        pnl.add(newRadioButton(ProxyPolicy.NO_PROXY, tr("No proxy")), GBC.eop().anchor(GridBagConstraints.NORTHWEST));
+
+        pnl.add(new JSeparator(), eop);
 
         // radio button "System settings"
         pnl.add(newRadioButton(ProxyPolicy.USE_SYSTEM_SETTINGS, tr("Use standard system settings")), GBC.eol());
         if (!DefaultProxySelector.willJvmRetrieveSystemProxies()) {
             String msg = tr("Use standard system settings (disabled. Start JOSM with <tt>-Djava.net.useSystemProxies=true</tt> to enable)");
-            pnl.add(new JMultilineLabel("<html>" + msg + "</html>"), GBC.eop().fill(HORIZONTAL));
+            pnl.add(new HtmlPanel(msg), eop);
         }
+
+        pnl.add(new JSeparator(), eop);
 
         // radio button http proxy
         pnl.add(newRadioButton(ProxyPolicy.USE_HTTP_PROXY, tr("Manually configure a HTTP proxy")), GBC.eol());
 
         // the panel with the http proxy configuration parameters
         pnlHttpProxyConfigurationPanel = buildHttpProxyConfigurationPanel();
-        pnl.add(pnlHttpProxyConfigurationPanel, GBC.eop().fill(HORIZONTAL));
+        pnl.add(pnlHttpProxyConfigurationPanel, eop);
+
+        pnl.add(new JSeparator(), eop);
 
         // radio button SOCKS proxy
         pnl.add(newRadioButton(ProxyPolicy.USE_SOCKS_PROXY, tr("Use a SOCKS proxy")), GBC.eol());
 
         // the panel with the SOCKS configuration parameters
         pnlSocksProxyConfigurationPanel = buildSocksProxyConfigurationPanel();
-        pnl.add(pnlSocksProxyConfigurationPanel, GBC.eop().fill(HORIZONTAL));
-
-        pnl.add(Box.createVerticalGlue(), GBC.eol().fill());
+        pnl.add(pnlSocksProxyConfigurationPanel, eop);
 
         return pnl;
     }
@@ -290,9 +276,9 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
      * Constructs a new {@code ProxyPreferencesPanel}.
      */
     public ProxyPreferencesPanel() {
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        add(buildProxySettingsPanel(), GBC.eop().anchor(GridBagConstraints.NORTHWEST).fill(GridBagConstraints.BOTH));
+        super(new GridBagLayout());
+
+        buildProxySettingsPanel(this);
 
         initFromPreferences();
         updateEnabledState();

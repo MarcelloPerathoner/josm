@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
@@ -75,13 +74,12 @@ public class MapPaintPreference extends DefaultTabPreferenceSetting {
         sources = new MapPaintSourceEditor();
 
         final JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        panel.add(sources, GBC.eol().fill(GBC.BOTH));
-        panel.add(enableIconDefault, GBC.eol().insets(11, 2, 5, 0));
+        panel.add(sources, GBC.eop().fill());
+        panel.add(enableIconDefault, GBC.eol());
 
         PreferencePanel preferencePanel = gui.createPreferenceTab(this);
-        preferencePanel.add(panel, GBC.std().fill());
+        preferencePanel.add(decorate(panel), GBC.eol().fill());
         sources.deferLoading(gui, preferencePanel);
     }
 

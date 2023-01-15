@@ -5,6 +5,7 @@ import static org.openstreetmap.josm.tools.I18n.marktr;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -163,19 +164,19 @@ public final class AdvancedPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public void addGui(final PreferenceTabbedPane gui) {
-        JPanel p = gui.createPreferenceTab(this);
+        JPanel p = new JPanel(new GridBagLayout());
 
         final JPanel txtFilterPanel = new JPanel(new GridBagLayout());
-        p.add(txtFilterPanel, GBC.eol().fill(GBC.HORIZONTAL));
+        p.add(txtFilterPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
         txtFilter = new FilterField();
-        txtFilterPanel.add(txtFilter, GBC.eol().insets(0, 0, 0, 5).fill(GBC.HORIZONTAL));
+        txtFilterPanel.add(txtFilter, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
         txtFilter.getDocument().addDocumentListener(DocumentAdapter.create(ignore -> applyFilter()));
         readPreferences(Preferences.main());
 
         applyFilter();
         table = new PreferencesTable(displayData);
         JScrollPane scroll = new JScrollPane(table);
-        p.add(scroll, GBC.eol().fill(GBC.BOTH));
+        p.add(scroll, GBC.eop().fill(GridBagConstraints.BOTH));
         scroll.setPreferredSize(new Dimension(400, 200));
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 6));
@@ -229,6 +230,8 @@ public final class AdvancedPreference extends DefaultTabPreferenceSetting {
             }
         });
         p.add(buttonPanel, GBC.eol());
+
+        gui.createPreferenceTab(this).add(decorate(p), GBC.eol().fill());
     }
 
     private void readPreferences(Preferences tmpPrefs) {

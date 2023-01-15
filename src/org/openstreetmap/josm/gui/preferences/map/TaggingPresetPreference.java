@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -173,16 +172,17 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
         sortMenu = new JCheckBox(tr("Sort presets menu alphabetically"), TaggingPresets.SORT_VALUES.get());
 
         final JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        panel.add(useValidator, GBC.std().insets(5, 5, 0, 0));
-        panel.add(new JLabel(ImageProvider.get("dialogs/validator")), GBC.eol().insets(5, 5, 0, 0));
-        panel.add(sortMenu, GBC.eol().insets(5, 0, 5, 0));
+        panel.add(useValidator, GBC.std());
+        panel.add(new JLabel(ImageProvider.get("dialogs/validator")), GBC.eol());
+
+        panel.add(sortMenu, GBC.eop());
 
         sources = new TaggingPresetSourceEditor();
-        panel.add(sources, GBC.eol().fill(GBC.BOTH));
+        panel.add(sources, GBC.eop().fill());
+
         PreferencePanel preferencePanel = gui.createPreferenceTab(this);
-        preferencePanel.add(panel, GBC.eol().fill(GBC.BOTH));
+        preferencePanel.add(decorate(panel), GBC.eol().fill());
         sources.deferLoading(gui, preferencePanel);
         gui.addValidationListener(validationListener);
     }

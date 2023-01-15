@@ -158,6 +158,15 @@ abstract class TaggingPresetBase extends Composite {
     }
 
     /**
+     * Returns the preset icon image resource
+     * @return The resource, or {@code null}
+     * @since xxx
+     */
+    public final ImageResource getIconResource() {
+        return ImageResource.getAttachedImageResource(getAction());
+    }
+
+    /**
      * Returns the preset icon (16 or 24px).
      * @param size Key determining icon size: {@code Action.SMALL_ICON} for 16x, {@code Action.LARGE_ICON_KEY} for 24px
      * @return The preset icon, or {@code null} if none defined

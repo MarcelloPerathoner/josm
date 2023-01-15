@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.preferences.validator;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -10,22 +11,19 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import org.openstreetmap.josm.data.preferences.sources.ValidatorPrefHelper;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.tests.MapCSSTagChecker;
+import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.preferences.SubPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.TabPreferenceSetting;
-import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
@@ -56,8 +54,7 @@ public class ValidatorTestsPreference implements SubPreferenceSetting {
 
     @Override
     public void addGui(PreferenceTabbedPane gui) {
-        JPanel testPanel = new VerticallyScrollablePanel(new GridBagLayout());
-        testPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        VerticallyScrollablePanel testPanel = new VerticallyScrollablePanel(new GridBagLayout());
 
         prefUseIgnore = new JCheckBox(tr("Use ignore list."), ValidatorPrefHelper.PREF_USE_IGNORE.get());
         prefUseIgnore.setToolTipText(tr("Use the ignore list to suppress warnings."));
@@ -81,7 +78,7 @@ public class ValidatorTestsPreference implements SubPreferenceSetting {
         otherUploadEnabled.actionPerformed(null);
 
         GBC a = GBC.eol().insets(-5, 0, 0, 0);
-        a.anchor = GBC.EAST;
+        a.anchor = GridBagConstraints.EAST;
         testPanel.add(new JLabel(tr("On demand")), GBC.std());
         testPanel.add(new JLabel(tr("On upload")), a);
 
@@ -90,10 +87,8 @@ public class ValidatorTestsPreference implements SubPreferenceSetting {
             test.addGui(testPanel);
         }
 
-        JScrollPane scrollPane = GuiHelper.embedInVerticalScrollPane(testPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         gui.getValidatorPreference().addSubTab(this, tr("Tests"),
-                scrollPane,
+                DefaultTabPreferenceSetting.decorateScrollable(testPanel),
                 tr("Choose tests to enable"));
     }
 

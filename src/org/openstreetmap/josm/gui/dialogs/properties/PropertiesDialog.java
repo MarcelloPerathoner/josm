@@ -848,15 +848,16 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
     }
 
     /**
-     * Function that prevents keystrokes intended for text-editing from also triggering global
-     * shortcuts.
+     * Function that prevents keystrokes intended for text-editing from also triggering
+     * global shortcuts.
      * <p>
-     * When the panel is docked, there is no JFrame between the table and the main window, so all
-     * keystrokes used for editing went further up and triggered global shortcuts.  This function
-     * keeps all keys without modifier or with 'shift' modifier only local.
+     * When the panel is docked, there is no JFrame between the table and the main
+     * window, so normally all keystrokes used for editing go further up and may trigger
+     * global shortcuts.  This function keeps all keys from going further if they have
+     * no modifier or a 'shift' modifier only.
      * <p>
-     * A downside of this approach is that, if the tag table or any other child of this panel has
-     * focus, the global shortcuts do not work.  We must thus take pains to not keep focus in this
+     * A downside of this approach is that while any child of this panel has focus, the
+     * global shortcuts do not work.  We must thus take pains to not keep focus in this
      * panel longer that strictly necessary.
      * <p>
      * See also: #8710
@@ -864,7 +865,7 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         if (super.processKeyBinding(ks, e, condition, pressed))
-            return true; // we actually processed it
+            return true; // we actually processed it, in an editor etc.
         // Logging.info("processKeyBindings: {0}", e.paramString());
 
         // if tagtable is editing ...
@@ -884,7 +885,7 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
         if (Layer.VISIBLE_PROP.equals(e.getPropertyName())) {
             boolean isVisible = (boolean) e.getNewValue();
 
-            // Disable hover preview when primitives are invisible
+            // Disable hover preview when layer is invisible
             if (isVisible && Boolean.TRUE.equals(PROP_PREVIEW_ON_HOVER.get())) {
                 MainApplication.getMap().mapView.addPrimitiveHoverListener(this);
             } else {
@@ -892,27 +893,27 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
             }
         }
 
-        if (!"focusOwner".equals(e.getPropertyName()))
-            return;
+        if ("focusOwner".equals(e.getPropertyName())) {
+            // change table background color when table gets focus
+            Color background = UIManager.getColor("TextField.inactiveBackground");
+            Color focusedBackground = UIManager.getColor("Table.background");
 
-        Color background = UIManager.getColor("Table.background");
-        Color focusedBg = new Color(255, 255, 208);
-
-        if (isFocusIn(tagTable)) {
-            membershipTable.clearSelection();
-            tagTable.setBackground(focusedBg);
-        } else {
-            tagTable.setBackground(background);
-        }
-        if (isFocusIn(membershipTable)) {
-            tagTable.clearSelection();
-            membershipTable.setBackground(focusedBg);
-        } else {
-            membershipTable.setBackground(background);
-        }
-        if (isFocusIn(MainApplication.getMap().mapView)) {
-            tagTable.clearSelection();
-            membershipTable.clearSelection();
+            if (isFocusIn(tagTable)) {
+                membershipTable.clearSelection();
+                tagTable.setBackground(focusedBackground);
+            } else {
+                tagTable.setBackground(background);
+            }
+            if (isFocusIn(membershipTable)) {
+                tagTable.clearSelection();
+                membershipTable.setBackground(focusedBackground);
+            } else {
+                membershipTable.setBackground(background);
+            }
+            if (isFocusIn(MainApplication.getMap().mapView)) {
+                tagTable.clearSelection();
+                membershipTable.clearSelection();
+            }
         }
     }
 

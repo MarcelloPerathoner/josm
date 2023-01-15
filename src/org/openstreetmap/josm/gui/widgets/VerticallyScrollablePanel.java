@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
@@ -58,7 +59,10 @@ public class VerticallyScrollablePanel extends JPanel implements Scrollable {
      * @since 6666
      */
     public final JScrollPane getVerticalScrollPane() {
-        return GuiHelper.embedInVerticalScrollPane(this);
+        JScrollPane scrollPane = GuiHelper.embedInVerticalScrollPane(this);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        scrollPane.getViewport().setOpaque(false);
+        return scrollPane;
     }
 
     @Override

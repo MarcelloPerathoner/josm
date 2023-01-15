@@ -6,8 +6,6 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.Box;
-
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
@@ -42,8 +40,7 @@ public final class ProxyPreference extends DefaultTabPreferenceSetting {
     @Override
     public void addGui(PreferenceTabbedPane gui) {
         pnlProxyPreferences = new ProxyPreferencesPanel();
-        pnlProxyPreferences.add(Box.createVerticalGlue(), GBC.eol().fill());
-        gui.createPreferenceTab(this).add(pnlProxyPreferences, GBC.eol().fill());
+        gui.createPreferenceTab(this).add(decorateScrollable(pnlProxyPreferences), GBC.eol().fill());
     }
 
     @Override

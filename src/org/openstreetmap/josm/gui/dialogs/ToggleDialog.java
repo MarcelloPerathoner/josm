@@ -411,6 +411,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
     protected void dock() {
         detachedDialog = null;
         titleBar.setVisible(true);
+        setBorder(BorderFactory.createEtchedBorder());
         setIsDocked(true);
     }
 
@@ -422,6 +423,7 @@ public class ToggleDialog extends JPanel implements ShowHideButtonListener, Help
         setContentVisible(true);
         this.setVisible(true);
         titleBar.setVisible(false);
+        setBorder(BorderFactory.createEmptyBorder());
         if (!GraphicsEnvironment.isHeadless()) {
             detachedDialog = new DetachedDialog();
             detachedDialog.setVisible(true);

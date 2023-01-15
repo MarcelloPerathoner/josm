@@ -4,13 +4,14 @@ package org.openstreetmap.josm.gui.preferences.server;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.openstreetmap.josm.actions.downloadtasks.DownloadNotesTask;
+import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.io.MessageNotifier;
 import org.openstreetmap.josm.tools.GBC;
@@ -37,27 +38,30 @@ public class FeaturesPanel extends JPanel {
 
     private void build() {
         setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        Insets rightMargin = new Insets(0, 0, 0, 10);
+        Insets indent = DefaultTabPreferenceSetting.addInsets(
+            DefaultTabPreferenceSetting.getIndentForText(), rightMargin);
 
         notifier = new JCheckBox(tr("Periodically check for new messages"));
-        add(notifier, GBC.std(0, 0).span(2).fill(GBC.HORIZONTAL));
+        add(notifier, GBC.eol());
+        add(DefaultTabPreferenceSetting.vSkip(), GBC.eol());
         notifier.addChangeListener(e -> updateEnabledState());
 
         intervalLabel = new JLabel(tr("Check interval (minutes):"));
         intervalLabel.setLabelFor(notifierInterval);
-        add(intervalLabel, GBC.std(0, 1));
-
+        add(intervalLabel, GBC.std().insets(indent));
         notifierInterval.setToolTipText(tr("Default value: {0}", MessageNotifier.PROP_INTERVAL.getDefaultValue()));
         notifierInterval.setMinimumSize(notifierInterval.getPreferredSize());
-        add(notifierInterval, GBC.std(1, 1).insets(5, 0, 0, 0));
+        add(notifierInterval, GBC.eol().weight(1, 0));
 
         final JLabel notesDaysClosedLabel = new JLabel(tr("Max age for closed notes (days):"));
         notesDaysClosedLabel.setLabelFor(notesDaysClosed);
         notesDaysClosedLabel.setToolTipText(tr("Specifies the number of days a note needs to be closed to no longer be downloaded"));
-        add(notesDaysClosedLabel, GBC.std(0, 2).insets(0, 20, 0, 0));
+        add(notesDaysClosedLabel, GBC.std().insets(indent));
         notesDaysClosed.setToolTipText(tr("Default value: {0}", DownloadNotesTask.DAYS_CLOSED.getDefaultValue()));
         notesDaysClosed.setMinimumSize(notesDaysClosed.getPreferredSize());
-        add(notesDaysClosed, GBC.std(1, 2).insets(5, 20, 0, 0));
+        add(notesDaysClosed, GBC.eol());
+        add(DefaultTabPreferenceSetting.vSkip(), GBC.eol());
     }
 
     private void updateEnabledState() {

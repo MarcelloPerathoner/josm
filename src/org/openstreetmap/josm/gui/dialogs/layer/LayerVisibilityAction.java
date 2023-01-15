@@ -57,7 +57,7 @@ import org.openstreetmap.josm.tools.Utils;
  * @author Michael Zangl
  * @since 10144
  */
-public final class LayerVisibilityAction extends AbstractAction implements IEnabledStateUpdating, LayerAction {
+public class LayerVisibilityAction extends AbstractAction implements IEnabledStateUpdating, LayerAction {
     private static final String DIALOGS_LAYERLIST = "dialogs/layerlist";
     private static final int SLIDER_STEPS = 100;
     /**

@@ -7,47 +7,40 @@ import static org.openstreetmap.josm.tools.I18n.trn;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Future;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.ImageData;
 import org.openstreetmap.josm.data.imagery.street_level.IImageEntry;
@@ -63,15 +56,16 @@ import org.openstreetmap.josm.gui.layer.LayerManager.LayerAddEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerOrderChangeEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent;
-import org.openstreetmap.josm.gui.layer.MainLayerManager;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
+import org.openstreetmap.josm.gui.layer.geoimage.IGeoImageLayer.ImageChangeListener;
 import org.openstreetmap.josm.gui.layer.imagery.ImageryFilterSettings;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.imagery.Vector3D;
 import org.openstreetmap.josm.gui.widgets.HideableTabbedPane;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageResource;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.PlatformManager;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -79,35 +73,36 @@ import org.openstreetmap.josm.tools.date.DateUtils;
 
 /**
  * Dialog to view and manipulate geo-tagged images from a {@link GeoImageLayer}.
+ * <p>
+ * @implNote
+ * The dialog has an {@code imagePanel} that {@link OverlayLayout overlays} an
+ * {@link ImageDisplay} and a {@link JTabbedPane tabbed pane}.  The tabbed pane will be
+ * visible only when images from more than one image layer are to be shown.  There will
+ * be one ImageDisplay in each tab.  The ImageDisplay in the dialog will be reparented
+ * to the first tab when the tabbed pane becomes visible.  The ImageDisplay in the last
+ * open tab will be reparented to the dialog when the tabbed pane is hidden.
  */
-public final class ImageViewerDialog extends ToggleDialog implements LayerChangeListener, ActiveLayerChangeListener {
+public class ImageViewerDialog extends ToggleDialog
+        implements ChangeListener, PropertyChangeListener, ImageChangeListener, LayerChangeListener, ActiveLayerChangeListener {
     private static final String GEOIMAGE_FILLER = marktr("Geoimage: {0}");
     private static final String DIALOG_FOLDER = "dialogs";
-
-    private final ImageryFilterSettings imageryFilterSettings = new ImageryFilterSettings();
-
-    private final ImageZoomAction imageZoomAction = new ImageZoomAction();
-    private final ImageCenterViewAction imageCenterViewAction = new ImageCenterViewAction();
-    private final ImageNextAction imageNextAction = new ImageNextAction();
-    private final ImageRemoveAction imageRemoveAction = new ImageRemoveAction();
-    private final ImageRemoveFromDiskAction imageRemoveFromDiskAction = new ImageRemoveFromDiskAction();
-    private final ImagePreviousAction imagePreviousAction = new ImagePreviousAction();
-    private final ImageCollapseAction imageCollapseAction = new ImageCollapseAction();
-    private final ImageFirstAction imageFirstAction = new ImageFirstAction();
-    private final ImageLastAction imageLastAction = new ImageLastAction();
-    private final ImageCopyPathAction imageCopyPathAction = new ImageCopyPathAction();
-    private final ImageOpenExternalAction imageOpenExternalAction = new ImageOpenExternalAction();
-    private final LayerVisibilityAction visibilityAction = new LayerVisibilityAction(Collections::emptyList,
-            () -> Collections.singleton(imageryFilterSettings));
-
-    private final ImageDisplay imgDisplay = new ImageDisplay(imageryFilterSettings);
-    private Future<?> imgLoadingFuture;
-    private boolean centerView;
+    private static final String CENTRE_PREF = "geoimage.viewer.centre.on.image";
+    private static final List<? extends IImageEntry<?>> NO_IMAGES = Collections.emptyList();
 
     // Only one instance of that class is present at one time
     private static volatile ImageViewerDialog dialog;
 
-    private boolean collapseButtonClicked;
+    /** The center panel that holds the ImageDisplay */
+    private final JPanel imagePanel = new JPanel();
+    /** The toolbar below the image  */
+    private final JToolBar toolbar = new JToolBar();
+    /** The layer tab (used to select images when multiple layers provide images, makes for easy switching) */
+    private final JTabbedPane tabbedPane = new JTabbedPane();
+    /** Pointer to the viewer if the tabbed pane is not visible */
+    private ImageDisplay2 imageDisplay0 = createImageDisplay(null);
+
+    /** The map follows the image in the viewer if true */
+    private boolean centerView;
 
     static void createInstance() {
         if (dialog != null)
@@ -120,10 +115,10 @@ public final class ImageViewerDialog extends ToggleDialog implements LayerChange
      * @return the unique instance
      */
     public static ImageViewerDialog getInstance() {
-        MapFrame map = MainApplication.getMap();
         synchronized (ImageViewerDialog.class) {
             if (dialog == null)
                 createInstance();
+            MapFrame map = MainApplication.getMap();
             if (map != null && map.getToggleDialog(ImageViewerDialog.class) == null) {
                 map.addToggleDialog(dialog);
             }
@@ -147,445 +142,1018 @@ public final class ImageViewerDialog extends ToggleDialog implements LayerChange
         dialog = null;
     }
 
-    private JButton btnLast;
-    private JButton btnNext;
-    private JButton btnPrevious;
-    private JButton btnFirst;
-    private JButton btnCollapse;
-    private JButton btnDelete;
-    private JButton btnCopyPath;
-    private JButton btnOpenExternal;
-    private JButton btnDeleteFromDisk;
-    private JToggleButton tbCentre;
-    /** The layer tab (used to select images when multiple layers provide images, makes for easy switching) */
-    private final HideableTabbedPane layers = new HideableTabbedPane();
-
     private ImageViewerDialog() {
         super(tr("Geotagged Images"), "geoimage", tr("Display geotagged images"), Shortcut.registerShortcut("tools:geotagged",
         tr("Windows: {0}", tr("Geotagged Images")), KeyEvent.VK_Y, Shortcut.DIRECT), 200);
-        build();
+        setup();
+    }
+
+    void setup() {
+        JToggleButton tbCentre = new JToggleButton(new ImageCenterViewAction());
+        tbCentre.setSelected(Config.getPref().getBoolean(CENTRE_PREF, false));
+
+        toolbar.setFloatable(false);
+        toolbar.setBorderPainted(false);
+        toolbar.setOpaque(false);
+
+        toolbar.add(new JButton(new ImageFirstAction()));
+        toolbar.add(new JButton(new ImagePreviousAction()));
+        toolbar.add(new JButton(new ImageNextAction()));
+        toolbar.add(new JButton(new ImageLastAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(new JButton(new UndoNavAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(tbCentre);
+        toolbar.add(new JButton(new ImageZoomAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(new JButton(new ImageDeleteAction()));
+        toolbar.add(new JButton(new ImageRemoveFromDiskAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(new JButton(new ImageCopyPathAction()));
+        toolbar.add(new JButton(new ImageOpenExternalAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(new JButton(new ImageFilterAction()));
+
+        toolbar.addSeparator();
+
+        toolbar.add(new JButton(new DockAction()));
+
+        // this will show either the tabbedPane or the imageDisplay0
+        imagePanel.setLayout(new OverlayLayout(imagePanel));
+        imagePanel.add(imageDisplay0);
+        imagePanel.add(tabbedPane);
+        tabbedPane.setVisible(false);
+
+        JPanel toolbarPanel = new JPanel();
+        toolbarPanel.setAlignmentX(CENTER_ALIGNMENT);
+        toolbarPanel.add(toolbar);
+
+        createLayout(imagePanel, false, null);
+        add(toolbarPanel, BorderLayout.SOUTH);
+
         MainApplication.getLayerManager().addActiveLayerChangeListener(this);
         MainApplication.getLayerManager().addLayerChangeListener(this);
-        for (Layer l: MainApplication.getLayerManager().getLayers()) {
-            registerOnLayer(l);
+        for (IGeoImageLayer geoLayer: getGeoLayers()) {
+            addLayerListeners(geoLayer);
         }
+        tabbedPane.addChangeListener(this);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        centerView = Config.getPref().getBoolean(CENTRE_PREF, false);
     }
 
-    private static JButton createButton(AbstractAction action, Dimension buttonDim) {
-        JButton btn = new JButton(action);
-        btn.setPreferredSize(buttonDim);
-        btn.addPropertyChangeListener("enabled", e -> action.setEnabled(Boolean.TRUE.equals(e.getNewValue())));
-        return btn;
-    }
-
-    private static JButton createNavigationButton(AbstractAction action, Dimension buttonDim) {
-        JButton btn = createButton(action, buttonDim);
-        btn.setEnabled(false);
-        action.addPropertyChangeListener(l -> {
-            if ("enabled".equals(l.getPropertyName())) {
-                btn.setEnabled(action.isEnabled());
-            }
-        });
-        return btn;
-    }
-
-    private void build() {
-        JPanel content = new JPanel(new BorderLayout());
-        content.add(this.layers, BorderLayout.CENTER);
-
-        Dimension buttonDim = new Dimension(26, 26);
-
-        btnFirst = createNavigationButton(imageFirstAction, buttonDim);
-        btnPrevious = createNavigationButton(imagePreviousAction, buttonDim);
-
-        btnDelete = createButton(imageRemoveAction, buttonDim);
-        btnDeleteFromDisk = createButton(imageRemoveFromDiskAction, buttonDim);
-        btnCopyPath = createButton(imageCopyPathAction, buttonDim);
-        btnOpenExternal = createButton(imageOpenExternalAction, buttonDim);
-
-        btnNext = createNavigationButton(imageNextAction, buttonDim);
-        btnLast = createNavigationButton(imageLastAction, buttonDim);
-
-        tbCentre = new JToggleButton(imageCenterViewAction);
-        tbCentre.setSelected(Config.getPref().getBoolean("geoimage.viewer.centre.on.image", false));
-        tbCentre.setPreferredSize(buttonDim);
-
-        JButton btnZoomBestFit = new JButton(imageZoomAction);
-        btnZoomBestFit.setPreferredSize(buttonDim);
-
-        btnCollapse = createButton(imageCollapseAction, new Dimension(20, 20));
-        btnCollapse.setAlignmentY(Component.TOP_ALIGNMENT);
-
-        JPanel buttons = new JPanel();
-        addButtonGroup(buttons, this.btnFirst, this.btnPrevious, this.btnNext, this.btnLast);
-        addButtonGroup(buttons, this.tbCentre, btnZoomBestFit);
-        addButtonGroup(buttons, this.btnDelete, this.btnDeleteFromDisk);
-        addButtonGroup(buttons, this.btnCopyPath, this.btnOpenExternal);
-        addButtonGroup(buttons, createButton(visibilityAction, buttonDim));
-
-        JPanel bottomPane = new JPanel(new GridBagLayout());
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.gridx = 0;
-        gc.gridy = 0;
-        gc.anchor = GridBagConstraints.CENTER;
-        gc.weightx = 1;
-        bottomPane.add(buttons, gc);
-
-        gc.gridx = 1;
-        gc.gridy = 0;
-        gc.anchor = GridBagConstraints.PAGE_END;
-        gc.weightx = 0;
-        bottomPane.add(btnCollapse, gc);
-
-        content.add(bottomPane, BorderLayout.SOUTH);
-
-        createLayout(content, false, null);
-    }
-
-    /**
-     * Add a button group to a panel
-     * @param buttonPanel The panel holding the buttons
-     * @param buttons The button group to add
-     */
-    private static void addButtonGroup(JPanel buttonPanel, AbstractButton... buttons) {
-        if (buttonPanel.getComponentCount() != 0) {
-            buttonPanel.add(Box.createRigidArea(new Dimension(7, 0)));
-        }
-
-        for (AbstractButton jButton : buttons) {
-            buttonPanel.add(jButton);
-        }
-    }
-
-    /**
-     * Update the tabs for the different image layers
-     * @param changed {@code true} if the tabs changed
-     */
-    private void updateLayers(boolean changed) {
-        MainLayerManager layerManager = MainApplication.getLayerManager();
-        List<IGeoImageLayer> geoImageLayers = layerManager.getLayers().stream()
-                .filter(IGeoImageLayer.class::isInstance).map(IGeoImageLayer.class::cast).collect(Collectors.toList());
-        if (geoImageLayers.isEmpty()) {
-            this.layers.setVisible(false);
-        } else {
-            this.layers.setVisible(true);
-            if (changed) {
-                addButtonsForImageLayers();
-            }
-            MoveImgDisplayPanel<?> selected = (MoveImgDisplayPanel<?>) this.layers.getSelectedComponent();
-            if ((this.imgDisplay.getParent() == null || this.imgDisplay.getParent().getParent() == null)
-                && selected != null && selected.layer.containsImage(this.currentEntry)) {
-                selected.setVisible(selected.isVisible());
-            } else if (selected != null && !selected.layer.containsImage(this.currentEntry)) {
-                this.getImageTabs().filter(m -> m.layer.containsImage(this.currentEntry)).mapToInt(this.layers::indexOfComponent).findFirst()
-                        .ifPresent(this.layers::setSelectedIndex);
-            }
-            this.layers.invalidate();
-        }
-        this.layers.getParent().invalidate();
-        this.revalidate();
-    }
-
-    /**
-     * Add the buttons for image layers
-     */
-    private void addButtonsForImageLayers() {
-        List<MoveImgDisplayPanel<?>> alreadyAdded = this.getImageTabs().collect(Collectors.toList());
-        // Avoid the setVisible call recursively calling this method and adding duplicates
-        alreadyAdded.forEach(m -> m.finishedAddingButtons = false);
-        List<Layer> availableLayers = MainApplication.getLayerManager().getLayers();
-        List<IGeoImageLayer> geoImageLayers = availableLayers.stream()
-                .sorted(Comparator.comparingInt(entry -> /*reverse*/-availableLayers.indexOf(entry)))
-                .filter(IGeoImageLayer.class::isInstance).map(IGeoImageLayer.class::cast).collect(Collectors.toList());
-        List<IGeoImageLayer> tabLayers = geoImageLayers.stream()
-                .filter(l -> alreadyAdded.stream().anyMatch(m -> Objects.equals(l, m.layer)) || l.containsImage(this.currentEntry))
-                .collect(Collectors.toList());
-        for (IGeoImageLayer layer : tabLayers) {
-            final MoveImgDisplayPanel<?> panel = alreadyAdded.stream()
-                    .filter(m -> Objects.equals(m.layer, layer)).findFirst()
-                    .orElseGet(() -> new MoveImgDisplayPanel<>(this.imgDisplay, (Layer & IGeoImageLayer) layer));
-            int componentIndex = this.layers.indexOfComponent(panel);
-            if (componentIndex == geoImageLayers.indexOf(layer)) {
-                this.layers.setTitleAt(componentIndex, panel.getLabel(availableLayers));
-            } else {
-                this.removeImageTab((Layer) layer);
-                this.layers.insertTab(panel.getLabel(availableLayers), null, panel, null, tabLayers.indexOf(layer));
-                int idx = this.layers.indexOfComponent(panel);
-                CloseableTab closeableTab = new CloseableTab(this.layers, l -> {
-                    Component source = (Component) l.getSource();
-                    do {
-                        int index = layers.indexOfTabComponent(source);
-                        if (index >= 0) {
-                            getImageTabs().forEach(m -> m.finishedAddingButtons = false);
-                            removeImageTab(((MoveImgDisplayPanel<?>) layers.getComponentAt(index)).layer);
-                            getImageTabs().forEach(m -> m.finishedAddingButtons = true);
-                            getImageTabs().forEach(m -> m.setVisible(m.isVisible()));
-                            return;
-                        }
-                        source = source.getParent();
-                    } while (source != null);
-                });
-                this.layers.setTabComponentAt(idx, closeableTab);
-            }
-            if (layer.containsImage(this.currentEntry)) {
-                this.layers.setSelectedComponent(panel);
-            }
-        }
-        this.getImageTabs().map(p -> p.layer).filter(layer -> !availableLayers.contains(layer))
-                // We have to collect to a list prior to removal -- if we don't, then the stream may get a layer at index 0,
-                // remove that layer, and then get a layer at index 1, which was previously at index 2.
-                .collect(Collectors.toList()).forEach(this::removeImageTab);
-
-        // This is need to avoid the first button becoming visible, and then recalling this method.
-        this.getImageTabs().forEach(m -> m.finishedAddingButtons = true);
-        // After that, trigger the visibility set code
-        this.getImageTabs().forEach(m -> m.setVisible(m.isVisible()));
-    }
-
-    /**
-     * Remove a tab for a layer from the {@link #layers} tab pane
-     * @param layer The layer to remove
-     */
-    private void removeImageTab(Layer layer) {
-        // This must be reversed to avoid removing the wrong tab
-        for (int i = this.layers.getTabCount() - 1; i >= 0; i--) {
-            Component component = this.layers.getComponentAt(i);
-            if (component instanceof MoveImgDisplayPanel) {
-                MoveImgDisplayPanel<?> moveImgDisplayPanel = (MoveImgDisplayPanel<?>) component;
-                if (Objects.equals(layer, moveImgDisplayPanel.layer)) {
-                    this.layers.removeTabAt(i);
-                    this.layers.remove(moveImgDisplayPanel);
-                }
-            }
-        }
-    }
-
-    /**
-     * Get the {@link MoveImgDisplayPanel} objects in {@link #layers}.
-     * @return The individual panels
-     */
-    private Stream<MoveImgDisplayPanel<?>> getImageTabs() {
-        return IntStream.range(0, this.layers.getTabCount())
-                .mapToObj(this.layers::getComponentAt)
-                .filter(MoveImgDisplayPanel.class::isInstance)
-                .map(m -> (MoveImgDisplayPanel<?>) m);
+    private ImageDisplay2 createImageDisplay(IGeoImageLayer geoLayer) {
+        ImageDisplay2 imageDisplay2 = new ImageDisplay2(geoLayer, new ImageryFilterSettings());
+        imageDisplay2.mayInterruptIfRunning = true;
+        return imageDisplay2;
     }
 
     @Override
     public void destroy() {
+        cancelLoadingImage();
         MainApplication.getLayerManager().removeActiveLayerChangeListener(this);
         MainApplication.getLayerManager().removeLayerChangeListener(this);
-        // Manually destroy actions until JButtons are replaced by standard SideButtons
-        imageFirstAction.destroy();
-        imageLastAction.destroy();
-        imagePreviousAction.destroy();
-        imageNextAction.destroy();
-        imageCenterViewAction.destroy();
-        imageCollapseAction.destroy();
-        imageCopyPathAction.destroy();
-        imageOpenExternalAction.destroy();
-        imageRemoveAction.destroy();
-        imageRemoveFromDiskAction.destroy();
-        imageZoomAction.destroy();
-        cancelLoadingImage();
+        for (IGeoImageLayer geoLayer: getGeoLayers()) {
+            removeLayerListeners(geoLayer);
+        }
+        tabbedPane.removeChangeListener(this);
+        for (Component c : toolbar.getComponents()) {
+            if (c instanceof AbstractButton) {
+                // make actions garbage-collectable
+                ((AbstractButton) c).setAction(null);
+            }
+        }
+        // will destroy all destroyable children of dialog
         super.destroy();
         destroyInstance();
     }
 
     /**
-     * This literally exists to silence sonarlint complaints.
-     * @param <I> the type of the operand and result of the operator
+     * Adds a tab for the given layer.
+     * <p>
+     * If there is only one tab, we hide the tabbed pane altogether to save screen real estate.
+     * This method may fire stateChanged.
      */
-    @FunctionalInterface
-    private interface SerializableUnaryOperator<I> extends UnaryOperator<I>, Serializable {
+    void addTabForLayer(IGeoImageLayer geoLayer) {
+        int tabCount = tabbedPane.getTabCount();
+        ImageDisplay2 imageDisplay;
+        switch (tabCount) {
+        case 0:
+            imageDisplay0.geoLayer = geoLayer;
+            imageDisplay = imageDisplay0;
+            // Our first tab: insert the tab but hide the tab pane
+            tabbedPane.insertTab(null, null, null, null, tabCount);
+            tabbedPane.setVisible(false);
+            break;
+        case 1:
+            // Our second tab: reparent the image display
+            tabbedPane.setComponentAt(0, imageDisplay0);
+            imageDisplay0 = null;
+            // then fall thru to insert the tab
+        default:
+            imageDisplay = createImageDisplay(geoLayer);
+            tabbedPane.insertTab(null, null, imageDisplay, null, tabCount);
+            tabbedPane.setVisible(true);
+        }
+        tabbedPane.setTabComponentAt(tabCount, new CloseableTab(imageDisplay));
     }
 
-    private abstract class ImageAction extends JosmAction {
-        final SerializableUnaryOperator<IImageEntry<?>> supplier;
-        ImageAction(String name, ImageProvider icon, String tooltip, Shortcut shortcut,
-                boolean registerInToolbar, String toolbarId, boolean installAdaptors,
-                final SerializableUnaryOperator<IImageEntry<?>> supplier) {
-            super(name, icon, tooltip, shortcut, registerInToolbar, toolbarId, installAdaptors);
-            Objects.requireNonNull(supplier);
-            this.supplier = supplier;
+    void removeTabForLayer(IGeoImageLayer geoLayer) {
+        int index = getTabIndexFor(geoLayer);
+        if (index != -1) {
+            ImageDisplay2 imageDisplay = (ImageDisplay2) tabbedPane.getComponentAt(index);
+            if (imageDisplay != null) {
+                imageDisplay.destroy();
+            }
+            tabbedPane.removeTabAt(index);
+            if (tabbedPane.getTabCount() == 1) {
+                imageDisplay0 = (ImageDisplay2) tabbedPane.getComponentAt(0);
+                // Otherwise, when we reparent the tab content the tabbed pane will
+                // automagically remove the corresponding tab, but we want to keep
+                // the tab alive, albeit without content and hidden.
+                tabbedPane.setComponentAt(0, null);
+                imagePanel.add(imageDisplay0); // reparent
+                tabbedPane.setVisible(false);
+            }
+            updateDialogTitle();
+            updateToolbar();
+            updateMap();
+        }
+    }
+
+    /**
+     * Sort the tabs according to the OSM layer order.
+     */
+    private void sortTabs() {
+        int n = 0;
+        IGeoImageLayer selectedlayer = getSelectedTabLayer();
+        // Note: we get the layers in reverse order, that is the layer with the
+        // highest id first. This is the same order as displayed in the Layers
+        // dialog, so I guess its alright.
+        for (IGeoImageLayer geoLayer : getGeoLayers()) {
+            int index = getTabIndexFor(geoLayer);
+            if (index != -1) {
+                if (index != n) {
+                    ImageDisplay2 imageDisplay = getImageDisplayAt(index);
+                    CloseableTab closeableTab = getCloseableTabAt(index);
+                    tabbedPane.insertTab(
+                        null,
+                        tabbedPane.getIconAt(index),
+                        imageDisplay,
+                        tabbedPane.getToolTipTextAt(index),
+                        n
+                    );
+                    tabbedPane.setTabComponentAt(n, closeableTab);
+                }
+                ++n;
+            }
+        }
+        setSelectedTabLayer(selectedlayer);
+    }
+
+    /**
+     * Returns a list of all geo layers in the system
+     */
+    List<IGeoImageLayer> getGeoLayers() {
+        /*
+        return MainApplication.getLayerManager().getLayers().stream()
+            .filter(IGeoImageLayer.class::isInstance)
+            .map(IGeoImageLayer.class::cast)
+            .collect(Collectors.toList());
+        */
+        List<IGeoImageLayer> l = new ArrayList<>();
+        MainApplication.getLayerManager().getLayers().forEach(layer -> {
+            if (layer instanceof IGeoImageLayer)
+                l.add((IGeoImageLayer) layer);
+        });
+        return l;
+    }
+
+    /**
+     * Returns a list of the layers in all tabs
+     */
+    List<IGeoImageLayer> getTabLayers() {
+        List<IGeoImageLayer> l = new ArrayList<>();
+        for (int index = 0; index < tabbedPane.getTabCount(); ++index) {
+            l.add(getImageDisplayAt(index).geoLayer);
+        }
+        return l;
+    }
+
+    /**
+     * Returns the layer of the selected tab
+     * @return the layer or null
+     */
+    IGeoImageLayer getSelectedTabLayer() {
+        int index = tabbedPane.getSelectedIndex();
+        if (index != -1) {
+            return getImageDisplayAt(index).geoLayer;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the ImageDisplay at the given index.
+     * @param index teh given index
+     * @return the ImageDisplay or null
+     */
+    ImageDisplay2 getImageDisplayAt(int index){
+        if (index == 0 && imageDisplay0 != null) {
+            return imageDisplay0;
+        }
+        Component c = tabbedPane.getComponentAt(index);
+        if (c instanceof ImageDisplay2)
+            return (ImageDisplay2) c;
+        return null;
+    }
+
+    CloseableTab getCloseableTabAt(int index) {
+        Component c = tabbedPane.getTabComponentAt(index);
+        if (c instanceof CloseableTab)
+            return (CloseableTab) c;
+        return null;
+    }
+
+    /**
+     * Selects the tab with the given layer
+     */
+    void setSelectedTabLayer(IGeoImageLayer layer) {
+        int index = getTabIndexFor(layer);
+        if (index != -1) {
+            tabbedPane.setSelectedIndex(index);
+        }
+    }
+
+    /**
+     * Returns the tab index for the given layer
+     * @param layer the given layer
+     * @return the tab index or -1 if not found
+     */
+    int getTabIndexFor(IGeoImageLayer layer) {
+        if (imageDisplay0 != null) {
+            return layer.equals(imageDisplay0.geoLayer) ? 0 : -1;
+        }
+        for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
+            if (getImageDisplayAt(i).geoLayer.equals(layer))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the ImageDisplay in the selected tab
+     * @return the ImageDisplay or null
+     */
+    ImageDisplay2 getSelectedImageDisplay() {
+        if (imageDisplay0 != null) {
+            return imageDisplay0;
+        }
+        int index = tabbedPane.getSelectedIndex();
+        if (index != -1) {
+            return getImageDisplayAt(index);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the images that are currently selected into the viewer or an empty list
+     */
+    List<? extends IImageEntry<?>> getSelectedImages() {
+        ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+        if (imageDisplay != null) {
+            return imageDisplay.getImages();
+        }
+        return NO_IMAGES;
+    }
+
+    /**
+     * Returns the image that is currently selected into the viewer or null.
+     * <p>
+     * This returns an image iff only one image is selected.
+     */
+    IImageEntry<?> getSelectedImage() {
+        return getUniqueImage(getSelectedImages());
+    }
+
+    static IImageEntry<?> getFirstImage(List<? extends IImageEntry<?>> images) {
+        if (!images.isEmpty())
+            return images.get(0);
+        return null;
+    }
+
+    static IImageEntry<?> getUniqueImage(List<? extends IImageEntry<?>> images) {
+        if (images.size() == 1)
+            return images.get(0);
+        return null;
+    }
+
+    /**
+     * Returns the OSM layer an image is in or null.
+     * <p>
+     * This method remedies a seriuos deficiency of the IImageEntry interface.
+     * @return the layer or null
+     */
+    IGeoImageLayer getLayer(IImageEntry<?> iImageEntry) {
+        // First try
+        if (iImageEntry instanceof ImageEntry) {
+            ImageEntry imageEntry = (ImageEntry) iImageEntry;
+            Layer layer = imageEntry.getDataSet().getLayer();
+            if (layer instanceof IGeoImageLayer) {
+                return (IGeoImageLayer) layer;
+            }
+        }
+        // Second try
+        if (iImageEntry instanceof RemoteEntry) {
+            return null;
+            /*
+            RemoteEntry remoteEntry = (RemoteEntry) iImageEntry;
+            Layer layer = remoteEntry.getLayer(); // There's no way to get the layer ??
+            if (layer instanceof IGeoImageLayer) {
+                return (IGeoImageLayer) layer;
+            }
+            */
+        }
+        // Stupid IImageEntry interface! Search all geo layers for this image
+        for (IGeoImageLayer geoLayer : getGeoLayers()) {
+            if (geoLayer.containsImage(iImageEntry))
+                return geoLayer;
+        }
+        return null;
+    }
+
+    /**
+     * An ImageDisplay that lets you retrieve the current images and keeps an undo
+     * stack.
+     */
+    class ImageDisplay2 extends ImageDisplay {
+        /** The layer of the images */
+        transient IGeoImageLayer geoLayer;
+        /** The currently selected images. */
+        transient List<? extends IImageEntry<?>> images = NO_IMAGES;
+        /** Undo stack of max. 10 images (memory hog) */
+        transient Deque<IImageEntry<?>> undoStack = new ArrayDeque<>();
+        /** The filter settings (sharpness etc.) */
+        transient ImageryFilterSettings imageryFilterSettings;
+
+        public ImageDisplay2(IGeoImageLayer geoLayer, ImageryFilterSettings imageryFilterSettings) {
+            super(imageryFilterSettings);
+            this.geoLayer = geoLayer;
+            this.imageryFilterSettings = imageryFilterSettings;
         }
 
         @Override
-        public void actionPerformed(ActionEvent event) {
-            final IImageEntry<?> entry = ImageViewerDialog.this.currentEntry;
-            if (entry != null) {
-                IImageEntry<?> nextEntry = this.getSupplier().apply(entry);
-                entry.selectImage(ImageViewerDialog.this, nextEntry);
-            }
-            this.resetRememberActions();
+        public void destroy() {
+            undoStack.clear();
+            super.destroy();
         }
 
-        void resetRememberActions() {
-            for (ImageRememberAction action : Arrays.asList(ImageViewerDialog.this.imageLastAction, ImageViewerDialog.this.imageFirstAction)) {
-                action.last = null;
-                action.updateEnabledState();
-            }
-        }
-
-        SerializableUnaryOperator<IImageEntry<?>> getSupplier() {
-            return this.supplier;
-        }
-
-        @Override
-        protected void updateEnabledState() {
-            final IImageEntry<?> entry = ImageViewerDialog.this.currentEntry;
-            this.setEnabled(entry != null && this.getSupplier().apply(entry) != null);
-        }
-    }
-
-    private class ImageNextAction extends ImageAction {
-        ImageNextAction() {
-            super(null, new ImageProvider(DIALOG_FOLDER, "next"), tr("Next"), Shortcut.registerShortcut(
-                    "geoimage:next", tr(GEOIMAGE_FILLER, tr("Show next Image")), KeyEvent.VK_PAGE_DOWN, Shortcut.DIRECT),
-                  false, null, false, IImageEntry::getNextImage);
-        }
-    }
-
-    private class ImagePreviousAction extends ImageAction {
-        ImagePreviousAction() {
-            super(null, new ImageProvider(DIALOG_FOLDER, "previous"), tr("Previous"), Shortcut.registerShortcut(
-                    "geoimage:previous", tr(GEOIMAGE_FILLER, tr("Show previous Image")), KeyEvent.VK_PAGE_UP, Shortcut.DIRECT),
-                  false, null, false, IImageEntry::getPreviousImage);
-        }
-    }
-
-    /** This class exists to remember the last entry, and go back if clicked again when it would not otherwise be enabled */
-    private abstract class ImageRememberAction extends ImageAction {
-        private final ImageProvider defaultIcon;
-        transient IImageEntry<?> last;
-        ImageRememberAction(String name, ImageProvider icon, String tooltip, Shortcut shortcut,
-                boolean registerInToolbar, String toolbarId, boolean installAdaptors, SerializableUnaryOperator<IImageEntry<?>> supplier) {
-            super(name, icon, tooltip, shortcut, registerInToolbar, toolbarId, installAdaptors, supplier);
-            this.defaultIcon = icon;
+        String getLabel() {
+            if (geoLayer != null)
+                return ((Layer) geoLayer).getLabel();
+            return "";
         }
 
         /**
-         * Update the icon for this action
+         * Set the image(s) to display.
+         * <p>
+         * There may be none, one, or more than one image selected in the layer.  We
+         * display an image only if exactly one image is selected, else we tell the
+         * user.
          */
-        public void updateIcon() {
-            if (this.last != null) {
-                new ImageProvider(DIALOG_FOLDER, "history").getResource().attachImageIcon(this, true);
-            } else {
-                this.defaultIcon.getResource().attachImageIcon(this, true);
+        public void setImages(List<? extends IImageEntry<?>> newImages) {
+            this.images = newImages != null ? newImages : NO_IMAGES;
+            if (images.isEmpty()) {
+                setEmptyText("No image");
+                setOsdText("");
+                super.setImage(null);
+                return;
+            } else if (images.size() > 1) {
+                setEmptyText("Multiple images selected");
+                setOsdText("");
+                super.setImage(null);
+                return;
             }
+            updateOsd(images.get(0));
+            super.setImage(images.get(0));
+        }
+
+        public IImageEntry<?> getImage() {
+            return images.isEmpty() ? null : images.get(0);
+        }
+
+        public List<? extends IImageEntry<?>> getImages() {
+            return images;
+        }
+
+        /**
+         * Updates the On-Screen-Display (EXIF information of shown picture)
+         */
+        private void updateOsd(IImageEntry<?> entry) {
+            StringBuilder osd = new StringBuilder(entry.getDisplayName());
+            if (entry.getElevation() != null) {
+                osd.append(tr("\nAltitude: {0} m", Math.round(entry.getElevation())));
+            }
+            if (entry.getSpeed() != null) {
+                osd.append(tr("\nSpeed: {0} km/h", Math.round(entry.getSpeed())));
+            }
+            if (entry.getExifImgDir() != null) {
+                osd.append(tr("\nDirection {0}\u00b0", Math.round(entry.getExifImgDir())));
+            }
+
+            DateTimeFormatter dtf = DateUtils.getDateTimeFormatter(FormatStyle.SHORT, FormatStyle.MEDIUM)
+                    // Set timezone to UTC since UTC is assumed when parsing the EXIF timestamp,
+                    // see see org.openstreetmap.josm.tools.ExifReader.readTime(com.drew.metadata.Metadata)
+                    .withZone(ZoneOffset.UTC);
+
+            if (entry.hasExifTime()) {
+                osd.append(tr("\nEXIF time: {0}", dtf.format(entry.getExifInstant())));
+            }
+            if (entry.hasGpsTime()) {
+                osd.append(tr("\nGPS time: {0}", dtf.format(entry.getGpsInstant())));
+            }
+            Optional.ofNullable(entry.getIptcCaption()).map(s -> tr("\nCaption: {0}", s)).ifPresent(osd::append);
+            Optional.ofNullable(entry.getIptcHeadline()).map(s -> tr("\nHeadline: {0}", s)).ifPresent(osd::append);
+            Optional.ofNullable(entry.getIptcKeywords()).map(s -> tr("\nKeywords: {0}", s)).ifPresent(osd::append);
+            Optional.ofNullable(entry.getIptcObjectName()).map(s -> tr("\nObject name: {0}", s)).ifPresent(osd::append);
+
+            setOsdText(osd.toString());
+        }
+
+        void storeUndo(IImageEntry<?> entry) {
+            if (entry != null && entry != undoStack.peekFirst())
+                undoStack.addFirst(entry);
+            // keep only 10 entries until we figure out how to clear the big image buffers
+            while (undoStack.size() > 10)
+                undoStack.pollLast();
+        }
+
+        boolean canUndo() {
+            return !undoStack.isEmpty();
+        }
+
+        IImageEntry<?> undo() {
+            return undoStack.pollFirst();
+        }
+    }
+
+    /**
+     * Displays a single image for the given layer.
+     * @param ignoredData the image data
+     * @param entry image entry
+     * @see #displayImages
+     * @deprecated Call {@link #displayImages(IGeoImageLayer, List)} instead
+     */
+    @Deprecated
+    public void displayImage(ImageData ignoredData, ImageEntry entry) {
+        displayImages(Collections.singletonList(entry));
+    }
+
+    /**
+     * Displays a single image for the given layer.
+     * @param entry image entry
+     * @see #displayImages
+     * @deprecated Call {@link #displayImages(IGeoImageLayer, List)} instead
+     */
+    @Deprecated
+    public void displayImage(IImageEntry<?> entry) {
+        this.displayImages(Collections.singletonList(entry));
+    }
+
+    /**
+     * Displays the given images.
+     * <p>
+     * We have to maintain this for compatibility as this is called from different
+     * places to open the dialog with some images preloaded.
+     * <p>
+     * This is also called when the selected image changes in some geolayer by
+     * {@link IImageEntry#selectImage}.  That the low-level IImageEntry interface should
+     * call into the high-level ImageViewerDialog is crazy as this dialog can easily
+     * listen to {@link IGeoImageLayer.ImageChangeListener#imageChanged imageChanged}
+     * events instead.  And that's what this dialog actually does.
+     * <p>
+     * FIXME: {@link IImageEntry} tries to be an image and a collection of images at the
+     * same time and should be refactored into two separate interfaces:
+     * <ul>
+     * <li>
+     * {@code IImageEntry} that represents an image.  The following functions should be
+     * added: a function to get the collection, one to get the layer, and one to clear
+     * temporary image buffers (unread the image).
+     * <li>
+     * {@code IImageCollection<? extends IImageEntry>} that represents an image
+     * collection.  {@code IImageCollection} should fire {@link
+     * org.openstreetmap.josm.data.osm.DataSelectionListener.SelectionChangeEvent
+     * SelectionChangeEvents} on navigation and provide the usual listener registration
+     * functions.  It should NOT depend on ImageDisplay.  The following functions should
+     * be added: get the selected images, set the selected images.
+     * </ul>
+     *
+     * @param newImages the image entries to display in the dialog
+     * @since 18246
+     * @deprecated Call {@link #displayImages(IGeoImageLayer, List)} instead
+     */
+    @Deprecated
+    public void displayImages(List<? extends IImageEntry<?>> newImages) {
+        imageChanged(getLayer(getFirstImage(newImages)), null, newImages);
+    }
+
+    /**
+     * Displays the given images.
+     * <p>
+     * This function expects you to provide the image layer, which is impossible to get
+     * reliably from an {@code IImageEntry<?>} in the current implementation.
+     *
+     * @param geoLayer the image layer
+     * @param newImages the images to display
+     */
+    public void displayImages(IGeoImageLayer geoLayer, List<? extends IImageEntry<?>> newImages) {
+        imageChanged(geoLayer, null, newImages);
+    }
+
+    /**
+     * Opens or expands the image viewer dialog to make sure it is visible.
+     */
+    void ensureDialogVisible() {
+        if (!isDialogShowing()) {
+            setIsDocked(false); // always open a detached window when an image is clicked and dialog is closed
+            showDialog();
+        } else if (isDocked && isCollapsed) {
+            expand();
+            dialogsPanel.reconstruct(DialogsPanel.Action.COLLAPSED_TO_DEFAULT, this);
+        }
+    }
+
+    /**
+     * Set a new image in the viewer or clear it
+     * @param newImage The new entry or null
+     */
+    private void setImages(List<? extends IImageEntry<?>> newImages) {
+        ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+        if (imageDisplay != null) {
+            imageDisplay.setImages(newImages);
+        }
+    }
+
+    /**
+     * Creates a tab for a layer if the tab does not yet exist.
+     * @param entry the given layer
+     */
+    void ensureTabForLayer(IGeoImageLayer geoLayer) {
+        if (getTabIndexFor(geoLayer) == -1) {
+            addTabForLayer(geoLayer);
+        }
+    }
+
+    /**
+     * Updates the status of all buttons in the toolbar.
+     * <p>
+     * This is a workaround for JosmAction not listening to imageChanged.
+     */
+    private void updateToolbar() {
+        for (Component c : toolbar.getComponents()) {
+            if (c instanceof AbstractButton) {
+                Action action = ((AbstractButton) c).getAction();
+                if (action instanceof SideButtonAction)
+                    ((SideButtonAction) action).updateEnabledState();
+            }
+        }
+    }
+
+    /**
+     * Selects the selected image in the map layer and pans the map to the location of
+     * the selected image if that preference is set.
+     */
+    private void updateMap() {
+        List<? extends IImageEntry<?>> selectedImages = getSelectedImages();
+        // FIXME: select all images when IImageEntry<?> will be fixed to allow this.
+        IImageEntry<?> onlyImage = getUniqueImage(selectedImages);
+        if (onlyImage != null) {
+            onlyImage.selectImage(null, onlyImage);
+        }
+        if (centerView) {
+            IImageEntry<?> firstImage = getFirstImage(selectedImages);
+            if (firstImage != null) {
+                panTo(firstImage);
+            }
+        }
+    }
+
+    /**
+     * Updates the title of the dialog.
+     */
+    private void updateDialogTitle() {
+        String baseTitle = tr("Geotagged Images");
+        String extTitle = "";
+        int index;
+        if ((index = tabbedPane.getSelectedIndex()) != -1) {
+            baseTitle = getImageDisplayAt(index).getLabel();
+        }
+        IImageEntry<?> currentEntry = getUniqueImage(getSelectedImages());
+        if (currentEntry != null && !currentEntry.getDisplayName().isEmpty()) {
+            extTitle = " - " + currentEntry.getDisplayName();
+        }
+        this.setTitle(baseTitle + extTitle);
+    }
+
+    /**
+     * Pan the map to center the given image
+     */
+    void panTo(IImageEntry<?> entry) {
+        if (entry != null && MainApplication.isDisplayingMapView() && entry.getPos() != null) {
+            MainApplication.getMap().mapView.zoomTo(entry.getPos());
+        }
+    }
+
+    /**
+     * Called when dialog docked or collapsed state has changed.
+     */
+    @Override
+    protected void stateChanged() {
+        super.stateChanged();
+        updateToolbar();
+    }
+
+    /**
+     * Returns whether an image is currently displayed
+     * @return If image is currently displayed
+     */
+    public boolean hasImage() {
+        return getCurrentImage() != null;
+    }
+
+    /**
+     * Returns the currently displayed image.
+     * @return Currently displayed image or {@code null}
+     * @since 18246 (signature)
+     */
+    public static IImageEntry<?> getCurrentImage() {
+        return getUniqueImage(getInstance().getSelectedImages());
+    }
+
+    /**
+     * Returns the rotation of the currently displayed image.
+     * @param entry The entry to get the rotation for. May be {@code null}.
+     * @return the rotation of the currently displayed image, or {@code null}
+     * @since 18263
+     */
+    public Vector3D getRotation(IImageEntry<?> entry) {
+        ImageDisplay imageDisplay = getSelectedImageDisplay();
+        if (imageDisplay != null)
+            return imageDisplay.getRotation(entry);
+        return null;
+    }
+
+    /**
+     * Returns whether the center view is currently active.
+     * @return {@code true} if the center view is active, {@code false} otherwise
+     * @since 9416
+     */
+    public static boolean isCenterView() {
+        return getInstance().centerView;
+    }
+
+    /**
+     * Reload the image. Call this if you load a low-resolution image first, and then get a high-resolution image, or
+     * if you know that the image has changed on disk.
+     * @since 18591
+     */
+    public void refresh() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+            if (imageDisplay != null) {
+                setImages(imageDisplay.getImages());
+            }
+        } else {
+            GuiHelper.runInEDT(this::refresh);
+        }
+    }
+
+    /**
+     * Cancels all loading of images.
+     */
+    private void cancelLoadingImage() {
+        ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+        if (imageDisplay != null) {
+            imageDisplay.imageLoadingFuture.cancel(true);
+        }
+    }
+
+    /*************/
+    /* Listeners */
+    /*************/
+
+    /**
+     * Listener to image selection changes.
+     * <p>
+     * This is called when the selection changes because the user clicked on a geoimage
+     * icon in the map.  (Or for any other selection change initiated by the geoimage
+     * layer.)
+     * <p>
+     * {@implNote} {@code oldImages} is not used and can be null.
+     */
+    @Override
+    public void imageChanged(IGeoImageLayer geoLayer, List<? extends IImageEntry<?>> oldImages,
+            List<? extends IImageEntry<?>> newImages) {
+
+        ensureDialogVisible();
+        ensureTabForLayer(geoLayer);
+        setSelectedTabLayer(geoLayer);
+        setImages(newImages);
+        // getSelectedImageDisplay().storeUndo(entry); // we get duplicated events from Mapillary plugin
+        updateDialogTitle();
+        updateToolbar();
+    }
+
+    /**
+     * Listener to tab selection changed.
+     * <p>
+     * This may also fire on tab added or removed iff the selected tab or the index of
+     * the selected tab have changed.  But there's no guarantee they will.
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        updateDialogTitle();
+        updateToolbar();
+        updateMap();
+    }
+
+    /*
+     * Listeners to layer changes
+     */
+
+    /**
+     * Adds the listeners to a geo layer
+     * <p>
+     * We must keep listeners on *all* geo layers, not only on those we have in open
+     * tabs because if the user clicks on a layer in the map that we don't have yet in a
+     * tab, we want a new tab to open for it.
+     *
+     * @param geoLayer the layer
+     */
+    void addLayerListeners(IGeoImageLayer geoLayer) {
+        geoLayer.addImageChangeListener(this);
+        ((Layer) geoLayer).addPropertyChangeListener(this);
+    }
+
+    /**
+     * Removes the listeners from a geo layer
+     */
+    void removeLayerListeners(IGeoImageLayer geoLayer) {
+        geoLayer.removeImageChangeListener(this);
+        ((Layer) geoLayer).removePropertyChangeListener(this);
+    }
+
+    @Override
+    public void layerAdded(LayerAddEvent e) {
+        if (e.getAddedLayer() instanceof IGeoImageLayer) {
+            addLayerListeners((IGeoImageLayer) e.getAddedLayer());
+        }
+    }
+
+    @Override
+    public void layerRemoving(LayerRemoveEvent e) {
+        if (e.getRemovedLayer() instanceof IGeoImageLayer) {
+            removeLayerListeners((IGeoImageLayer) e.getRemovedLayer());
+            removeTabForLayer((IGeoImageLayer) e.getRemovedLayer());
+        }
+    }
+
+    @Override
+    public void layerOrderChanged(LayerOrderChangeEvent e) {
+        sortTabs();
+    }
+
+    @Override
+    public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
+        if (e.getSource().getActiveLayer() instanceof IGeoImageLayer) {
+            if (!MainApplication.worker.isShutdown()) {
+                setSelectedTabLayer((IGeoImageLayer) e.getSource().getActiveLayer());
+            }
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // update tab and dialog titles if layer name changes
+        if (Layer.NAME_PROP.equals(evt.getPropertyName())) {
+            updateDialogTitle();
+            // revalidate all tabs to accomodate new title length
+            // (all because its easier)
+            for (int index = 0; index < tabbedPane.getTabCount(); index++) {
+                tabbedPane.getTabComponentAt(index).revalidate();
+            }
+            tabbedPane.repaint();
+        }
+        // Use Layer.VISIBLE_PROP here if we decide to do something when layer visibility changes
+    }
+
+    /***************/
+    /* The actions */
+    /***************/
+
+    /**
+     * An action that puts a SIDEBUTTON-sized icon in the button instead of a TOOLBAR-sized one.
+     */
+    private abstract class SideButtonAction extends JosmAction {
+        SideButtonAction(String name, ImageProvider icon, String tooltip, Shortcut shortcut,
+                boolean registerInToolbar, String toolbarId) {
+            super(name, icon, tooltip, shortcut, registerInToolbar, toolbarId, true);
+
+            putValue(LARGE_ICON_KEY, icon.getResource()
+                .getImageIcon(ImageProvider.ImageSizes.SIDEBUTTON.getImageDimension()));
+        }
+
+        @Override
+        protected void updateEnabledState() { // NOSONAR Override to make it accessible from here
+            super.updateEnabledState();
+        }
+    }
+
+    private abstract class ImageNavigationAction extends SideButtonAction {
+        enum What { FIRST, PREV, NEXT, LAST }
+        What what;
+
+        ImageNavigationAction(String name, ImageProvider icon, String tooltip, Shortcut shortcut,
+                boolean registerInToolbar, String toolbarId, What what) {
+            super(name, icon, tooltip, shortcut, registerInToolbar, toolbarId);
+            this.what = what;
         }
 
         @Override
         public void actionPerformed(ActionEvent event) {
-            final IImageEntry<?> current = ImageViewerDialog.this.currentEntry;
-            final IImageEntry<?> expected = this.supplier.apply(current);
-            if (current != null) {
-                IImageEntry<?> nextEntry = this.getSupplier().apply(current);
-                current.selectImage(ImageViewerDialog.this, nextEntry);
+            final IImageEntry<?> entry = getSelectedImage();
+            if (entry != null) {
+                getSelectedImageDisplay().storeUndo(entry);
+                IImageEntry<?> newImage;
+                switch (what) {
+                    case FIRST: newImage = entry.getFirstImage(); break;
+                    case PREV: newImage = entry.getPreviousImage(); break;
+                    case NEXT: newImage = entry.getNextImage(); break;
+                    default: newImage = entry.getLastImage(); break; // make javac happy
+                }
+                entry.selectImage(null, newImage);
+                updateMap();
             }
-            this.resetRememberActions();
-            if (!Objects.equals(current, expected)) {
-                this.last = current;
-            } else {
-                this.last = null;
-            }
-            this.updateEnabledState();
         }
 
         @Override
         protected void updateEnabledState() {
-            final IImageEntry<?> current = ImageViewerDialog.this.currentEntry;
-            final IImageEntry<?> nextEntry = current != null ? this.getSupplier().apply(current) : null;
-            if (this.last == null && nextEntry != null && nextEntry.equals(current)) {
+            final IImageEntry<?> entry = getSelectedImage();
+            if (entry == null) {
                 this.setEnabled(false);
-            } else {
-                super.updateEnabledState();
+                return;
             }
-            this.updateIcon();
-        }
-
-        @Override
-        SerializableUnaryOperator<IImageEntry<?>> getSupplier() {
-            if (this.last != null) {
-                return entry -> this.last;
+            switch (what) {
+                case FIRST:
+                case PREV:
+                    this.setEnabled(entry.getPreviousImage() != null);
+                    break;
+                case NEXT:
+                case LAST:
+                    this.setEnabled(entry.getNextImage() != null);
             }
-            return super.getSupplier();
         }
     }
 
-    private class ImageFirstAction extends ImageRememberAction {
+    private class ImageFirstAction extends ImageNavigationAction {
         ImageFirstAction() {
             super(null, new ImageProvider(DIALOG_FOLDER, "first"), tr("First"), Shortcut.registerShortcut(
                     "geoimage:first", tr(GEOIMAGE_FILLER, tr("Show first Image")), KeyEvent.VK_HOME, Shortcut.DIRECT),
-                  false, null, false, IImageEntry::getFirstImage);
+                  false, null, What.FIRST);
         }
     }
 
-    private class ImageLastAction extends ImageRememberAction {
+    private class ImagePreviousAction extends ImageNavigationAction {
+        ImagePreviousAction() {
+            super(null, new ImageProvider(DIALOG_FOLDER, "previous"), tr("Previous"), Shortcut.registerShortcut(
+                    "geoimage:previous", tr(GEOIMAGE_FILLER, tr("Show previous Image")), KeyEvent.VK_PAGE_UP, Shortcut.DIRECT),
+                  false, null, What.PREV);
+        }
+    }
+
+    private class ImageNextAction extends ImageNavigationAction {
+        ImageNextAction() {
+            super(null, new ImageProvider(DIALOG_FOLDER, "next"), tr("Next"), Shortcut.registerShortcut(
+                    "geoimage:next", tr(GEOIMAGE_FILLER, tr("Show next Image")), KeyEvent.VK_PAGE_DOWN, Shortcut.DIRECT),
+                  false, null, What.NEXT);
+        }
+    }
+
+    private class ImageLastAction extends ImageNavigationAction {
         ImageLastAction() {
             super(null, new ImageProvider(DIALOG_FOLDER, "last"), tr("Last"), Shortcut.registerShortcut(
                     "geoimage:last", tr(GEOIMAGE_FILLER, tr("Show last Image")), KeyEvent.VK_END, Shortcut.DIRECT),
-                  false, null, false, IImageEntry::getLastImage);
+                  false, null, What.LAST);
         }
     }
 
-    private class ImageCenterViewAction extends JosmAction {
+    private class UndoNavAction extends SideButtonAction {
+        UndoNavAction() {
+            super(null, new ImageProvider("undo"), tr("Undo the last navigation"), null,
+                  false, null);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+            if (imageDisplay != null) {
+                IImageEntry<?> newEntry = imageDisplay.undo();
+                if (newEntry != null) {
+                    newEntry.selectImage(null, newEntry);
+                    updateEnabledState();
+                    updateMap();
+                }
+            }
+        }
+
+        @Override
+        protected void updateEnabledState() {
+            ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+            if (imageDisplay != null) {
+                setEnabled(imageDisplay.canUndo());
+            } else {
+                setEnabled(false);
+            }
+        }
+    }
+
+    private class ImageCenterViewAction extends SideButtonAction {
         ImageCenterViewAction() {
             super(null, new ImageProvider("dialogs/autoscale", "selection"), tr("Center view"), null,
-                  false, null, false);
+                  false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             final JToggleButton button = (JToggleButton) e.getSource();
             centerView = button.isEnabled() && button.isSelected();
-            Config.getPref().putBoolean("geoimage.viewer.centre.on.image", centerView);
-            if (centerView && currentEntry != null && currentEntry.getPos() != null) {
-                MainApplication.getMap().mapView.zoomTo(currentEntry.getPos());
-            }
+            Config.getPref().putBoolean(CENTRE_PREF, centerView);
+            if (centerView)
+                panTo(getSelectedImage());
         }
     }
 
-    private class ImageZoomAction extends JosmAction {
+    private class ImageZoomAction extends SideButtonAction {
         ImageZoomAction() {
             super(null, new ImageProvider(DIALOG_FOLDER, "zoom-best-fit"), tr("Zoom best fit and 1:1"), null,
-                  false, null, false);
+                  false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            imgDisplay.zoomBestFitOrOne();
+            ImageDisplay imageDisplay = getSelectedImageDisplay();
+            if (imageDisplay != null)
+                imageDisplay.zoomBestFitOrOne();
+        }
+
+        @Override
+        protected void updateEnabledState() {
+            setEnabled(getSelectedImage() != null);
         }
     }
 
-    private class ImageRemoveAction extends JosmAction {
-        ImageRemoveAction() {
+    private class ImageDeleteAction extends SideButtonAction {
+        ImageDeleteAction() {
             super(null, new ImageProvider(DIALOG_FOLDER, "delete"), tr("Remove photo from layer"), Shortcut.registerShortcut(
                     "geoimage:deleteimagefromlayer", tr(GEOIMAGE_FILLER, tr("Remove photo from layer")), KeyEvent.VK_DELETE, Shortcut.SHIFT),
-                  false, null, false);
+                  false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (ImageViewerDialog.this.currentEntry != null) {
-                IImageEntry<?> imageEntry = ImageViewerDialog.this.currentEntry;
-                if (imageEntry.isRemoveSupported()) {
-                    imageEntry.remove();
-                }
+            IImageEntry<?> imageEntry = getSelectedImage();
+            if (imageEntry != null && imageEntry.isRemoveSupported()) {
+                imageEntry.remove();
             }
+        }
+
+        @Override
+        protected void updateEnabledState() {
+            // FIXME enable if multiple images selected
+            IImageEntry<?> imageEntry = getSelectedImage();
+            setEnabled(imageEntry != null && imageEntry.isRemoveSupported());
         }
     }
 
-    private class ImageRemoveFromDiskAction extends JosmAction {
+    private class ImageRemoveFromDiskAction extends SideButtonAction {
         ImageRemoveFromDiskAction() {
             super(null, new ImageProvider(DIALOG_FOLDER, "geoimage/deletefromdisk"), tr("Delete image file from disk"),
                     Shortcut.registerShortcut("geoimage:deletefilefromdisk",
                             tr(GEOIMAGE_FILLER, tr("Delete image file from disk")), KeyEvent.VK_DELETE, Shortcut.CTRL_SHIFT),
-                    false, null, false);
+                    false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            IImageEntry<?> currentEntry = getSelectedImage();
             if (currentEntry != null) {
                 List<IImageEntry<?>> toDelete = currentEntry instanceof ImageEntry ?
                         new ArrayList<>(((ImageEntry) currentEntry).getDataSet().getSelectedImages())
@@ -599,9 +1167,9 @@ public final class ImageViewerDialog extends ToggleDialog implements LayerChange
                         .setButtonIcons("cancel", "dialogs/geoimage/deletefromdisk")
                         .setContent(new JLabel("<html><h3>"
                                 + trn("Delete the file from disk?",
-                                      "Delete the {0} files from disk?", size, size)
-                                + "<p>" + trn("The image file will be permanently lost!",
-                                              "The images files will be permanently lost!", size) + "</h3></html>",
+                                      "Delete {0} files from disk?", size, size)
+                                + "</h3><p>" + trn("The image file will be permanently lost!",
+                                              "The image files will be permanently lost!", size) + "</p></html>",
                                 ImageProvider.get("dialogs/geoimage/deletefromdisk"), SwingConstants.LEADING))
                         .toggleEnable("geoimage.deleteimagefromdisk")
                         .setCancelButton(1)
@@ -633,43 +1201,44 @@ public final class ImageViewerDialog extends ToggleDialog implements LayerChange
                 }
             }
         }
+
+        @Override
+        protected void updateEnabledState() {
+            // FIXME enable if multiple images selected
+            IImageEntry<?> imageEntry = getSelectedImage();
+            setEnabled(imageEntry != null && imageEntry.isDeleteSupported() && imageEntry.isRemoveSupported());
+        }
     }
 
-    private class ImageCopyPathAction extends JosmAction {
+    private class ImageCopyPathAction extends SideButtonAction {
         ImageCopyPathAction() {
             super(null, new ImageProvider("copy"), tr("Copy image path"), Shortcut.registerShortcut(
                     "geoimage:copypath", tr(GEOIMAGE_FILLER, tr("Copy image path")), KeyEvent.VK_C, Shortcut.ALT_CTRL_SHIFT),
-                  false, null, false);
+                  false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            IImageEntry<?> currentEntry = getSelectedImage();
             if (currentEntry != null) {
                 ClipboardUtils.copyString(String.valueOf(currentEntry.getImageURI()));
             }
         }
-    }
-
-    private class ImageCollapseAction extends JosmAction {
-        ImageCollapseAction() {
-            super(null, new ImageProvider(DIALOG_FOLDER, "collapse"), tr("Move dialog to the side pane"), null,
-                  false, null, false);
-        }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            collapseButtonClicked = true;
-            detachedDialog.getToolkit().getSystemEventQueue().postEvent(new WindowEvent(detachedDialog, WindowEvent.WINDOW_CLOSING));
+        protected void updateEnabledState() {
+            setEnabled(getSelectedImage() != null);
         }
     }
 
-    private class ImageOpenExternalAction extends JosmAction {
+    private class ImageOpenExternalAction extends SideButtonAction {
         ImageOpenExternalAction() {
-            super(null, new ImageProvider("external-link"), tr("Open image in external viewer"), null, false, null, false);
+            super(null, new ImageProvider("external-link"), tr("Open image in external viewer"), null, false, null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            IImageEntry<?> currentEntry = getSelectedImage();
             if (currentEntry != null && currentEntry.getImageURI() != null) {
                 try {
                     PlatformManager.getPlatform().openUrl(currentEntry.getImageURI().toURL().toExternalForm());
@@ -678,448 +1247,103 @@ public final class ImageViewerDialog extends ToggleDialog implements LayerChange
                 }
             }
         }
+
+        @Override
+        protected void updateEnabledState() {
+            setEnabled(getSelectedImage() != null);
+        }
+    }
+
+    /**
+     * When the dialog is closed by the system menu, really close it and do not dock it.
+     */
+    @Override
+    protected boolean dockWhenClosingDetachedDlg() {
+        return false;
+    }
+
+    private class DockAction extends SideButtonAction {
+        DockAction() {
+            super(null, new ImageProvider(DIALOG_FOLDER, "collapse"), tr("Move dialog to the side pane"), null,
+                  false, null);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            detachedDialog.dispose();
+            dock();
+            if (isDialogInCollapsedView()) {
+                setContentVisible(false);
+                dialogsPanel.reconstruct(DialogsPanel.Action.ELEMENT_SHRINKS, null);
+            } else {
+                dialogsPanel.reconstruct(DialogsPanel.Action.INVISIBLE_TO_DEFAULT, ImageViewerDialog.this);
+            }
+        }
+
+        @Override
+        protected void updateEnabledState() {
+            setEnabled(!isDocked);
+        }
+    }
+
+    public List<ImageryFilterSettings> filterSupplier() {
+        ImageDisplay2 imageDisplay = getSelectedImageDisplay();
+        if (imageDisplay != null)
+            return Collections.singletonList(imageDisplay.imageryFilterSettings);
+        return Collections.emptyList();
+    }
+
+    private class ImageFilterAction extends LayerVisibilityAction {
+        ImageFilterAction() {
+            super(Collections::emptyList, ImageViewerDialog.this::filterSupplier);
+            putValue(Action.LARGE_ICON_KEY,
+                ImageResource.getAttachedImageResource(this)
+                    .getImageIcon(ImageProvider.ImageSizes.SIDEBUTTON.getImageDimension()));
+            putValue(SHORT_DESCRIPTION, tr("Image Filters"));
+        }
+
+        @Override
+        public void updateEnabledState() {
+            setEnabled(getSelectedImage() != null);
+        }
     }
 
     /**
      * A tab title renderer for {@link HideableTabbedPane} that allows us to close tabs.
      */
-    private static class CloseableTab extends JPanel implements PropertyChangeListener {
-        private final JLabel title;
-        private final JButton close;
+    private class CloseableTab extends JPanel implements ActionListener {
+        ImageDisplay2 imageDisplay;
 
         /**
          * Create a new {@link CloseableTab}.
-         * @param parent The parent to add property change listeners to. It should be a {@link HideableTabbedPane} in most cases.
+         * @param tabbedPane The parent to add property change listeners to. It should be a {@link HideableTabbedPane} in most cases.
          * @param closeAction The action to run to close the tab. You probably want to call {@link JTabbedPane#removeTabAt(int)}
          *                    at the very least.
          */
-        CloseableTab(Component parent, ActionListener closeAction) {
-            this.title = new JLabel();
-            this.add(this.title);
-            close = new JButton(ImageProvider.get("misc", "close"));
-            close.setBorder(BorderFactory.createEmptyBorder());
-            this.add(close);
-            close.addActionListener(closeAction);
-            close.addActionListener(l -> parent.removePropertyChangeListener("indexForTitle", this));
-            parent.addPropertyChangeListener("indexForTitle", this);
+        CloseableTab(ImageDisplay2 imageDisplay) {
+            super(new FlowLayout(FlowLayout.LEFT, 10, 0));
+            this.imageDisplay = imageDisplay;
+            setOpaque(false);
+
+            JLabel label = new JLabel() {
+                @Override
+                public String getText() {
+                    return imageDisplay.getLabel();
+                }
+            };
+            add(label);
+
+            // JButton close = new JButton(ImageProvider.get("misc", "close"));
+            JButton close = new JButton("×");
+            close.setFont(close.getFont().deriveFont(Font.BOLD));
+            close.setBorderPainted(false);
+            close.addActionListener(this);
+            add(close);
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() instanceof JTabbedPane) {
-                JTabbedPane source = (JTabbedPane) evt.getSource();
-                if (this.getParent() == null) {
-                    source.removePropertyChangeListener(evt.getPropertyName(), this);
-                }
-                if ("indexForTitle".equals(evt.getPropertyName())) {
-                    int idx = source.indexOfTabComponent(this);
-                    if (idx >= 0) {
-                        this.title.setText(source.getTitleAt(idx));
-                    }
-                }
-                // Used to hack around UI staying visible. This assumes that the parent component is a HideableTabbedPane.
-                this.title.setVisible(source.getTabCount() != 1);
-                this.close.setVisible(source.getTabCount() != 1);
-            }
-        }
-    }
-
-    /**
-     * A JPanel whose entire purpose is to display an image by (a) moving the imgDisplay around and (b) setting the imgDisplay as a child
-     * for this panel.
-     */
-    private static class MoveImgDisplayPanel<T extends Layer & IGeoImageLayer> extends JPanel {
-        private final T layer;
-        private final ImageDisplay imgDisplay;
-
-        /**
-         * The purpose of this field is to avoid having the same tab added to the dialog multiple times. This is only a problem when the dialog
-         * has multiple tabs on initialization (like from a session).
-         */
-        boolean finishedAddingButtons;
-        MoveImgDisplayPanel(ImageDisplay imgDisplay, T layer) {
-            super(new BorderLayout());
-            this.layer = layer;
-            this.imgDisplay = imgDisplay;
-        }
-
-        @Override
-        public void setVisible(boolean visible) {
-            super.setVisible(visible);
-            JTabbedPane layers = ImageViewerDialog.getInstance().layers;
-            int index = layers.indexOfComponent(this);
-            if (visible && this.finishedAddingButtons) {
-                if (!this.layer.getSelection().isEmpty() && !this.layer.getSelection().contains(ImageViewerDialog.getCurrentImage())) {
-                    ImageViewerDialog.getInstance().displayImages(this.layer.getSelection());
-                    this.layer.invalidate(); // This will force the geoimage layers to update properly.
-                }
-                if (this.imgDisplay.getParent() != this) {
-                    this.add(this.imgDisplay, BorderLayout.CENTER);
-                    this.imgDisplay.invalidate();
-                    this.revalidate();
-                }
-                if (index >= 0) {
-                    layers.setTitleAt(index, "* " + getLabel(MainApplication.getLayerManager().getLayers()));
-                }
-            } else if (index >= 0) {
-                layers.setTitleAt(index, getLabel(MainApplication.getLayerManager().getLayers()));
-            }
-        }
-
-        /**
-         * Get the label for this panel
-         * @param availableLayers The layers to use to get the index
-         * @return The label for this layer
-         */
-        String getLabel(List<Layer> availableLayers) {
-            final int index = availableLayers.size() - availableLayers.indexOf(layer);
-            return (ExpertToggleAction.isExpert() ? "[" + index + "] " : "") + layer.getLabel();
-        }
-    }
-
-    /**
-     * Enables (or disables) the "Previous" button.
-     * @param value {@code true} to enable the button, {@code false} otherwise
-     */
-    public void setPreviousEnabled(boolean value) {
-        this.imageFirstAction.updateEnabledState();
-        this.btnFirst.setEnabled(value || this.imageFirstAction.isEnabled());
-        btnPrevious.setEnabled(value);
-    }
-
-    /**
-     * Enables (or disables) the "Next" button.
-     * @param value {@code true} to enable the button, {@code false} otherwise
-     */
-    public void setNextEnabled(boolean value) {
-        btnNext.setEnabled(value);
-        this.imageLastAction.updateEnabledState();
-        this.btnLast.setEnabled(value || this.imageLastAction.isEnabled());
-    }
-
-    /**
-     * Enables (or disables) the "Center view" button.
-     * @param value {@code true} to enable the button, {@code false} otherwise
-     * @return the old enabled value. Can be used to restore the original enable state
-     */
-    public static synchronized boolean setCentreEnabled(boolean value) {
-        final ImageViewerDialog instance = getInstance();
-        final boolean wasEnabled = instance.tbCentre.isEnabled();
-        instance.tbCentre.setEnabled(value);
-        instance.tbCentre.getAction().actionPerformed(new ActionEvent(instance.tbCentre, 0, null));
-        return wasEnabled;
-    }
-
-    private transient IImageEntry<? extends IImageEntry<?>> currentEntry;
-
-    /**
-     * Displays a single image for the given layer.
-     * @param ignoredData the image data
-     * @param entry image entry
-     * @see #displayImages
-     */
-    public void displayImage(ImageData ignoredData, ImageEntry entry) {
-        displayImages(Collections.singletonList(entry));
-    }
-
-    /**
-     * Displays a single image for the given layer.
-     * @param entry image entry
-     * @see #displayImages
-     */
-    public void displayImage(IImageEntry<?> entry) {
-        this.displayImages(Collections.singletonList(entry));
-    }
-
-    /**
-     * Displays images for the given layer.
-     * @param entries image entries
-     * @since 18246
-     */
-    public void displayImages(List<? extends IImageEntry<?>> entries) {
-        boolean imageChanged;
-        IImageEntry<?> entry = entries != null && entries.size() == 1 ? entries.get(0) : null;
-
-        synchronized (this) {
-            // TODO: pop up image dialog but don't load image again
-
-            imageChanged = currentEntry != entry;
-
-            if (centerView && entry != null && MainApplication.isDisplayingMapView() && entry.getPos() != null) {
-                MainApplication.getMap().mapView.zoomTo(entry.getPos());
-            }
-
-            currentEntry = entry;
-
-            for (ImageAction action : Arrays.asList(this.imageFirstAction, this.imagePreviousAction,
-                    this.imageNextAction, this.imageLastAction)) {
-                action.updateEnabledState();
-            }
-        }
-
-
-        final boolean updateRequired;
-        final List<IGeoImageLayer> imageLayers = MainApplication.getLayerManager().getLayers().stream()
-                    .filter(IGeoImageLayer.class::isInstance).map(IGeoImageLayer.class::cast).collect(Collectors.toList());
-        if (!Config.getPref().getBoolean("geoimage.viewer.show.tabs", true)) {
-            updateRequired = true;
-            // Clear the selected images in other geoimage layers
-            this.getImageTabs().map(m -> m.layer).filter(IGeoImageLayer.class::isInstance).map(IGeoImageLayer.class::cast)
-                    .filter(l -> !Objects.equals(entries, l.getSelection()))
-                    .forEach(IGeoImageLayer::clearSelection);
-        } else {
-            updateRequired = imageLayers.stream().anyMatch(l -> this.getImageTabs().map(m -> m.layer).noneMatch(l::equals));
-        }
-        this.updateLayers(updateRequired);
-        if (entry != null) {
-            this.updateButtonsNonNullEntry(entry, imageChanged);
-        } else if (imageLayers.isEmpty()) {
-            this.updateButtonsNullEntry(entries);
-            return;
-        } else {
-            IGeoImageLayer layer = this.getImageTabs().map(m -> m.layer).filter(l -> l.getSelection().size() == 1).findFirst().orElse(null);
-            if (layer == null) {
-                this.updateButtonsNullEntry(entries);
-            } else {
-                this.displayImages(layer.getSelection());
-            }
-            return;
-        }
-        if (!isDialogShowing()) {
-            setIsDocked(false); // always open a detached window when an image is clicked and dialog is closed
-            showDialog();
-        } else if (isDocked && isCollapsed) {
-            expand();
-            dialogsPanel.reconstruct(DialogsPanel.Action.COLLAPSED_TO_DEFAULT, this);
-        }
-    }
-
-    /**
-     * Update buttons for null entry
-     * @param entries {@code true} if multiple images are selected
-     */
-    private void updateButtonsNullEntry(List<? extends IImageEntry<?>> entries) {
-        boolean hasMultipleImages = entries != null && entries.size() > 1;
-        // if this method is called to reinitialize dialog content with a blank image,
-        // do not actually show the dialog again with a blank image if currently hidden (fix #10672)
-        this.updateTitle();
-        imgDisplay.setImage(null);
-        imgDisplay.setOsdText("");
-        setNextEnabled(false);
-        setPreviousEnabled(false);
-        btnDelete.setEnabled(hasMultipleImages);
-        btnDeleteFromDisk.setEnabled(hasMultipleImages);
-        btnCopyPath.setEnabled(false);
-        btnOpenExternal.setEnabled(false);
-        if (hasMultipleImages) {
-            imgDisplay.setEmptyText(tr("Multiple images selected"));
-            btnFirst.setEnabled(!isFirstImageSelected(entries));
-            btnLast.setEnabled(!isLastImageSelected(entries));
-        }
-        imgDisplay.setImage(null);
-        imgDisplay.setOsdText("");
-    }
-
-    /**
-     * Update the image viewer buttons for the new entry
-     * @param entry The new entry
-     * @param imageChanged {@code true} if it is not the same image as the previous image.
-     */
-    private void updateButtonsNonNullEntry(IImageEntry<?> entry, boolean imageChanged) {
-        if (imageChanged) {
-            cancelLoadingImage();
-            // Set only if the image is new to preserve zoom and position if the same image is redisplayed
-            // (e.g. to update the OSD).
-            imgLoadingFuture = imgDisplay.setImage(entry);
-        }
-
-        // Update buttons after setting the new entry
-        setNextEnabled(entry.getNextImage() != null);
-        setPreviousEnabled(entry.getPreviousImage() != null);
-        btnDelete.setEnabled(entry.isRemoveSupported());
-        btnDeleteFromDisk.setEnabled(entry.isDeleteSupported() && entry.isRemoveSupported());
-        btnCopyPath.setEnabled(true);
-        btnOpenExternal.setEnabled(true);
-
-        this.updateTitle();
-        StringBuilder osd = new StringBuilder(entry.getDisplayName());
-        if (entry.getElevation() != null) {
-            osd.append(tr("\nAltitude: {0} m", Math.round(entry.getElevation())));
-        }
-        if (entry.getSpeed() != null) {
-            osd.append(tr("\nSpeed: {0} km/h", Math.round(entry.getSpeed())));
-        }
-        if (entry.getExifImgDir() != null) {
-            osd.append(tr("\nDirection {0}\u00b0", Math.round(entry.getExifImgDir())));
-        }
-
-        DateTimeFormatter dtf = DateUtils.getDateTimeFormatter(FormatStyle.SHORT, FormatStyle.MEDIUM)
-                // Set timezone to UTC since UTC is assumed when parsing the EXIF timestamp,
-                // see see org.openstreetmap.josm.tools.ExifReader.readTime(com.drew.metadata.Metadata)
-                .withZone(ZoneOffset.UTC);
-
-        if (entry.hasExifTime()) {
-            osd.append(tr("\nEXIF time: {0}", dtf.format(entry.getExifInstant())));
-        }
-        if (entry.hasGpsTime()) {
-            osd.append(tr("\nGPS time: {0}", dtf.format(entry.getGpsInstant())));
-        }
-        Optional.ofNullable(entry.getIptcCaption()).map(s -> tr("\nCaption: {0}", s)).ifPresent(osd::append);
-        Optional.ofNullable(entry.getIptcHeadline()).map(s -> tr("\nHeadline: {0}", s)).ifPresent(osd::append);
-        Optional.ofNullable(entry.getIptcKeywords()).map(s -> tr("\nKeywords: {0}", s)).ifPresent(osd::append);
-        Optional.ofNullable(entry.getIptcObjectName()).map(s -> tr("\nObject name: {0}", s)).ifPresent(osd::append);
-
-        imgDisplay.setOsdText(osd.toString());
-    }
-
-    private void updateTitle() {
-        final IImageEntry<?> entry;
-        synchronized (this) {
-            entry = this.currentEntry;
-        }
-        String baseTitle = Optional.ofNullable(this.layers.getSelectedComponent())
-                .filter(MoveImgDisplayPanel.class::isInstance).map(MoveImgDisplayPanel.class::cast)
-                .map(m -> m.layer).map(Layer::getLabel).orElse(tr("Geotagged Images"));
-        if (entry == null) {
-            this.setTitle(baseTitle);
-        } else {
-            this.setTitle(baseTitle + (!entry.getDisplayName().isEmpty() ? " - " + entry.getDisplayName() : ""));
-        }
-    }
-
-    private static boolean isLastImageSelected(List<? extends IImageEntry<?>> data) {
-        return data.stream().anyMatch(image -> data.contains(image.getLastImage()));
-    }
-
-    private static boolean isFirstImageSelected(List<? extends IImageEntry<?>> data) {
-        return data.stream().anyMatch(image -> data.contains(image.getFirstImage()));
-    }
-
-    /**
-     * When an image is closed, really close it and do not pop
-     * up the side dialog.
-     */
-    @Override
-    protected boolean dockWhenClosingDetachedDlg() {
-        if (collapseButtonClicked) {
-            collapseButtonClicked = false;
-            return super.dockWhenClosingDetachedDlg();
-        }
-        return false;
-    }
-
-    @Override
-    protected void stateChanged() {
-        super.stateChanged();
-        if (btnCollapse != null) {
-            btnCollapse.setVisible(!isDocked);
-        }
-        this.updateLayers(true);
-    }
-
-    /**
-     * Returns whether an image is currently displayed
-     * @return If image is currently displayed
-     */
-    public boolean hasImage() {
-        return currentEntry != null;
-    }
-
-    /**
-     * Returns the currently displayed image.
-     * @return Currently displayed image or {@code null}
-     * @since 18246 (signature)
-     */
-    public static IImageEntry<?> getCurrentImage() {
-        return getInstance().currentEntry;
-    }
-
-    /**
-     * Returns the rotation of the currently displayed image.
-     * @param entry The entry to get the rotation for. May be {@code null}.
-     * @return the rotation of the currently displayed image, or {@code null}
-     * @since 18263
-     */
-    public Vector3D getRotation(IImageEntry<?> entry) {
-        return imgDisplay.getRotation(entry);
-    }
-
-    /**
-     * Returns whether the center view is currently active.
-     * @return {@code true} if the center view is active, {@code false} otherwise
-     * @since 9416
-     */
-    public static boolean isCenterView() {
-        return getInstance().centerView;
-    }
-
-    @Override
-    public void layerAdded(LayerAddEvent e) {
-        registerOnLayer(e.getAddedLayer());
-        showLayer(e.getAddedLayer());
-    }
-
-    @Override
-    public void layerRemoving(LayerRemoveEvent e) {
-        if (e.getRemovedLayer() instanceof IGeoImageLayer && ((IGeoImageLayer) e.getRemovedLayer()).containsImage(this.currentEntry)) {
-            displayImages(null);
-        }
-        this.updateLayers(true);
-    }
-
-    @Override
-    public void layerOrderChanged(LayerOrderChangeEvent e) {
-        this.updateLayers(true);
-    }
-
-    @Override
-    public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-        if (!MainApplication.worker.isShutdown()) {
-            showLayer(e.getSource().getActiveLayer());
-        }
-    }
-
-    /**
-     * Reload the image. Call this if you load a low-resolution image first, and then get a high-resolution image, or
-     * if you know that the image has changed on disk.
-     * @since 18591
-     */
-    public void refresh() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            this.updateButtonsNonNullEntry(currentEntry, true);
-        } else {
-            GuiHelper.runInEDT(this::refresh);
-        }
-    }
-
-    private void registerOnLayer(Layer layer) {
-        if (layer instanceof IGeoImageLayer) {
-            layer.addPropertyChangeListener(l -> {
-                final List<?> currentTabLayers = this.getImageTabs().map(m -> m.layer).collect(Collectors.toList());
-                if (Layer.NAME_PROP.equals(l.getPropertyName()) && currentTabLayers.contains(layer)) {
-                    this.updateLayers(true);
-                        if (((IGeoImageLayer) layer).containsImage(this.currentEntry)) {
-                            this.updateTitle();
-                        }
-                } // Use Layer.VISIBLE_PROP here if we decide to do something when layer visibility changes
-            });
-        }
-    }
-
-    private void showLayer(Layer newLayer) {
-        if (this.currentEntry == null && newLayer instanceof GeoImageLayer) {
-            ImageData imageData = ((GeoImageLayer) newLayer).getImageData();
-            imageData.setSelectedImage(imageData.getFirstImage());
-        }
-        if (newLayer instanceof IGeoImageLayer) {
-            this.updateLayers(true);
-        }
-    }
-
-    private void cancelLoadingImage() {
-        if (imgLoadingFuture != null) {
-            imgLoadingFuture.cancel(false);
-            imgLoadingFuture = null;
+        public void actionPerformed(ActionEvent e) {
+            removeTabForLayer(imageDisplay.geoLayer);
         }
     }
 }

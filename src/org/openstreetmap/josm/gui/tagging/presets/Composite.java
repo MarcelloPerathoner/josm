@@ -1,14 +1,14 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 
 /**
  * A collection of {@link Item}s.
@@ -19,7 +19,7 @@ import javax.swing.JPanel;
  */
 abstract class Composite extends Item {
     /** The list of items in the sequence. */
-    final List<Item> items = new LinkedList<>();
+    final List<Item> items = new ArrayList<>();
 
     /**
      * Constructor.
@@ -69,7 +69,7 @@ abstract class Composite extends Item {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         boolean hasElements = false;
         for (Item item : items) {
             hasElements |= item.addToPanel(p, parentInstance);
@@ -103,7 +103,7 @@ abstract class Composite extends Item {
      * @return the list of all items
      */
     public List<Item> getAllItems(boolean followReferences) {
-        List<Item> result = new LinkedList<>();
+        List<Item> result = new ArrayList<>();
         items.forEach(item -> item.addToItemList(result, i -> true, followReferences));
         return result;
     }
@@ -115,7 +115,7 @@ abstract class Composite extends Item {
      * @return the list of all items
      */
     public List<Item> getAllItems(Predicate<Item> p, boolean followReferences) {
-        List<Item> list = new LinkedList<>();
+        List<Item> list = new ArrayList<>();
         items.forEach(item -> item.addToItemList(list, p, followReferences));
         return list;
     }
@@ -138,7 +138,7 @@ abstract class Composite extends Item {
      * @return the list of all items
      */
     public <E> List<E> getAllItems(Class<E> type, boolean followReferences) {
-        List<E> list = new LinkedList<>();
+        List<E> list = new ArrayList<>();
         items.forEach(item -> item.addToItemList(list, type, followReferences));
         return list;
     }
@@ -146,10 +146,10 @@ abstract class Composite extends Item {
     /**
      * Returns all keys in this preset. Convenience function.
      *
-     * @return set of all keys
+     * @return list of all keys
      */
     public List<String> getAllKeys() {
-        List<String> list = new LinkedList<>();
+        List<String> list = new ArrayList<>();
         for (KeyedItem item : getAllItems(KeyedItem.class)) {
             list.add(item.getKey());
         }
@@ -160,10 +160,10 @@ abstract class Composite extends Item {
      * Returns all values for the given key in this preset. Convenience function.
      * @param key the key
      *
-     * @return set of all values
+     * @return list of all values
      */
     public List<String> getAllValues(String key) {
-        List<String> list = new LinkedList<>();
+        List<String> list = new ArrayList<>();
         for (KeyedItem item : getAllItems(KeyedItem.class)) {
             if (item.getKey().equals(key))
                 list.addAll(item.getValues());

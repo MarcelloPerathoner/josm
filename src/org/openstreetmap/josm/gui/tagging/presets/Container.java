@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -76,13 +77,13 @@ class Container extends Composite {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         if (items.isEmpty())
             // do not add an empty panel
             return false;
         JPanel panel = getPanel();
         boolean hasElements = super.addToPanel(panel, parentInstance);
-        panel.applyComponentOrientation(parentInstance.getPresetInstance().getDialog().getDefaultComponentOrientation());
+        panel.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
         p.add(panel, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
         return hasElements;
     }

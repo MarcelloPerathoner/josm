@@ -285,7 +285,7 @@ public class ImageryProvidersPanel extends JPanel {
         HtmlPanel help = new HtmlPanel(tr("New default entries can be added in the <a href=\"{0}\">Wiki</a>.",
             Config.getUrls().getJOSMWebsite()+"/wiki/Maps"));
         help.enableClickableHyperlinks();
-        add(help, GBC.eol().insets(5, 0, 0, 0).fill(GBC.HORIZONTAL));
+        add(help, GBC.eol().insets(5, 0, 0, 0).fill(GridBagConstraints.HORIZONTAL));
 
         ActivateAction activate = new ActivateAction();
         defaultTable.getSelectionModel().addListSelectionListener(activate);
@@ -297,7 +297,7 @@ public class ImageryProvidersPanel extends JPanel {
         middleToolbar.setOpaque(false);
         middleToolbar.add(new ReloadAction());
         middleToolbar.add(btnActivate);
-        add(middleToolbar, GBC.eol().anchor(GBC.CENTER).insets(5, 5, 5, 0));
+        add(middleToolbar, GBC.eol().anchor(GridBagConstraints.CENTER).insets(5, 5, 5, 0));
 
         add(Box.createHorizontalGlue(), GBC.eol().fill(GridBagConstraints.HORIZONTAL));
 
@@ -316,7 +316,7 @@ public class ImageryProvidersPanel extends JPanel {
         activeToolbar.add(new NewEntryAction(ImageryInfo.ImageryType.MVT));
         activeToolbar.add(remove);
         activePanel.add(activeToolbar, BorderLayout.EAST);
-        add(activePanel, GBC.eol().fill(GridBagConstraints.BOTH).weight(2.0, 0.4).insets(5, 0, 0, 5));
+        add(activePanel, GBC.eol().fill().weight(2.0, 0.4).insets(5, 0, 0, 5));
     }
 
     // Listener of default providers list selection

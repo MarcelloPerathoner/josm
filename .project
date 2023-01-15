@@ -1,32 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>JOSM</name>
-	<comment></comment>
+	<comment>JOSM OpenStreetMap Editor</comment>
 	<projects>
 	</projects>
 	<buildSpec>
 		<buildCommand>
-			<name>sf.eclipse.javacc.javaccbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
-			<triggers>full,incremental,</triggers>
-			<arguments>
-				<dictionary>
-					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/revision.launch</value>
-				</dictionary>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>net.sf.eclipsecs.core.CheckstyleBuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -36,18 +16,31 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>net.sourceforge.pmd.eclipse.plugin.pmdBuilder</name>
+			<name>ch.acanda.eclipse.pmd.builder.PMDBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.sonarlint.eclipse.core.sonarlintNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.sonar.ide.eclipse.core.sonarNature</nature>
-		<nature>sf.eclipse.javacc.javaccnature</nature>
-		<nature>net.sf.eclipsecs.core.CheckstyleNature</nature>
-		<nature>org.apache.ivyde.eclipse.ivynature</nature>
-		<nature>net.sourceforge.pmd.eclipse.plugin.pmdNature</nature>
+		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
+		<nature>org.sonarlint.eclipse.core.sonarlintNature</nature>
+		<nature>ch.acanda.eclipse.pmd.builder.PMDNature</nature>
 	</natures>
+	<filteredResources>
+		<filter>
+			<id>1671608530873</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.core.resources.regexFilterMatcher</id>
+				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>

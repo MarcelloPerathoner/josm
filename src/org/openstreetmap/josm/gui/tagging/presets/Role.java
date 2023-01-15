@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -210,7 +211,7 @@ public final class Role extends TextItem {
      * @return {@code true}
      */
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         GBC std = GBC.std().insets(0, 0, right, 0);
         GBC eol = GBC.eol().insets(0, 0, right, 0);
 

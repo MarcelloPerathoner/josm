@@ -16,6 +16,7 @@ import javax.swing.table.TableColumn;
 
 import org.openstreetmap.josm.gui.dialogs.IEnabledStateUpdating;
 import org.openstreetmap.josm.spi.preferences.Config;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * The class that provide common JTable customization methods
@@ -187,7 +188,22 @@ public final class TableHelper {
         // According to javax.swing.plaf.basic.BasicTableUI.installDefaults: "If the
         // developer changes the font, it's there[sic!] responsability[sic!] to update
         // the row height."
-        setRowHeight(table, null);
+        setRowHeight(table);
+    }
+
+    /**
+     * Sets an approximate row height for all table rows.
+     * <p>
+     * This is a fast and "close-enough" approach to setting the row height.  To set the
+     * exact row height you'd have to render and measure all cells.  The row height is
+     * set according to the font size alone.
+     *
+     * @param table the table with the font already set
+     * @see #setRowHeights
+     */
+    public static void setRowHeight(JTable table) {
+        int fontHeight = table.getFontMetrics(table.getFont()).getHeight();
+        table.setRowHeight(fontHeight + table.getRowMargin());
     }
 
     /**
@@ -196,10 +212,8 @@ public final class TableHelper {
      * This is a fast and "close-enough" approach to setting the row height.  To set the
      * exact row height you'd have to render and measure all cells.
      * <p>
-     * If no icon is provided, the row height is set according to the font size alone.
-     * If an icon is provided, it should be of the same size as the icons expected to
-     * populate the table rows. The row height will be set to accomodate the font and
-     * the icon.
+     * The given icon should be of the same size as the icons expected to populate the
+     * table rows. The row height will be set to accomodate the font and the icon.
      *
      * @param table the table with the font already set
      * @param prototypeIcon an icon of the same size as those used in the table (or null)
@@ -208,7 +222,25 @@ public final class TableHelper {
     public static void setRowHeight(JTable table, Icon prototypeIcon) {
         int fontHeight = table.getFontMetrics(table.getFont()).getHeight();
         int iconHeight = prototypeIcon != null ? prototypeIcon.getIconHeight() : 0;
+        table.setRowHeight(Math.max(fontHeight, iconHeight) + table.getRowMargin());
+    }
 
+    /**
+     * Sets an approximate row height for all table rows.
+     * <p>
+     * This is a fast and "close-enough" approach to setting the row height.  To set the
+     * exact row height you'd have to render and measure all cells.
+     * <p>
+     * The given size should be the size of the icons expected to populate the table
+     * rows. The row height will be set to accomodate the font and the icon.
+     *
+     * @param table the table with the font already set
+     * @param size the same size as the icons used in the table
+     * @see #setRowHeights
+     */
+    public static void setRowHeight(JTable table, ImageProvider.ImageSizes size) {
+        int fontHeight = table.getFontMetrics(table.getFont()).getHeight();
+        int iconHeight = size.getHeight();
         table.setRowHeight(Math.max(fontHeight, iconHeight) + table.getRowMargin());
     }
 

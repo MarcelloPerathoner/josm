@@ -32,6 +32,7 @@ import org.openstreetmap.josm.data.oauth.OAuthToken;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.help.HelpUtil;
+import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.server.UserNameValidator;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.widgets.DefaultTextComponentValidator;
@@ -87,8 +88,8 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
      */
     protected VerticallyScrollablePanel buildUserNamePasswordPanel() {
         VerticallyScrollablePanel pnl = new VerticallyScrollablePanel(new GridBagLayout());
+
         GridBagConstraints gc = new GridBagConstraints();
-        pnl.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         gc.anchor = GridBagConstraints.NORTHWEST;
         gc.fill = GridBagConstraints.HORIZONTAL;
@@ -154,9 +155,9 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
         JPanel pnl = new JPanel(new BorderLayout());
 
         JTabbedPane tpProperties = new JTabbedPane();
-        tpProperties.add(buildUserNamePasswordPanel().getVerticalScrollPane());
-        tpProperties.add(buildGrantsPanel().getVerticalScrollPane());
-        tpProperties.add(getAdvancedPropertiesPanel().getVerticalScrollPane());
+        tpProperties.add(DefaultTabPreferenceSetting.decorateScrollable(buildUserNamePasswordPanel()));
+        tpProperties.add(DefaultTabPreferenceSetting.decorateScrollable(buildGrantsPanel()));
+        tpProperties.add(DefaultTabPreferenceSetting.decorateScrollable(getAdvancedPropertiesPanel()));
         tpProperties.setTitleAt(0, tr("Basic"));
         tpProperties.setTitleAt(1, tr("Granted rights"));
         tpProperties.setTitleAt(2, tr("Advanced OAuth properties"));

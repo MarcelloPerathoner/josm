@@ -84,7 +84,7 @@ public class PreferenceDialog extends JDialog {
         c.setLayout(new BorderLayout());
         c.add(tpPreferences, BorderLayout.CENTER);
         tpPreferences.buildGui();
-        tpPreferences.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        // tpPreferences.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         c.add(buildActionPanel(), BorderLayout.SOUTH);
         addWindowListener(windowEventHandler);
 

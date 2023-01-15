@@ -3,7 +3,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
 /**
  * The XML root element.  Corresponds to {@code <presets>}.
@@ -47,7 +47,7 @@ final class Root extends Composite {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         return false;
     }
 

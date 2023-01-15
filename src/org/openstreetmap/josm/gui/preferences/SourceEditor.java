@@ -42,7 +42,6 @@ import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,6 +58,7 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -160,7 +160,7 @@ public abstract class SourceEditor extends JPanel {
         // Note: The model must be set after the setColumnWidth listener. See #20849
         this.tblAvailableSources.setModel(availableSourcesModel);
         this.tblAvailableSources.setAutoCreateRowSorter(true);
-        TableHelper.setFont(tblAvailableSources, getClass());
+        TableHelper.setRowHeight(tblAvailableSources, ImageProvider.ImageSizes.TABLE);
 
         this.tblAvailableSources.setSelectionModel(selectionModel);
         final FancySourceEntryTableCellRenderer availableSourcesEntryRenderer = new FancySourceEntryTableCellRenderer();
@@ -172,15 +172,16 @@ public abstract class SourceEditor extends JPanel {
         selectionModel = new DefaultListSelectionModel();
         activeSourcesModel = new ActiveSourcesModel(selectionModel);
         tblActiveSources = new JTable(activeSourcesModel);
-        TableHelper.setFont(tblActiveSources, getClass());
         tblActiveSources.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tblActiveSources.setSelectionModel(selectionModel);
+        TableHelper.setRowHeight(tblActiveSources, ImageProvider.ImageSizes.TABLE); // make both tables same row height
         Stream.of(tblAvailableSources, tblActiveSources).forEach(t -> {
             t.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             t.setShowGrid(false);
             t.setIntercellSpacing(new Dimension(0, 0));
             t.setTableHeader(null);
             t.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            t.setFillsViewportHeight(true);
         });
         SourceEntryTableCellRenderer sourceEntryRenderer = new SourceEntryTableCellRenderer();
         TableColumnModel cm = tblActiveSources.getColumnModel();
@@ -240,115 +241,64 @@ public abstract class SourceEditor extends JPanel {
         tblAvailableSources.getSelectionModel().addListSelectionListener(activateSourcesAction);
         JButton activate = new JButton(activateSourcesAction);
 
-        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         setLayout(new GridBagLayout());
+        JPanel stylesPanel = new JPanel(new GridBagLayout());
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0.5;
-        gbc.gridwidth = 2;
-        gbc.anchor = GBC.WEST;
-        gbc.insets = new Insets(5, 11, 0, 0);
+        stylesPanel.add(new JLabel(getStr(I18nString.AVAILABLE_SOURCES)), GBC.std().span(2));
+        stylesPanel.add(new JLabel(getStr(I18nString.ACTIVE_SOURCES)), GBC.eol());
 
-        add(new JLabel(getStr(I18nString.AVAILABLE_SOURCES)), gbc);
-
-        gbc.gridx = 2;
-        gbc.insets = new Insets(5, 0, 0, 6);
-
-        add(new JLabel(getStr(I18nString.ACTIVE_SOURCES)), gbc);
-
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weighty = 0.8;
-        gbc.fill = GBC.BOTH;
-        gbc.anchor = GBC.CENTER;
-        gbc.insets = new Insets(0, 11, 0, 0);
-
+        JPanel availableStylesPanel = new JPanel(new GridBagLayout());
         FilterField availableSourcesFilter = new FilterField().filter(tblAvailableSources, availableSourcesModel);
-        JPanel defaultPane = new JPanel(new GridBagLayout());
         JScrollPane sp1 = new JScrollPane(tblAvailableSources);
-        defaultPane.add(availableSourcesFilter, GBC.eol().insets(0, 0, 0, 0).fill(GridBagConstraints.HORIZONTAL));
-        defaultPane.add(sp1, GBC.eol().insets(0, 0, 0, 0).fill(GridBagConstraints.BOTH));
-        add(defaultPane, gbc);
+        availableStylesPanel.add(availableSourcesFilter, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
+        availableStylesPanel.add(sp1, GBC.eol().fill());
+        stylesPanel.add(availableStylesPanel, GBC.std().fill());
 
-        gbc.gridx = 1;
-        gbc.weightx = 0.0;
-        gbc.fill = GBC.VERTICAL;
-        gbc.insets = new Insets(0, 0, 0, 0);
-
-        JToolBar middleTB = new JToolBar();
-        middleTB.setFloatable(false);
-        middleTB.setBorderPainted(false);
-        middleTB.setOpaque(false);
-        middleTB.add(Box.createHorizontalGlue());
+        JToolBar middleTB = createVerticalToolbar();
         middleTB.add(activate);
-        middleTB.add(Box.createHorizontalGlue());
-        add(middleTB, gbc);
-
-        gbc.gridx++;
-        gbc.weightx = 0.5;
-        gbc.fill = GBC.BOTH;
+        stylesPanel.add(middleTB, GBC.std().anchor(GridBagConstraints.CENTER));
 
         JScrollPane sp = new JScrollPane(tblActiveSources);
-        add(sp, gbc);
+        stylesPanel.add(sp, GBC.std().fill());
         sp.setColumnHeaderView(null);
 
-        gbc.gridx++;
-        gbc.weightx = 0.0;
-        gbc.fill = GBC.VERTICAL;
-        gbc.insets = new Insets(0, 0, 0, 6);
-
-        JToolBar sideButtonTB = new JToolBar(JToolBar.VERTICAL);
-        sideButtonTB.setFloatable(false);
-        sideButtonTB.setBorderPainted(false);
-        sideButtonTB.setOpaque(false);
+        JToolBar sideButtonTB = createVerticalToolbar();
         sideButtonTB.add(new NewActiveSourceAction());
         sideButtonTB.add(editActiveSourceAction);
         sideButtonTB.add(removeActiveSourcesAction);
-        sideButtonTB.addSeparator(new Dimension(12, 30));
         if (sourceType == SourceType.MAP_PAINT_STYLE) {
+            sideButtonTB.addSeparator();
             sideButtonTB.add(moveUp);
             sideButtonTB.add(moveDown);
         }
-        add(sideButtonTB, gbc);
+        stylesPanel.add(sideButtonTB, GBC.eop().fill(GridBagConstraints.VERTICAL));
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weighty = 0.0;
-        gbc.weightx = 0.5;
-        gbc.fill = GBC.HORIZONTAL;
-        gbc.anchor = GBC.WEST;
-        gbc.insets = new Insets(0, 11, 0, 0);
+        JToolBar bottomTB = new JToolBar(); // has a BoxLayout
+        bottomTB.setFloatable(false);
+        bottomTB.setBorderPainted(false);
+        bottomTB.setOpaque(false);
+        bottomTB.add(new ReloadSourcesAction(availableSourcesUrl, sourceProviders));
+        bottomTB.add(GBC.glue(1, 0));
+        bottomTB.add(new ResetAction());
+        stylesPanel.add(bottomTB, GBC.eol().span(3).fill(GridBagConstraints.HORIZONTAL));
 
-        JToolBar bottomLeftTB = new JToolBar();
-        bottomLeftTB.setFloatable(false);
-        bottomLeftTB.setBorderPainted(false);
-        bottomLeftTB.setOpaque(false);
-        bottomLeftTB.add(new ReloadSourcesAction(availableSourcesUrl, sourceProviders));
-        bottomLeftTB.add(Box.createHorizontalGlue());
-        add(bottomLeftTB, gbc);
-
-        gbc.gridx = 2;
-        gbc.anchor = GBC.CENTER;
-        gbc.insets = new Insets(0, 0, 0, 0);
-
-        JToolBar bottomRightTB = new JToolBar();
-        bottomRightTB.setFloatable(false);
-        bottomRightTB.setBorderPainted(false);
-        bottomRightTB.setOpaque(false);
-        bottomRightTB.add(Box.createHorizontalGlue());
-        bottomRightTB.add(new JButton(new ResetAction()));
-        add(bottomRightTB, gbc);
+        // hack: make the panels' heights exactly 4 to 1
+        stylesPanel.setPreferredSize(new Dimension(1, 1));
+        add(stylesPanel, GBC.eop().fill().weight(1, 4)); // weight must be last
 
         // Icon configuration
         if (handleIcons) {
-            buildIcons(gbc);
+            add(new JSeparator(), GBC.eop().fill(GridBagConstraints.HORIZONTAL));
+            JPanel iconsPanel = buildIconsPanel();
+            // hack: make the panels' heights exactly 4 to 1
+            iconsPanel.setPreferredSize(new Dimension(1, 1));
+            add(iconsPanel, GBC.eop().fill().weight(1, 1)); // weight must be last
         }
     }
 
-    private void buildIcons(GridBagConstraints gbc) {
+    private JPanel buildIconsPanel() {
+        JPanel iconsPanel = new JPanel(new GridBagLayout());
+
         DefaultListSelectionModel selectionModel = new DefaultListSelectionModel();
         iconPathsModel = new IconPathTableModel(selectionModel);
         tblIconPaths = new JTable(iconPathsModel);
@@ -368,43 +318,28 @@ public abstract class SourceEditor extends JPanel {
         tblIconPaths.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
         tblIconPaths.getActionMap().put("delete", removeIconPathAction);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GBC.REMAINDER;
-        gbc.insets = new Insets(8, 11, 8, 6);
-
-        add(new JSeparator(), gbc);
-
-        gbc.gridy++;
-        gbc.insets = new Insets(0, 11, 0, 6);
-
-        add(new JLabel(tr("Icon paths:")), gbc);
-
-        gbc.gridy++;
-        gbc.weighty = 0.2;
-        gbc.gridwidth = 3;
-        gbc.fill = GBC.BOTH;
-        gbc.insets = new Insets(0, 11, 0, 0);
+        iconsPanel.add(new JLabel(tr("Icon paths:")), GBC.eop());
 
         JScrollPane sp = new JScrollPane(tblIconPaths);
-        add(sp, gbc);
+        iconsPanel.add(sp, GBC.std().fill());
         sp.setColumnHeaderView(null);
 
-        gbc.gridx = 3;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0.0;
-        gbc.fill = GBC.VERTICAL;
-        gbc.insets = new Insets(0, 0, 0, 6);
-
-        JToolBar sideButtonTBIcons = new JToolBar(JToolBar.VERTICAL);
-        sideButtonTBIcons.setFloatable(false);
-        sideButtonTBIcons.setBorderPainted(false);
-        sideButtonTBIcons.setOpaque(false);
+        JToolBar sideButtonTBIcons = createVerticalToolbar();
         sideButtonTBIcons.add(new NewIconPathAction());
         sideButtonTBIcons.add(editIconPathAction);
         sideButtonTBIcons.add(removeIconPathAction);
-        add(sideButtonTBIcons, gbc);
+        iconsPanel.add(sideButtonTBIcons, GBC.eop().fill(GridBagConstraints.VERTICAL));
+
+        iconsPanel.setPreferredSize(new Dimension(1, 1));
+        return iconsPanel;
+    }
+
+    private JToolBar createVerticalToolbar() {
+        JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
+        toolbar.setFloatable(false);
+        toolbar.setBorderPainted(false);
+        toolbar.setOpaque(false);
+        return toolbar;
     }
 
     /**

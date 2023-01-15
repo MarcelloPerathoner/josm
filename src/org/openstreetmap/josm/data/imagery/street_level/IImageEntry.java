@@ -85,7 +85,8 @@ public interface IImageEntry<I extends IImageEntry<I>> {
      * @since 18290
      */
     default void selectImage(final ImageViewerDialog imageViewerDialog, final IImageEntry<?> entry) {
-        imageViewerDialog.displayImage(entry);
+        if (imageViewerDialog != null)
+            imageViewerDialog.displayImage(entry);
     }
 
     /**

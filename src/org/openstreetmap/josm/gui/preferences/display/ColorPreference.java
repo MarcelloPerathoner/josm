@@ -1,7 +1,6 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.preferences.display;
 
-import static java.awt.GridBagConstraints.BOTH;
 import static java.awt.GridBagConstraints.HORIZONTAL;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -20,7 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -371,11 +369,12 @@ public class ColorPreference extends ExtensibleTabPreferenceSetting implements L
         colors.getModel().addTableModelListener(this);
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
         panel.add(colorFilter, GBC.eol().insets(0, 0, 0, 5).fill(HORIZONTAL));
         JScrollPane scrollpane = new JScrollPane(colors);
-        panel.add(scrollpane, GBC.eol().fill(BOTH));
+        panel.add(scrollpane, GBC.eol().fill());
         JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setOpaque(false);
         panel.add(buttonPanel, GBC.eol().insets(5, 0, 5, 5).fill(HORIZONTAL));
         buttonPanel.add(Box.createHorizontalGlue(), GBC.std().fill(HORIZONTAL));
         buttonPanel.add(colorEdit, GBC.std().insets(0, 5, 0, 0));
@@ -383,8 +382,8 @@ public class ColorPreference extends ExtensibleTabPreferenceSetting implements L
         buttonPanel.add(defaultAll, GBC.std().insets(0, 5, 0, 0));
         buttonPanel.add(remove, GBC.std().insets(0, 5, 0, 0));
 
-        getTabPane().addTab(tr("Colors"), panel);
-        super.addGui(gui);
+        getTabPane().addTab(tr("Colors"), decorate(panel));
+        gui.createPreferenceTab(this).add(getTabPane(), GBC.eol().fill());
     }
 
     @SuppressWarnings({"PMD.UnusedFormalParameter", "UnusedVariable"})

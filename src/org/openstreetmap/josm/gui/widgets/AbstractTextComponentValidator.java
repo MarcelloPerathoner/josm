@@ -52,6 +52,7 @@ public abstract class AbstractTextComponentValidator extends ChangeNotifier
     protected static final Border VALID_BORDER = BorderFactory.createLineBorder(VALID_COLOR, 1);
 
     private final JTextComponent tc;
+    private Border originalBorder;
     // remembers whether the content of the text component is currently valid or not; null means, we don't know yet
     private Status status;
     // remember the message
@@ -82,7 +83,7 @@ public abstract class AbstractTextComponentValidator extends ChangeNotifier
     protected void feedbackValid(String msg) {
         if (hasChanged(msg, Status.VALID)) {
             // only provide feedback if the validity has changed. This avoids unnecessary UI updates.
-            feedback(msg == null ? UIManager.getBorder("TextField.border") : VALID_BORDER,
+            feedback(msg == null ? originalBorder : VALID_BORDER,
                 UIManager.getColor("TextField.background"),
                 msg == null ? "" : msg,
                 Status.VALID,
@@ -143,6 +144,7 @@ public abstract class AbstractTextComponentValidator extends ChangeNotifier
             JTextComponent tc, boolean addFocusListener, boolean addDocumentListener, boolean addActionListener) {
         CheckParameterUtil.ensureParameterNotNull(tc, "tc");
         this.tc = tc;
+        originalBorder = tc.getBorder();
         if (addFocusListener) {
             tc.addFocusListener(this);
         }

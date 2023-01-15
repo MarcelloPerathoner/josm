@@ -4,7 +4,9 @@ package org.openstreetmap.josm.gui.preferences.server;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -27,6 +29,7 @@ import javax.swing.text.JTextComponent;
 import org.openstreetmap.josm.data.preferences.ListProperty;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.help.HelpUtil;
+import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.widgets.AbstractTextComponentValidator;
 import org.openstreetmap.josm.gui.widgets.HistoryComboBox;
 import org.openstreetmap.josm.gui.widgets.SelectAllOnFocusGainedDecorator;
@@ -80,13 +83,15 @@ public class OsmApiUrlInputPanel extends JPanel {
 
     protected final void build() {
         setLayout(new GridBagLayout());
+        Insets marginRight = new Insets(0, 0, 0, 10);
 
         // the checkbox for the default UL
-        add(buildDefaultServerUrlPanel(), GBC.eop().fill(GBC.HORIZONTAL));
+        add(buildDefaultServerUrlPanel(), GBC.eop());
 
         // the input field for the URL
-        add(lblApiUrl, GBC.std().insets(0, 0, 3, 0));
-        add(tfOsmServerUrl, GBC.std().fill(GBC.HORIZONTAL).insets(0, 0, 3, 0));
+        add(lblApiUrl, GBC.std().insets(DefaultTabPreferenceSetting.addInsets(
+            DefaultTabPreferenceSetting.getIndentForText(), marginRight)));
+        add(tfOsmServerUrl, GBC.std().fill(GridBagConstraints.HORIZONTAL).insets(marginRight));
         lblApiUrl.setLabelFor(tfOsmServerUrl);
         SelectAllOnFocusGainedDecorator.decorate(tfOsmServerUrl.getEditorComponent());
         valOsmServerUrl = new ApiUrlValidator(tfOsmServerUrl.getEditorComponent());
@@ -100,7 +105,7 @@ public class OsmApiUrlInputPanel extends JPanel {
         ValidateApiUrlAction actTest = new ValidateApiUrlAction();
         tfOsmServerUrl.getEditorComponent().getDocument().addDocumentListener(actTest);
         btnTest = new JButton(actTest);
-        add(btnTest, GBC.eop());
+        add(btnTest, GBC.eol());
     }
 
     /**

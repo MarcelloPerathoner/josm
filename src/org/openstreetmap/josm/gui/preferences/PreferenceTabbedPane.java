@@ -1,12 +1,11 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.preferences;
 
+import static org.openstreetmap.josm.gui.preferences.PreferenceUtils.SMALLGAP;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -79,10 +78,12 @@ import org.openstreetmap.josm.tools.bugreport.BugReportExceptionHandler;
 
 /**
  * The preference settings.
+ * <p>
+ * The outermost JTabbedPane where the tabs on the left side ("Display", "OSM Data",
+ * ...) reside.
  *
  * @author imi
  */
-@SuppressWarnings("deprecation")
 public final class PreferenceTabbedPane extends JTabbedPane implements ExpertModeChangeListener, ChangeListener {
 
     private final class PluginDownloadAfterTask implements Runnable {
@@ -212,6 +213,10 @@ public final class PreferenceTabbedPane extends JTabbedPane implements ExpertMod
 
     /**
      * Panel used for preference settings.
+     * <p>
+     * This is the contents of a tab in the outermost JTtabbedPane. It contains a
+     * header, a big icon and one or more panels.
+     *
      * @since 4968
      */
     public static final class PreferencePanel extends JPanel implements PreferenceTab {
@@ -220,22 +225,26 @@ public final class PreferenceTabbedPane extends JTabbedPane implements ExpertMod
         private PreferencePanel(TabPreferenceSetting preferenceSetting) {
             super(new GridBagLayout());
             this.preferenceSetting = Objects.requireNonNull(preferenceSetting, "preferenceSetting");
-            buildPanel();
+            setOpaque(false);
+            buildHeaderPanel();
         }
 
-        private void buildPanel() {
-            setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            JPanel headerPanel = new JPanel(new BorderLayout());
-            add(headerPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
+        private void buildHeaderPanel() {
+            UIManager.put("Separator.stripeWidth", 5);
+
+            JPanel headerPanel = new JPanel(new GridBagLayout());
+            headerPanel.setBorder(BorderFactory.createEmptyBorder(SMALLGAP, SMALLGAP, SMALLGAP, SMALLGAP));
+            headerPanel.setOpaque(false);
 
             JLabel label = new JLabel("<html>" +
-                    "<b>" + preferenceSetting.getTitle() + "</b><br>" +
-                    "<i>" + preferenceSetting.getDescription() + "</i></html>");
-            label.setFont(label.getFont().deriveFont(Font.PLAIN));
-            headerPanel.add(label, BorderLayout.CENTER);
+                    "<p><b>" + preferenceSetting.getTitle() + "</b>" +
+                    "<p><i>" + preferenceSetting.getDescription() + "</i></html>");
+            headerPanel.add(label, GBC.std().anchor(GridBagConstraints.FIRST_LINE_START).fill(GridBagConstraints.HORIZONTAL));
 
             ImageIcon icon = preferenceSetting.getIcon(ImageProvider.ImageSizes.SETTINGS_TAB);
-            headerPanel.add(new JLabel(icon), BorderLayout.EAST);
+            headerPanel.add(new JLabel(icon), GBC.eol().anchor(GridBagConstraints.FIRST_LINE_END));
+
+            add(headerPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
         }
 
         @Override

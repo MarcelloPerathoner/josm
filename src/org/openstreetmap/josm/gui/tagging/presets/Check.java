@@ -6,16 +6,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JPanel;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 
 import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.data.osm.Tagged;
-import org.openstreetmap.josm.gui.widgets.IconTextCheckBox;
-import org.openstreetmap.josm.gui.widgets.QuadStateCheckBox;
+import org.openstreetmap.josm.gui.widgets.JosmCheckBox;
+import org.openstreetmap.josm.gui.widgets.QuadStateButtonModel;
+import org.openstreetmap.josm.gui.widgets.QuadStateButtonModel.State;
 import org.openstreetmap.josm.tools.GBC;
 
 /**
- * Checkbox type.
+ * Check item.
  */
 final class Check extends InteractiveItem {
 
@@ -52,13 +54,12 @@ final class Check extends InteractiveItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         TaggingPreset.Instance presetInstance = parentInstance.getPresetInstance();
-        TaggingPresetDialog dialog = presetInstance.getDialog();
         // find out if our key is already used in the selection.
         final Usage usage = Usage.determineBooleanUsage(presetInstance.getSelected(), key);
         final String oneValue = usage.map.isEmpty() ? null : usage.map.lastKey();
-        QuadStateCheckBox.State initialState;
+        State initialState;
         Boolean def = "on".equals(default_) ? Boolean.TRUE : "off".equals(default_) ? Boolean.FALSE : null;
 
         if (usage.map.size() < 2 && (oneValue == null || valueOn.equals(oneValue) || valueOff.equals(oneValue))) {
@@ -74,46 +75,34 @@ final class Check extends InteractiveItem {
             // all selected objects share the same value which is either true or false or unset,
             // we can display a standard check box.
             initialState = valueOn.equals(oneValue) || Boolean.TRUE.equals(def)
-                    ? QuadStateCheckBox.State.SELECTED
+                    ? State.SELECTED
                     : valueOff.equals(oneValue) || Boolean.FALSE.equals(def)
-                    ? QuadStateCheckBox.State.NOT_SELECTED
-                    : QuadStateCheckBox.State.UNSET;
+                    ? State.NOT_SELECTED
+                    : State.UNSET;
 
         } else {
             def = null;
             // the objects have different values, or one or more objects have something
             // else than true/false. we display a quad-state check box
             // in "partial" state.
-            initialState = QuadStateCheckBox.State.PARTIAL;
+            initialState = State.PARTIAL;
         }
 
-        final List<QuadStateCheckBox.State> allowedStates = new ArrayList<>(4);
-        if (QuadStateCheckBox.State.PARTIAL == initialState)
-            allowedStates.add(QuadStateCheckBox.State.PARTIAL);
-        allowedStates.add(QuadStateCheckBox.State.SELECTED);
+        final List<State> allowedStates = new ArrayList<>();
+        allowedStates.add(State.SELECTED);
         if (!disableOff || valueOff.equals(oneValue))
-            allowedStates.add(QuadStateCheckBox.State.NOT_SELECTED);
-        allowedStates.add(QuadStateCheckBox.State.UNSET);
+            allowedStates.add(State.NOT_SELECTED);
+        allowedStates.add(State.UNSET);
+        if (State.PARTIAL == initialState)
+            allowedStates.add(State.PARTIAL);
 
-        QuadStateCheckBox check;
-        check = new QuadStateCheckBox(icon == null ? localeText : null, initialState,
-                allowedStates.toArray(new QuadStateCheckBox.State[0]));
-        check.setPropertyText(key);
-        check.setState(check.getState()); // to update the tooltip text
-        check.setComponentPopupMenu(getPopupMenu());
+        JCheckBox check3 = new JosmCheckBox(localeText, getIcon());
+        check3.setModel(new QuadStateButtonModel(initialState, new ArrayList<>(allowedStates)));
+        p.add(check3, GBC.eol()); // Do not fill, see #15104
 
-        if (icon != null) {
-            JPanel checkPanel = IconTextCheckBox.wrap(check, localeText, getIcon());
-            checkPanel.applyComponentOrientation(dialog.getDefaultComponentOrientation());
-            p.add(checkPanel, GBC.eol()); // Do not fill, see #15104
-        } else {
-            check.applyComponentOrientation(dialog.getDefaultComponentOrientation());
-            // Note: if we are in a checkgroup we are in a GridLayout
-            p.add(check, GBC.eol()); // Do not fill, see #15104
-        }
-        Instance instance = new Instance(this, parentInstance, check, initialState, def);
+        Instance instance = new Instance(this, parentInstance, check3, initialState, def);
         parentInstance.putInstance(this, instance);
-        check.addChangeListener(l -> presetInstance.fireChangeEvent(instance));
+        check3.addChangeListener(l -> presetInstance.fireChangeEvent(instance));
         return true;
     }
 
@@ -123,13 +112,15 @@ final class Check extends InteractiveItem {
     }
 
     class Instance extends InteractiveItem.Instance {
-        private QuadStateCheckBox checkbox;
-        private QuadStateCheckBox.State originalState;
+        private JCheckBox checkbox;
+        private QuadStateButtonModel model;
+        private State originalState;
         private Boolean def;
 
-        Instance(Item item, Composite.Instance parent, QuadStateCheckBox checkbox, QuadStateCheckBox.State originalState, Boolean def) {
+        Instance(Item item, Composite.Instance parent, JCheckBox checkbox, State originalState, Boolean def) {
             super(item, parent, checkbox);
             this.checkbox = checkbox;
+            this.model = (QuadStateButtonModel) checkbox.getModel();
             this.originalState = originalState;
             this.def = def;
         }
@@ -137,7 +128,7 @@ final class Check extends InteractiveItem {
         @Override
         public void addChangedTag(Map<String, String> changedTags) {
             // if nothing has changed, don't create a command.
-            if (def == null && (checkbox.getState() == originalState)) return;
+            if (def == null && (model.getState() == originalState)) return;
 
             // otherwise change things according to the selected value.
             changedTags.put(key, getValue());
@@ -148,21 +139,22 @@ final class Check extends InteractiveItem {
             currentTags.put(key, getValue());
         }
 
+        @Override
         String getValue() {
             return
-                checkbox.getState() == QuadStateCheckBox.State.SELECTED ? valueOn
-                    : checkbox.getState() == QuadStateCheckBox.State.NOT_SELECTED ? valueOff
-                        : checkbox.getState() == QuadStateCheckBox.State.PARTIAL ? DIFFERENT
+                model.getState() == State.SELECTED ? valueOn
+                    : model.getState() == State.NOT_SELECTED ? valueOff
+                        : model.getState() == State.PARTIAL ? DIFFERENT
                             : null;
         }
 
         @Override
         void setValue(String newValue) {
-            checkbox.setState(
-                valueOn.equals(newValue) ? QuadStateCheckBox.State.SELECTED
-                    : valueOff.equals(newValue) ? QuadStateCheckBox.State.NOT_SELECTED
-                        : DIFFERENT.equals(newValue) ? QuadStateCheckBox.State.PARTIAL
-                            : QuadStateCheckBox.State.UNSET
+            model.setState(
+                valueOn.equals(newValue) ? State.SELECTED
+                    : valueOff.equals(newValue) ? State.NOT_SELECTED
+                        : DIFFERENT.equals(newValue) ? State.PARTIAL
+                            : State.UNSET
             );
         }
     }

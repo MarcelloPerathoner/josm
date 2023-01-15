@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18606'>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18706'>
   <tag key='changesetdialog.lastHeight' value='0'/>
   <tag key='commandstack.lastHeight' value='0'/>
   <tag key='conflict.lastHeight' value='0'/>
   <tag key='filter.lastHeight' value='0'/>
-  <tag key='josm.version' value='18606'/>
+  <tag key='josm.version' value='18706'/>
   <tag key='layerlist.lastHeight' value='0'/>
   <tag key='mapstyle.lastHeight' value='0'/>
   <tag key='minimap.lastHeight' value='0'/>

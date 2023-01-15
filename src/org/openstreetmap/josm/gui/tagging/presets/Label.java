@@ -3,8 +3,8 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.openstreetmap.josm.tools.GBC;
 
@@ -33,10 +33,10 @@ final class Label extends TextItem {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         JLabel label = new JLabel(localeText);
         addIcon(label);
-        label.applyComponentOrientation(parentInstance.getPresetInstance().getDialog().getDefaultComponentOrientation());
+        label.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
         p.add(label, GBC.eol().fill(GBC.HORIZONTAL));
         return true;
     }

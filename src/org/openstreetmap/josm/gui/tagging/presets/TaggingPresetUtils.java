@@ -5,6 +5,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trc;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -32,6 +34,7 @@ import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageResource;
 import org.openstreetmap.josm.tools.Logging;
+import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 import org.openstreetmap.josm.tools.template_engine.ParseError;
 import org.openstreetmap.josm.tools.template_engine.TemplateEntry;
 import org.openstreetmap.josm.tools.template_engine.TemplateParser;
@@ -112,8 +115,13 @@ public final class TaggingPresetUtils {
                 .thenCompose((imageResource) -> {
                     CompletableFuture<ImageResource> future = new CompletableFuture<>();
                     SwingUtilities.invokeLater(() -> {
-                        if (imageResource != null)
-                            imageResource.attachImageIcon(action, true);
+                        if (imageResource != null) {
+                            // imageResource.attachImageIcon(action, true);
+                            // attach padded icons instead, they look better in preset lists
+                            action.putValue(Action.SMALL_ICON, imageResource.getPaddedIcon(ImageSizes.SMALLICON.getImageDimension()));
+                            action.putValue(Action.LARGE_ICON_KEY, imageResource.getPaddedIcon(ImageSizes.LARGEICON.getImageDimension()));
+                            action.putValue("ImageResource", imageResource);
+                        }
                         future.complete(imageResource);
                     });
                     return future;
@@ -129,13 +137,15 @@ public final class TaggingPresetUtils {
      * @param maxSize maximum image size (or null)
      * @return the requested image or null if the request failed
      */
-    public static ImageIcon loadImageIcon(String iconName, File zipIcons, Integer maxSize) {
+    public static ImageIcon loadImageIcon(String iconName, File zipIcons, int maxSize) {
         final Collection<String> s = TaggingPresets.ICON_SOURCES.get();
-        ImageProvider imgProv = new ImageProvider(iconName).setDirs(s).setId("presets").setArchive(zipIcons).setOptional(true);
-        if (maxSize != null && maxSize > 0) {
-            imgProv.setMaxSize(maxSize);
+        ImageProvider imageProvider = new ImageProvider(iconName).setDirs(s).setId("presets").setArchive(zipIcons).setOptional(true);
+        ImageResource resource = imageProvider.getResource();
+        if (resource != null) {
+            maxSize = ImageProvider.adj(maxSize);
+            return resource.getPaddedIcon(new Dimension(maxSize, maxSize));
         }
-        return imgProv.get();
+        return null;
     }
 
     /**

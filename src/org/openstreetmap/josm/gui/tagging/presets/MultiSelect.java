@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.openstreetmap.josm.gui.widgets.OrientationAction;
@@ -59,7 +59,7 @@ final class MultiSelect extends ComboMultiSelect {
     }
 
     @Override
-    boolean addToPanel(JPanel p, Composite.Instance parentInstance) {
+    boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         TaggingPreset.Instance presetInstance = parentInstance.getPresetInstance();
         Usage usage = Usage.determineTextUsage(presetInstance.getSelected(), key);
         seenValues.clear();

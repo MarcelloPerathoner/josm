@@ -71,6 +71,8 @@ public final class ItemFactory {
         map.put("switch",         (FromXML) Switch::fromXML);
         map.put("case",           (FromXML) Case::fromXML);
         map.put("otherwise",      (FromXML) Otherwise::fromXML);
+        map.put("tabs",           (FromXML) Tabs::fromXML);
+        map.put("tab",            (FromXML) Tab::fromXML);
 
         // CHECKSTYLE.ON: SingleSpaceSeparator
         return map;

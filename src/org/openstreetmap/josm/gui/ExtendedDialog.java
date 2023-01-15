@@ -76,7 +76,7 @@ import org.openstreetmap.josm.tools.Utils;
  */
 public class ExtendedDialog extends JDialog implements IExtendedDialog {
     private final boolean disposeOnClose;
-    private volatile int result;
+    protected volatile int result;
     /** The return value if the user closed by ESC or X-button */
     public static final int DialogClosedOtherwise = 0;
     private boolean toggleable;
@@ -165,15 +165,6 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         }
         this.disposeOnClose = disposeOnClose;
-
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                // catch the X-button in the dialog caption
-                result = ExtendedDialog.DialogClosedOtherwise;
-                rememberWindowGeometry(new WindowGeometry(ExtendedDialog.this));
-            }
-        });
     }
 
     private static Frame searchRealParent(Component parent) {

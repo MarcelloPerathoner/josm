@@ -7,8 +7,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.Box;
-import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import org.openstreetmap.josm.gui.help.HelpUtil;
@@ -16,6 +14,7 @@ import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
+import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
 import org.openstreetmap.josm.tools.GBC;
 
 /**
@@ -53,20 +52,19 @@ public final class ServerAccessPreference extends DefaultTabPreferenceSetting {
         pnlApiUrlPreferences.addPropertyChangeListener(listener);
     }
 
-    private static GBC eopFilledHorizontal() {
-        return GBC.eop().fill(GridBagConstraints.HORIZONTAL);
-    }
-
     @Override
     public void addGui(PreferenceTabbedPane gui) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.add(pnlApiUrlPreferences, eopFilledHorizontal());
-        panel.add(new JSeparator(), eopFilledHorizontal());
-        panel.add(pnlAuthPreferences, eopFilledHorizontal());
-        panel.add(new JSeparator(), eopFilledHorizontal());
-        panel.add(pnlFeaturesPreferences, eopFilledHorizontal());
-        panel.add(new JSeparator(), eopFilledHorizontal());
-        panel.add(pnlOverpassPreferences, eopFilledHorizontal());
+        VerticallyScrollablePanel panel = new VerticallyScrollablePanel(new GridBagLayout());
+
+        GBC eop = GBC.eop().fill(GridBagConstraints.HORIZONTAL);
+
+        panel.add(pnlApiUrlPreferences, eop);
+        panel.add(new JSeparator(), eop);
+        panel.add(pnlAuthPreferences, eop);
+        panel.add(new JSeparator(), eop);
+        panel.add(pnlFeaturesPreferences, eop);
+        panel.add(new JSeparator(), eop);
+        panel.add(pnlOverpassPreferences, eop);
 
         pnlApiUrlPreferences.initFromPreferences();
         pnlAuthPreferences.initFromPreferences();
@@ -75,8 +73,8 @@ public final class ServerAccessPreference extends DefaultTabPreferenceSetting {
         addApiUrlChangeListener(pnlAuthPreferences);
 
         HelpUtil.setHelpContext(panel, HelpUtil.ht("/Preferences/Connection"));
-        panel.add(Box.createVerticalGlue(), GBC.eol().fill());
-        createPreferenceTabWithScrollPane(gui, panel);
+
+        gui.createPreferenceTab(this).add(decorateScrollable(panel), GBC.eol().fill());
     }
 
     /**
