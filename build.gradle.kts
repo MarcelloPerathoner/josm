@@ -84,204 +84,10 @@ val versions = mapOf(
   "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.15.0" else "2.10.0",
   "jdatepicker" to "1.3.4",
   "junit" to "5.9.1",
-  "pmd" to "6.42.0",
+  "pmd" to "6.53.0",
   "spotbugs" to "4.7.3",
-  "wiremock" to "2.33.2"
+  "wiremock" to "2.35.0"
 )
-
-dependencies {
-    implementation("ch.poole:OpeningHoursParser:0.27.0")
-    implementation("com.adobe.xmp:xmpcore:6.1.11")
-    implementation("com.drewnoakes:metadata-extractor:2.18.0") // { transitive = false }
-    implementation("com.formdev:svgSalamander:1.1.4")
-    implementation("javax.json:javax.json-api:1.1.4")
-    implementation("oauth.signpost:signpost-core:2.1.1")
-    implementation("org.apache.commons:commons-compress:1.22")
-    implementation("org.apache.commons:commons-jcs3-core:3.1")
-    implementation("org.glassfish:javax.json:1.1.4")
-    implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
-    implementation("org.tukaani:xz:1.9")
-    implementation("org.webjars.npm:tag2link:2021.3.21")
-
-    compileOnly("net.java.dev.javacc:javacc:7.0.12")
-
-    implementation("com.google.code.findbugs:jsr305:3.0.2")
-    testImplementation("org.apache.commons:commons-lang3:3.12.0")
-
-    if (!JavaVersion.current().isJava9Compatible) {
-        errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
-    }
-    errorprone("com.google.errorprone:error_prone_core:${versions["errorprone"]}")
-    // testImplementation("org.openstreetmap.josm:josm-unittest:SNAPSHOT"){ isChanging = true }
-    testImplementation("com.github.tomakehurst:wiremock-jre8:${versions["wiremock"]}")
-
-    testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation("com.ginsberg:junit5-system-exit:1.1.2")
-
-    // This can be removed once JOSM drops all JUnit4 support.
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation("org.junit.vintage:junit-vintage-engine")
-
-    testImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
-    testImplementation("io.github.classgraph:classgraph:4.8.151")
-    testImplementation("net.bytebuddy:byte-buddy:1.12.19")
-    testImplementation("net.trajano.commons:commons-testing:2.1.0")
-    testImplementation("nl.jqno.equalsverifier:equalsverifier:3.11")
-    testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
-    testImplementation("org.jmockit:jmockit:1.49.a") // from JOSM nexus
-    // private github clone with patch for condy arrayoutofbounds applied
-    // testImplementation("com.github.MarcelloPerathoner:jmockit1:master-SNAPSHOT"){ isChanging = true }
-
-    // dependencies for scripts
-    scriptsImplementation(sourceSets["main"].output)
-    scriptsImplementation(sourceSets["test"].output)
-    scriptsImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
-    scriptsImplementation("javax.json:javax.json-api:1.1.4")
-    scriptsImplementation("org.apache.commons:commons-lang3:3.12.0")
-    scriptsImplementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
-
-    // dependencies for sources
-    for (ra in configurations["runtimeClasspath"].resolvedConfiguration.resolvedArtifacts) {
-        val id = ra.moduleVersion.id
-        if (id.name != "xmpcore" && id.name != "tag2link") {
-            sourcesImplementation("${id.group}:${id.name}:${id.version}:sources"){ isTransitive = false }
-        }
-    }
-}
-
-tasks.named("compileScriptsJava") {
-    dependsOn("compileTestJava")
-    /* doFirst {
-        logger.lifecycle("Compiling Scripts. classpath =")
-        sourceSets["scripts"].compileClasspath.forEach { logger.lifecycle(it.getPath()) }
-    }*/
-}
-
-tasks {
-	compileJava {
-        options.release.set(java_lang_version)
-		options.errorprone.isEnabled.set(false) // takes forever
-        dependsOn("compileJavacc")
-        /* options.compilerArgs.addAll(listOf(
-            "--add-exports", "java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED",
-        ))*/
-	}
-	compileTestJava {
-        options.release.set(java_lang_version)
-		options.errorprone.isEnabled.set(false) // takes forever
-	}
-    processResources {
-        from(project.projectDir) {
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-            include("CONTRIBUTION")
-            include("README")
-            include("LICENSE")
-        }
-    }
-    jar {
-        manifest {
-            attributes(
-                "Application-Name" to "JOSM - Java OpenStreetMap Editor",
-                "Codebase"         to "josm.openstreetmap.de",
-                "Main-class"       to "org.openstreetmap.josm.gui.MainApplication",
-                // "Main-Version"     to "${version.entry.commit.revision} SVN",
-                // "Main-Date"        to "${version.entry.commit.date}",
-                "Permissions"      to "all-permissions",
-
-                // Java 9 stuff. Entries are safely ignored by Java 8
-                "Add-Exports" to "java.desktop/com.sun.java.swing.plaf.gtk java.base/sun.security.action java.desktop/com.apple.eawt java.desktop/com.sun.imageio.spi java.desktop/com.sun.imageio.plugins.jpeg javafx.graphics/com.sun.javafx.application jdk.deploy/com.sun.deploy.config",
-                "Add-Opens"   to "java.base/java.lang java.base/java.nio java.base/jdk.internal.loader java.base/jdk.internal.ref java.desktop/javax.imageio.spi java.desktop/javax.swing.text.html java.prefs/java.util.prefs",
-                // Indicate that this jar may have version specific classes. Only used in Java9+
-                "Multi-Release" to "true"
-            )
-        }
-        from(configurations.runtimeClasspath.get().map({ if (it.isDirectory) it else zipTree(it) }))
-        // include sources in jar
-        from(sourceSets["main"].allSource)
-        setDuplicatesStrategy(DuplicatesStrategy.INCLUDE)
-
-        // exclude("META-INF/*")
-        exclude("META-INF/maven/**")
-        // exclude("META-INF/resources/webjars/tag2link/*/LICENSE")
-        // exclude("META-INF/resources/webjars/tag2link/*/README.md")
-        // exclude("META-INF/resources/webjars/tag2link/*/build.js")
-        // exclude("META-INF/resources/webjars/tag2link/*/package.json")
-        // exclude("META-INF/resources/webjars/tag2link/*/schema.json")
-        // exclude("META-INF/resources/webjars/tag2link/*/tag2link.sophox.sparql")
-        // exclude("META-INF/resources/webjars/tag2link/*/tag2link.wikidata.sparql")
-        // exclude("META-INF/versions/**")
-        exclude("org/openstreetmap/gui/jmapviewer/Demo*")
-        exclude("com/drew/imaging/FileTypeDetector*")
-        exclude("com/drew/imaging/ImageMetadataReader*")
-        exclude("com/drew/imaging/avi/**")
-        exclude("com/drew/imaging/bmp/**")
-        exclude("com/drew/imaging/eps/**")
-        exclude("com/drew/imaging/gif/**")
-        exclude("com/drew/imaging/heif/**")
-        exclude("com/drew/imaging/ico/**")
-        exclude("com/drew/imaging/mp3/**")
-        exclude("com/drew/imaging/mp4/**")
-        exclude("com/drew/imaging/pcx/**")
-        exclude("com/drew/imaging/psd/**")
-        exclude("com/drew/imaging/quicktime/**")
-        exclude("com/drew/imaging/raf/**")
-        exclude("com/drew/imaging/riff/**")
-        exclude("com/drew/imaging/wav/**")
-        exclude("com/drew/imaging/webp/**")
-        exclude("com/drew/metadata/avi/**")
-        exclude("com/drew/metadata/bmp/**")
-        exclude("com/drew/metadata/eps/**")
-        exclude("com/drew/metadata/gif/**")
-        exclude("com/drew/metadata/heif/**")
-        exclude("com/drew/metadata/ico/**")
-        exclude("com/drew/metadata/mov/**")
-        exclude("com/drew/metadata/mp3/**")
-        exclude("com/drew/metadata/mp4/**")
-        exclude("com/drew/metadata/pcx/**")
-        exclude("com/drew/metadata/wav/**")
-        exclude("com/drew/metadata/webp/**")
-        exclude("com/drew/tools/**")
-        exclude("com/kitfox/svg/app/ant/**")
-        exclude("com/kitfox/svg/app/*Dialog*")
-        exclude("com/kitfox/svg/app/*Frame*")
-        exclude("com/kitfox/svg/app/*Player*")
-        exclude("com/kitfox/svg/app/*Viewer*")
-        exclude("org/apache/commons/compress/PasswordRequiredException*")
-        exclude("org/apache/commons/compress/archivers/**")
-        exclude("org/apache/commons/compress/changes/**")
-        exclude("org/apache/commons/compress/compressors/bzip2/BZip2Utils*")
-        exclude("org/apache/commons/compress/compressors/brotli/**")
-        exclude("org/apache/commons/compress/compressors/CompressorStreamFactory*")
-        exclude("org/apache/commons/compress/compressors/CompressorStreamProvider*")
-        exclude("org/apache/commons/compress/compressors/CompressorException*")
-        exclude("org/apache/commons/compress/compressors/FileNameUtil*")
-        exclude("org/apache/commons/compress/compressors/deflate/**")
-        exclude("org/apache/commons/compress/compressors/gzip/**")
-        exclude("org/apache/commons/compress/compressors/lz4/**")
-        exclude("org/apache/commons/compress/compressors/lzma/**")
-        exclude("org/apache/commons/compress/compressors/lz77support/**")
-        exclude("org/apache/commons/compress/compressors/pack200/**")
-        exclude("org/apache/commons/compress/compressors/snappy/**")
-        exclude("org/apache/commons/compress/compressors/xz/XZUtils*")
-        exclude("org/apache/commons/compress/compressors/z/**")
-        exclude("org/apache/commons/compress/compressors/zstandard/**")
-        exclude("org/apache/commons/compress/java/util/jar/Pack200*")
-        exclude("org/apache/commons/compress/harmony/pack200/**")
-        exclude("org/apache/commons/compress/harmony/unpack200/**")
-        exclude("org/apache/commons/compress/parallel/**")
-        exclude("org/apache/commons/compress/utils/ArchiveUtils*")
-        exclude("org/apache/commons/jcs3/auxiliary/disk/jdbc/**")
-        exclude("org/apache/commons/jcs3/auxiliary/remote/http/client/**")
-        exclude("org/apache/commons/jcs3/auxiliary/remote/http/server/RemoteHttpCacheServlet*")
-        exclude("org/apache/commons/jcs3/auxiliary/remote/server/RemoteCacheStartupServlet*")
-        exclude("org/apache/commons/jcs3/log/Log4j2Factory*")
-        exclude("org/apache/commons/jcs3/log/Log4j2LogAdapter*")
-        exclude("org/apache/commons/jcs3/utils/servlet/**")
-    }
-}
 
 testing {
     suites {
@@ -376,6 +182,198 @@ testing {
     }
 }
 
+dependencies {
+    implementation("ch.poole:OpeningHoursParser:0.27.0")
+    implementation("com.adobe.xmp:xmpcore:6.1.11")
+    implementation("com.drewnoakes:metadata-extractor:2.18.0") // { transitive = false }
+    implementation("com.formdev:svgSalamander:1.1.4")
+    implementation("javax.json:javax.json-api:1.1.4")
+    implementation("oauth.signpost:signpost-core:2.1.1")
+    implementation("org.apache.commons:commons-compress:1.22")
+    implementation("org.apache.commons:commons-jcs3-core:3.1")
+    implementation("org.glassfish:javax.json:1.1.4")
+    implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
+    implementation("org.tukaani:xz:1.9")
+    runtimeOnly("org.webjars.npm:tag2link:2022.11.28")
+
+    compileOnly("net.java.dev.javacc:javacc:7.0.12")
+
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+    testImplementation("org.apache.commons:commons-lang3:3.12.0")
+
+    if (!JavaVersion.current().isJava9Compatible) {
+        errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    }
+    errorprone("com.google.errorprone:error_prone_core:${versions["errorprone"]}")
+    // testImplementation("org.openstreetmap.josm:josm-unittest:SNAPSHOT"){ isChanging = true }
+    testImplementation("com.github.tomakehurst:wiremock-jre8:${versions["wiremock"]}")
+
+    testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("com.ginsberg:junit5-system-exit:1.1.2")
+
+    // This can be removed once JOSM drops all JUnit4 support.
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+    testImplementation("org.junit.vintage:junit-vintage-engine")
+
+    testImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
+    testImplementation("io.github.classgraph:classgraph:4.8.154")
+    testImplementation("net.bytebuddy:byte-buddy:1.12.19")
+    testImplementation("net.trajano.commons:commons-testing:2.1.0")
+    testImplementation("nl.jqno.equalsverifier:equalsverifier:3.12.3")
+    testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
+    testImplementation("org.jmockit:jmockit:1.49.a") // patched version from JOSM nexus
+
+    // dependencies for scripts
+    scriptsImplementation(sourceSets["main"].output)
+    scriptsImplementation(sourceSets["test"].output)
+    scriptsImplementation(sourceSets["integrationTest"].output)
+    scriptsImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
+    scriptsImplementation("javax.json:javax.json-api:1.1.4")
+    scriptsImplementation("org.apache.commons:commons-lang3:3.12.0")
+    scriptsImplementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
+
+    // dependencies for sources
+    for (ra in configurations["runtimeClasspath"].resolvedConfiguration.resolvedArtifacts) {
+        val id = ra.moduleVersion.id
+        if (id.name != "xmpcore" && id.name != "tag2link") {
+            sourcesImplementation("${id.group}:${id.name}:${id.version}:sources"){ isTransitive = false }
+        }
+    }
+}
+
+tasks {
+	compileJava {
+        options.release.set(java_lang_version)
+		options.errorprone.isEnabled.set(false) // takes forever
+        dependsOn("compileJavacc")
+        /* options.compilerArgs.addAll(listOf(
+            "--add-exports", "java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED",
+        ))*/
+	}
+	compileTestJava {
+        options.release.set(java_lang_version)
+		options.errorprone.isEnabled.set(false) // takes forever
+	}
+    processResources {
+        from(project.projectDir) {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            include("CONTRIBUTION")
+            include("README")
+            include("LICENSE")
+        }
+    }
+    jar {
+        manifest {
+            attributes(
+                "Application-Name" to "JOSM - Java OpenStreetMap Editor",
+                "Codebase"         to "josm.openstreetmap.de",
+                "Main-class"       to "org.openstreetmap.josm.gui.MainApplication",
+                // "Main-Version"     to "${version.entry.commit.revision} SVN",
+                // "Main-Date"        to "${version.entry.commit.date}",
+                "Permissions"      to "all-permissions",
+
+                // Java 9 stuff. Entries are safely ignored by Java 8
+                "Add-Exports" to "java.desktop/com.sun.java.swing.plaf.gtk java.base/sun.security.action java.desktop/com.apple.eawt java.desktop/com.sun.imageio.spi java.desktop/com.sun.imageio.plugins.jpeg javafx.graphics/com.sun.javafx.application jdk.deploy/com.sun.deploy.config",
+                "Add-Opens"   to "java.base/java.lang java.base/java.nio java.base/jdk.internal.loader java.base/jdk.internal.ref java.desktop/javax.imageio.spi java.desktop/javax.swing.text.html java.prefs/java.util.prefs",
+                // Indicate that this jar may have version specific classes. Only used in Java9+
+                "Multi-Release" to "true"
+            )
+        }
+        setDuplicatesStrategy(DuplicatesStrategy.INCLUDE)
+
+        // uncomment to include sources in jar
+        // from(sourceSets["main"].allSource)
+
+        exclude("META-INF/*")
+        exclude("META-INF/maven/**")
+        // exclude("META-INF/resources/webjars/tag2link/*/")
+        // exclude("META-INF/versions/**")
+        exclude("org/openstreetmap/gui/jmapviewer/Demo*")
+        exclude("com/drew/imaging/FileTypeDetector*")
+        exclude("com/drew/imaging/ImageMetadataReader*")
+        exclude("com/drew/imaging/avi/**")
+        exclude("com/drew/imaging/bmp/**")
+        exclude("com/drew/imaging/eps/**")
+        exclude("com/drew/imaging/gif/**")
+        exclude("com/drew/imaging/heif/**")
+        exclude("com/drew/imaging/ico/**")
+        exclude("com/drew/imaging/mp3/**")
+        exclude("com/drew/imaging/mp4/**")
+        exclude("com/drew/imaging/pcx/**")
+        exclude("com/drew/imaging/psd/**")
+        exclude("com/drew/imaging/quicktime/**")
+        exclude("com/drew/imaging/raf/**")
+        exclude("com/drew/imaging/riff/**")
+        exclude("com/drew/imaging/wav/**")
+        exclude("com/drew/imaging/webp/**")
+        exclude("com/drew/metadata/avi/**")
+        exclude("com/drew/metadata/bmp/**")
+        exclude("com/drew/metadata/eps/**")
+        exclude("com/drew/metadata/gif/**")
+        exclude("com/drew/metadata/heif/**")
+        exclude("com/drew/metadata/ico/**")
+        exclude("com/drew/metadata/mov/**")
+        exclude("com/drew/metadata/mp3/**")
+        exclude("com/drew/metadata/mp4/**")
+        exclude("com/drew/metadata/pcx/**")
+        exclude("com/drew/metadata/wav/**")
+        exclude("com/drew/metadata/webp/**")
+        exclude("com/drew/tools/**")
+        exclude("com/kitfox/svg/app/ant/**")
+        exclude("com/kitfox/svg/app/*Dialog*")
+        exclude("com/kitfox/svg/app/*Frame*")
+        exclude("com/kitfox/svg/app/*Player*")
+        exclude("com/kitfox/svg/app/*Viewer*")
+        exclude("org/apache/commons/compress/PasswordRequiredException*")
+        exclude("org/apache/commons/compress/archivers/**")
+        exclude("org/apache/commons/compress/changes/**")
+        exclude("org/apache/commons/compress/compressors/bzip2/BZip2Utils*")
+        exclude("org/apache/commons/compress/compressors/brotli/**")
+        exclude("org/apache/commons/compress/compressors/CompressorStreamFactory*")
+        exclude("org/apache/commons/compress/compressors/CompressorStreamProvider*")
+        exclude("org/apache/commons/compress/compressors/CompressorException*")
+        exclude("org/apache/commons/compress/compressors/FileNameUtil*")
+        exclude("org/apache/commons/compress/compressors/deflate/**")
+        exclude("org/apache/commons/compress/compressors/gzip/**")
+        exclude("org/apache/commons/compress/compressors/lz4/**")
+        exclude("org/apache/commons/compress/compressors/lzma/**")
+        exclude("org/apache/commons/compress/compressors/lz77support/**")
+        exclude("org/apache/commons/compress/compressors/pack200/**")
+        exclude("org/apache/commons/compress/compressors/snappy/**")
+        exclude("org/apache/commons/compress/compressors/xz/XZUtils*")
+        exclude("org/apache/commons/compress/compressors/z/**")
+        exclude("org/apache/commons/compress/compressors/zstandard/**")
+        exclude("org/apache/commons/compress/java/util/jar/Pack200*")
+        exclude("org/apache/commons/compress/harmony/pack200/**")
+        exclude("org/apache/commons/compress/harmony/unpack200/**")
+        exclude("org/apache/commons/compress/parallel/**")
+        exclude("org/apache/commons/compress/utils/ArchiveUtils*")
+        exclude("org/apache/commons/jcs3/auxiliary/disk/jdbc/**")
+        exclude("org/apache/commons/jcs3/auxiliary/remote/http/client/**")
+        exclude("org/apache/commons/jcs3/auxiliary/remote/http/server/RemoteHttpCacheServlet*")
+        exclude("org/apache/commons/jcs3/auxiliary/remote/server/RemoteCacheStartupServlet*")
+        exclude("org/apache/commons/jcs3/log/Log4j2Factory*")
+        exclude("org/apache/commons/jcs3/log/Log4j2LogAdapter*")
+        exclude("org/apache/commons/jcs3/utils/servlet/**")
+
+        from(configurations.runtimeClasspath.get()
+            // .onEach { println("add from dependencies: ${it.path}") }
+            .map({ if (it.isDirectory) it else zipTree(it) }))
+    }
+}
+
+/*
+tasks.named("compileScriptsJava") {
+    doFirst {
+        logger.lifecycle("Compiling Scripts. compileClasspath =")
+        sourceSets["scripts"].compileClasspath.forEach { logger.lifecycle(it.getPath()) }
+    }
+}
+*/
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     jvmArgs = listOf(
@@ -426,9 +424,9 @@ tasks.withType<Test>().configureEach {
 }
 
 tasks.named("check") {
-    // dependsOn(testing.suites.named("functionalTest"))
-    // dependsOn(testing.suites.named("integrationTest"))
-    // dependsOn(testing.suites.named("performaceTest"))
+    dependsOn(testing.suites.named("functionalTest"))
+    dependsOn(testing.suites.named("integrationTest"))
+    dependsOn(testing.suites.named("performanceTest"))
 }
 
 task("compileJavacc", JavaExec::class) {
@@ -461,6 +459,17 @@ tasks.register<Copy>("downloadDependenciesSources") {
     from(sourceSets["sources"].runtimeClasspath)
     into("lib/sources")
 }
+
+tasks.named("clean") {
+    delete("src/${mapcssSrcDir}/parsergen")      // clean leftovers from ant
+    delete("test/data/renderer/way-text/test-*") // clean leftovers from obnoxious test
+}
+
+/*
+tasks.register<Delete>("cleanExtraFiles") {
+    delete("src/${mapcssSrcDir}/parsergen")
+}
+*/
 
 java {
     withJavadocJar()

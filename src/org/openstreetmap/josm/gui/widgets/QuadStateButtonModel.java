@@ -28,8 +28,8 @@ import org.openstreetmap.josm.tools.Logging;
  * will not blend in well with those L&F: the undefined states may produce extraneous
  * visual artifacts.
  * <p>
- * @see {@link javax.swing.plaf.basic.BasicButtonListener}
- * @see {@link javax.swing.DefaultButtonModel}
+ * @see javax.swing.plaf.basic.BasicButtonListener
+ * @see javax.swing.DefaultButtonModel
  */
 public class QuadStateButtonModel extends JToggleButton.ToggleButtonModel {
     /**
@@ -94,7 +94,7 @@ public class QuadStateButtonModel extends JToggleButton.ToggleButtonModel {
                 new ItemEvent(this,
                                 ItemEvent.ITEM_STATE_CHANGED,
                                 this,
-                                this.isSelected() ?  ItemEvent.SELECTED : ItemEvent.DESELECTED));
+                                this.isSelected() ? ItemEvent.SELECTED : ItemEvent.DESELECTED));
     }
 
     /**
@@ -202,9 +202,9 @@ public class QuadStateButtonModel extends JToggleButton.ToggleButtonModel {
         int modifiers = 0;
         AWTEvent currentEvent = EventQueue.getCurrentEvent();
         if (currentEvent instanceof InputEvent) {
-            modifiers = ((InputEvent)currentEvent).getModifiers();
+            modifiers = ((InputEvent) currentEvent).getModifiers();
         } else if (currentEvent instanceof ActionEvent) {
-            modifiers = ((ActionEvent)currentEvent).getModifiers();
+            modifiers = ((ActionEvent) currentEvent).getModifiers();
         }
         fireActionPerformed(
             new ActionEvent(this, ActionEvent.ACTION_PERFORMED,

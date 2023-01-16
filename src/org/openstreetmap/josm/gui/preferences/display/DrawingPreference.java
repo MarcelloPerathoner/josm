@@ -152,7 +152,7 @@ public class DrawingPreference extends DefaultTabPreferenceSetting {
         autoFilterRules.setSelectedItem(AutoFilterManager.getInstance().getAutoFilterRule(AutoFilterManager.PROP_AUTO_FILTER_RULE.get()));
 
         JLabel performanceLabel = new JLabel(tr("Options that affect drawing performance"));
-        Insets indent  = getIndent();
+        Insets indent = getIndent();
         Insets indent2 = addInsets(indent, indent);
         GBC eol = GBC.eol().insets(indent).weight(1, 0); // or all items will be centered because none is filling
         GBC eop = GBC.eop().insets(indent);

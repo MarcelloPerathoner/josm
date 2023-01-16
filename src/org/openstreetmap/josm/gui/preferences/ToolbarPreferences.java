@@ -945,8 +945,8 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
             final JPanel p = new JPanel(new GridBagLayout());
 
             final JPanel tablesPanel = new JPanel(new GridBagLayout());
-            left.setPreferredSize(new Dimension(1,1));  // hack! make those 2 the same width
-            right.setPreferredSize(new Dimension(1,1)); // now fill() will expand them to the same size
+            left.setPreferredSize(new Dimension(1, 1));  // hack! make those 2 the same width
+            right.setPreferredSize(new Dimension(1, 1)); // now fill() will expand them to the same size
             tablesPanel.add(left, GBC.std().fill());
             tablesPanel.add(toolbar, GBC.std().anchor(GridBagConstraints.CENTER));
             tablesPanel.add(right, GBC.eol().fill());

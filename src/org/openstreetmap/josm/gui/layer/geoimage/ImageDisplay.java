@@ -120,7 +120,6 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
     transient Future<?> imageLoadingFuture;
     boolean mayInterruptIfRunning = false;
 
-
     private class UpdateImageThread extends Thread {
         private boolean restart;
 

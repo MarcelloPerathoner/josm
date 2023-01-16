@@ -150,7 +150,7 @@ public final class GBC extends GridBagConstraints {
      * @return the skip component
      */
     public static Component skip(int x, int y) {
-        Dimension dimen = new Dimension (x, y);
+        Dimension dimen = new Dimension(x, y);
         return new Box.Filler(dimen, dimen, dimen);
     }
 

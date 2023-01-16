@@ -512,7 +512,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         }
     }
 
-    JPanel buildPresetPanel(Instance instance){
+    JPanel buildPresetPanel(Instance instance) {
         JPanel panel = new JPanel(new GridBagLayout());
         addToPanel(panel, instance);
         return panel;

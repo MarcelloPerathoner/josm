@@ -46,7 +46,7 @@ public class TaggingPresetValidator implements ChangeListener {
     final DataSetHandler handler;
     final Consumer<Collection<TestError>> f;
     final Collection<TagTest> allTests;
-    final private DebouncedChangeListener listener;
+    private final DebouncedChangeListener listener;
     private boolean enabled;
 
     /**

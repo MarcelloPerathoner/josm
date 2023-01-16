@@ -10,6 +10,7 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
@@ -115,8 +116,8 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
             enableValidatorAction = new TaggingPresetValidator.EnableValidatorAction(this, false);
         }
 
-        Dimension border = new Dimension (fontMetrics.charWidth('m'), fontMetrics.getAscent() / 2);
-        GBC gbc = GBC.eol().fill(GBC.HORIZONTAL).insets(border.width, border.height, border.width, 0);
+        Dimension border = new Dimension(fontMetrics.charWidth('m'), fontMetrics.getAscent() / 2);
+        GBC gbc = GBC.eol().fill(GridBagConstraints.HORIZONTAL).insets(border.width, border.height, border.width, 0);
         JPanel contentPane = new JPanel(new GridBagLayout());
         contentPane.add(buildHeadPanel(preset), gbc);
         contentPane.add(preset.buildPresetPanel(presetInstance), gbc);
@@ -203,7 +204,7 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
 
     /**
      * Sets the dialog title according to the selected objects
-     * @param instance
+     * @param instance the dialog instance
      */
     public void setTitle(TaggingPreset.Instance instance) {
         TaggingPreset preset = instance.getPreset();
@@ -254,33 +255,36 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
             headPanel.add(label, gbc.grid(x++, 0));
         }
         // add horizontal glue
-        headPanel.add(new JLabel(), gbc.grid(x++, 0).fill(GBC.HORIZONTAL));
+        headPanel.add(new JLabel(), gbc.grid(x++, 0).fill(GridBagConstraints.HORIZONTAL));
 
         // the "enable validator" button
         if (enableValidatorAction != null) {
             JToggleButton validatorButton = new JToggleButton(enableValidatorAction);
             validatorButton.setFocusable(false);
-            headPanel.add(validatorButton, GBC.std(x++, 0).anchor(GBC.LINE_END));
+            headPanel.add(validatorButton, GBC.std(x++, 0).anchor(GridBagConstraints.LINE_END));
         }
 
         // the "pin to toolbar" button
         JToggleButton tb = new JToggleButton(new PinToolbarAction());
         tb.setFocusable(false);
-        headPanel.add(tb, GBC.std(x, 0).anchor(GBC.LINE_END));
+        headPanel.add(tb, GBC.std(x, 0).anchor(GridBagConstraints.LINE_END));
 
         // the full name of the preset
         if (preset.showPresetName) {
-            headPanel.add(new JLabel(preset.getName()), GBC.std(0, 1).insets(0, 5, 0, 0).fill(GBC.HORIZONTAL).span(GBC.REMAINDER));
+            headPanel.add(new JLabel(preset.getName()),
+                GBC.std(0, 1).insets(0, 5, 0, 0).fill(GridBagConstraints.HORIZONTAL).span(GridBagConstraints.REMAINDER));
         }
         return headPanel;
     }
 
     JPanel buildButtonsPanel(String helpTopic) {
         JPanel panel = new JPanel(new GridBagLayout());
+        // CHECKSTYLE.OFF: SingleSpaceSeparator
         JButton ok     = new JButton(new ButtonAction(tr("Apply Preset"), "ok",            DIALOG_ANSWER_APPLY,        getTitle()));
         JButton newRel = new JButton(new ButtonAction(tr("New Relation"), "data/relation", DIALOG_ANSWER_NEW_RELATION, null));
         JButton cancel = new JButton(new ButtonAction(tr("Cancel"),       "cancel",        DIALOG_ANSWER_CANCEL,       null));
         JButton help   = new JButton(new HelpAction(helpTopic));
+        // CHECKSTYLE.ON: SingleSpaceSeparator
         ok.setEnabled(!disableApplyButton);
         GBC gbc = GBC.std().insets(2, 2, 2, 2);
         panel.add(ok, gbc);
@@ -427,7 +431,7 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         /**
          * Constructs a new {@code ToolbarButtonAction}.
          */
-        public PinToolbarAction() {
+        PinToolbarAction() {
             super("");
             new ImageProvider("dialogs", "pin").getResource().attachImageIcon(this, true);
             putValue(SHORT_DESCRIPTION, tr("Add or remove toolbar button"));

@@ -82,7 +82,7 @@ import org.openstreetmap.josm.tools.date.DateUtils;
  * to the first tab when the tabbed pane becomes visible.  The ImageDisplay in the last
  * open tab will be reparented to the dialog when the tabbed pane is hidden.
  */
-public class ImageViewerDialog extends ToggleDialog
+public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClass
         implements ChangeListener, PropertyChangeListener, ImageChangeListener, LayerChangeListener, ActiveLayerChangeListener {
     private static final String GEOIMAGE_FILLER = marktr("Geoimage: {0}");
     private static final String DIALOG_FOLDER = "dialogs";
@@ -366,7 +366,7 @@ public class ImageViewerDialog extends ToggleDialog
      * @param index teh given index
      * @return the ImageDisplay or null
      */
-    ImageDisplay2 getImageDisplayAt(int index){
+    ImageDisplay2 getImageDisplayAt(int index) {
         if (index == 0 && imageDisplay0 != null) {
             return imageDisplay0;
         }
@@ -504,7 +504,7 @@ public class ImageViewerDialog extends ToggleDialog
         /** The filter settings (sharpness etc.) */
         transient ImageryFilterSettings imageryFilterSettings;
 
-        public ImageDisplay2(IGeoImageLayer geoLayer, ImageryFilterSettings imageryFilterSettings) {
+        ImageDisplay2(IGeoImageLayer geoLayer, ImageryFilterSettings imageryFilterSettings) {
             super(imageryFilterSettings);
             this.geoLayer = geoLayer;
             this.imageryFilterSettings = imageryFilterSettings;
@@ -592,8 +592,9 @@ public class ImageViewerDialog extends ToggleDialog
             if (entry != null && entry != undoStack.peekFirst())
                 undoStack.addFirst(entry);
             // keep only 10 entries until we figure out how to clear the big image buffers
-            while (undoStack.size() > 10)
+            while (undoStack.size() > 10) {
                 undoStack.pollLast();
+            }
         }
 
         boolean canUndo() {
@@ -841,7 +842,7 @@ public class ImageViewerDialog extends ToggleDialog
      */
     private void cancelLoadingImage() {
         ImageDisplay2 imageDisplay = getSelectedImageDisplay();
-        if (imageDisplay != null) {
+        if (imageDisplay != null && imageDisplay.imageLoadingFuture != null) {
             imageDisplay.imageLoadingFuture.cancel(true);
         }
     }
@@ -979,6 +980,7 @@ public class ImageViewerDialog extends ToggleDialog
 
     private abstract class ImageNavigationAction extends SideButtonAction {
         enum What { FIRST, PREV, NEXT, LAST }
+
         What what;
 
         ImageNavigationAction(String name, ImageProvider icon, String tooltip, Shortcut shortcut,

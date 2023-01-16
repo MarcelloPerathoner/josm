@@ -1,18 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18706'>
-  <tag key='changesetdialog.lastHeight' value='0'/>
-  <tag key='commandstack.lastHeight' value='0'/>
-  <tag key='conflict.lastHeight' value='0'/>
-  <tag key='filter.lastHeight' value='0'/>
+  <maps key='imagery.entries'>
+    <map>
+      <tag key='max-zoom' value='22'/>
+      <tag key='noTileHeaders' value='{&quot;X-VE-Tile-Info&quot;:[&quot;no-tile&quot;]}'/>
+      <tag key='metadataHeaders' value='{&quot;X-VE-TILEMETA-CaptureDatesRange&quot;:&quot;Capture Date&quot;}'/>
+      <tag key='transparent' value='true'/>
+      <tag key='minimumTileExpire' value='3600'/>
+      <tag key='name' value='Bing aerial imagery'/>
+      <tag key='id' value='Bing'/>
+      <tag key='type' value='bing'/>
+      <tag key='url' value='http://www.bing.com/maps/'/>
+      <tag key='permission-reference-url' value='http://wiki.openstreetmap.org/wiki/Bing_Maps&#xA;&#x9;&#x9;'/>
+      <tag key='cookies' value=''/>
+      <tag key='icon' value='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAALVBMVEUMhIT///8jj4/Z7Ozl8vJUqal/vr6+3t6Tycmo1NQxl5dutbXz+flBn5/M5eX9gIKtAAAAjUlEQVR4XmMgD6gFoQkoC7eiCQgKK6AJiNBEQGkBmoBW5S40LROFZyugCMQICloEIQuoCwoKCicgCbAJCgoKGiEJMCWjCTAwpaAJsBaiCnC1CCILCCslCwoKijQgVKQLCgoKliLcAQbWCqgCFgin6wkKCgqevIDwHO8cQUHxAAYkwFoonMSAArS7GCgAAKZlGg8L4DPrAAAAAElFTkSuQmCC&#xA;&#x9;&#x9;'/>
+      <tag key='customHttpHeaders' value='{}'/>
+    </map>
+    <map>
+      <tag key='max-zoom' value='19'/>
+      <tag key='noTileHeaders' value='{&quot;ETag&quot;:[&quot;\&quot;067736a547cafe90014b4e59b6510abe\&quot;|\&quot;ee1f6802b0234046b553cbbc672ac7d9\&quot;|\&quot;9f5a2f1d7cc131e58befc2052c71c827\&quot;&quot;]}'/>
+      <tag key='noTileChecksums' value='{&quot;MD5&quot;:[&quot;811bb5f56a0e672f674a2a820d340c61&quot;]}'/>
+      <tag key='transparent' value='true'/>
+      <tag key='minimumTileExpire' value='3600'/>
+      <tag key='name' value='Mapbox Satellite'/>
+      <tag key='id' value='Mapbox'/>
+      <tag key='type' value='tms'/>
+      <tag key='url' value='https://{switch:a,b,c}.tiles.mapbox.com/v4/openstreetmap.map-inh7ifmo/{zoom}/{x}/{y}.png?access_token=pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJncjlmd0t3In0.DmZsIeOW-3x-C5eX-wAqTw&#xA;&#x9;&#x9;'/>
+      <tag key='attribution-text' value='Terms &amp; Feedback&#xA;&#x9;&#x9;'/>
+      <tag key='attribution-url' value='http://www.mapbox.com/about/maps/'/>
+      <tag key='permission-reference-url' value='http://wiki.openstreetmap.org/wiki/Vertical_Aerial_Photographs#DigitalGlobe_.2F_MapBox&#xA;&#x9;&#x9;'/>
+      <tag key='cookies' value=''/>
+      <tag key='icon' value='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAhFBMVEVHcEz///9CZPtphPtFZ/uMof1KavvO0uJifvtQcPuLn/1ng/ve4euQnv36+vtIaPtXdfvt7vTr7PG2v+jl5/BaePuhrv1devugrOC7wNdxi/uap96uuOXKzeDc3/O9xuqfrfzY2+ilsOLEy+xEZfuQntuwttG+w9mpsM2Zp/x3j/t0jfvA+Y0kAAAAAXRSTlMAQObYZgAAASRJREFUeF6Fk+eSwyAMhC2Be+9Ob9fv/d/viBQgDLnx98cedi2JNQTPhHkqZSrC4CVZjYYo8+SzRAdZunqCHsmznuILUk/3HX79fPmMN7vE7XK2n5yAuTVI8KRm/qYATSd4L7R/rddH0i4VObjGPY9IGxYgfvbchRNTBq2PFQkxzvzCk6r8teFKy+0WcSHHjlbDIEdGtne5pIbzXlk2tCxMSFtQ9DMSvxeAwyOsN2RK6lD1jfLGALpCbQwfwPQYtWBnkKZFDEw1TkDkjxYCGZNi39HjhIQw2xzAoXhUDk1QnaMfG2RUkrVuYakWXuSoMzsk015H1GT2d7/HxTAUh69J8Mbt7w6+8V9K58j5JGuHdv3Yr18cy7Ry9RRZ5F1ej1D41/8P1QwO53k2L5oAAAAASUVORK5CYII=&#xA;&#x9;&#x9;'/>
+      <tag key='customHttpHeaders' value='{}'/>
+    </map>
+  </maps>
+  <list key='imagery.layers.default'>
+    <entry value='Bing'/>
+    <entry value='Mapbox'/>
+  </list>
+  <list key='imagery.layers.sites'>
+    <entry value='file:/home/highlander/prj/josm/test/data/__files/imagery/maps.xml'/>
+  </list>
+  <maps key='imagery.offsetbookmarks'>
+  </maps>
   <tag key='josm.version' value='18706'/>
-  <tag key='layerlist.lastHeight' value='0'/>
-  <tag key='mapstyle.lastHeight' value='0'/>
-  <tag key='minimap.lastHeight' value='0'/>
-  <tag key='notes/note_open.lastHeight' value='0'/>
-  <tag key='propertiesdialog.lastHeight' value='0'/>
-  <tag key='relationlist.lastHeight' value='0'/>
-  <tag key='selectionlist.lastHeight' value='0'/>
-  <tag key='toggleDialogs.width' value='-5'/>
-  <tag key='userlist.lastHeight' value='0'/>
-  <tag key='validator.lastHeight' value='0'/>
 </preferences>

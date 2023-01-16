@@ -30,7 +30,6 @@ foobar
 hikemap
 lib/
 test/build/
-test/data/
 test_BLOCK*
 test/report/
 tools/ivy-report/
