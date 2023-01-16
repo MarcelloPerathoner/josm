@@ -16,6 +16,7 @@ val javaccOutputDir = "${buildDir}/generated/javacc"
 val mapcssSrcDir    = "org/openstreetmap/josm/gui/mappaint/mapcss"
 val mapcssOutputDir = "${javaccOutputDir}/${mapcssSrcDir}/parsergen"
 val reportsDir      = "${buildDir}/reports"
+val epsgFile        = "resources/data/projection/custom-epsg"
 
 plugins {
   id("application")
@@ -447,12 +448,21 @@ task("compileJavacc", JavaExec::class) {
     )
 }
 
+tasks.register("ensureEpsg") {
+    doLast {
+        ant.withGroovyBuilder {
+            "touch" ("file" to epsgFile)
+        }
+    }
+}
+
 task("compileEpsg", JavaExec::class) {
     description = "Builds the EPSG definitions file."
-    dependsOn("compileScriptsJava")
+    dependsOn(listOf("compileScriptsJava", "ensureEpsg"))
+    mustRunAfter("ensureEpsg")
     mainClass.set("BuildProjectionDefinitions")
     classpath = sourceSets["scripts"].runtimeClasspath
-    outputs.file("resources/data/projection/custom-epsg")
+    outputs.file(epsgFile)
 }
 
 tasks.register<Copy>("downloadDependenciesSources") {
