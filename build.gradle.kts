@@ -266,6 +266,7 @@ tasks {
         }
     }
     jar {
+        dependsOn("compileEpsg")
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
