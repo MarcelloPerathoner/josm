@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - develop
-    tags:
-      - v**
 
 jobs:
   build:
@@ -38,7 +36,13 @@ jobs:
         with:
           arguments: jar
 
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::$(date +"%Y%m%d_%H%M%S")"
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
           files: build/libs/josm.jar
