@@ -287,6 +287,12 @@ tasks {
 		options.errorprone.isEnabled.set(false) // takes forever
 	}
     processResources {
+        from(project.projectDir) {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            include("CONTRIBUTION")
+            include("README")
+            include("LICENSE")
+        }
         val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
         val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         val local = true
@@ -321,7 +327,7 @@ tasks {
         // uncomment to include sources in jar
         // from(sourceSets["main"].allSource)
 
-        exclude("META-INF/*")
+        // exclude("META-INF/*")
         exclude("META-INF/maven/**")
         // exclude("META-INF/resources/webjars/tag2link/*/")
         // exclude("META-INF/versions/**")

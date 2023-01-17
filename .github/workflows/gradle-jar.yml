@@ -41,7 +41,7 @@ jobs:
       - name: Generate release tag
         id: tag
         run: |
-          echo "::set-output name=release_tag::$(date +"%Y%m%d_%H%M%S")"
+          echo "{release_tag}={$(date +'%Y%m%d-%H%M%S')}" >> $GITHUB_OUTPUT
 
       - name: Release
         uses: softprops/action-gh-release@v1
