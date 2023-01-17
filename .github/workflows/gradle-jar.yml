@@ -41,10 +41,10 @@ jobs:
       - name: Generate release tag
         id: tag
         run: |
-          echo "{release_tag}={$(date +'%Y%m%d-%H%M%S')}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.release_tag }}
+          tag_name: ${{ env.RELEASE_TAG }}
           files: build/libs/josm.jar
