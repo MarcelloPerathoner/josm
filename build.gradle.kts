@@ -256,7 +256,7 @@ val initEpsg by tasks.registering() {
     }
 }
 
-val compileEpsg by tasks.registering(JavaExec::class) {
+val processEpsg by tasks.registering(JavaExec::class) {
     description = "Builds the EPSG definitions file."
     dependsOn(initEpsg, "compileScriptsJava")
     mustRunAfter(initEpsg)
@@ -264,6 +264,13 @@ val compileEpsg by tasks.registering(JavaExec::class) {
     classpath = sourceSets["scripts"].runtimeClasspath
     inputs.dir("nodist/data/projection")
     outputs.file(epsgFile)
+}
+
+val copyEpsg by tasks.registering(Copy::class) {
+    // dependsOn(processEpsg)
+    // mustRunAfter(processEpsg)
+    from(processEpsg)
+    into("${sourceSets.main.get().output.resourcesDir}/data/projection")
 }
 
 tasks {
@@ -287,9 +294,12 @@ tasks {
             expand("date" to buildDate, "revision" to revision, "local" to local)
         })
     }
+    clean {
+        delete(epsgFile)
+    }
     jar {
-        dependsOn(compileEpsg)
-        mustRunAfter(compileEpsg)
+        dependsOn(copyEpsg)
+        mustRunAfter(copyEpsg)
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
