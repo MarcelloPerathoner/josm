@@ -248,8 +248,12 @@ dependencies {
     }
 }
 
-val initEpsg by tasks.registering(Exec::class) {
-    commandLine = listOf("touch", epsgFile)
+val initEpsg by tasks.registering() {
+    doLast {
+        ant.withGroovyBuilder {
+            "touch"("file" to epsgFile, "mkdirs" to "true")
+        }
+    }
 }
 
 val compileEpsg by tasks.registering(JavaExec::class) {
@@ -260,12 +264,6 @@ val compileEpsg by tasks.registering(JavaExec::class) {
     classpath = sourceSets["scripts"].runtimeClasspath
     inputs.dir("nodist/data/projection")
     outputs.file(epsgFile)
-}
-
-val initRevision by tasks.registering(Exec::class) {
-    val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-    val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    commandLine = listOf("echo", "Revision: ${revision}\nBuild-Date: ${buildDate}\nIs-Local-Build: true", ">", revisionFile)
 }
 
 tasks {
@@ -290,8 +288,8 @@ tasks {
         })
     }
     jar {
-        dependsOn(compileEpsg, initRevision)
-        mustRunAfter(compileEpsg, initRevision)
+        dependsOn(compileEpsg)
+        mustRunAfter(compileEpsg)
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
