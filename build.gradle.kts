@@ -6,6 +6,8 @@ import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter;
 
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
@@ -17,6 +19,7 @@ val mapcssSrcDir    = "org/openstreetmap/josm/gui/mappaint/mapcss"
 val mapcssOutputDir = "${javaccOutputDir}/${mapcssSrcDir}/parsergen"
 val reportsDir      = "${buildDir}/reports"
 val epsgFile        = "resources/data/projection/custom-epsg"
+val revisionFile    = "resources/REVISION"
 
 plugins {
   id("application")
@@ -245,6 +248,26 @@ dependencies {
     }
 }
 
+val initEpsg by tasks.registering(Exec::class) {
+    commandLine = listOf("touch", epsgFile)
+}
+
+val compileEpsg by tasks.registering(JavaExec::class) {
+    description = "Builds the EPSG definitions file."
+    dependsOn(initEpsg, "compileScriptsJava")
+    mustRunAfter(initEpsg)
+    mainClass.set("BuildProjectionDefinitions")
+    classpath = sourceSets["scripts"].runtimeClasspath
+    inputs.dir("nodist/data/projection")
+    outputs.file(epsgFile)
+}
+
+val initRevision by tasks.registering(Exec::class) {
+    val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+    val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    commandLine = listOf("echo", "Revision: ${revision}\nBuild-Date: ${buildDate}\nIs-Local-Build: true", ">", revisionFile)
+}
+
 tasks {
 	compileJava {
         options.release.set(java_lang_version)
@@ -259,15 +282,16 @@ tasks {
 		options.errorprone.isEnabled.set(false) // takes forever
 	}
     processResources {
-        from(project.projectDir) {
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-            include("CONTRIBUTION")
-            include("README")
-            include("LICENSE")
-        }
+        val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        val local = true
+        filesMatching("**/REVISION", {
+            expand("date" to buildDate, "revision" to revision, "local" to local)
+        })
     }
     jar {
-        dependsOn("compileEpsg")
+        dependsOn(compileEpsg, initRevision)
+        mustRunAfter(compileEpsg, initRevision)
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
@@ -446,23 +470,6 @@ task("compileJavacc", JavaExec::class) {
         "-OUTPUT_DIRECTORY=${mapcssOutputDir}",
         "src/${mapcssSrcDir}/MapCSSParser.jj"
     )
-}
-
-tasks.register("ensureEpsg") {
-    doLast {
-        ant.withGroovyBuilder {
-            "touch" ("file" to epsgFile)
-        }
-    }
-}
-
-task("compileEpsg", JavaExec::class) {
-    description = "Builds the EPSG definitions file."
-    dependsOn(listOf("compileScriptsJava", "ensureEpsg"))
-    mustRunAfter("ensureEpsg")
-    mainClass.set("BuildProjectionDefinitions")
-    classpath = sourceSets["scripts"].runtimeClasspath
-    outputs.file(epsgFile)
 }
 
 tasks.register<Copy>("downloadDependenciesSources") {
