@@ -1,0 +1,3 @@
+Revision: <%= revision %>
+Build-Date: <%= date %>
+Is-Local-Build: <%= local %>
