@@ -416,10 +416,8 @@ tasks {
         exclude("org/apache/commons/jcs3/log/Log4j2LogAdapter*")
         exclude("org/apache/commons/jcs3/utils/servlet/**")
 
-        // fat jar dependencies
-        from(sourceSets["main"].runtimeClasspath.files
-            // .onEach { println("add from dependencies: ${it.path}") }
-            .map({ if (it.isDirectory) it else zipTree(it) }))
+        // make it a fat jar
+        from(configurations.runtimeClasspath.get().map({ if (it.isDirectory) it else zipTree(it) }))
     }
 }
 
