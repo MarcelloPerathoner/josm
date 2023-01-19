@@ -18,7 +18,6 @@ val javaccOutputDir = "${buildDir}/generated/javacc"
 val mapcssSrcDir    = "org/openstreetmap/josm/gui/mappaint/mapcss"
 val mapcssOutputDir = "${javaccOutputDir}/${mapcssSrcDir}/parsergen"
 val reportsDir      = "${buildDir}/reports"
-val epsgFile        = "resources/data/projection/custom-epsg"
 val revisionFile    = "resources/REVISION"
 
 plugins {
@@ -29,6 +28,7 @@ plugins {
   id("net.ltgt.errorprone") version "2.0.2"
   id("org.sonarqube") version "3.4.0.2513"
   //id("org.checkerframework") version "0.6.14"
+  id("com.dorongold.task-tree") version "2.1.1"
 
   checkstyle
   eclipse
@@ -51,11 +51,22 @@ sourceSets {
         }
         resources {
             setSrcDirs(listOf("resources"))
+            exclude("**/custom-epsg")
         }
     }
 	create("scripts") {
 		java {
 			setSrcDirs(listOf("scripts"))
+            exclude("**/BuildProjectionDefinitions.java")
+		}
+        resources {
+            setSrcDirs(listOf("resources"))
+        }
+ 	}
+	create("epsg") {
+		java {
+			setSrcDirs(listOf("scripts"))
+            include("**/BuildProjectionDefinitions.java")
 		}
  	}
     create("sources") {
@@ -64,6 +75,7 @@ sourceSets {
 
 val sourcesImplementation by configurations.getting
 val scriptsImplementation by configurations.getting
+val epsgImplementation by configurations.getting
 val testImplementation by configurations.getting
 
 val integrationTestImplementation by configurations.creating {
@@ -93,12 +105,53 @@ val versions = mapOf(
   "wiremock" to "2.35.0"
 )
 
+val compileJavaCC by tasks.registering(JavaExec::class) {
+    // do this without javacc plugins, they all suck
+    description = "Builds the MapCSS Parser sources."
+    mainClass.set("org.javacc.parser.Main")
+    classpath = sourceSets["main"].compileClasspath + files("tools/javacc")
+    outputs.dir(javaccOutputDir)
+
+    args = listOf(
+        "-DEBUG_PARSER=false",
+        "-DEBUG_TOKEN_MANAGER=false",
+        "-JDK_VERSION=1.${java_lang_version}",
+        "-UNICODE_INPUT=true",
+        "-OUTPUT_DIRECTORY=${mapcssOutputDir}",
+        "src/${mapcssSrcDir}/MapCSSParser.jj"
+    )
+}
+
+val processEpsg by tasks.registering(JavaExec::class) {
+    // This script should be fixed to use resources.  As it is, it reads files from a
+    // hardcoded location.  Also, and perhaps much worse, the static Projection class
+    // croaks if it cannot find at least an empty file at
+    // "resource://data/projection/custom-epsg".
+    val outputDir = sourceSets["main"].output.resourcesDir
+    val outputFile = "${outputDir}/data/projection/custom-epsg"
+    description = "Builds the customized EPSG definitions file."
+    dependsOn("compileEpsgJava")
+    mainClass.set("BuildProjectionDefinitions")
+    args(listOf(".", outputFile))
+    classpath = sourceSets["epsg"].runtimeClasspath
+    // provide the empty resource://data/projection/custom-epsg
+    classpath += files(sourceSets["main"].resources.srcDirs)
+    // the input directory hardcoded in the script
+    inputs.dir("nodist/data/projection")
+    // outputs.dir(outputDir)
+    outputs.file(outputFile)
+}
+
 testing {
     suites {
         val applyDefaults = { suite: JvmTestSuite ->
             suite.useJUnitJupiter()
     		suite.sources.resources {
                 setSrcDirs(listOf("test/data"))
+            }
+            suite.dependencies {
+                implementation(sourceSets["main"].output.classesDirs)
+                runtimeOnly(files(processEpsg))
             }
         }
 
@@ -122,7 +175,6 @@ testing {
             applyDefaults(this)
             testType.set(TestSuiteType.INTEGRATION_TEST)
             dependencies {
-                implementation(sourceSets["main"].output)
                 implementation(sourceSets["test"].output)
             }
             sources {
@@ -144,7 +196,6 @@ testing {
             applyDefaults(this)
             testType.set(TestSuiteType.FUNCTIONAL_TEST)
             dependencies {
-                implementation(sourceSets["main"].output)
                 implementation(sourceSets["test"].output)
             }
             sources {
@@ -166,7 +217,6 @@ testing {
             applyDefaults(this)
             testType.set(TestSuiteType.PERFORMANCE_TEST)
             dependencies {
-                implementation(sourceSets["main"].output)
                 implementation(sourceSets["test"].output)
             }
             sources {
@@ -231,13 +281,16 @@ dependencies {
     testImplementation("org.jmockit:jmockit:1.49.a") // patched version from JOSM nexus
 
     // dependencies for scripts
-    scriptsImplementation(sourceSets["main"].output)
-    scriptsImplementation(sourceSets["test"].output)
-    scriptsImplementation(sourceSets["integrationTest"].output)
     scriptsImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
     scriptsImplementation("javax.json:javax.json-api:1.1.4")
     scriptsImplementation("org.apache.commons:commons-lang3:3.12.0")
     scriptsImplementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
+    scriptsImplementation(sourceSets["main"].output)
+    scriptsImplementation(sourceSets["test"].output)
+    scriptsImplementation(sourceSets["integrationTest"].output)
+
+    // dependencies for epsg script
+    epsgImplementation(sourceSets["main"].output)
 
     // dependencies for sources
     for (ra in configurations["runtimeClasspath"].resolvedConfiguration.resolvedArtifacts) {
@@ -248,36 +301,11 @@ dependencies {
     }
 }
 
-val initEpsg by tasks.registering() {
-    doLast {
-        ant.withGroovyBuilder {
-            "touch"("file" to epsgFile, "mkdirs" to "true")
-        }
-    }
-}
-
-val processEpsg by tasks.registering(JavaExec::class) {
-    description = "Builds the EPSG definitions file."
-    dependsOn(initEpsg, "compileScriptsJava")
-    mustRunAfter(initEpsg)
-    mainClass.set("BuildProjectionDefinitions")
-    classpath = sourceSets["scripts"].runtimeClasspath
-    inputs.dir("nodist/data/projection")
-    outputs.file(epsgFile)
-}
-
-val copyEpsg by tasks.registering(Copy::class) {
-    // dependsOn(processEpsg)
-    // mustRunAfter(processEpsg)
-    from(processEpsg)
-    into("${sourceSets.main.get().output.resourcesDir}/data/projection")
-}
-
 tasks {
 	compileJava {
         options.release.set(java_lang_version)
 		options.errorprone.isEnabled.set(false) // takes forever
-        dependsOn("compileJavacc")
+        inputs.files(files(compileJavaCC))
         /* options.compilerArgs.addAll(listOf(
             "--add-exports", "java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED",
         ))*/
@@ -285,7 +313,7 @@ tasks {
 	compileTestJava {
         options.release.set(java_lang_version)
 		options.errorprone.isEnabled.set(false) // takes forever
-	}
+    }
     processResources {
         from(project.projectDir) {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -300,12 +328,8 @@ tasks {
             expand("date" to buildDate, "revision" to revision, "local" to local)
         })
     }
-    clean {
-        delete(epsgFile)
-    }
     jar {
-        dependsOn(copyEpsg)
-        mustRunAfter(copyEpsg)
+        inputs.files(files(processEpsg))
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
@@ -326,29 +350,32 @@ tasks {
 
         // uncomment to include sources in jar
         // from(sourceSets["main"].allSource)
+        // var tree: ConfigurableFileTree = fileTree("src/main")
+
+        exclude {
+            it.toString().contains("/webjars/tag2link/") && !it.toString().endsWith("/index.json")
+        }
+
+        val regex = """com/drew/imaging/([^/]+)/""".toRegex()
+        val formats = listOf("png", "jpeg", "tiff")
+        exclude {
+            val matchResult = regex.find(it.toString())
+            matchResult != null && !formats.contains(matchResult?.groupValues?.get(1))
+        }
+
+        val regex2 = """org/apache/commons/compress/compressors/([^/]+)/""".toRegex()
+        val formats2 = listOf("bzip2", "deflate64", "lzw", "xz")
+        exclude {
+            val matchResult = regex2.find(it.toString())
+            matchResult != null && !formats2.contains(matchResult?.groupValues?.get(1))
+        }
 
         // exclude("META-INF/*")
         exclude("META-INF/maven/**")
-        // exclude("META-INF/resources/webjars/tag2link/*/")
         // exclude("META-INF/versions/**")
         exclude("org/openstreetmap/gui/jmapviewer/Demo*")
         exclude("com/drew/imaging/FileTypeDetector*")
         exclude("com/drew/imaging/ImageMetadataReader*")
-        exclude("com/drew/imaging/avi/**")
-        exclude("com/drew/imaging/bmp/**")
-        exclude("com/drew/imaging/eps/**")
-        exclude("com/drew/imaging/gif/**")
-        exclude("com/drew/imaging/heif/**")
-        exclude("com/drew/imaging/ico/**")
-        exclude("com/drew/imaging/mp3/**")
-        exclude("com/drew/imaging/mp4/**")
-        exclude("com/drew/imaging/pcx/**")
-        exclude("com/drew/imaging/psd/**")
-        exclude("com/drew/imaging/quicktime/**")
-        exclude("com/drew/imaging/raf/**")
-        exclude("com/drew/imaging/riff/**")
-        exclude("com/drew/imaging/wav/**")
-        exclude("com/drew/imaging/webp/**")
         exclude("com/drew/metadata/avi/**")
         exclude("com/drew/metadata/bmp/**")
         exclude("com/drew/metadata/eps/**")
@@ -370,22 +397,12 @@ tasks {
         exclude("org/apache/commons/compress/PasswordRequiredException*")
         exclude("org/apache/commons/compress/archivers/**")
         exclude("org/apache/commons/compress/changes/**")
-        exclude("org/apache/commons/compress/compressors/bzip2/BZip2Utils*")
-        exclude("org/apache/commons/compress/compressors/brotli/**")
         exclude("org/apache/commons/compress/compressors/CompressorStreamFactory*")
         exclude("org/apache/commons/compress/compressors/CompressorStreamProvider*")
         exclude("org/apache/commons/compress/compressors/CompressorException*")
         exclude("org/apache/commons/compress/compressors/FileNameUtil*")
-        exclude("org/apache/commons/compress/compressors/deflate/**")
-        exclude("org/apache/commons/compress/compressors/gzip/**")
-        exclude("org/apache/commons/compress/compressors/lz4/**")
-        exclude("org/apache/commons/compress/compressors/lzma/**")
-        exclude("org/apache/commons/compress/compressors/lz77support/**")
-        exclude("org/apache/commons/compress/compressors/pack200/**")
-        exclude("org/apache/commons/compress/compressors/snappy/**")
+        exclude("org/apache/commons/compress/compressors/bzip2/BZip2Utils*")
         exclude("org/apache/commons/compress/compressors/xz/XZUtils*")
-        exclude("org/apache/commons/compress/compressors/z/**")
-        exclude("org/apache/commons/compress/compressors/zstandard/**")
         exclude("org/apache/commons/compress/java/util/jar/Pack200*")
         exclude("org/apache/commons/compress/harmony/pack200/**")
         exclude("org/apache/commons/compress/harmony/unpack200/**")
@@ -399,7 +416,8 @@ tasks {
         exclude("org/apache/commons/jcs3/log/Log4j2LogAdapter*")
         exclude("org/apache/commons/jcs3/utils/servlet/**")
 
-        from(configurations.runtimeClasspath.get()
+        // fat jar dependencies
+        from(sourceSets["main"].runtimeClasspath.files
             // .onEach { println("add from dependencies: ${it.path}") }
             .map({ if (it.isDirectory) it else zipTree(it) }))
     }
@@ -469,23 +487,6 @@ tasks.named("check") {
     dependsOn(testing.suites.named("performanceTest"))
 }
 
-task("compileJavacc", JavaExec::class) {
-    // do this without javacc plugins, they all suck
-    description = "Builds the MapCSS Parser sources."
-    mainClass.set("org.javacc.parser.Main")
-    classpath = sourceSets["main"].compileClasspath + files("tools/javacc")
-    outputs.dir(file(mapcssOutputDir))
-
-    args = listOf(
-        "-DEBUG_PARSER=false",
-        "-DEBUG_TOKEN_MANAGER=false",
-        "-JDK_VERSION=1.${java_lang_version}",
-        "-UNICODE_INPUT=true",
-        "-OUTPUT_DIRECTORY=${mapcssOutputDir}",
-        "src/${mapcssSrcDir}/MapCSSParser.jj"
-    )
-}
-
 tasks.register<Copy>("downloadDependenciesSources") {
     description = "Downloads the source jars of the runtime dependencies."
     from(sourceSets["sources"].runtimeClasspath)
@@ -496,12 +497,6 @@ tasks.named("clean") {
     delete("src/${mapcssSrcDir}/parsergen")      // clean leftovers from ant
     delete("test/data/renderer/way-text/test-*") // clean leftovers from obnoxious test
 }
-
-/*
-tasks.register<Delete>("cleanExtraFiles") {
-    delete("src/${mapcssSrcDir}/parsergen")
-}
-*/
 
 java {
     withJavadocJar()

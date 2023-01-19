@@ -3,13 +3,13 @@
 	<classpathentry kind="src" output="bin/main" path="src">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,functionalTest,integrationTest,performanceTest,scripts"/>
+			<attribute name="gradle_used_by_scope" value="main,test,epsg,scripts"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/main" path="resources">
+	<classpathentry kind="src" output="bin/scripts" path="resources">
 		<attributes>
-			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,functionalTest,integrationTest,performanceTest,scripts"/>
+			<attribute name="gradle_scope" value="scripts"/>
+			<attribute name="gradle_used_by_scope" value="scripts"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/performanceTest" path="test/data">
@@ -47,7 +47,7 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/scripts" path="scripts">
+	<classpathentry excluding="**/BuildProjectionDefinitions.java" kind="src" output="bin/scripts" path="scripts">
 		<attributes>
 			<attribute name="gradle_scope" value="scripts"/>
 			<attribute name="gradle_used_by_scope" value="scripts"/>
@@ -56,7 +56,7 @@
 	<classpathentry kind="src" output="bin/main" path="build/generated/javacc">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,functionalTest,integrationTest,performanceTest,scripts"/>
+			<attribute name="gradle_used_by_scope" value="main,test,epsg,scripts"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-19/"/>

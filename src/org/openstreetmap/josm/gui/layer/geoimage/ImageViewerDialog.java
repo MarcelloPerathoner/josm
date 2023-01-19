@@ -243,6 +243,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
      * If there is only one tab, we hide the tabbed pane altogether to save screen real estate.
      * This method may fire stateChanged.
      */
+    @SuppressWarnings("fallthrough")
     void addTabForLayer(IGeoImageLayer geoLayer) {
         int tabCount = tabbedPane.getTabCount();
         ImageDisplay2 imageDisplay;
@@ -542,8 +543,10 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
                 super.setImage(null);
                 return;
             }
-            updateOsd(images.get(0));
-            super.setImage(images.get(0));
+            IImageEntry<?> entry = images.get(0);
+            if (entry != null)
+                updateOsd(entry);
+            super.setImage(entry);
         }
 
         public IImageEntry<?> getImage() {
