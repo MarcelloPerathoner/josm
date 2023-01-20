@@ -1,3 +1,5 @@
+// https://www.bruceeckel.com/2021/01/02/the-problem-with-gradle/
+
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
@@ -328,6 +330,19 @@ tasks {
             expand("date" to buildDate, "revision" to revision, "local" to local)
         })
     }
+    clean {
+        doFirst {
+            println("cleaning ...")
+        }
+        delete("src/${mapcssSrcDir}/parsergen")      // clean leftovers from ant
+        delete(fileTree("test/data/renderer").matching {
+            include("**/test-differences.png")
+            include("**/test-output.png")
+        })
+        delete(fileTree("test/config").matching {
+            include("**/preferences.xml.bak")
+        })
+    }
     jar {
         inputs.files(files(processEpsg))
         manifest {
@@ -489,11 +504,6 @@ tasks.register<Copy>("downloadDependenciesSources") {
     description = "Downloads the source jars of the runtime dependencies."
     from(sourceSets["sources"].runtimeClasspath)
     into("lib/sources")
-}
-
-tasks.named("clean") {
-    delete("src/${mapcssSrcDir}/parsergen")      // clean leftovers from ant
-    delete("test/data/renderer/way-text/test-*") // clean leftovers from obnoxious test
 }
 
 java {
