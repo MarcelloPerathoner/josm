@@ -12,24 +12,18 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
-import javax.swing.JOptionPane;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import org.openstreetmap.josm.data.preferences.sources.PresetPrefHelper;
-import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.io.CachedFile;
-import org.openstreetmap.josm.io.NetworkManager;
 import org.openstreetmap.josm.io.UTFInputStreamReader;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.I18n;
@@ -37,7 +31,6 @@ import org.openstreetmap.josm.tools.JosmRuntimeException;
 import org.openstreetmap.josm.tools.LanguageInfo;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Stopwatch;
-import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.XmlParsingException;
 import org.openstreetmap.josm.tools.XmlUtils;
 import org.xml.sax.Attributes;
@@ -84,7 +77,7 @@ public final class TaggingPresetReader {
 
     private static class Parser extends DefaultHandler {
         private Root root;
-        private Stack<Item> stack = new Stack<>();
+        private Deque<Item> stack = new ArrayDeque<>();
         private StringBuilder characters;
         private Locator locator;
         private final String lang = LanguageInfo.getLanguageCodeXML();
@@ -104,6 +97,7 @@ public final class TaggingPresetReader {
                 String name = a.getLocalName(i);
                 if (name.startsWith(lang)) {
                     name = "locale_" + name.substring(lang.length());
+                    attributes.put(name, a.getValue(i));
                 }
                 attributes.put(a.getLocalName(i), a.getValue(i));
             }
@@ -117,14 +111,11 @@ public final class TaggingPresetReader {
 
             try {
                 item = ItemFactory.build(lname, attributes);
-                if (item instanceof Root) {
-                    Root root = (Root) item;
-                    if (this.root == null) {
-                        root.url = locator.getSystemId();
-                        this.root = root;
-                    }
+                if (item instanceof Root && root == null) {
+                    root = (Root) item;
+                    root.url = locator.getSystemId();
                 }
-                if (stack.size() > 0) {
+                if (!stack.isEmpty()) {
                     // add this item to the parent
                     // do not put this into the constructor of Item or Chunks will not work
                     stack.peek().addItem(item);
@@ -202,8 +193,10 @@ public final class TaggingPresetReader {
     }
 
     /**
-     * This filter adds the default namespace
-     * {@code http://josm.openstreetmap.de/tagging-preset-1.0} to all elements that have none.
+     * This filter adds the given namespace to the root element if that element had no
+     * namespace before.
+     * <p>
+     * Used in the validator to validate legacy files without namespace.
      */
     private static class AddNamespaceFilter extends XMLFilterImpl {
         private final String namespace;
@@ -214,7 +207,7 @@ public final class TaggingPresetReader {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-            if ("".equals(uri)) {
+            if ("presets".equals(localName) && "".equals(uri)) {
                 super.startElement(namespace, localName, qName, atts);
             } else {
                 super.startElement(uri, localName, qName, atts);
@@ -231,7 +224,7 @@ public final class TaggingPresetReader {
      * @return the new parser with validation
      * @throws SAXException if any XML or I/O error occurs
      */
-    public static ContentHandler buildParserWithValidation(Parser parser, String namespace, String schemaUrl) throws SAXException {
+    private static ContentHandler buildParserWithValidation(Parser parser, String namespace, String schemaUrl) throws SAXException {
         SchemaFactory factory = XmlUtils.newXmlSchemaFactory();
         try (CachedFile cf = new CachedFile(schemaUrl);
             InputStream mis = cf.getInputStream()) {
@@ -278,9 +271,8 @@ public final class TaggingPresetReader {
      *
      * @param url a given filename, URL or internal resource
      * @param validate if {@code true}, XML validation will be performed
+     * @param displayErrMsg whether to display error messages to the user or not
      * @return the root element of the resource
-     * @throws SAXException if any XML error occurs
-     * @throws IOException if any I/O error occurs
      */
     public static Root read(String url, boolean validate) throws SAXException, IOException {
         Logging.debug("Reading presets from {0}", url);
@@ -326,12 +318,11 @@ public final class TaggingPresetReader {
      *
      * @param url a given filename, URL or internal resource
      * @param validate if {@code true}, XML validation will be performed
-     * @return the root element of the resource
+     * @return the root element of the patch or null
      * @throws SAXException if any XML error occurs
-     * @throws IOException if any I/O error occurs
      */
 
-    static Root readPatchFile(String url, boolean validate) throws SAXException, IOException {
+    static Root readPatchFile(String url, boolean validate) throws SAXException {
         try {
             URI uri = new URI(url);
             String fileName = new File(uri.getPath()).getName();
@@ -355,79 +346,6 @@ public final class TaggingPresetReader {
         } catch (IOException e) {
             return null; // there is no local patch file, do nothing
         }
-    }
-
-    /**
-     * Reads all tagging presets from the given XML resources. Convenience function.
-     *
-     * @param sources Collection of tagging presets sources.
-     * @param validate if {@code true}, presets will be validated against XML schema
-     * @return the root elements of the XML resources
-     */
-    public static Collection<Root> readAll(Collection<String> sources, boolean validate) {
-        return readAll(sources, validate, true);
-    }
-
-    /**
-     * Reads all tagging presets from the given XML resources.
-     *
-     * @param sources Collection of tagging presets sources.
-     * @param validate if {@code true}, presets will be validated against XML schema
-     * @param displayErrMsg if {@code true}, a blocking error message is displayed in case of I/O exception.
-     * @return the root elements of the XML resources
-     */
-    public static Collection<Root> readAll(Collection<String> sources, boolean validate, boolean displayErrMsg) {
-        Collection<Root> result = new ArrayList<>();
-        for (String source : sources) {
-            try {
-                result.add(read(source, validate));
-            } catch (IOException e) {
-                Logging.log(Logging.LEVEL_ERROR, e);
-                Logging.error(source);
-                if (source.startsWith("http")) {
-                    NetworkManager.addNetworkError(source, e);
-                }
-                if (displayErrMsg) {
-                    JOptionPane.showMessageDialog(
-                            MainApplication.getMainFrame(),
-                            tr("Could not read tagging preset source: {0}", source),
-                            tr("Error"),
-                            JOptionPane.ERROR_MESSAGE
-                            );
-                }
-            } catch (SAXException | IllegalArgumentException e) {
-                Logging.error(e);
-                Logging.error(source);
-                if (displayErrMsg) {
-                    JOptionPane.showMessageDialog(
-                            MainApplication.getMainFrame(),
-                            "<html>" + tr("Error parsing {0}: ", source) + "<br><br><table width=600>" +
-                                    Utils.escapeReservedCharactersHTML(e.getMessage()) + "</table></html>",
-                            tr("Error"),
-                            JOptionPane.ERROR_MESSAGE
-                            );
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Reads all tagging presets from sources stored in preferences.
-     * @param validate if {@code true}, presets will be validated against XML schema
-     * @param displayErrMsg if {@code true}, a blocking error message is displayed in case of I/O exception.
-     * @return Collection of all presets successfully read
-     */
-    public static Collection<Root> readFromPreferences(boolean validate, boolean displayErrMsg) {
-        return readAll(getPresetSources(), validate, displayErrMsg);
-    }
-
-    /**
-     * Returns the set of preset source URLs.
-     * @return The set of preset source URLs.
-     */
-    public static Set<String> getPresetSources() {
-        return new PresetPrefHelper().getActiveUrls();
     }
 
     /**

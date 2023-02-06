@@ -274,6 +274,14 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     }
 
     /**
+     * Returns the model
+     * @return the model
+     */
+    public PluginPreferencesModel getModel() {
+        return model;
+    }
+
+    /**
      * Replies the set of plugins waiting for update or download
      *
      * @return the set of plugins waiting for update or download

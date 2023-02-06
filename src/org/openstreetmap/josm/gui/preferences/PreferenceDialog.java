@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.gui.help.ContextSensitiveHelpAction;
@@ -125,6 +126,15 @@ public class PreferenceDialog extends JDialog {
 
     @Override
     public void setVisible(boolean visible) {
+        setVisible(visible, null);
+    }
+
+    /**
+     * Shows or hides this dialog with a preselected tab.
+     * @param visible if true shows the dialog, else hides it
+     * @param preselectedTab the tab to show
+     */
+    public void setVisible(boolean visible, String preselectedTab) {
         if (visible) {
             // Make the pref window at most as large as the parent JOSM window
             // Have to take window decorations into account or the windows will be too large
@@ -139,6 +149,8 @@ public class PreferenceDialog extends JDialog {
                             p
                     )
             ).applySafe(this);
+            if (preselectedTab != null)
+                SwingUtilities.invokeLater(() -> selectPreferencesTabByName(preselectedTab));
         } else if (isShowing()) { // Avoid IllegalComponentStateException like in #8775
             new WindowGeometry(this).remember(getClass().getName() + ".geometry");
         }

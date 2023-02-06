@@ -171,10 +171,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());
@@ -291,10 +288,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());
@@ -408,10 +402,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());
@@ -602,10 +593,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());
@@ -751,10 +739,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());
@@ -872,10 +857,7 @@ public class PluginPreferenceHighLevelTest {
         this.pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
         WireMock.resetAllRequests();
 
-        final PluginPreferencesModel model = (PluginPreferencesModel) TestUtils.getPrivateField(
-            tabbedPane.getPluginPreference(),
-            "model"
-        );
+        final PluginPreferencesModel model = tabbedPane.getPluginPreference().getModel();
 
         assertTrue(model.getNewlyActivatedPlugins().isEmpty());
         assertTrue(model.getNewlyDeactivatedPlugins().isEmpty());

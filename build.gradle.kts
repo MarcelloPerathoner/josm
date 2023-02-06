@@ -17,6 +17,7 @@ import org.gradle.api.artifacts.result.ResolvedDependencyResult
 val java_lang_version = 19
 
 val javaccOutputDir = "${buildDir}/generated/javacc"
+val epsgOutputDir   = "${buildDir}/generated/epsg"
 val mapcssSrcDir    = "org/openstreetmap/josm/gui/mappaint/mapcss"
 val mapcssOutputDir = "${javaccOutputDir}/${mapcssSrcDir}/parsergen"
 val reportsDir      = "${buildDir}/reports"
@@ -107,7 +108,7 @@ val versions = mapOf(
   "wiremock" to "2.35.0"
 )
 
-val compileJavaCC by tasks.registering(JavaExec::class) {
+val generateJavaCC by tasks.registering(JavaExec::class) {
     // do this without javacc plugins, they all suck
     description = "Builds the MapCSS Parser sources."
     mainClass.set("org.javacc.parser.Main")
@@ -124,15 +125,14 @@ val compileJavaCC by tasks.registering(JavaExec::class) {
     )
 }
 
-val processEpsg by tasks.registering(JavaExec::class) {
+val generateEpsg by tasks.registering(JavaExec::class) {
     // This script should be fixed to use resources.  As it is, it reads files from a
     // hardcoded location.  Also, and perhaps much worse, the static Projection class
     // croaks if it cannot find at least an empty file at
     // "resource://data/projection/custom-epsg".
-    val outputDir = sourceSets["main"].output.resourcesDir
-    val outputFile = "${outputDir}/data/projection/custom-epsg"
     description = "Builds the customized EPSG definitions file."
     dependsOn("compileEpsgJava")
+    val outputFile = "${epsgOutputDir}/data/projection/custom-epsg"
     mainClass.set("BuildProjectionDefinitions")
     args(listOf(".", outputFile))
     classpath = sourceSets["epsg"].runtimeClasspath
@@ -140,8 +140,8 @@ val processEpsg by tasks.registering(JavaExec::class) {
     classpath += files(sourceSets["main"].resources.srcDirs)
     // the input directory hardcoded in the script
     inputs.dir("nodist/data/projection")
-    // outputs.dir(outputDir)
-    outputs.file(outputFile)
+    outputs.dir(epsgOutputDir)
+    // outputs.file(epsgOutputDir)
 }
 
 testing {
@@ -149,11 +149,18 @@ testing {
         val applyDefaults = { suite: JvmTestSuite ->
             suite.useJUnitJupiter()
     		suite.sources.resources {
-                setSrcDirs(listOf("test/data"))
+                srcDirs(listOf("test/data"))
             }
             suite.dependencies {
-                implementation(sourceSets["main"].output.classesDirs)
-                runtimeOnly(files(processEpsg))
+                implementation(sourceSets["main"].output)
+            }
+            suite.targets {
+                all {
+                    testTask.configure {
+                        dependsOn(generateEpsg)
+                        classpath += files(generateEpsg)
+                    }
+                }
             }
         }
 
@@ -307,7 +314,7 @@ tasks {
 	compileJava {
         options.release.set(java_lang_version)
 		options.errorprone.isEnabled.set(false) // takes forever
-        inputs.files(files(compileJavaCC))
+        inputs.files(files(generateJavaCC))
         /* options.compilerArgs.addAll(listOf(
             "--add-exports", "java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED",
         ))*/
@@ -344,7 +351,7 @@ tasks {
         })
     }
     jar {
-        inputs.files(files(processEpsg))
+        inputs.files(files(generateEpsg))
         manifest {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
@@ -431,19 +438,39 @@ tasks {
         exclude("org/apache/commons/jcs3/log/Log4j2LogAdapter*")
         exclude("org/apache/commons/jcs3/utils/servlet/**")
 
+        // include generated resources
+        from(epsgOutputDir)
+
         // make it a fat jar
         from(configurations.runtimeClasspath.get().map({ if (it.isDirectory) it else zipTree(it) }))
     }
 }
 
+
 /*
-tasks.named("compileScriptsJava") {
+tasks.named<Test>("test") {
     doFirst {
-        logger.lifecycle("Compiling Scripts. compileClasspath =")
-        sourceSets["scripts"].compileClasspath.forEach { logger.lifecycle(it.getPath()) }
+        logger.lifecycle("classpath =")
+        classpath.forEach { logger.lifecycle(it.getPath()) }
     }
 }
 */
+
+tasks.register<Exec>("runJar") {
+    group = "Execution"
+    description = "Run JOSM from jar"
+    dependsOn("jar")
+    val jar = files(tasks.jar).asPath
+    commandLine = listOf("java", "-jar", jar, "sess.joz")
+}
+
+tasks.register<JavaExec>("runClasses") {
+    group = "Execution"
+    description = "Run JOSM from classes"
+    classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
+    main = "org.openstreetmap.josm.gui.MainApplication"
+    args = listOf("sess.joz")
+}
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
@@ -496,8 +523,8 @@ tasks.withType<Test>().configureEach {
 
 tasks.named("check") {
     dependsOn(testing.suites.named("functionalTest"))
-    dependsOn(testing.suites.named("integrationTest"))
     dependsOn(testing.suites.named("performanceTest"))
+    dependsOn(testing.suites.named("integrationTest"))
 }
 
 tasks.register<Copy>("downloadDependenciesSources") {

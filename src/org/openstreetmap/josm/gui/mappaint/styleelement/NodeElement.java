@@ -151,37 +151,25 @@ public class NodeElement extends StyleElement {
 
         Cascade cDef = env.getCascade("default");
 
-        Float widthOnDefault = cDef.get(keys[ICON_WIDTH_IDX], null, Float.class);
-        if (widthOnDefault != null && widthOnDefault <= 0) {
-            widthOnDefault = null;
-        }
-        Float widthF = getWidth(c, keys[ICON_WIDTH_IDX], widthOnDefault);
+        Float widthF = getWidth(c, cDef, keys[ICON_WIDTH_IDX]);
+        Float heightF = getWidth(c, cDef, keys[ICON_HEIGHT_IDX]);
 
-        Float heightOnDefault = cDef.get(keys[ICON_HEIGHT_IDX], null, Float.class);
-        if (heightOnDefault != null && heightOnDefault <= 0) {
-            heightOnDefault = null;
-        }
-        Float heightF = getWidth(c, keys[ICON_HEIGHT_IDX], heightOnDefault);
-
-        int width = widthF == null ? -1 : Math.round(widthF);
-        int height = heightF == null ? -1 : Math.round(heightF);
-
-        float offsetXF = 0f;
-        float offsetYF = 0f;
-        if (keys[ICON_OFFSET_X_IDX] != null) {
-            offsetXF = c.get(keys[ICON_OFFSET_X_IDX], 0f, Float.class);
-            offsetYF = c.get(keys[ICON_OFFSET_Y_IDX], 0f, Float.class);
+        Float offsetXF = 0f;
+        Float offsetYF = 0f;
+        if (keys.length >= 6) {
+            offsetXF = getWidth(c, cDef, keys[ICON_OFFSET_X_IDX]);
+            offsetYF = getWidth(c, cDef, keys[ICON_OFFSET_Y_IDX]);
         }
 
         final MapImage mapImage = new MapImage(iconRef.iconName, iconRef.source);
 
-        mapImage.width = width;
-        mapImage.height = height;
-        mapImage.offsetX = Math.round(offsetXF);
-        mapImage.offsetY = Math.round(offsetYF);
+        mapImage.width = widthF == null ? -1 : Math.round(widthF);
+        mapImage.height = heightF == null ? -1 : Math.round(heightF);
+        mapImage.offsetX = offsetXF == null ? 0 : Math.round(offsetXF);
+        mapImage.offsetY = offsetYF == null ? 0 : Math.round(offsetYF);
 
         mapImage.alpha = Utils.clamp(Config.getPref().getInt("mappaint.icon-image-alpha", 255), 0, 255);
-        Integer pAlpha = ColorHelper.float2int(c.get(keys[ICON_OPACITY_IDX], null, float.class));
+        Integer pAlpha = ColorHelper.float2int(c.get(keys[ICON_OPACITY_IDX], null, Float.class));
         if (pAlpha != null) {
             mapImage.alpha = pAlpha;
         }
@@ -190,7 +178,7 @@ public class NodeElement extends StyleElement {
 
     /**
      * Create a symbol for the environment
-     * @param env The environment to read the icon form
+     * @param env The environment to read the icon from
      * @return The symbol.
      */
     private static Symbol createSymbol(Environment env) {
@@ -205,16 +193,12 @@ public class NodeElement extends StyleElement {
         }
 
         Cascade cDef = env.getCascade("default");
-        Float sizeOnDefault = cDef.get("symbol-size", null, Float.class);
-        if (sizeOnDefault != null && sizeOnDefault <= 0) {
-            sizeOnDefault = null;
-        }
-        Float size = Optional.ofNullable(getWidth(c, "symbol-size", sizeOnDefault)).orElse(10f);
-        if (size <= 0)
-            return null;
 
-        Float strokeWidthOnDefault = getWidth(cDef, "symbol-stroke-width", null);
-        Float strokeWidth = getWidth(c, "symbol-stroke-width", strokeWidthOnDefault);
+        Float size = getWidth(c, cDef, "symbol-size");
+        if (size == null)
+            size = 10f;
+
+        Float strokeWidth = getWidth(c, cDef, "symbol-stroke-width");
 
         Color strokeColor = c.get("symbol-stroke-color", null, Color.class);
 
@@ -295,7 +279,7 @@ public class NodeElement extends StyleElement {
                 (isConnection && settings.isFillConnectionNode()) ||
                 settings.isFillUnselectedNode();
 
-                painter.drawNode(n, color, size, fill);
+                painter.drawNode(n, color, settings.adj(size), fill);
 
             }
         } else if (primitive instanceof IRelation && mapImage != null) {

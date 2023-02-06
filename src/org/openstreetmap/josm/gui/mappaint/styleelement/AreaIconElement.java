@@ -9,6 +9,7 @@ import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
+import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PartiallyInsideAreaStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAreaStrategy;
 import org.openstreetmap.josm.tools.RotationAngle;
@@ -60,7 +61,7 @@ public class AreaIconElement extends StyleElement {
         MapImage iconImage = NodeElement.createIcon(env);
         if (iconImage != null) {
             RotationAngle rotationAngle = NodeElement.createRotationAngle(env);
-            Keyword positionKeyword = c.get(AreaElement.ICON_POSITION, null, Keyword.class);
+            Keyword positionKeyword = c.get(StyleKeys.ICON_POSITION, null, Keyword.class);
             PositionForAreaStrategy position = PositionForAreaStrategy.forKeyword(positionKeyword, PartiallyInsideAreaStrategy.INSTANCE);
 
             return new AreaIconElement(c, iconImage, rotationAngle, position);

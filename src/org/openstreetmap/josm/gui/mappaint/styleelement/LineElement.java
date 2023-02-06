@@ -18,7 +18,6 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
-import org.openstreetmap.josm.gui.mappaint.mapcss.Instruction.RelativeFloat;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Logging;
 
@@ -56,6 +55,10 @@ public class LineElement extends StyleElement {
      * the real width of this line in meter. Should not be accessed directly
      */
     public float realWidth;
+    /**
+     * the width of this line according to mapcss. Should not be accessed directly
+     */
+    public float width;
     /**
      * A flag indicating if the direction arrows should be painted. Should not be accessed directly
      */
@@ -355,7 +358,7 @@ public class LineElement extends StyleElement {
                 dashes = null;
             }
         }
-        float dashesOffset = c.get(type.prefix + DASHES_OFFSET, 0f, Float.class);
+        float dashesOffset = c.getAdjusted(type.prefix + DASHES_OFFSET, 0f);
         if (dashesOffset < 0f) {
             Logging.warn("Found negative " + DASHES_OFFSET + ": " + dashesOffset);
             dashesOffset = 0f;
@@ -417,31 +420,31 @@ public class LineElement extends StyleElement {
 
         boolean wayDirectionArrows = c.get(type.prefix + WAY_DIRECTION_ARROWS, env.osm.isSelected(), Boolean.class);
 
-        return new LineElement(c, type.defaultMajorZIndex, line, color, dashesLine, dashesBackground,
+        LineElement le = new LineElement(c, type.defaultMajorZIndex, line, color, dashesLine, dashesBackground,
                 offset, realWidth, wayDirectionArrows);
+        le.width = width;
+        return le;
     }
 
     private static Float computeWidth(LineType type, Cascade c, Cascade cDef) {
         Float width;
         switch (type) {
             case NORMAL:
-                width = getWidth(c, WIDTH, getWidth(cDef, WIDTH, null));
+                width = getWidth(c, cDef, WIDTH);
                 break;
             case CASING:
-                Float casingWidth = c.get(type.prefix + WIDTH, null, Float.class, true);
-                if (casingWidth == null) {
-                    RelativeFloat relCasingWidth = c.get(type.prefix + WIDTH, null, RelativeFloat.class, true);
-                    if (relCasingWidth != null) {
-                        casingWidth = relCasingWidth.val / 2;
-                    }
-                }
+                // "casing-width" is special in that is looks up "width" for relative values
+                Float casingWidth = getWidth(c, c, type.prefix + WIDTH, WIDTH);
                 if (casingWidth == null)
                     return null;
-                width = Optional.ofNullable(getWidth(c, WIDTH, getWidth(cDef, WIDTH, null))).orElse(0f) + 2 * casingWidth;
+                width = getWidth(c, cDef, WIDTH);
+                if (width == null)
+                    width = 0f;
+                width += casingWidth;
                 break;
             case LEFT_CASING:
             case RIGHT_CASING:
-                width = getWidth(c, type.prefix + WIDTH, null);
+                width = getWidth(c, null, type.prefix + WIDTH);
                 break;
             default:
                 throw new AssertionError();
@@ -467,21 +470,20 @@ public class LineElement extends StyleElement {
     }
 
     private static Float computeOffset(LineType type, Cascade c, Cascade cDef, Float width) {
-        Float offset = c.get(OFFSET, 0f, Float.class);
+        Float offset = c.getAdjusted(OFFSET, 0f);
         switch (type) {
             case NORMAL:
                 break;
             case CASING:
-                offset += c.get(type.prefix + OFFSET, 0f, Float.class);
+                offset += c.getAdjusted(type.prefix + OFFSET, 0f);
                 break;
             case LEFT_CASING:
             case RIGHT_CASING:
-                Float baseWidthOnDefault = getWidth(cDef, WIDTH, null);
-                Float baseWidth = getWidth(c, WIDTH, baseWidthOnDefault);
+                Float baseWidth = getWidth(c, cDef, WIDTH);
                 if (baseWidth == null || baseWidth < 2f) {
                     baseWidth = 2f;
                 }
-                float casingOffset = c.get(type.prefix + OFFSET, 0f, Float.class);
+                float casingOffset = c.getAdjusted(type.prefix + OFFSET, 0f);
                 casingOffset += baseWidth / 2 + width / 2;
                 /* flip sign for the right-casing-offset */
                 if (type == LineType.RIGHT_CASING) {

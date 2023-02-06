@@ -139,6 +139,8 @@ public class ImageProvider {
          * @since 8323
          */
         POPUPMENU(LARGEICON),
+        /** The icon in the header of a preset dialog */
+        PRESETDIALOG(Config.getPref().getInt("iconsize.taggingpresetdialog", 64)),
         /** Layer list icon size
          * @since 8323
          */

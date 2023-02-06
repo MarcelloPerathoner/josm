@@ -109,9 +109,9 @@ public class RepeatImageElement extends StyleElement {
         if (pattern == null)
             return null;
         Cascade c = env.getCascade();
-        float offset = c.get(REPEAT_IMAGE_OFFSET, 0f, Float.class);
-        float spacing = c.get(REPEAT_IMAGE_SPACING, 0f, Float.class);
-        float phase = -c.get(REPEAT_IMAGE_PHASE, 0f, Float.class);
+        float offset = c.getAdjusted(REPEAT_IMAGE_OFFSET, 0f);
+        float spacing = c.getAdjusted(REPEAT_IMAGE_SPACING, 0f);
+        float phase = -c.getAdjusted(REPEAT_IMAGE_PHASE, 0f);
         float opacity = c.get(REPEAT_IMAGE_OPACITY, 1f, Float.class);
 
         LineImageAlignment align = LineImageAlignment.CENTER;

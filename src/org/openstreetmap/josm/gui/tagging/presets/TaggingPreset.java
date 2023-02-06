@@ -47,10 +47,12 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.gui.dialogs.relation.RelationEditor;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
+import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.CloneDataSetHandler;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+import org.openstreetmap.josm.gui.widgets.JosmMenuItem;
 import org.openstreetmap.josm.tools.ListenerList;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Pair;
@@ -127,7 +129,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     void fixup(Map<String, Chunk> chunks, Item parent) {
         super.fixup(chunks, parent);
         action = new TaggingPresetAction();
-        iconFuture = TaggingPresetUtils.loadIcon(getIconName(), action);
+        iconFuture = TaggingPresetUtils.loadIconAsync(getIconName(), action);
         for (KeyedItem ki : getAllItems(KeyedItem.class)) {
             if (!"none".equals(ki.getMatchType()))
                 matchItemsCache.add(ki);
@@ -167,7 +169,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             if (instance != null)
                 instance.setValue(value);
             // FIXME: if we open a child dialog and the user changes a value in the
-            // child and saves, then the user resets the same value in the parent
+            // child and saves, and then the user resets the same value in the parent
             // dialog, the dialog won't save the now "original" value
             super.update(oldKey, newKey, value);
         }
@@ -432,7 +434,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
          * @return the preset property value
          */
         Object getPresetProperty(String key, Object defaultValue) {
-            return properties.getOrDefault(preset.getName() + "." + key, defaultValue);
+            return properties.getOrDefault(preset.getRawName() + "." + key, defaultValue);
         }
 
         /**
@@ -443,7 +445,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
          * @return the preset property value
          */
         Object putPresetProperty(String key, Object value) {
-            return properties.put(preset.getName() + "." + key, value);
+            return properties.put(preset.getRawName() + "." + key, value);
         }
 
         /**
@@ -519,10 +521,13 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     }
 
     @Override
-    public void addToMenu(JMenu parentMenu) {
-        JMenuItem menuItem = new JMenuItem(getAction());
-        menuItem.setText(getLocaleName());
-        parentMenu.add(menuItem);
+    void addToMenu(JMenu parentMenu) {
+        if (findMenu(parentMenu) == null) {
+            JMenuItem menuItem = new JosmMenuItem(getAction(), getIconSize());
+            menuItem.setText(getLocaleName());
+            parentMenu.add(menuItem);
+            // don't recurse into children
+        }
     }
 
     /**
@@ -710,7 +715,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
 
     @Override
     public String toString() {
-        return "TaggingPreset " + types.toString() + " " + getName();
+        return "TaggingPreset " + types.toString() + " " + getRawName();
     }
 
     /**
@@ -806,8 +811,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         TaggingPresetAction() {
             super();
             putValue(Action.NAME, getName());
-            putValue("toolbar", "tagging_" + getRawName());
-            putValue(OPTIONAL_TOOLTIP_TEXT, tr("Use preset ''{0}''", getLocaleFullName()));
+            putValue(ToolbarPreferences.TOOLBAR_KEY, "tagging_" + getRawName());
         }
 
         @Override

@@ -1,0 +1,3283 @@
+[
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/fa/Italian_traffic_signs_-_curva_pericolosa_a_sinistra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Curva a sinistra",
+            "name": "Dangerous bend (to the left)"
+        },
+        "id": "II.5",
+        "vienna": "A, 1a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_curva_pericolosa_a_destra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Curva a destra",
+            "name": "Dangerous bend (to the right)"
+        },
+        "id": "II.4",
+        "vienna": "A, 1b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/de/Italian_traffic_signs_-_doppia_curva_sx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Doppia curva, la prima a sinistra",
+            "name": "Dangerous double bend (the first to the left)"
+        },
+        "id": "II.7",
+        "vienna": "A, 1c"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/1b/Italian_traffic_signs_-_doppia_curva_dx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Doppia curva, la prima a destra",
+            "name": "Dangerous double bend (the first to the right)"
+        },
+        "id": "II.6",
+        "vienna": "A, 1d"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_discesa_pericolosa.svg"
+        ],
+        "tags": [
+            "highway=incline",
+            "highway=steep_incline"
+        ],
+        "names": {
+            "it.name": "Discesa pericolosa",
+            "name": "Dangerous descent"
+        },
+        "id": "II.15",
+        "vienna": "A, 2a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_salita_ripida.svg"
+        ],
+        "tags": [
+            "highway=incline",
+            "highway=steep_incline"
+        ],
+        "names": {
+            "it.name": "Salita ripida",
+            "name": "Dangerous ascent"
+        },
+        "id": "II.16",
+        "vienna": "A, 3a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_strettoia_simmetrica.svg"
+        ],
+        "tags": [
+            "narrow=yes",
+            "traffic_calming=chicane",
+            "traffic_calming=choker"
+        ],
+        "names": {
+            "it.name": "Strettoia simmetrica",
+            "name": "Carriageway narrows (both sides)"
+        },
+        "id": "II.17",
+        "vienna": "A, 4a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f6/Italian_traffic_signs_-_strettoia_asimmetrica_a_destra.svg"
+        ],
+        "tags": [
+            "narrow=yes",
+            "traffic_calming=chicane",
+            "traffic_calming=choker"
+        ],
+        "names": {
+            "it.name": "Strettoia asimmetrica a destra",
+            "name": "Carriageway narrows (right side)"
+        },
+        "id": "II.19",
+        "vienna": "A, 4b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/28/Italian_traffic_signs_-_strettoia_asimmetrica_a_sinistra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strettoia asimmetrica a sinistra",
+            "name": "Carriageway narrows (left side)"
+        },
+        "id": "II.18",
+        "vienna": "A, 4b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_strada_dissestata.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada deformata",
+            "name": "Uneven road"
+        },
+        "id": "II.1",
+        "vienna": "A, 7a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/42/Italian_traffic_signs_-_dosso.svg"
+        ],
+        "tags": [
+            "traffic_calming=bump",
+            "traffic_calming=hump",
+            "traffic_calming=table",
+            "traffic_calming=cushion"
+        ],
+        "names": {
+            "it.name": "Dosso",
+            "name": "Hump in road"
+        },
+        "id": "II.2",
+        "vienna": "A, 7b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/83/Italian_traffic_signs_-_cunetta.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Cunetta",
+            "name": "Dip in road"
+        },
+        "id": "II.3",
+        "vienna": "A, 7c"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_strada_sdrucciolevole.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada sdrucciolevole",
+            "name": "Slippery road"
+        },
+        "id": "II.22",
+        "vienna": "A, 9"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_doppio_senso.svg"
+        ],
+        "tags": [
+            "oneway=no"
+        ],
+        "names": {
+            "it.name": "Doppio senso di circolazione",
+            "name": "Two-way traffic"
+        },
+        "id": "II.26",
+        "vienna": "A, 23"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/62/Italian_traffic_signs_-_semaforo_verticale.svg"
+        ],
+        "tags": [
+            "highway=traffic_signals"
+        ],
+        "names": {
+            "it.name": "Semaforo",
+            "name": "Light signals (vertical)"
+        },
+        "id": "II.31a",
+        "vienna": "A, 17a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5d/Italian_traffic_signs_-_semaforo_orizzontale.svg"
+        ],
+        "tags": [
+            "highway=traffic_signals"
+        ],
+        "names": {
+            "it.name": "Semaforo",
+            "name": "Light signals (horizontal)"
+        },
+        "id": "II.31b",
+        "vienna": "A, 17c"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_attraversamento_pericoloso.svg"
+        ],
+        "tags": [
+            "highway=crossing",
+            "crossing_ref=zebra"
+        ],
+        "names": {
+            "it.name": "Attraversamento pedonale",
+            "name": "Pedestrian crossing"
+        },
+        "id": "II.13",
+        "vienna": "A, 12"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a0/Italian_traffic_signs_-_bambini.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Bambini",
+            "name": "Children"
+        },
+        "id": "II.23",
+        "vienna": "A, 13"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c2/Italian_traffic_signs_-_animali_domestici_vaganti.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Animali domestici vaganti",
+            "name": "Cattle crossing"
+        },
+        "id": "II.24",
+        "vienna": "A, 15a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_animali_selvatici_vaganti.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Animali selvatici vaganti",
+            "name": "Wildlife crossing"
+        },
+        "id": "II.25",
+        "vienna": "A, 15b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_lavori.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Lavori in corso",
+            "name": "Road works"
+        },
+        "vienna": "A, 16"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_forte_vento_laterale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Forte vento laterale",
+            "name": "Cross-wind"
+        },
+        "id": "II.33",
+        "vienna": "A, 31"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_banchina_pericolosa.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Banchina cedevole",
+            "name": "Dangerous shoulder"
+        },
+        "id": "II.21",
+        "vienna": "A, 8"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f5/Italian_traffic_signs_-_pericolo_di_incendio.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pericolo di incendio",
+            "name": "Danger of wildfires"
+        },
+        "id": "II.34"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_materiale_instabile.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Materiale instabile",
+            "name": "Loose gravel"
+        },
+        "id": "II.29",
+        "vienna": "A, 10a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_caduta_massi_da_sinistra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Caduta massi",
+            "name": "Falling rocks"
+        },
+        "id": "II.30a",
+        "vienna": "A, 11a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/95/Italian_traffic_signs_-_caduta_massi_da_destra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Caduta massi",
+            "name": "Falling rocks"
+        },
+        "id": "II.30b",
+        "vienna": "A, 11a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/db/Italian_traffic_signs_-_attraversamento_ciclabile.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Attraversamento ciclabile",
+            "name": "Cyclists entering or crossing"
+        },
+        "id": "II.14",
+        "vienna": "A, 14"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_signs_-_aeromobili.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Aeromobili",
+            "name": "Airfield"
+        },
+        "id": "II.32",
+        "vienna": "A, 30"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_circolazione_rotatoria.svg"
+        ],
+        "tags": [
+            "junction=roundabout"
+        ],
+        "names": {
+            "it.name": "Circolazione Rotatoria",
+            "name": "Roundabout ahead"
+        },
+        "id": "II.27",
+        "vienna": "A, 22"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_altri_pericoli.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Altri pericoli",
+            "name": "Other dangers"
+        },
+        "id": "II.35",
+        "vienna": "A, 32"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/21/Italian_traffic_signs_-_attraversamento_tramviario.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Attraversamento tranviario",
+            "name": "Intersection with a tramway line"
+        },
+        "id": "II.12",
+        "vienna": "A, 27"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_sbocco_su_molo.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Sbocco su molo o su argine",
+            "name": "Road leads on to quay or river bank"
+        },
+        "id": "II.28",
+        "vienna": "A, 6"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/da/Italian_traffic_signs_-_passaggio_a_livello_con_barriere.svg"
+        ],
+        "tags": [
+            "railway=level_crossing",
+            "crossing:barrier=yes"
+        ],
+        "names": {
+            "it.name": "Passaggio a livello con barriere",
+            "name": "Level-crossings with gates"
+        },
+        "id": "II.8",
+        "vienna": "A, 25"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_passaggio_a_livello_senza_barriere.svg"
+        ],
+        "tags": [
+            "railway=level_crossing",
+            "crossing:barrier=no"
+        ],
+        "names": {
+            "it.name": "Passaggio a livello senza barriere",
+            "name": "Other level-crossings"
+        },
+        "id": "II.9",
+        "vienna": "A, 26"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_croce_di_S.Andrea.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Croce di Sant'Andrea",
+            "name": "Single-rail level-crossing"
+        },
+        "id": "II.10a",
+        "vienna": "A, 28a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a8/Italian_traffic_signs_-_Doppia_croce_di_Sant%27Andrea.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Doppia croce di Sant'Andrea",
+            "name": "Multi-rail level-crossing"
+        },
+        "id": "II.10b",
+        "vienna": "A, 28b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e1/Italian_traffic_signs_-_pannello_distanziometrico_150.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pannello distanziometrico",
+            "name": "Advanced sign (240 m)"
+        },
+        "id": "II.11a",
+        "vienna": "A, 29a"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_pannello_distanziometrico_100.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pannello distanziometrico",
+            "name": "Advanced sign (160 m)"
+        },
+        "id": "II.11b",
+        "vienna": "A, 29b"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_pannello_distanziometrico_50.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pannello distanziometrico",
+            "name": "Advanced sign (80 m)"
+        },
+        "id": "II.11c",
+        "vienna": "A, 29c"
+    },
+    {
+        "section": "Segnali di pericolo (Danger warning signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ponte_mobile.svg"
+        ],
+        "tags": [
+            "bridge=movable"
+        ],
+        "names": {
+            "it.name": "Ponte mobile",
+            "name": "Swing bridge"
+        },
+        "id": "II.20",
+        "vienna": "A, 5"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/89/Italian_traffic_signs_-_dare_precedenza.svg"
+        ],
+        "tags": [
+            "highway=give_way"
+        ],
+        "names": {
+            "it.name": "Dare precedenza",
+            "name": "Give way"
+        },
+        "id": "II.36",
+        "vienna": "B, 1"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg"
+        ],
+        "tags": [
+            "highway=stop"
+        ],
+        "names": {
+            "it.name": "Fermarsi e dare precedenza",
+            "name": "Stop"
+        },
+        "id": "II.37",
+        "vienna": "B, 2a"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg",
+            "https://upload.wikimedia.org/wikipedia/commons/8/89/Italian_traffic_signs_-_dare_precedenza.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di dare precedenza",
+            "name": "Advance warning of give way"
+        },
+        "id": "II.38"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_preavviso.svg",
+            "https://upload.wikimedia.org/wikipedia/commons/8/89/Italian_traffic_signs_-_dare_precedenza.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di fermarsi e dare precedenza",
+            "name": "Advance warning of stop"
+        },
+        "id": "II.39"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_intersezione_con_precedenza_a_destra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Intersezione con precedenza a destra",
+            "name": "Intersection with general priority ahead"
+        },
+        "id": "II.40",
+        "vienna": "A, 18"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_dare_precedenza_nei_sensi_unici_alternati.svg"
+        ],
+        "tags": [
+            "priority=*"
+        ],
+        "names": {
+            "it.name": "Dare precedenza nei sensi unici alternati",
+            "name": "Oncoming traffic has priority"
+        },
+        "id": "II.41",
+        "vienna": "B, 5"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f3/Italian_traffic_signs_-_fine_del_diritto_di_precedenza.svg"
+        ],
+        "tags": [
+            "priority_road=*"
+        ],
+        "names": {
+            "it.name": "Fine del diritto di precedenza",
+            "name": "End of priority road"
+        },
+        "id": "II.42",
+        "vienna": "B, 4"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_intersezione_con_diritto_di_precedenza.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Intersezione con diritto di precedenza",
+            "name": "Intersection with a road the users of which must give way"
+        },
+        "id": "II.43a",
+        "vienna": "A, 19a"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_dx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Intersezione a \"T\" con diritto di precedenza",
+            "name": "Intersection with a road the users of which must give way"
+        },
+        "id": "II.43b",
+        "vienna": "A, 19b"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/96/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_sx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Intersezione a \"T\" con diritto di precedenza",
+            "name": "Intersection with a road the users of which must give way"
+        },
+        "id": "II.43c",
+        "vienna": "A, 19b"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_confluenza_dx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Confluenza a destra",
+            "name": "Intersection with a road the users of which must give way"
+        },
+        "id": "II.43d",
+        "vienna": "A, 19c"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_confluenza_sx.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Confluenza a sinistra",
+            "name": "Intersection with a road the users of which must give way"
+        },
+        "id": "II.43e",
+        "vienna": "A, 19c"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_diritto_di_precedenza.svg"
+        ],
+        "tags": [
+            "priority_road=*"
+        ],
+        "names": {
+            "it.name": "Diritto di precedenza",
+            "name": "Priority road"
+        },
+        "id": "II.44",
+        "vienna": "B, 3"
+    },
+    {
+        "section": "Segnali di precedenza (Priority signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_diritto_di_precedenza_nei_sensi_unici_alternati.svg"
+        ],
+        "tags": [
+            "priority=*"
+        ],
+        "names": {
+            "it.name": "Diritto di precedenza nei sensi unici alternati",
+            "name": "Priority over oncoming traffic"
+        },
+        "id": "II.45",
+        "vienna": "B, 6"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito.svg"
+        ],
+        "tags": [
+            "vehicle=no"
+        ],
+        "names": {
+            "it.name": "Divieto di transito",
+            "name": "Closed to all vehicles in both directions"
+        },
+        "id": "II.46",
+        "vienna": "C, 2"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_senso_vietato.svg"
+        ],
+        "tags": [
+            "oneway=yes"
+        ],
+        "names": {
+            "it.name": "Senso vietato",
+            "name": "No entry"
+        },
+        "id": "II.47",
+        "vienna": "C, 1a"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_divieto_di_sorpasso.svg"
+        ],
+        "tags": [
+            "overtaking=no"
+        ],
+        "names": {
+            "it.name": "Divieto di sorpasso",
+            "name": "Prohibition of overtaking"
+        },
+        "id": "II.48",
+        "vienna": "C, 13ab"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_distanziamento_minimo_obbligatorio.svg"
+        ],
+        "tags": [
+            "mindistance=*"
+        ],
+        "names": {
+            "it.name": "Distanziamento minimo obbligatorio",
+            "name": "Minimum distance between vehicles"
+        },
+        "id": "II.49",
+        "vienna": "C, 10"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/eb/Italian_traffic_signs_-_limite_di_velocit%C3%A0_50.svg"
+        ],
+        "tags": [
+            "maxspeed=*"
+        ],
+        "names": {
+            "it.name": "Limite massimo di velocità",
+            "name": "Speed limit"
+        },
+        "id": "II.50",
+        "vienna": "C, 14"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_divieto_di_segnalazioni_acustiche.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Divieto di segnalazioni acustiche",
+            "name": "Prohibition of the use of audible warning devices"
+        },
+        "id": "II.51",
+        "vienna": "C, 15"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/53/Italian_traffic_signs_-_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg"
+        ],
+        "tags": [
+            "overtaking:hgv=no"
+        ],
+        "names": {
+            "it.name": "Divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 tonnellate",
+            "name": "Prohibition of overtaking for trucks"
+        },
+        "id": "II.52",
+        "vienna": "C, 13ba"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alla_trazione_animale.svg"
+        ],
+        "tags": [
+            "carriage=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli a trazione animale",
+            "name": "No entry for animal-powered vehicles"
+        },
+        "id": "II.53",
+        "vienna": "C, 3j"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_transito_vietato_ai_pedoni.svg"
+        ],
+        "tags": [
+            "foot=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai pedoni",
+            "name": "No entry for pedestrians"
+        },
+        "id": "II.54",
+        "vienna": "C, 3i"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_divieto_di_transito_alle_biciclette.svg"
+        ],
+        "tags": [
+            "bicycle=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato alle biciclette",
+            "name": "No entry for bicycles"
+        },
+        "id": "II.55",
+        "vienna": "C, 3c"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/49/Italian_traffic_signs_-_divieto_di_transito_motocicli.svg"
+        ],
+        "tags": [
+            "motorcycle=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai motocicli",
+            "name": "No entry for motorcycles"
+        },
+        "id": "II.56",
+        "vienna": "C, 3b"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_a_braccia.svg"
+        ],
+        "tags": [
+            "hand_cart=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli a braccia",
+            "name": "No entry for hand carts"
+        },
+        "id": "II.57",
+        "vienna": "C, 3k"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_divieto_di_transito_a_tutti_gli_autoveicoli.svg"
+        ],
+        "tags": [
+            "motorcar=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato a tutti gli autoveicoli",
+            "name": "No entry for all motor vehicles"
+        },
+        "id": "II.58",
+        "vienna": "C, 3a"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_divieto_di_transito_agli_autobus.svg"
+        ],
+        "tags": [
+            "bus=no",
+            "tourist_bus=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato agli autobus",
+            "name": "No entry for buses"
+        },
+        "id": "II.59"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/81/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto.svg"
+        ],
+        "tags": [
+            "hgv=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli di massa a pieno carico superiore a 3,5 tonnellate",
+            "name": "No entry for trucks (with a permissible maximum with more than 3.5 t)"
+        },
+        "id": "II.60a",
+        "vienna": "C, 3e"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto_6%2C5t.svg"
+        ],
+        "tags": [
+            "maxweightrating:hgv=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli di massa a pieno carico superiore a ... tonnellate",
+            "name": "No entry for trucks with a permissible maximum with more than ... t"
+        },
+        "id": "II.60b"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b7/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg"
+        ],
+        "tags": [
+            "trailer=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato a tutti i veicoli a motore trainanti un rimorchio",
+            "name": "No entry for vehicles drawing a trailer"
+        },
+        "id": "II.61",
+        "vienna": "C, 3f"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alle_macchine_agricole.svg"
+        ],
+        "tags": [
+            "agricultural=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato alle macchine agricole",
+            "name": "No entry for tractors"
+        },
+        "id": "II.62",
+        "vienna": "C, 3l"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/dc/Italian_traffic_signs_-_divieto_di_transito_a_trasporti_pericolosi.svg"
+        ],
+        "tags": [
+            "hazmat=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli che trasportano merci pericolose",
+            "name": "No entry for vehicles transporting dangerous goods"
+        },
+        "id": "II.63",
+        "vienna": "C, 3h"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/9d/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Transito vietato ai veicoli che trasportano esplosivi o prodotti facilmente infiammabili",
+            "name": "No entry for vehicles carrying explosives or readily inflammable substances"
+        },
+        "id": "II.64a",
+        "vienna": "C, 3m"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/1e/Italian_traffic_signs_-_divieto_di_transito_agli_inquinanti_idrici.svg"
+        ],
+        "tags": [
+            "hazmat:water=no"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli che trasportano prodotti suscettibili di contaminare l'acqua",
+            "name": "No entry for vehicles carrying goods capable of water pollution"
+        },
+        "id": "II.64b",
+        "vienna": "C, 3n"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/38/Italian_traffic_signs_-_divieto_di_transito_motocicli_B.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Transito vietato ai ciclomotori",
+            "name": "No entry for mopeds"
+        },
+        "vienna": "C, 3d"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c7/Italian_traffic_signs_-_divieto_di_transito_larghezza_2%2C30m.svg"
+        ],
+        "tags": [
+            "maxwidth=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli aventi larghezza superiore a ... metri",
+            "name": "No entry for vehicles wider than the specified limit"
+        },
+        "id": "II.65",
+        "vienna": "C, 5"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_divieto_di_transito_altezza_3%2C50m.svg"
+        ],
+        "tags": [
+            "maxheight=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli aventi altezza complessiva superiore a ... metri",
+            "name": "No entry for vehicles higher than the specified limit"
+        },
+        "id": "II.66",
+        "vienna": "C, 6"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/ab/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_lunghi.svg"
+        ],
+        "tags": [
+            "maxlength=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli, o a complessi di veicoli, aventi lunghezza superiore a ... metri",
+            "name": "No entry for vehicles or vehicle combinations longer than the specified limit"
+        },
+        "id": "II.67",
+        "vienna": "C, 9"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg"
+        ],
+        "tags": [
+            "maxweight=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli aventi una massa superiore a ... tonnellate",
+            "name": "No entry for vehicles heavier than the specified limit"
+        },
+        "id": "II.68",
+        "vienna": "C, 7"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_divieto_di_transito_a_carico_su_asse_7t.svg"
+        ],
+        "tags": [
+            "maxaxleload=*"
+        ],
+        "names": {
+            "it.name": "Transito vietato ai veicoli aventi massa per asse superiore a ... tonnellate",
+            "name": "No entry for vehicles which immediate weight per axle is over the specified limit"
+        },
+        "id": "II.69",
+        "vienna": "C, 8"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_via_libera.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Via libera",
+            "name": "End of all prohibitions"
+        },
+        "id": "II.70",
+        "vienna": "C, 17a"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_fine_limite_di_velocit%C3%A0_50.svg"
+        ],
+        "tags": [
+            "source:maxspeed=*"
+        ],
+        "names": {
+            "it.name": "Fine limitazione di velocità",
+            "name": "End of speed limit"
+        },
+        "id": "II.71",
+        "vienna": "C, 17b"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine divieto di sorpasso",
+            "name": "End of overtaking prohibition"
+        },
+        "id": "II.72",
+        "vienna": "C, 17c"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/dd/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 t",
+            "name": "End of overtaking prohibition for trucks"
+        },
+        "id": "II.73",
+        "vienna": "C, 17d"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/94/Italian_traffic_signs_-_divieto_di_sosta.svg"
+        ],
+        "tags": [
+            "parking:side:",
+            "restriction=no_parking"
+        ],
+        "names": {
+            "it.name": "Divieto di sosta",
+            "name": "Parking prohibited"
+        },
+        "id": "II.74",
+        "vienna": "C, 18"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_divieto_di_fermata.svg"
+        ],
+        "tags": [
+            "parking:side:",
+            "restriction=no_stopping"
+        ],
+        "names": {
+            "it.name": "Divieto di fermata",
+            "name": "Standing and parking prohibited"
+        },
+        "id": "II.75",
+        "vienna": "C, 19"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_parcheggio.svg"
+        ],
+        "tags": [
+            "amenity=parking"
+        ],
+        "names": {
+            "it.name": "Parcheggio",
+            "name": "Parking"
+        },
+        "id": "II.76",
+        "vienna": "E, 14a"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/04/Italian_traffic_signs_-_preavviso_di_parcheggio.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di parcheggio",
+            "name": "Advance warning of parking"
+        },
+        "id": "II.77"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ed/Italian_traffic_signs_-_passo_carrabile.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Passo carrabile"
+        },
+        "id": "II.78"
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c4/Italian_traffic_signs_-_parcheggio_riservato_pronto_soccorso.svg",
+            "https://upload.wikimedia.org/wikipedia/commons/3/3e/Italian_traffic_signs_-_parcheggio_riservato_ai_disabili_-_new.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Sosta consentita a particolare categoria",
+            "name": "Various parking exceptions"
+        },
+        "id": "II.79"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_direzione_obbligatoria_dritto.svg"
+        ],
+        "tags": [
+            "restriction=only_straight_on"
+        ],
+        "names": {
+            "it.name": "Direzione obbligatoria diritto",
+            "name": "Mandatory direction straight ahead"
+        },
+        "id": "II.80a",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bf/Italian_traffic_signs_-_direzione_obbligatoria_a_sinistra.svg"
+        ],
+        "tags": [
+            "restriction=only_left_turn"
+        ],
+        "names": {
+            "it.name": "Direzione obbligatoria a sinistra",
+            "name": "Turn left here"
+        },
+        "id": "II.80b",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_direzione_obbligatoria_a_destra.svg"
+        ],
+        "tags": [
+            "restriction=only_right_turn"
+        ],
+        "names": {
+            "it.name": "Direzione obbligatoria a destra",
+            "name": "Turn right here"
+        },
+        "id": "II.80c",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5a/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_destra.svg"
+        ],
+        "tags": [
+            "restriction=only_right_turn"
+        ],
+        "names": {
+            "it.name": "Preavviso di direzione obbligatoria a destra",
+            "name": "Mandatory left turn"
+        },
+        "id": "II.80d",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/92/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_sinistra.svg"
+        ],
+        "tags": [
+            "restriction=only_left_turn"
+        ],
+        "names": {
+            "it.name": "Preavviso di direzione obbligatoria a sinistra",
+            "name": "Mandatory right turn"
+        },
+        "id": "II.80e",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_direzioni_consentite_a_destra_ed_a_sinistra.svg"
+        ],
+        "tags": [
+            "restriction=no_straight_on"
+        ],
+        "names": {
+            "it.name": "Direzioni consentite destra e sinistra",
+            "name": "Mandatory right or left turn"
+        },
+        "id": "II.81a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_destra.svg"
+        ],
+        "tags": [
+            "restriction=no_left_turn"
+        ],
+        "names": {
+            "it.name": "Direzioni consentite diritto e destra",
+            "name": "Mandatory direction straight ahead or right turn"
+        },
+        "id": "II.81b",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_sinistra.svg"
+        ],
+        "tags": [
+            "restriction=no_right_turn"
+        ],
+        "names": {
+            "it.name": "Direzioni consentite diritto e sinistra",
+            "name": "Mandatory direction straight ahead or left turn"
+        },
+        "id": "II.81c",
+        "vienna": "D, 1a",
+        "wiki": "/wiki/IT:Relation:restriction"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_passaggio_obbligatorio_a_sinistra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Passaggio obbligatorio a sinistra",
+            "name": "Pass by on the left-hand side"
+        },
+        "id": "II.82a",
+        "vienna": "D, 2"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_passaggio_obbligatorio_a_destra.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Passaggio obbligatorio a destra",
+            "name": "Pass by on the right-hand side"
+        },
+        "id": "II.82b",
+        "vienna": "D, 2"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_passaggi_consentiti.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Passaggi consentiti",
+            "name": "Drive around"
+        },
+        "id": "II.83"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a1/Italian_traffic_signs_-_rotatoria.svg"
+        ],
+        "tags": [
+            "junction=roundabout"
+        ],
+        "names": {
+            "it.name": "Rotatoria",
+            "name": "Compulsary Roundabout"
+        },
+        "id": "II.84",
+        "vienna": "D, 3"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_limite_minimo_di_velocit%C3%A0_30.svg"
+        ],
+        "tags": [
+            "minspeed=*"
+        ],
+        "names": {
+            "it.name": "Limite minimo di velocità",
+            "name": "Compulsory minimum speed"
+        },
+        "id": "II.85",
+        "vienna": "D, 7"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_fine_limite_minimo_di_velocit%C3%A0_30.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine limite minimo di velocità",
+            "name": "End of compulsory minimum speed"
+        },
+        "id": "II.86",
+        "vienna": "D, 8"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e2/Italian_traffic_signs_-_catene_da_neve_obbligatorie.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Catene per neve obbligatorie",
+            "name": "Snow chains compulsory"
+        },
+        "id": "II.87",
+        "vienna": "D, 9"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_percorso_pedonale.svg"
+        ],
+        "tags": [
+            "highway=footway"
+        ],
+        "names": {
+            "it.name": "Percorso pedonale",
+            "name": "Compulsory footpath"
+        },
+        "id": "II.88",
+        "vienna": "D, 5"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/14/Italian_traffic_signs_-_fine_percorso_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine del percorso pedonale",
+            "name": "End footpath"
+        },
+        "id": "II.89"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_pista_ciclabile.svg"
+        ],
+        "tags": [
+            "highway=cycleway"
+        ],
+        "names": {
+            "it.name": "Pista ciclabile",
+            "name": "Compulsory cycle track"
+        },
+        "id": "II.90",
+        "vienna": "D, 4"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0a/Italian_traffic_signs_-_fine_pista_ciclabile.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine pista ciclabile",
+            "name": "End Cycleway"
+        },
+        "id": "II.91"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_pista_ciclabile_contigua_al_marciapiede.svg"
+        ],
+        "tags": [
+            "highway=cycleway",
+            "foot=designated",
+            "bicycle=designated",
+            "segregated=yes"
+        ],
+        "names": {
+            "it.name": "Pista ciclabile contigua al marciapiede",
+            "name": "Footpath and cycleway"
+        },
+        "id": "II.92a",
+        "vienna": "D, 11a"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_fine_pista_ciclabile_contigua_al_marciapiede.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine della pista ciclabile contigua al marciapiede",
+            "name": "End of footpath and cycleway"
+        },
+        "id": "II.93a"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_percorso_pedonale_e_ciclabile.svg"
+        ],
+        "tags": [
+            "highway=cycleway",
+            "foot=designated",
+            "bicycle=designated",
+            "segregated=no"
+        ],
+        "names": {
+            "it.name": "Percorso pedonale e ciclabile",
+            "name": "Footpath and cycleway"
+        },
+        "id": "II.92b",
+        "vienna": "D, 11b"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0d/Italian_traffic_signs_-_fine_percorso_pedonale_e_ciclabile.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine del percorso pedonale e ciclabile",
+            "name": "End of footpath and cycleway"
+        },
+        "id": "II.93b"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e8/Italian_traffic_signs_-_percorso_riservato_ai_quadrupedi.svg"
+        ],
+        "tags": [
+            "highway=bridleway"
+        ],
+        "names": {
+            "it.name": "Percorso riservato ai quadrupedi da soma o da sella",
+            "name": "Compulsory track for riders on horseback"
+        },
+        "id": "II.94",
+        "vienna": "D, 6"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_fine_percorso_riservato_ai_quadrupedi.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine del percorso riservato ai quadrupedi da soma o da sella",
+            "name": "End of path for riders on animals"
+        },
+        "id": "II.95"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_dogana.svg"
+        ],
+        "tags": [
+            "amenity=customs",
+            "barrier=*"
+        ],
+        "names": {
+            "it.name": "Alt - Dogana",
+            "name": "Prohibition of passing without stopping (Customs)"
+        },
+        "id": "II.96",
+        "vienna": "C, 16"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f7/Italian_traffic_signs_-_confine_CEE.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Confine di Stato tra paesi della Comunità Europea",
+            "name": "European state boundary"
+        },
+        "id": "II.97a"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/05/Italian_traffic_signs_-_confine_francia.svg",
+            "https://upload.wikimedia.org/wikipedia/commons/2/2d/Italian_traffic_signs_-_distanza_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di confine di Stato tra paesi della Comunità Europea",
+            "name": "Advance warning of european state boundary"
+        },
+        "id": "II.97b"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bd/Italian_traffic_signs_-_old_-_alt_polizia.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Alt - Polizia",
+            "name": "Prohibition of passing without stopping (Police)"
+        },
+        "id": "II.98",
+        "vienna": "C, 16"
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/10/Italian_traffic_signs_-_stazione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Alt - Stazione",
+            "name": "Prohibition of passing without stopping (Tollbooth)"
+        },
+        "id": "II.99",
+        "vienna": "C, 16"
+    },
+    {
+        "section": "Segnale di itinerario (Itinerary sign)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_segnale_di_itinerario.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Segnale di itinerario",
+            "name": "Itinerary sign"
+        },
+        "id": "II.272"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_inizio_centro_abitato.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio centro abitato",
+            "name": "Begin of city limits"
+        },
+        "id": "II.273"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c9/Italian_traffic_signs_-_fine_centro_abitato.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine centro abitato",
+            "name": "End of city limits"
+        },
+        "id": "II.274"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/84/Italian_traffic_signs_-_inizio_regione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio e fine regione",
+            "name": "Begin and end of region"
+        },
+        "id": "II.275"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/46/Italian_traffic_signs_-_inizio_provincia.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio e fine provincia",
+            "name": "Begin and end of province"
+        },
+        "id": "II.276"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Pronto soccorso",
+            "name": "First aid"
+        },
+        "id": "II.277"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Stazione",
+            "name": "Station"
+        },
+        "id": "II.278"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Polizia",
+            "name": "Police"
+        },
+        "id": "II.279"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Carabinieri",
+            "name": "Military police"
+        },
+        "id": "II.280"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Informazioni",
+            "name": "Informations"
+        },
+        "id": "II.281"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Ospedale",
+            "name": "Hospital"
+        },
+        "id": "II.282"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Comune",
+            "name": "City hall"
+        },
+        "id": "II.283"
+    },
+    {
+        "section": "Segnali di località e di localizzazione (Place identification signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/50/Italian_traffic_signs_-_localizzazione_polizia_municipale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Polizia municipale",
+            "name": "City police"
+        },
+        "id": "II.284"
+    },
+    {
+        "section": "Segnali di conferma (Confirmatory signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/16/Italian_traffic_signs_-_conferma_autostradale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Segnale di conferma",
+            "name": "Confirmatory sign"
+        },
+        "id": "II.285"
+    },
+    {
+        "section": "Segnali turistici e di territorio",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/4f/Italian_traffic_signs_-_inizio_territorio_comunale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio territorio comunale",
+            "name": "Begin of municipal area"
+        },
+        "id": "II.294"
+    },
+    {
+        "section": "Segnali turistici e di territorio",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_fiume.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Indicazione turistica",
+            "name": "Indication for tourists"
+        },
+        "id": "II.295"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ospedale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Ospedale",
+            "name": "Hospital"
+        },
+        "id": "II.302",
+        "vienna": "E, 13b"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/52/Italian_traffic_signs_-_attraversamento_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Attraversamento pedonale",
+            "name": "Pedestrian crossing"
+        },
+        "id": "II.303",
+        "vienna": "E, 12a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/70/Italian_traffic_signs_-_scuolabus.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Scuolabus",
+            "name": "School bus (stop)"
+        },
+        "id": "II.304"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7a/Italian_traffic_signs_-_SOS.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "SOS",
+            "name": "Emergency phone"
+        },
+        "id": "II.305"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ef/Italian_traffic_signs_-_sottopassaggio_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Sottopassaggio pedonale",
+            "name": "Pedestrian underpass"
+        },
+        "id": "II.306",
+        "vienna": "G, 20"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_sovrappassaggio_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Sovrapassaggio pedonale",
+            "name": "Pedestrian overpass"
+        },
+        "id": "II.307",
+        "vienna": "G, 20"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_rampa_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Rampa pedonale",
+            "name": "Pedestrian underpass without steps"
+        },
+        "id": "II.308",
+        "vienna": "G, 21"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/9e/Italian_traffic_signs_-_strada_senza_uscita.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada senza uscita",
+            "name": "No through road"
+        },
+        "id": "II.309",
+        "vienna": "G, 13"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_OSX.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di strada senza uscita",
+            "name": "No through road on side road"
+        },
+        "id": "II.310"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/22/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_DX.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di strada senza uscita",
+            "name": "No through road on side road"
+        },
+        "id": "II.311"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_velocit%C3%A0_consigliata_50.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Velocità consigliata",
+            "name": "Advisory speed"
+        },
+        "id": "II.312",
+        "vienna": "G, 17"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/67/Italian_traffic_signs_-_fine_velocit%C3%A0_consigliata_50.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine velocità consigliata",
+            "name": "End advisory speed"
+        },
+        "id": "II.313"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_strada_riservata_ai_veicoli_a_motore.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada riservata ai veicoli a motore",
+            "name": "Motorroad (road for motor vehicles only)"
+        },
+        "id": "II.314"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_fine_strada_riservata_ai_veicoli_a_motore.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine strada riservata ai veicoli a motore",
+            "name": "End of motorroad (end of road for motor vehicles only)"
+        },
+        "id": "II.315"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_galleria_blu.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Galleria",
+            "name": "Tunnel"
+        },
+        "id": "II.316",
+        "vienna": "E, 11a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Fine galleria",
+            "name": "End of tunnel"
+        },
+        "vienna": "E, 11b"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_ponte_blu.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Ponte",
+            "name": "Bridge"
+        },
+        "id": "II.317"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_zona_residenziale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Zona residenziale",
+            "name": "Home zone"
+        },
+        "id": "II.318",
+        "vienna": "E, 17"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_fine_zona_residenziale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine zona residenziale",
+            "name": "End of home zone"
+        },
+        "id": "II.319"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_area_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Area pedonale urbana",
+            "name": "Pedestrian zone"
+        },
+        "id": "II.320"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/2c/Italian_traffic_signs_-_fine_area_pedonale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine area pedonale urbana",
+            "name": "End of pedestrian zone"
+        },
+        "id": "II.321"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_zona_traffico_limitato.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Zona a traffico limitato",
+            "name": "Restricted vehicluar access zone"
+        },
+        "id": "II.322a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_fine_zona_traffico_limitato.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine zona a traffico limitato",
+            "name": "End of restricted vehicluar access zone"
+        },
+        "id": "II.322b"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_zona_30_kmh.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Zona a velocità limitata",
+            "name": "Maximum speed zone"
+        },
+        "id": "II.323a",
+        "vienna": "E, 9d"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/76/Italian_traffic_signs_-_fine_zona_30.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine zona a velocità limitata",
+            "name": "End maximum speed zone"
+        },
+        "id": "II.323b",
+        "vienna": "E, 10d"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6c/Italian_traffic_signs_-_attraversamento_ciclabile_2.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Attraversamento ciclabile",
+            "name": "Bicycle crossing"
+        },
+        "id": "II.324"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_svolta_a_sx_semidiretta.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Svolta a sinistra semidiretta",
+            "name": "Route for making an indirect left turn"
+        },
+        "id": "II.325",
+        "vienna": "G, 3"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_svolta_a_sx_indiretta.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Svolta a sinistra indiretta",
+            "name": "Route for making an indirect left turn"
+        },
+        "id": "II.326"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_inversione_di_marcia.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inversione di marcia",
+            "name": "Infrastructure for reversing (u-turn)"
+        },
+        "id": "II.327"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/3d/Italian_traffic_signs_-_piazzola_su_viabilit%C3%A0_ordinaria.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Piazzola su viabilità ordinaria",
+            "name": "Emergency stopping place"
+        },
+        "id": "II.328",
+        "vienna": "E, 18a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/37/Italian_traffic_signs_-_piazzola_autostradale_sos.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Piazzola + SOS autostradale",
+            "name": "Emergency stopping place with emergency phone (on motorways)"
+        },
+        "id": "II.329"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_transitabilit%C3%A0_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Transitabilità",
+            "name": "Road open or closed"
+        },
+        "id": "II.330",
+        "vienna": "G, 15"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f4/Italian_traffic_signs_-_uso_corsie.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Uso corsie",
+            "name": "Lanes usage (no trucks)"
+        },
+        "id": "II.337"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/4a/Italian_traffic_signs_-_uso_corsie_3.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Uso corsie",
+            "name": "Lanes usage (minimum speed)"
+        },
+        "id": "II.338"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_uso_corsie_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Uso corsie",
+            "name": "Lanes usage (bus lane)"
+        },
+        "id": "II.339"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_uso_corsie_2.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Uso corsie",
+            "name": "Lanes usage (bus lane)"
+        },
+        "id": "II.340"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/b6/Italian_traffic_signs_-_variazione_corsie_disponibili_-_riduzione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Variazione corsie disponibili",
+            "name": "Change in the number of lanes (2 -> 1)"
+        },
+        "id": "II.341",
+        "vienna": "G, 12a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_signs_-_variazione_corsie_disponibili_-_aumento.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Variazione corsie disponibili",
+            "name": "Change in the number of lanes (1 -> 2)"
+        },
+        "id": "II.342"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Variazione corsie disponibili",
+            "name": "Change in the number of lanes (3 -> 2)"
+        },
+        "id": "II.343",
+        "vienna": "G, 12a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Variazione corsie disponibili",
+            "name": "Change in the number of lanes (2 -> 3)"
+        },
+        "id": "II.344"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_inizio_autostrada.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio autostrada (sfondo verde) / inizio strada extraurbana principale (sfondo blu)",
+            "name": "Motorway (green background) / Expressway (blue background)"
+        },
+        "id": "II.345",
+        "vienna": "E, 5a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/ff/Italian_traffic_signs_-_segnale_fine_autostrada.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine autostrada (sfondo verde) / fine strada extraurbana principale (sfondo blu)",
+            "name": "End motorway (green background) / end expressway (blue background)"
+        },
+        "id": "II.346",
+        "vienna": "E, 5b"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso di inizio autostrada (sfondo verde) / preavviso di inizio strada extraurbana principale (sfondo blu)",
+            "name": "Motorway ahead (green background) / Expressway ahead (blue background)"
+        },
+        "id": "II.347"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/f2/Italian_traffic_signs_-_senso_unico_%28a_destra%29.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Senso unico parallelo",
+            "name": "One way"
+        },
+        "id": "II.348",
+        "vienna": "E, 3b"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/8b/Italian_traffic_signs_-_senso_unico_frontale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Senso unico frontale",
+            "name": "One way"
+        },
+        "id": "II.349",
+        "vienna": "E, 3a"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_preavviso_deviazione_consigliata_autocarri.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Preavviso deviazione consigliata autocarri in transito",
+            "name": "Suggested detour for trucks ahead"
+        },
+        "id": "II.350"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_direzione_autocarri_consigliata.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Deviazione consigliata autocarri in transito",
+            "name": "Advised itinerary for heavy vehicles"
+        },
+        "id": "II.351"
+    },
+    {
+        "section": "Segnali utili per la guida (Indication signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_limiti_generali.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Limiti di velocità generali",
+            "name": "General speed limits"
+        },
+        "id": "II.352",
+        "vienna": "G, 14"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_pronto_soccorso.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pronto soccorso",
+            "name": "First aid"
+        },
+        "id": "II.353",
+        "vienna": "F, 1a"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_riparazioni.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Assistenza meccanica",
+            "name": "Breakdown service"
+        },
+        "id": "II.354",
+        "vienna": "F, 2"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/57/Italian_traffic_signs_-_telefono.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Telefono",
+            "name": "Telephone"
+        },
+        "id": "II.355",
+        "vienna": "F, 3"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_rifornimento.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Rifornimento",
+            "name": "Filling station"
+        },
+        "id": "II.356",
+        "vienna": "F, 4"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_rifornimento_verde.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Rifornimento (verde)",
+            "name": "Filling station (green)"
+        },
+        "id": "II.357"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_sign_-_fermata_autobus.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fermata autobus",
+            "name": "Bus stop"
+        },
+        "id": "II.358"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_fermata_tram.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fermata tram",
+            "name": "Tramway stop"
+        },
+        "id": "II.359"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/36/Italian_traffic_signs_-_informazioni.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Informazioni",
+            "name": "Informations"
+        },
+        "id": "II.360"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/72/Italian_traffic_signs_-_ostello_per_la_giovent%C3%B9.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Ostello per la gioventù",
+            "name": "Youth hostel"
+        },
+        "id": "II.361",
+        "vienna": "F, 13"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/86/Italian_traffic_signs_-_area_pic_nic.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Area per picnic",
+            "name": "Picnic site"
+        },
+        "id": "II.362",
+        "vienna": "F, 8"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_campeggio.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Campeggio",
+            "name": "Camping and caravan site"
+        },
+        "id": "II.363",
+        "vienna": "F, 12"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/51/Italian_traffic_signs_-_radio_informazioni_stradali.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Radio informazioni stradali",
+            "name": "Radio station giving traffic information"
+        },
+        "id": "II.364",
+        "vienna": "F, 14"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cb/Italian_traffic_signs_-_albergo.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Motel",
+            "name": "Hotel or motel"
+        },
+        "id": "II.365",
+        "vienna": "F, 5"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/2b/Italian_traffic_signs_-_bar.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Bar",
+            "name": "Refreshments or cafeteria"
+        },
+        "id": "II.366",
+        "vienna": "F, 7"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_ristorante.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Ristorante",
+            "name": "Restaurant"
+        },
+        "id": "II.367",
+        "vienna": "F, 6"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_parcheggio_di_scambio_con_autobus.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Parcheggio di scambio (bus)",
+            "name": "Park and ride (bus)"
+        },
+        "id": "II.368"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/4d/Italian_traffic_signs_-_parcheggio_di_scambio_con_tram.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Parcheggio di scambio (tram)",
+            "name": "Park and ride (tramway)"
+        },
+        "id": "II.369"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/8c/Italian_traffic_signs_-_parcheggio_di_scambio_con_metro.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Parcheggio di scambio (treno)",
+            "name": "Park and ride (railway)"
+        },
+        "id": "II.370"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_parcheggio_%2B_escursionismo.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Parcheggio di scambio (pedoni)",
+            "name": "Starting-point for walks"
+        },
+        "id": "II.371",
+        "vienna": "F, 9"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/9/93/Italian_traffic_signs_-_auto_al_seguito.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Auto su treno",
+            "name": "Motorail"
+        },
+        "id": "II.372"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_auto_su_treno.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Auto al seguito",
+            "name": "Motorail"
+        },
+        "id": "II.373"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/3a/Italian_traffic_signs_-_auto_su_nave.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Auto su nave",
+            "name": "Ferry"
+        },
+        "id": "II.374"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/17/Italian_traffic_signs_-_taxi.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Taxi",
+            "name": "Taxi"
+        },
+        "id": "II.375"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/19/Italian_traffic_signs_-_area_di_servizio.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Area di servizio",
+            "name": "Service area"
+        },
+        "id": "II.376"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a5/Italian_traffic_signs_-_area_con_scarico_liquami.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Area attrezzata con impianti di scarico",
+            "name": "Caravan waste disposal site"
+        },
+        "id": "II.377"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Polizia",
+            "name": "Police"
+        },
+        "id": "II.378"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Guardia di finanza",
+            "name": "Financial police"
+        },
+        "id": "II.381"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Camping site"
+        },
+        "vienna": "F, 10"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Caravan site"
+        },
+        "vienna": "F, 11"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Public lavatory"
+        },
+        "vienna": "F, 15"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Beach or swimming pool"
+        },
+        "vienna": "F, 16"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Emergency Phone"
+        },
+        "vienna": "F, 17"
+    },
+    {
+        "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Extinguisher"
+        },
+        "vienna": "F, 18"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Distanza",
+            "name": "Distance"
+        },
+        "id": "MII.1",
+        "vienna": "H, 1"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_estesa_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Estesa",
+            "name": "Length"
+        },
+        "id": "MII.2",
+        "vienna": "H, 2"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/39/Italian_traffic_signs_-_validit%C3%A0_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Periodo",
+            "name": "Period"
+        },
+        "id": "MII.3"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/a/a4/Italian_traffic_signs_-_limitazione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Limitazioni",
+            "name": "Limitations"
+        },
+        "id": "MII.4a",
+        "vienna": "H, 5"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_eccezione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Eccezioni",
+            "name": "Exceptions"
+        },
+        "id": "MII.4b",
+        "vienna": "H, 6"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_inizio_vert.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio",
+            "name": "Begin"
+        },
+        "id": "MII.5a1",
+        "vienna": "H, 4a"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7d/Italian_traffic_signs_-_continua_vert.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Continuazione",
+            "name": "Repeat"
+        },
+        "id": "MII.5a2",
+        "vienna": "H, 4b"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/4b/Italian_traffic_signs_-_fine_vert.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine",
+            "name": "End"
+        },
+        "id": "MII.5a3",
+        "vienna": "H, 4c"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/3/38/Italian_traffic_signs_-_inizio_orizz.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Inizio",
+            "name": "Begin"
+        },
+        "id": "MII.5b1",
+        "vienna": "H, 3a"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_continua_orizz.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Continuazione",
+            "name": "Repeat"
+        },
+        "id": "MII.5b2",
+        "vienna": "H, 3b"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_fine_orizz.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Fine",
+            "name": "End"
+        },
+        "id": "MII.5b3",
+        "vienna": "H, 3c"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/8/80/Italian_traffic_signs_-_segnaletica_in_rifacimento.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Segni orizzontali in corso di rifacimento",
+            "name": "Missing road markings"
+        },
+        "id": "MII.6a"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5f/Italian_traffic_signs_-_incidente.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Incidente",
+            "name": "Accident"
+        },
+        "id": "MII.6b"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/6/6a/Italian_traffic_signs_-_attraversamento_binari.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Attraversamento di binari",
+            "name": "Road intersects tracks"
+        },
+        "id": "MII.6c"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/b/ba/Italian_traffic_signs_-_sgombraneve_in_azione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Sgombraneve in azione",
+            "name": "Snowplow in action"
+        },
+        "id": "MII.6d"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/55/Italian_traffic_signs_-_zona_soggetta_ad_allagamento.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Zona soggetta ad allagamento",
+            "name": "Danger of flooding"
+        },
+        "id": "MII.6e"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_Coda.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Coda",
+            "name": "Congestion"
+        },
+        "id": "MII.6f"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_mezzi_di_lavoro_in_azione.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Mezzi di lavoro in azione",
+            "name": "Heavy equipment in action"
+        },
+        "id": "MII.6g"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/74/Italian_traffic_signs_-_strada_sdrucciolevole_per_ghiaccio.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada sdrucciolevole per ghiaccio",
+            "name": "Slippery road because of ice or snow"
+        },
+        "id": "MII.6h",
+        "vienna": "H, 9"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e5/Italian_traffic_signs_-_strada_sdrucciolevole_per_pioggia.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Strada sdrucciolevole per pioggia",
+            "name": "Slippery road because of rain"
+        },
+        "id": "MII.6i"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_sign_-_autocarri_in_rallentamento.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Autocarri in rallentamento",
+            "name": "Trucks slowing down"
+        },
+        "id": "MII.6l"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/59/Italian_traffic_signs_-_rimozione_forzata.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Zona rimozione coatta",
+            "name": "Forced removal"
+        },
+        "id": "MII.6m"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_segnale_di_corsia.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Segnale di corsia"
+        },
+        "id": "MII.6n"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_tornante.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Tornanti",
+            "name": "Hairpin turn"
+        },
+        "id": "MII.6p1"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_numero_del_tornante.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Tornanti",
+            "name": "Hairpin turn"
+        },
+        "id": "MII.6p2"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_pulizia_meccanica_della_strada.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pulizia stradale",
+            "name": "Road cleaning"
+        },
+        "id": "MII.6q1"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_pulizia_meccanica_della_strada_1.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Pulizia stradale",
+            "name": "Road cleaning"
+        },
+        "id": "MII.6q2"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_andamento_strada_principale.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Andamento strada principale (disegni diversi a seconda della topologia)",
+            "name": "Bend in priority road"
+        },
+        "id": "MII.7",
+        "vienna": "H, 8"
+    },
+    {
+        "section": "Pannelli integrativi (Additional panels)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "name": "Reserved for handicapped persons"
+        },
+        "vienna": "H, 7"
+    },
+    {
+        "section": "Segnali compositi (Composite signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/4/4e/Italian_traffic_signs_-_divieto_di_sosta_temporaneo.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Esempio di segnale composito"
+        },
+        "id": "MII.8a"
+    },
+    {
+        "section": "Segnali compositi (Composite signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/0/09/Italian_traffic_signs_-_itinerario_obbligatorio_merci_pericolose.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Esempio di segnale composito",
+            "name": "Mandatory direction for vehicles carrying dangerous goods"
+        },
+        "id": "MII.8b",
+        "vienna": "D, 10c"
+    },
+    {
+        "section": "Segnali compositi (Composite signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_preavviso_deviazione_obbligatoria_autocarri.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Esempio di segnale composito"
+        },
+        "id": "MII.8c"
+    },
+    {
+        "section": "Segnali compositi (Composite signs)",
+        "urls": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/18/Italian_traffic_signs_-_divieto_di_transito_autocarri.svg"
+        ],
+        "tags": [],
+        "names": {
+            "it.name": "Esempio di segnale composito"
+        },
+        "id": "MII.8d"
+    }
+]

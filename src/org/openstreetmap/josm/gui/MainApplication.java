@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -91,6 +92,7 @@ import org.openstreetmap.josm.data.osm.UserInfo;
 import org.openstreetmap.josm.data.osm.search.SearchMode;
 import org.openstreetmap.josm.data.preferences.JosmBaseDirectories;
 import org.openstreetmap.josm.data.preferences.JosmUrls;
+import org.openstreetmap.josm.data.preferences.sources.PresetPrefHelper;
 import org.openstreetmap.josm.data.preferences.sources.SourceType;
 import org.openstreetmap.josm.data.projection.ProjectionBoundsProvider;
 import org.openstreetmap.josm.data.projection.ProjectionCLI;
@@ -125,6 +127,7 @@ import org.openstreetmap.josm.gui.preferences.display.LafPreference;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.gui.preferences.server.ProxyPreference;
 import org.openstreetmap.josm.gui.progress.swing.ProgressMonitorExecutor;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetUtils;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.CheckThreadViolationRepaintManager;
 import org.openstreetmap.josm.gui.util.GuiHelper;
@@ -436,7 +439,11 @@ public class MainApplication {
      * Async initialization of tagging presets
      */
     static void initializeTaggingPresets() {
-        taggingPresets.initialize();
+        JMenu presetsMenu = getMenu().presetsMenu;
+        new PresetPrefHelper().getActiveUrls().forEach(
+            url -> getTaggingPresets().addSourceFromUrl(url));
+        GuiHelper.runInEDT(() ->
+            getTaggingPresets().reInit(presetsMenu, toolbar));
     }
 
     /**

@@ -42,7 +42,7 @@ public class TaggingPresetLabel extends JLabel {
      * @param presetInstance the preset instance of the old dialog
      */
     public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, TaggingPreset.Instance presetInstance) {
-        super(preset.getName() + " …", preset.getIcon(), LEADING);
+        super(preset.getName() + " …", preset.getSmallIcon(), LEADING);
         this.preset = preset;
         this.presetInstance = presetInstance;
         this.handler = handler;
@@ -58,7 +58,7 @@ public class TaggingPresetLabel extends JLabel {
      * @param manager the autocompletion manager to pass to the new dialog
      */
     public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, AutoCompletionManager manager) {
-        super(preset.getName() + " …", preset.getIcon(), LEADING);
+        super(preset.getName() + " …", preset.getSmallIcon(), LEADING);
         this.preset = preset;
         this.presetInstance = null;
         this.handler = handler;

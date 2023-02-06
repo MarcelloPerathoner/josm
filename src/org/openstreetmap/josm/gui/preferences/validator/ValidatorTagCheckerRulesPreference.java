@@ -61,7 +61,7 @@ public class ValidatorTagCheckerRulesPreference implements SubPreferenceSetting 
         }
 
         @Override
-        public Collection<? extends SourceEntry> getInitialSourcesList() {
+        public List<SourceEntry> getInitialSourcesList() {
             return ValidatorPrefHelper.INSTANCE.get();
         }
 

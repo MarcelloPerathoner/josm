@@ -1,8 +1,6 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
 import java.awt.Component;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -13,20 +11,22 @@ import java.util.Objects;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainFrame;
-import org.openstreetmap.josm.gui.MenuScroller;
+import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
+import org.openstreetmap.josm.gui.widgets.MultiColumnMenu;
 import org.openstreetmap.josm.tools.Logging;
 
 /**
- * Menu that groups several presets from one topic.
+ * A menu that groups several presets.
  * <p>
  * Used to create the nested directory structure in the preset main menu entry.
  */
-final class TaggingPresetMenu extends TaggingPresetBase {
-    private TaggingPresetMenu(Map<String, String> attributes) throws IllegalArgumentException {
+class TaggingPresetMenu extends TaggingPresetBase {
+    TaggingPresetMenu(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
     }
 
@@ -44,30 +44,35 @@ final class TaggingPresetMenu extends TaggingPresetBase {
     void fixup(Map<String, Chunk> chunks, Item parent) {
         super.fixup(chunks, parent);
         action = new TaggingPresetMenuAction();
-        iconFuture = TaggingPresetUtils.loadIcon(getIconName(), action);
+        iconFuture = TaggingPresetUtils.loadIconAsync(getIconName(), action);
+        if (bSortMenu) {
+            sortMenu(items);
+        }
     }
 
     @Override
     void addToMenu(JMenu parentMenu) {
-        JMenu subMenu = new JMenu(getAction());
-        subMenu.setText(getLocaleName());
-        parentMenu.add(subMenu);
+        JMenuItem menuItem = findMenu(parentMenu);
+        JMenu subMenu;
+        if (menuItem instanceof JMenu) {
+            subMenu = (JMenu) menuItem;
+        } else {
+            subMenu = new MultiColumnMenu(getAction(), getIconSize());
+            subMenu.setText(getLocaleName());
+            parentMenu.add(subMenu);
+        }
 
-        for (Item item : items) {
-            item.addToMenu(subMenu);
-        }
-        if (subMenu.getItemCount() >= TaggingPresets.MIN_ELEMENTS_FOR_SCROLLER.get()) {
-            MenuScroller.setScrollerFor(subMenu);
-        }
+        super.addToMenu(subMenu); // add our children
     }
 
     @Override
     public String toString() {
-        return "TaggingPresetMenu " + getName();
+        return "TaggingPresetMenu " + getRawName();
     }
 
     /**
-     * {@code TaggingPresetMenu} are considered equivalent if (and only if) their {@link #getRawName()} match.
+     * {@code TaggingPresetMenu} are considered equivalent if (and only if) their
+     * {@link #getRawName()} match.
      */
     @Override
     public boolean equals(Object o) {
@@ -89,9 +94,7 @@ final class TaggingPresetMenu extends TaggingPresetBase {
         TaggingPresetMenuAction() {
             super();
             putValue(Action.NAME, getName());
-            putValue("toolbar", "tagginggroup_" + getRawName());
-            /** Tooltips should be shown for the toolbar buttons, but not in the menu. */
-            putValue(OPTIONAL_TOOLTIP_TEXT, tr("Preset group ''{0}''", getLocaleFullName()));
+            putValue(ToolbarPreferences.TOOLBAR_KEY, "tagginggroup_" + getRawName());
         }
 
         @Override
@@ -120,4 +123,5 @@ final class TaggingPresetMenu extends TaggingPresetBase {
             }
         }
     }
+
 }

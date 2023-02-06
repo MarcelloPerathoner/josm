@@ -181,8 +181,8 @@ public class TextLabel implements StyleKeys {
                 yOffset = offset[1];
             }
         }
-        xOffset = c.get(TEXT_OFFSET_X, xOffset, Float.class);
-        yOffset = c.get(TEXT_OFFSET_Y, yOffset, Float.class);
+        xOffset = c.getAdjusted(TEXT_OFFSET_X, xOffset);
+        yOffset = c.getAdjusted(TEXT_OFFSET_Y, yOffset);
         return new Point2D.Double(xOffset, yOffset);
     }
 

@@ -257,6 +257,7 @@ public final class ExpressionFactory {
         FACTORY_MAP.put("uniq_list", Factory.of(List.class, Functions::uniq_list));
         FACTORY_MAP.put("upper", Factory.of(String.class, Functions::upper));
         FACTORY_MAP.put("waylength", Factory.ofEnv(Functions::waylength));
+        FACTORY_MAP.put("heading", Factory.ofEnv(Functions::heading));
     }
 
     private ExpressionFactory() {

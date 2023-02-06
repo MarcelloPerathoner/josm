@@ -97,7 +97,7 @@ public class MapPaintPreference extends DefaultTabPreferenceSetting {
         }
 
         @Override
-        public Collection<? extends SourceEntry> getInitialSourcesList() {
+        public List<SourceEntry> getInitialSourcesList() {
             return MapPaintPrefHelper.INSTANCE.get();
         }
 

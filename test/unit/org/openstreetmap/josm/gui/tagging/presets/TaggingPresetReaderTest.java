@@ -74,7 +74,7 @@ class TaggingPresetReaderTest {
      * @throws IOException if any I/O error occurs
      */
     @Test
-    void testReadDefaulPresets() throws SAXException, IOException {
+    void testReadDefaultPresets() throws SAXException, IOException {
         TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
         final Collection<TaggingPreset> presets = taggingPresets.getAllPresets();
         Assert.assertTrue("Default presets are empty", presets.size() > 0);

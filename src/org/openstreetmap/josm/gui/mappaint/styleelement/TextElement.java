@@ -10,6 +10,7 @@ import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
+import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.CompletelyInsideAreaStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAreaStrategy;
 
@@ -58,7 +59,7 @@ public class TextElement extends StyleElement {
             return null;
         final Cascade c = env.getCascade();
 
-        Keyword positionKeyword = c.get(AreaElement.TEXT_POSITION, null, Keyword.class);
+        Keyword positionKeyword = c.get(StyleKeys.TEXT_POSITION, null, Keyword.class);
         PositionForAreaStrategy position = PositionForAreaStrategy.forKeyword(positionKeyword);
         position = position.withAddedOffset(TextLabel.getTextOffset(c));
 
@@ -74,7 +75,7 @@ public class TextElement extends StyleElement {
      */
     public static TextElement createForContent(Environment env) {
         final Cascade c = env.getCascade();
-        Keyword positionKeyword = c.get(AreaElement.TEXT_POSITION, null, Keyword.class);
+        Keyword positionKeyword = c.get(StyleKeys.TEXT_POSITION, null, Keyword.class);
         if (positionKeyword != null) {
             return null; // No need for this hack.
         }

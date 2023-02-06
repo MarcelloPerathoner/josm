@@ -620,8 +620,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         FontRenderContext frc = g.getFontRenderContext();
         Rectangle2D bounds = text.font.getStringBounds(s, frc);
 
-        double x = p.getInViewX() + bs.xOffset;
-        double y = p.getInViewY() + bs.yOffset;
+        double x = bs.xOffset;
+        double y = bs.yOffset;
         /**
          *
          *       left-above __center-above___ right-above
@@ -660,7 +660,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             } else throw new AssertionError();
         }
 
-        final MapViewPoint viewPoint = mapState.getForView(x, y);
+        // x += p.getInViewX();
+        // y += p.getInViewY();
+
+        final MapViewPoint viewPoint = mapState.getForView(p.getInViewX(), p.getInViewY());
         final AffineTransform at = new AffineTransform();
         at.setToTranslation(
                 Math.round(viewPoint.getInViewX()),
@@ -668,6 +671,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         if (!RotationAngle.NO_ROTATION.equals(text.rotationAngle)) {
             at.rotate(text.rotationAngle.getRotationAngle(n));
         }
+        at.translate(x, y);
         displayText(n, text, s, at);
         g.setFont(defaultFont);
     }
@@ -923,9 +927,9 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         if (path == null)
             return;
         g.setColor(highlightColorTransparent);
-        float w = line.getLineWidth() + HIGHLIGHT_LINE_WIDTH.get();
+        float w = line.getLineWidth() + paintSettings.adj(HIGHLIGHT_LINE_WIDTH.get());
         if (useWiderHighlight) {
-            w += WIDER_HIGHLIGHT.get();
+            w += paintSettings.adj(WIDER_HIGHLIGHT.get());
         }
         int step = Math.max(HIGHLIGHT_STEP.get(), 1);
         while (w >= line.getLineWidth()) {
@@ -943,9 +947,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      */
     private void drawPointHighlight(Point2D p, int size) {
         g.setColor(highlightColorTransparent);
-        int s = size + HIGHLIGHT_POINT_RADIUS.get();
+        int radius = paintSettings.adj(HIGHLIGHT_POINT_RADIUS.get());
+        int s = size + radius;
         if (useWiderHighlight) {
-            s += WIDER_HIGHLIGHT.get();
+            s += paintSettings.adj(WIDER_HIGHLIGHT.get());
         }
         int step = Math.max(HIGHLIGHT_STEP.get(), 1);
         while (s >= size) {
@@ -1079,7 +1084,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
            (calculate the vx2/vy2 vector with the specified length and the direction
            90degrees away from the first segment of the "from" way)
          */
-        double distanceFromWay = 10;
+        double distanceFromWay = paintSettings.adj(10);
         double vx2 = 0;
         double vy2 = 0;
         double iconAngle = 0;

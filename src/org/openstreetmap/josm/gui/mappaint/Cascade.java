@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.gui.mappaint.mapcss.CSSColors;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.GenericParser;
@@ -64,6 +65,19 @@ public final class Cascade {
      */
     public <T> T get(String key, T def, Class<T> klass) {
         return get(key, def, klass, false);
+    }
+
+    /**
+     * Gets a length-ish value adjusted to the current screen resolution.
+     * @param key the key
+     * @param def the default value or null
+     * @return the adjusted length or the adjusted default value
+     */
+    public Float getAdjusted(String key, Float def) {
+        Float f = convertTo(prop.get(key), Float.class);
+        if (f != null)
+            return MapPaintSettings.INSTANCE.adj(f);
+        return MapPaintSettings.INSTANCE.adj(def);
     }
 
     /**

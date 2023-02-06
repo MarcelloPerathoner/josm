@@ -58,7 +58,8 @@ public class TaggingPresetsTest {
      */
     public static TaggingPresets initFromResource(String presetsUrl) throws SAXException, IOException {
         TaggingPresets taggingPresets = new TaggingPresets();
-        taggingPresets.addRoot(TaggingPresetReader.read(presetsUrl, false));
+        taggingPresets.addSource(presetsUrl, TaggingPresetReader.read(presetsUrl, false));
+        taggingPresets.initCache();
         return taggingPresets;
     }
 
@@ -91,13 +92,14 @@ public class TaggingPresetsTest {
      */
     public static TaggingPresets initFromLiteral(String xml) throws SAXException {
         TaggingPresets taggingPresets = new TaggingPresets();
-        taggingPresets.addRoot(TaggingPresetReader.readLiteral(
+        taggingPresets.addSource("test-literal", TaggingPresetReader.readLiteral(
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<presets xmlns='http://josm.openstreetmap.de/tagging-preset-1.0'>" +
             xml +
             "</presets>",
             false
         ));
+        taggingPresets.initCache();
         return taggingPresets;
     }
 

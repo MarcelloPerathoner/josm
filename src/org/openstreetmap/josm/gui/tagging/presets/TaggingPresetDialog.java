@@ -28,6 +28,7 @@ import javax.annotation.CheckForNull;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -53,6 +54,7 @@ import org.openstreetmap.josm.io.NetworkManager;
 import org.openstreetmap.josm.io.OnlineResource;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageResource;
 import org.openstreetmap.josm.tools.InputMapUtils;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.StreamUtils;
@@ -183,7 +185,7 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
 
     @Override
     public void setVisible(boolean visible) {
-        String positionPref = getClass().getName() + "." + presetInstance.getPreset().getName() + ".geometry";
+        String positionPref = getClass().getName() + "." + presetInstance.getPreset().getRawName() + ".geometry";
         if (visible) {
             if (!disableApplyButton)
                 getRootPane().setDefaultButton(buttons.get(DIALOG_ANSWER_APPLY));
@@ -220,8 +222,12 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
             showNewRelationButton = true;
             disableApplyButton = true;
         }
-        if (preset.showPresetName)
-            setIconImage(preset.getIcon(Action.SMALL_ICON).getImage());
+        if (preset.showPresetName) {
+            ImageResource imageResource = preset.getIconResource();
+            if (imageResource != null) {
+                setIconImage(imageResource.getImageIcon().getImage());
+            }
+        }
     }
 
     /**
@@ -229,21 +235,16 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
      * @return the panel
      */
     JPanel buildHeadPanel(TaggingPreset preset) {
-        final JPanel headPanel = new JPanel(new GridBagLayout());
+        final JPanel iconsPanel = new JPanel(new GridBagLayout());
         JLabel label;
         int x = 0;
         GBC gbc = GBC.std().insets(0, 0, 5, 0);
 
-        // the preset icon
-        if (preset.showPresetName) {
-            headPanel.add(new JLabel(preset.getIcon(Action.LARGE_ICON_KEY)),
-                gbc.grid(x++, 0));
-        }
         // the supported types icons
         for (TaggingPresetType t : preset.getTypes()) {
             label = new JLabel(ImageProvider.get(t.getIconName(), ICONSIZE));
             label.setToolTipText(tr("Elements of type {0} are supported.", tr(t.getName())));
-            headPanel.add(label, gbc.grid(x++, 0));
+            iconsPanel.add(label, gbc.grid(x++, 0));
         }
         // the "also sets" icon
         final List<Key> keys = preset.getAllItems(Key.class);
@@ -252,29 +253,43 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
             label.setToolTipText("<html>" + tr("This preset also sets: {0}",
                 keys.stream().map(k -> {
                     return k.getKey() + "=" + k.getValue(); }).collect(StreamUtils.toHtmlList())));
-            headPanel.add(label, gbc.grid(x++, 0));
+            iconsPanel.add(label, gbc.grid(x++, 0));
         }
         // add horizontal glue
-        headPanel.add(new JLabel(), gbc.grid(x++, 0).fill(GridBagConstraints.HORIZONTAL));
+        iconsPanel.add(new JLabel(), gbc.grid(x++, 0).fill(GridBagConstraints.HORIZONTAL));
 
         // the "enable validator" button
         if (enableValidatorAction != null) {
             JToggleButton validatorButton = new JToggleButton(enableValidatorAction);
             validatorButton.setFocusable(false);
-            headPanel.add(validatorButton, GBC.std(x++, 0).anchor(GridBagConstraints.LINE_END));
+            iconsPanel.add(validatorButton, GBC.std(x++, 0).anchor(GridBagConstraints.LINE_END));
         }
 
         // the "pin to toolbar" button
         JToggleButton tb = new JToggleButton(new PinToolbarAction());
         tb.setFocusable(false);
-        headPanel.add(tb, GBC.std(x, 0).anchor(GridBagConstraints.LINE_END));
+        iconsPanel.add(tb, GBC.std(x, 0).anchor(GridBagConstraints.LINE_END));
 
-        // the full name of the preset
         if (preset.showPresetName) {
-            headPanel.add(new JLabel(preset.getName()),
+            // the full name of the preset
+            iconsPanel.add(new JLabel(preset.getName()),
                 GBC.std(0, 1).insets(0, 5, 0, 0).fill(GridBagConstraints.HORIZONTAL).span(GridBagConstraints.REMAINDER));
+            // the preset icon
+            final JPanel headPanel = new JPanel(new GridBagLayout());
+
+            ImageResource imageResource = preset.getIconResource();
+            if (imageResource != null) {
+                Icon icon = imageResource.getPaddedIcon(ImageProvider.ImageSizes.PRESETDIALOG.getImageDimension());
+                JLabel iconLabel = new JLabel(icon);
+                if (preset.getTooltip() != null)
+                    iconLabel.setToolTipText(preset.getTooltip());
+                headPanel.add(iconLabel, GBC.std());
+                headPanel.add(GBC.glue(icon.getIconWidth() / 4, 0));
+            }
+            headPanel.add(iconsPanel, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
+            return headPanel;
         }
-        return headPanel;
+        return iconsPanel;
     }
 
     JPanel buildButtonsPanel(String helpTopic) {

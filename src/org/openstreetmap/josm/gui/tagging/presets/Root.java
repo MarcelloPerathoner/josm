@@ -4,11 +4,14 @@ package org.openstreetmap.josm.gui.tagging.presets;
 import java.util.Map;
 
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 
 /**
  * The XML root element.  Corresponds to {@code <presets>}.
+ * <p>
+ * Note: May contain another root if {@code <xi:include>} is used.
  */
-final class Root extends Composite {
+final class Root extends TaggingPresetMenu {
     /** The url of the XML resource. */
     String url;
 
@@ -49,6 +52,12 @@ final class Root extends Composite {
     @Override
     boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
         return false;
+    }
+
+    @Override
+    void addToMenu(JMenu parentMenu) {
+        // don't add ourselves, just the children
+        items.forEach(item -> item.addToMenu(parentMenu));
     }
 
     @Override

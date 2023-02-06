@@ -14,6 +14,8 @@ import org.openstreetmap.josm.actions.ExpertToggleAction.ExpertModeChangeListene
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.Destroyable;
+import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageResource;
 
 /**
  * Just a toggle button, with smaller border and icon only to display in
@@ -33,6 +35,36 @@ public class IconToggleButton extends JToggleButton implements HideableButton, P
      */
     public IconToggleButton(Action action) {
         this(action, false);
+    }
+
+
+    /**
+     * Sets a toolbar-sized icon from resource if present on the action
+     * @param action the action
+     */
+    private void setIconFromResource(Action action) {
+        ImageResource imageResource = (ImageResource) action.getValue(ImageResource.IMAGE_RESOURCE_KEY);
+        if (imageResource != null) {
+            setIcon(imageResource.getPaddedIcon(ImageProvider.ImageSizes.TOOLBAR.getImageDimension()));
+        }
+    }
+
+    @Override
+    protected void configurePropertiesFromAction(Action action) {
+        super.configurePropertiesFromAction(action);
+        setIconFromResource(action);
+        // hide the button text if an icon is set
+        setHideActionText(getIcon() != null);
+    }
+
+    @Override
+    protected void actionPropertyChanged(Action action, String propertyName) {
+        super.actionPropertyChanged(action, propertyName);
+        if (ImageResource.IMAGE_RESOURCE_KEY.equals(propertyName)) {
+            setIconFromResource(action);
+        }
+        // hide the button text if an icon is set
+        setHideActionText(getIcon() != null);
     }
 
     /**
@@ -148,11 +180,6 @@ public class IconToggleButton extends JToggleButton implements HideableButton, P
     @Override
     public String getActionName() {
         return (String) getSafeActionValue(Action.NAME);
-    }
-
-    @Override
-    public Icon getIcon() {
-        return (Icon) Optional.ofNullable(getSafeActionValue(Action.LARGE_ICON_KEY)).orElseGet(() -> getSafeActionValue(Action.SMALL_ICON));
     }
 
     @Override

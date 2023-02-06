@@ -1,0 +1,1018 @@
+meta {
+  title: "Traffic Signs in Italy";
+  description: "A stylesheet for traffic signs in Italy.";
+  version: "0.1";
+  author: "Marcello Perathoner";
+  icon: "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg";
+  link: "https://github.com/FIXME";
+  watch-modified: true;
+}
+
+
+setting::icon_size {
+    type: double;
+    label: tr("Set the icon size...");
+    default: 32;
+}
+
+/* turn off maxspeed drawing in elemstyle.mapcss */
+node[prop(maxspeedclass, default)]::* {
+    text: none;
+    symbol-shape: none;
+}
+
+node[traffic_sign=~/IT:M?II/] {
+    set .sign;
+}
+
+node.sign[direction=~/[NWSE]+/] {
+    rotationprop: eval(cardinal_to_radians(tag("direction")) + 3.14);
+}
+node.sign[direction=~/[.0-9]+/] {
+    rotationprop: eval(degree_to_radians(tag("direction")) + 3.14);
+}
+node.sign[direction=forward] {
+    rotationprop: heading();
+}
+node.sign[direction=backward] {
+    rotationprop: eval(heading() + 3.14);
+}
+
+node[prop(sign, default)]::* {
+    major-z-index: 7;
+    icon-width: setting("icon_size");
+    icon-rotation: prop(rotationprop, default);
+    text-anchor-horizontal: center;
+    text-anchor-vertical: center;
+    text-rotation: prop(rotationprop, default);
+    font-size: eval(setting("icon_size") * 0.35);
+    font-weight: bold;
+    text-color: black;
+}
+node.sign {
+    major-z-index: 7;
+    icon-height: setting("icon_size");
+
+    font-size: eval(setting("icon_size") * 0.85);
+    text-offset-y: eval(setting("icon_size") * -0.03);
+    text: none;
+
+    yoffsetprop: eval(setting("icon_size") * 0.7);
+    ydeltaprop: eval(setting("icon_size") * 0.4);
+}
+
+node[prop(sign, default)][distance]::distance {
+    yoffsetprop: prop(yoffsetprop, default);
+
+    icon-image: "distance-empty.svg";
+    icon-offset-y: prop(yoffsetprop);
+    text-offset-y: eval(-prop(yoffsetprop));
+    text: tag(distance);
+}
+
+node[prop(sign, default)][length]::length {
+    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0));
+
+    icon-image: "length-empty.svg";
+    icon-offset-y: prop(yoffsetprop);
+    text-offset-y: eval(-prop(yoffsetprop));
+    text: tag(length);
+}
+
+node[prop(sign, default)][period]::period {
+    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0) + (has_tag_key(length) ? prop(ydeltaprop, default) : 0));
+
+    icon-image: "distance-empty.svg";
+    icon-offset-y: prop(yoffsetprop);
+    text-offset-y: eval(-prop(yoffsetprop));
+    text: tag(period);
+}
+
+
+node[traffic_sign=~/IT:II.5(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Italian_traffic_signs_-_curva_pericolosa_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.4(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_curva_pericolosa_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.7(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/de/Italian_traffic_signs_-_doppia_curva_sx.svg";
+}
+
+node[traffic_sign=~/IT:II.6(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Italian_traffic_signs_-_doppia_curva_dx.svg";
+}
+
+node[traffic_sign=~/IT:II.15(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_discesa_pericolosa.svg";
+}
+
+node[traffic_sign=~/IT:II.16(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_salita_ripida.svg";
+}
+
+node[traffic_sign=~/IT:II.17(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_strettoia_simmetrica.svg";
+}
+
+node[traffic_sign=~/IT:II.19(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Italian_traffic_signs_-_strettoia_asimmetrica_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.18(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/28/Italian_traffic_signs_-_strettoia_asimmetrica_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_strada_dissestata.svg";
+}
+
+node[traffic_sign=~/IT:II.2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/42/Italian_traffic_signs_-_dosso.svg";
+}
+
+node[traffic_sign=~/IT:II.3(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/83/Italian_traffic_signs_-_cunetta.svg";
+}
+
+node[traffic_sign=~/IT:II.22(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_strada_sdrucciolevole.svg";
+}
+
+node[traffic_sign=~/IT:II.26(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_doppio_senso.svg";
+}
+
+node[traffic_sign=~/IT:II.31a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/62/Italian_traffic_signs_-_semaforo_verticale.svg";
+}
+
+node[traffic_sign=~/IT:II.31b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Italian_traffic_signs_-_semaforo_orizzontale.svg";
+}
+
+node[traffic_sign=~/IT:II.13(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_attraversamento_pericoloso.svg";
+}
+
+node[traffic_sign=~/IT:II.23(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Italian_traffic_signs_-_bambini.svg";
+}
+
+node[traffic_sign=~/IT:II.24(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c2/Italian_traffic_signs_-_animali_domestici_vaganti.svg";
+}
+
+node[traffic_sign=~/IT:II.25(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_animali_selvatici_vaganti.svg";
+}
+
+node[traffic_sign=~/IT:II.33(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_forte_vento_laterale.svg";
+}
+
+node[traffic_sign=~/IT:II.21(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_banchina_pericolosa.svg";
+}
+
+node[traffic_sign=~/IT:II.34(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Italian_traffic_signs_-_pericolo_di_incendio.svg";
+}
+
+node[traffic_sign=~/IT:II.29(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_materiale_instabile.svg";
+}
+
+node[traffic_sign=~/IT:II.30a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_caduta_massi_da_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.30b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/95/Italian_traffic_signs_-_caduta_massi_da_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.14(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/db/Italian_traffic_signs_-_attraversamento_ciclabile.svg";
+}
+
+node[traffic_sign=~/IT:II.32(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_signs_-_aeromobili.svg";
+}
+
+node[traffic_sign=~/IT:II.27(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_circolazione_rotatoria.svg";
+}
+
+node[traffic_sign=~/IT:II.35(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_altri_pericoli.svg";
+}
+
+node[traffic_sign=~/IT:II.12(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/21/Italian_traffic_signs_-_attraversamento_tramviario.svg";
+}
+
+node[traffic_sign=~/IT:II.28(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_sbocco_su_molo.svg";
+}
+
+node[traffic_sign=~/IT:II.8(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/da/Italian_traffic_signs_-_passaggio_a_livello_con_barriere.svg";
+}
+
+node[traffic_sign=~/IT:II.9(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_passaggio_a_livello_senza_barriere.svg";
+}
+
+node[traffic_sign=~/IT:II.10a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_croce_di_S.Andrea.svg";
+}
+
+node[traffic_sign=~/IT:II.10b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Italian_traffic_signs_-_Doppia_croce_di_Sant%27Andrea.svg";
+}
+
+node[traffic_sign=~/IT:II.11a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Italian_traffic_signs_-_pannello_distanziometrico_150.svg";
+}
+
+node[traffic_sign=~/IT:II.11b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_pannello_distanziometrico_100.svg";
+}
+
+node[traffic_sign=~/IT:II.11c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_pannello_distanziometrico_50.svg";
+}
+
+node[traffic_sign=~/IT:II.20(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ponte_mobile.svg";
+}
+
+node[traffic_sign=~/IT:II.36(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/89/Italian_traffic_signs_-_dare_precedenza.svg";
+}
+
+node[traffic_sign=~/IT:II.37(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg";
+}
+
+node[traffic_sign=~/IT:II.38(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg";
+}
+
+node[traffic_sign=~/IT:II.39(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_preavviso.svg";
+}
+
+node[traffic_sign=~/IT:II.40(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_intersezione_con_precedenza_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.41(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_dare_precedenza_nei_sensi_unici_alternati.svg";
+}
+
+node[traffic_sign=~/IT:II.42(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Italian_traffic_signs_-_fine_del_diritto_di_precedenza.svg";
+}
+
+node[traffic_sign=~/IT:II.43a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_intersezione_con_diritto_di_precedenza.svg";
+}
+
+node[traffic_sign=~/IT:II.43b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_dx.svg";
+}
+
+node[traffic_sign=~/IT:II.43c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/96/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_sx.svg";
+}
+
+node[traffic_sign=~/IT:II.43d(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_confluenza_dx.svg";
+}
+
+node[traffic_sign=~/IT:II.43e(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_confluenza_sx.svg";
+}
+
+node[traffic_sign=~/IT:II.44(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_diritto_di_precedenza.svg";
+}
+
+node[traffic_sign=~/IT:II.45(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_diritto_di_precedenza_nei_sensi_unici_alternati.svg";
+}
+
+node[traffic_sign=~/IT:II.46(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito.svg";
+}
+
+node[traffic_sign=~/IT:II.47(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_senso_vietato.svg";
+}
+
+node[traffic_sign=~/IT:II.48(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_divieto_di_sorpasso.svg";
+}
+
+node[traffic_sign=~/IT:II.49(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_distanziamento_minimo_obbligatorio.svg";
+}
+
+node[traffic_sign=~/IT:II.50(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito.svg";
+    text: tag(maxspeed);
+}
+
+node[traffic_sign=~/IT:II.51(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_divieto_di_segnalazioni_acustiche.svg";
+}
+
+node[traffic_sign=~/IT:II.52(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/53/Italian_traffic_signs_-_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg";
+}
+
+node[traffic_sign=~/IT:II.53(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alla_trazione_animale.svg";
+}
+
+node[traffic_sign=~/IT:II.54(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_transito_vietato_ai_pedoni.svg";
+}
+
+node[traffic_sign=~/IT:II.55(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_divieto_di_transito_alle_biciclette.svg";
+}
+
+node[traffic_sign=~/IT:II.56(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/49/Italian_traffic_signs_-_divieto_di_transito_motocicli.svg";
+}
+
+node[traffic_sign=~/IT:II.57(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_a_braccia.svg";
+}
+
+node[traffic_sign=~/IT:II.58(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_divieto_di_transito_a_tutti_gli_autoveicoli.svg";
+}
+
+node[traffic_sign=~/IT:II.59(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_divieto_di_transito_agli_autobus.svg";
+}
+
+node[traffic_sign=~/IT:II.60a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/81/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto.svg";
+}
+
+node[traffic_sign=~/IT:II.60b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto_6%2C5t.svg";
+}
+
+node[traffic_sign=~/IT:II.61(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg";
+}
+
+node[traffic_sign=~/IT:II.62(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alle_macchine_agricole.svg";
+}
+
+node[traffic_sign=~/IT:II.63(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Italian_traffic_signs_-_divieto_di_transito_a_trasporti_pericolosi.svg";
+}
+
+node[traffic_sign=~/IT:II.64a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg";
+}
+
+node[traffic_sign=~/IT:II.64b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Italian_traffic_signs_-_divieto_di_transito_agli_inquinanti_idrici.svg";
+}
+
+node[traffic_sign=~/IT:II.65(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c7/Italian_traffic_signs_-_divieto_di_transito_larghezza_2%2C30m.svg";
+}
+
+node[traffic_sign=~/IT:II.66(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_divieto_di_transito_altezza_3%2C50m.svg";
+}
+
+node[traffic_sign=~/IT:II.67(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_lunghi.svg";
+}
+
+node[traffic_sign=~/IT:II.68(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg";
+}
+
+node[traffic_sign=~/IT:II.69(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_divieto_di_transito_a_carico_su_asse_7t.svg";
+}
+
+node[traffic_sign=~/IT:II.70(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_via_libera.svg";
+}
+
+node[traffic_sign=~/IT:II.71(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_fine_limite_di_velocit%C3%A0_50.svg";
+}
+
+node[traffic_sign=~/IT:II.72(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso.svg";
+}
+
+node[traffic_sign=~/IT:II.73(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg";
+}
+
+node[traffic_sign=~/IT:II.74(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/94/Italian_traffic_signs_-_divieto_di_sosta.svg";
+}
+
+node[traffic_sign=~/IT:II.75(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_divieto_di_fermata.svg";
+}
+
+node[traffic_sign=~/IT:II.76(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_parcheggio.svg";
+}
+
+node[traffic_sign=~/IT:II.77(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/04/Italian_traffic_signs_-_preavviso_di_parcheggio.svg";
+}
+
+node[traffic_sign=~/IT:II.78(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Italian_traffic_signs_-_passo_carrabile.svg";
+}
+
+node[traffic_sign=~/IT:II.79(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c4/Italian_traffic_signs_-_parcheggio_riservato_pronto_soccorso.svg";
+}
+
+node[traffic_sign=~/IT:II.80a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_direzione_obbligatoria_dritto.svg";
+}
+
+node[traffic_sign=~/IT:II.80b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Italian_traffic_signs_-_direzione_obbligatoria_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.80c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_direzione_obbligatoria_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.80d(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5a/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.80e(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/92/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.81a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_direzioni_consentite_a_destra_ed_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.81b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.81c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.82a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_passaggio_obbligatorio_a_sinistra.svg";
+}
+
+node[traffic_sign=~/IT:II.82b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_passaggio_obbligatorio_a_destra.svg";
+}
+
+node[traffic_sign=~/IT:II.83(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_passaggi_consentiti.svg";
+}
+
+node[traffic_sign=~/IT:II.84(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Italian_traffic_signs_-_rotatoria.svg";
+}
+
+node[traffic_sign=~/IT:II.85(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_limite_minimo_di_velocit%C3%A0_30.svg";
+}
+
+node[traffic_sign=~/IT:II.86(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_fine_limite_minimo_di_velocit%C3%A0_30.svg";
+}
+
+node[traffic_sign=~/IT:II.87(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e2/Italian_traffic_signs_-_catene_da_neve_obbligatorie.svg";
+}
+
+node[traffic_sign=~/IT:II.88(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_percorso_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.89(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/14/Italian_traffic_signs_-_fine_percorso_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.90(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_pista_ciclabile.svg";
+}
+
+node[traffic_sign=~/IT:II.91(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Italian_traffic_signs_-_fine_pista_ciclabile.svg";
+}
+
+node[traffic_sign=~/IT:II.92a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_pista_ciclabile_contigua_al_marciapiede.svg";
+}
+
+node[traffic_sign=~/IT:II.93a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_fine_pista_ciclabile_contigua_al_marciapiede.svg";
+}
+
+node[traffic_sign=~/IT:II.92b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_percorso_pedonale_e_ciclabile.svg";
+}
+
+node[traffic_sign=~/IT:II.93b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Italian_traffic_signs_-_fine_percorso_pedonale_e_ciclabile.svg";
+}
+
+node[traffic_sign=~/IT:II.94(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Italian_traffic_signs_-_percorso_riservato_ai_quadrupedi.svg";
+}
+
+node[traffic_sign=~/IT:II.95(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_fine_percorso_riservato_ai_quadrupedi.svg";
+}
+
+node[traffic_sign=~/IT:II.96(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_dogana.svg";
+}
+
+node[traffic_sign=~/IT:II.97a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Italian_traffic_signs_-_confine_CEE.svg";
+}
+
+node[traffic_sign=~/IT:II.97b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/05/Italian_traffic_signs_-_confine_francia.svg";
+}
+
+node[traffic_sign=~/IT:II.98(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Italian_traffic_signs_-_old_-_alt_polizia.svg";
+}
+
+node[traffic_sign=~/IT:II.99(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/10/Italian_traffic_signs_-_stazione.svg";
+}
+
+node[traffic_sign=~/IT:II.272(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_segnale_di_itinerario.svg";
+}
+
+node[traffic_sign=~/IT:II.273(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_inizio_centro_abitato.svg";
+}
+
+node[traffic_sign=~/IT:II.274(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Italian_traffic_signs_-_fine_centro_abitato.svg";
+}
+
+node[traffic_sign=~/IT:II.275(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/84/Italian_traffic_signs_-_inizio_regione.svg";
+}
+
+node[traffic_sign=~/IT:II.276(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/46/Italian_traffic_signs_-_inizio_provincia.svg";
+}
+
+node[traffic_sign=~/IT:II.284(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Italian_traffic_signs_-_localizzazione_polizia_municipale.svg";
+}
+
+node[traffic_sign=~/IT:II.285(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/16/Italian_traffic_signs_-_conferma_autostradale.svg";
+}
+
+node[traffic_sign=~/IT:II.294(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Italian_traffic_signs_-_inizio_territorio_comunale.svg";
+}
+
+node[traffic_sign=~/IT:II.295(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_fiume.svg";
+}
+
+node[traffic_sign=~/IT:II.302(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ospedale.svg";
+}
+
+node[traffic_sign=~/IT:II.303(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/52/Italian_traffic_signs_-_attraversamento_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.304(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/70/Italian_traffic_signs_-_scuolabus.svg";
+}
+
+node[traffic_sign=~/IT:II.305(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7a/Italian_traffic_signs_-_SOS.svg";
+}
+
+node[traffic_sign=~/IT:II.306(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Italian_traffic_signs_-_sottopassaggio_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.307(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_sovrappassaggio_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.308(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_rampa_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.309(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Italian_traffic_signs_-_strada_senza_uscita.svg";
+}
+
+node[traffic_sign=~/IT:II.310(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_OSX.svg";
+}
+
+node[traffic_sign=~/IT:II.311(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/22/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_DX.svg";
+}
+
+node[traffic_sign=~/IT:II.312(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_velocit%C3%A0_consigliata_50.svg";
+}
+
+node[traffic_sign=~/IT:II.313(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/67/Italian_traffic_signs_-_fine_velocit%C3%A0_consigliata_50.svg";
+}
+
+node[traffic_sign=~/IT:II.314(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_strada_riservata_ai_veicoli_a_motore.svg";
+}
+
+node[traffic_sign=~/IT:II.315(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_fine_strada_riservata_ai_veicoli_a_motore.svg";
+}
+
+node[traffic_sign=~/IT:II.316(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_galleria_blu.svg";
+}
+
+node[traffic_sign=~/IT:II.317(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_ponte_blu.svg";
+}
+
+node[traffic_sign=~/IT:II.318(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_zona_residenziale.svg";
+}
+
+node[traffic_sign=~/IT:II.319(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_fine_zona_residenziale.svg";
+}
+
+node[traffic_sign=~/IT:II.320(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_area_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.321(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Italian_traffic_signs_-_fine_area_pedonale.svg";
+}
+
+node[traffic_sign=~/IT:II.322a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_zona_traffico_limitato.svg";
+}
+
+node[traffic_sign=~/IT:II.322b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_fine_zona_traffico_limitato.svg";
+}
+
+node[traffic_sign=~/IT:II.323a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_zona_30_kmh.svg";
+}
+
+node[traffic_sign=~/IT:II.323b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/76/Italian_traffic_signs_-_fine_zona_30.svg";
+}
+
+node[traffic_sign=~/IT:II.324(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6c/Italian_traffic_signs_-_attraversamento_ciclabile_2.svg";
+}
+
+node[traffic_sign=~/IT:II.325(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_svolta_a_sx_semidiretta.svg";
+}
+
+node[traffic_sign=~/IT:II.326(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_svolta_a_sx_indiretta.svg";
+}
+
+node[traffic_sign=~/IT:II.327(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_inversione_di_marcia.svg";
+}
+
+node[traffic_sign=~/IT:II.328(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Italian_traffic_signs_-_piazzola_su_viabilit%C3%A0_ordinaria.svg";
+}
+
+node[traffic_sign=~/IT:II.329(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/37/Italian_traffic_signs_-_piazzola_autostradale_sos.svg";
+}
+
+node[traffic_sign=~/IT:II.330(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_transitabilit%C3%A0_1.svg";
+}
+
+node[traffic_sign=~/IT:II.337(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f4/Italian_traffic_signs_-_uso_corsie.svg";
+}
+
+node[traffic_sign=~/IT:II.338(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4a/Italian_traffic_signs_-_uso_corsie_3.svg";
+}
+
+node[traffic_sign=~/IT:II.339(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_uso_corsie_1.svg";
+}
+
+node[traffic_sign=~/IT:II.340(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_uso_corsie_2.svg";
+}
+
+node[traffic_sign=~/IT:II.341(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Italian_traffic_signs_-_variazione_corsie_disponibili_-_riduzione.svg";
+}
+
+node[traffic_sign=~/IT:II.342(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_signs_-_variazione_corsie_disponibili_-_aumento.svg";
+}
+
+node[traffic_sign=~/IT:II.345(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_inizio_autostrada.svg";
+}
+
+node[traffic_sign=~/IT:II.346(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Italian_traffic_signs_-_segnale_fine_autostrada.svg";
+}
+
+node[traffic_sign=~/IT:II.348(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f2/Italian_traffic_signs_-_senso_unico_%28a_destra%29.svg";
+}
+
+node[traffic_sign=~/IT:II.349(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/8b/Italian_traffic_signs_-_senso_unico_frontale.svg";
+}
+
+node[traffic_sign=~/IT:II.350(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_preavviso_deviazione_consigliata_autocarri.svg";
+}
+
+node[traffic_sign=~/IT:II.351(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_direzione_autocarri_consigliata.svg";
+}
+
+node[traffic_sign=~/IT:II.352(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_limiti_generali.svg";
+}
+
+node[traffic_sign=~/IT:II.353(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_pronto_soccorso.svg";
+}
+
+node[traffic_sign=~/IT:II.354(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_riparazioni.svg";
+}
+
+node[traffic_sign=~/IT:II.355(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/57/Italian_traffic_signs_-_telefono.svg";
+}
+
+node[traffic_sign=~/IT:II.356(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_rifornimento.svg";
+}
+
+node[traffic_sign=~/IT:II.357(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_rifornimento_verde.svg";
+}
+
+node[traffic_sign=~/IT:II.358(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_sign_-_fermata_autobus.svg";
+}
+
+node[traffic_sign=~/IT:II.359(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_fermata_tram.svg";
+}
+
+node[traffic_sign=~/IT:II.360(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/36/Italian_traffic_signs_-_informazioni.svg";
+}
+
+node[traffic_sign=~/IT:II.361(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/72/Italian_traffic_signs_-_ostello_per_la_giovent%C3%B9.svg";
+}
+
+node[traffic_sign=~/IT:II.362(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/86/Italian_traffic_signs_-_area_pic_nic.svg";
+}
+
+node[traffic_sign=~/IT:II.363(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_campeggio.svg";
+}
+
+node[traffic_sign=~/IT:II.364(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/51/Italian_traffic_signs_-_radio_informazioni_stradali.svg";
+}
+
+node[traffic_sign=~/IT:II.365(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Italian_traffic_signs_-_albergo.svg";
+}
+
+node[traffic_sign=~/IT:II.366(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Italian_traffic_signs_-_bar.svg";
+}
+
+node[traffic_sign=~/IT:II.367(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_ristorante.svg";
+}
+
+node[traffic_sign=~/IT:II.368(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_parcheggio_di_scambio_con_autobus.svg";
+}
+
+node[traffic_sign=~/IT:II.369(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Italian_traffic_signs_-_parcheggio_di_scambio_con_tram.svg";
+}
+
+node[traffic_sign=~/IT:II.370(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Italian_traffic_signs_-_parcheggio_di_scambio_con_metro.svg";
+}
+
+node[traffic_sign=~/IT:II.371(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_parcheggio_%2B_escursionismo.svg";
+}
+
+node[traffic_sign=~/IT:II.372(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/93/Italian_traffic_signs_-_auto_al_seguito.svg";
+}
+
+node[traffic_sign=~/IT:II.373(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_auto_su_treno.svg";
+}
+
+node[traffic_sign=~/IT:II.374(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Italian_traffic_signs_-_auto_su_nave.svg";
+}
+
+node[traffic_sign=~/IT:II.375(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/17/Italian_traffic_signs_-_taxi.svg";
+}
+
+node[traffic_sign=~/IT:II.376(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/19/Italian_traffic_signs_-_area_di_servizio.svg";
+}
+
+node[traffic_sign=~/IT:II.377(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Italian_traffic_signs_-_area_con_scarico_liquami.svg";
+}
+
+node[traffic_sign=~/IT:MII.1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg";
+}
+
+node[traffic_sign=~/IT:MII.2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_estesa_1.svg";
+}
+
+node[traffic_sign=~/IT:MII.3(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Italian_traffic_signs_-_validit%C3%A0_1.svg";
+}
+
+node[traffic_sign=~/IT:MII.4a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Italian_traffic_signs_-_limitazione.svg";
+}
+
+node[traffic_sign=~/IT:MII.4b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_eccezione.svg";
+}
+
+node[traffic_sign=~/IT:MII.5a1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_inizio_vert.svg";
+}
+
+node[traffic_sign=~/IT:MII.5a2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Italian_traffic_signs_-_continua_vert.svg";
+}
+
+node[traffic_sign=~/IT:MII.5a3(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Italian_traffic_signs_-_fine_vert.svg";
+}
+
+node[traffic_sign=~/IT:MII.5b1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/38/Italian_traffic_signs_-_inizio_orizz.svg";
+}
+
+node[traffic_sign=~/IT:MII.5b2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_continua_orizz.svg";
+}
+
+node[traffic_sign=~/IT:MII.5b3(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_fine_orizz.svg";
+}
+
+node[traffic_sign=~/IT:MII.6a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/80/Italian_traffic_signs_-_segnaletica_in_rifacimento.svg";
+}
+
+node[traffic_sign=~/IT:MII.6b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Italian_traffic_signs_-_incidente.svg";
+}
+
+node[traffic_sign=~/IT:MII.6c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Italian_traffic_signs_-_attraversamento_binari.svg";
+}
+
+node[traffic_sign=~/IT:MII.6d(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Italian_traffic_signs_-_sgombraneve_in_azione.svg";
+}
+
+node[traffic_sign=~/IT:MII.6e(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Italian_traffic_signs_-_zona_soggetta_ad_allagamento.svg";
+}
+
+node[traffic_sign=~/IT:MII.6f(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_Coda.svg";
+}
+
+node[traffic_sign=~/IT:MII.6g(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_mezzi_di_lavoro_in_azione.svg";
+}
+
+node[traffic_sign=~/IT:MII.6h(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Italian_traffic_signs_-_strada_sdrucciolevole_per_ghiaccio.svg";
+}
+
+node[traffic_sign=~/IT:MII.6i(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Italian_traffic_signs_-_strada_sdrucciolevole_per_pioggia.svg";
+}
+
+node[traffic_sign=~/IT:MII.6l(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_sign_-_autocarri_in_rallentamento.svg";
+}
+
+node[traffic_sign=~/IT:MII.6m(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/59/Italian_traffic_signs_-_rimozione_forzata.svg";
+}
+
+node[traffic_sign=~/IT:MII.6n(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_segnale_di_corsia.svg";
+}
+
+node[traffic_sign=~/IT:MII.6p1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_tornante.svg";
+}
+
+node[traffic_sign=~/IT:MII.6p2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_numero_del_tornante.svg";
+}
+
+node[traffic_sign=~/IT:MII.6q1(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_pulizia_meccanica_della_strada.svg";
+}
+
+node[traffic_sign=~/IT:MII.6q2(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_pulizia_meccanica_della_strada_1.svg";
+}
+
+node[traffic_sign=~/IT:MII.7(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_andamento_strada_principale.svg";
+}
+
+node[traffic_sign=~/IT:MII.8a(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Italian_traffic_signs_-_divieto_di_sosta_temporaneo.svg";
+}
+
+node[traffic_sign=~/IT:MII.8b(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/09/Italian_traffic_signs_-_itinerario_obbligatorio_merci_pericolose.svg";
+}
+
+node[traffic_sign=~/IT:MII.8c(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_preavviso_deviazione_obbligatoria_autocarri.svg";
+}
+
+node[traffic_sign=~/IT:MII.8d(;|,|\[|$)/] {
+    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/18/Italian_traffic_signs_-_divieto_di_transito_autocarri.svg";
+}
+
+
+node|z-16[prop(sign, default)]::* {
+    icon-image: none;
+    text: none;
+}
+

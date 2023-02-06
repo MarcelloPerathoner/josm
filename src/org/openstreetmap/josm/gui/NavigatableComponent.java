@@ -46,6 +46,7 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.osm.visitor.BoundingXYVisitor;
+import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.DoubleProperty;
 import org.openstreetmap.josm.data.preferences.IntegerProperty;
@@ -59,6 +60,7 @@ import org.openstreetmap.josm.gui.layer.NativeScaleLayer.Scale;
 import org.openstreetmap.josm.gui.layer.NativeScaleLayer.ScaleList;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
+import org.openstreetmap.josm.gui.mappaint.styleelement.LineElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.gui.mappaint.StyleElementList;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
@@ -102,9 +104,15 @@ public class NavigatableComponent extends JComponent implements Helpful {
         return !getStyleElementList(prim).isEmpty();
     };
 
-    /** Node snap distance */
+    /** The distance to search for primitives around the mouse pointer. Should be set to
+     * the radius of the biggest symbols. */
+    public static final IntegerProperty PROP_SEARCH_DISTANCE = new IntegerProperty("mappaint.search-distance", 32);
+    /** Node snap distance.  How far can the mouse pointer be from the center of a node
+     * and still select that node.  Bigger values make it easier to select small nodes
+     * but make it harder to discrimate between nearby nodes.  The mouse will always
+     * select when it is inside the bounding box of a node, its symbol, or icon. */
     public static final IntegerProperty PROP_SNAP_DISTANCE = new IntegerProperty("mappaint.node.snap-distance", 10);
-    /** Segment snap distance */
+    /** Segment snap distance. How far can the mouse pointer be from the centerline of a segment and still select that segment. */
     public static final IntegerProperty PROP_SEGMENT_SNAP_DISTANCE = new IntegerProperty("mappaint.segment.snap-distance", 10);
     /** Zoom steps to get double scale */
     public static final DoubleProperty PROP_ZOOM_RATIO = new DoubleProperty("zoom.ratio", 2.0);
@@ -113,6 +121,14 @@ public class NavigatableComponent extends JComponent implements Helpful {
     /** scale follows native resolution of layer status when layer is created */
     public static final BooleanProperty PROP_ZOOM_SCALE_FOLLOW_NATIVE_RES_AT_LOAD = new BooleanProperty(
             "zoom.scale-follow-native-resolution-at-load", true);
+
+    private int searchDistance = MapPaintSettings.INSTANCE.adj(PROP_SEARCH_DISTANCE.get());
+    private double nodeSnapDistance = MapPaintSettings.INSTANCE.adj(PROP_SNAP_DISTANCE.get());
+    private double waySnapDistance = MapPaintSettings.INSTANCE.adj(PROP_SEGMENT_SNAP_DISTANCE.get());
+
+    // premultiplied values. we use squared distances so we don't have to take roots
+    private double nodeSnapDistanceSq = nodeSnapDistance * nodeSnapDistance;
+    private double waySnapDistanceSq = waySnapDistance * waySnapDistance;
 
     /**
      * The layer which scale is set to.
@@ -622,7 +638,7 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * looses precision, may overflow (depends on p and current scale)
+     * loses precision, may overflow (depends on p and current scale)
      * @param p east/north
      * @return point
      * @see #getPoint2D(EastNorth)
@@ -633,7 +649,7 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * looses precision, may overflow (depends on p and current scale)
+     * loses precision, may overflow (depends on p and current scale)
      * @param latlon lat/lon
      * @return point
      * @see #getPoint2D(LatLon)
@@ -645,7 +661,7 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * looses precision, may overflow (depends on p and current scale)
+     * loses precision, may overflow (depends on p and current scale)
      * @param latlon lat/lon
      * @return point
      * @see #getPoint2D(LatLon)
@@ -655,7 +671,7 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * looses precision, may overflow (depends on p and current scale)
+     * loses precision, may overflow (depends on p and current scale)
      * @param n node
      * @return point
      * @see #getPoint2D(Node)
@@ -1055,10 +1071,10 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * Return all nodes that are closer to {@code p} than
-     * {@code mappaint.node.snap-distance}, and are not in {@code ignore}, and
-     * satisfy {@code predicate}, sorted by their distance to {@code p}
-     * ascending.
+     * Returns all nodes whose bounding box on screen contains {@code p} or whose centers
+     * are closer to {@code p} than {@code mappaint.node.snap-distance}. The nodes must
+     * not be in {@code ignore}, and must satisfy {@code predicate}. The nodes are
+     * returned sorted by their distance to {@code p} in ascending order.
      *
      * @param p the screen point
      * @param ignore nodes to ignore
@@ -1067,29 +1083,29 @@ public class NavigatableComponent extends JComponent implements Helpful {
      * @return the nearest nodes
      */
     public final List<Node> getNearestNodes(Point p,
-            Collection<Node> ignore, Predicate<OsmPrimitive> predicate) {
+            Collection<? extends OsmPrimitive> ignore,
+            Predicate<OsmPrimitive> predicate) {
 
         DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
 
-        List<Pair<Double, Node>> l = new ArrayList<>();
+        List<Pair<Node, Double>> l = new ArrayList<>();
         if (ds != null) {
-            Integer snapDistance = PROP_SNAP_DISTANCE.get();
-
-            for (Node n : ds.searchNodes(getBBox(p, snapDistance))) {
+            for (Node n : ds.searchNodes(getBBox(p, searchDistance))) {
                 if (predicate != null && !predicate.test(n))
                     continue;
                 if (ignore != null && ignore.contains(n))
                     continue;
-                double dist = getPoint2D(n).distance(p);
-                if (dist <= snapDistance) {
-                    l.add(new Pair<>(dist, n));
+                double distSq = getPoint2D(n).distanceSq(p);
+                if (distSq <= nodeSnapDistanceSq || hitTest(p, n)) {
+                    l.add(new Pair<>(n, distSq));
                 }
             }
+            // sort according to distance ascending
             // N.B. we must not sort selected nodes in front of unselected
             // or the order in the middle-click-menu will change
-            Collections.sort(l, Comparator.comparing(i -> i.a));
+            Collections.sort(l, Comparator.comparing(i -> i.b));
         }
-        return l.stream().map(i -> i.b).collect(Collectors.toList());
+        return l.stream().map(i -> i.a).collect(Collectors.toList());
     }
 
     /**
@@ -1223,68 +1239,66 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * Return all way segments that are closer to {@code p} than
-     * {@code mappaint.segment.snap-distance}, and are not in {@code ignore},
-     * and satisfy {@code predicate}, sorted by their distance to {@code p}
-     * ascending.
-     * <p>
+     * Returns all way segments whose screen representation contains the point {@code p}
+     * or whose centerlines are closer to {@code p} than
+     * {@code mappaint.segment.snap-distance}. Their ways must not be in {@code ignore},
+     * and must satisfy {@code predicate}.  The way segments are returned sorted by the
+     * distance of their centerlines to {@code p} in ascending order.
      *
      * @param p the screen point
-     * @param ignore nodes to ignore
-     * @param predicate the way segments must satisfy
-     * @return the nearest way segments
+     * @param ignore ways to ignore
+     * @param predicate the ways must satisfy
+     * @return the way segments
      */
 
     public List<WaySegment> getNearestWaySegments(
-        Point p, Collection<WaySegment> ignore, Predicate<OsmPrimitive> predicate) {
+        Point p, Collection<OsmPrimitive> ignore, Predicate<OsmPrimitive> predicate) {
         DataSet ds = MainApplication.getLayerManager().getActiveDataSet();
 
-        List<Pair<Double, WaySegment>> l = new ArrayList<>();
+        List<Pair<WaySegment, Double>> l = new ArrayList<>();
         if (ds != null) {
-            Integer snapDistance = PROP_SEGMENT_SNAP_DISTANCE.get();
-            double snapDistanceSq = snapDistance * snapDistance;
+            Point2D pt = new Point2D.Double(p.getX(), p.getY());
 
-            for (Way w : ds.searchWays(getBBox(p, snapDistance))) {
+            for (Way w : ds.searchWays(getBBox(p, searchDistance))) {
                 if (predicate != null && !predicate.test(w))
                     continue;
+                if (ignore != null && ignore.contains(w))
+                    continue;
 
-                Node n1 = null;
-                for (Node n2 : w.getNodes()) {
-                    if (n2.isDeleted() || n2.isIncomplete()) { //FIXME: This shouldn't happen, raise exception?
-                        continue;
+                double lineWidth = 0d;
+                for (StyleElement e : getStyleElementList(w)) {
+                    if (e instanceof LineElement) {
+                        LineElement le = (LineElement) e;
+                        lineWidth = Math.max(lineWidth, le.width);
                     }
-                    if (n1 == null) {
-                        n1 = n2;
-                        continue;
-                    }
+                }
+                // actually square distance from centerline
+                double lineWidthSq = Math.max(lineWidth * lineWidth / 4d, waySnapDistanceSq);
 
-                    Point2D pt = new Point2D.Double(p.x, p.y);
-                    Point2D pt1 = getPoint2D(n1);
-                    Point2D pt2 = getPoint2D(n2);
+                for (Pair<Node, Node> s : w.getNodePairs(false)) {
+                    Point2D pt1 = getPoint2D(s.a);
+                    Point2D pt2 = getPoint2D(s.b);
 
                     double a2 = pt.distanceSq(pt1);
                     double b2 = pt.distanceSq(pt2);
                     double c2 = pt1.distanceSq(pt2);
 
                     // early out if point is too far away from segment
-                    if (a2 <= c2 + snapDistanceSq && b2 <= c2 + snapDistanceSq) {
+                    if (a2 <= c2 + lineWidthSq && b2 <= c2 + lineWidthSq) {
                         double distSq = Heron(a2, b2, c2);
-                        if (distSq <= snapDistanceSq) {
-                            WaySegment ws = WaySegment.forNodePair(w, n1, n2);
-                            if (ignore == null || !ignore.contains(ws)) {
-                                l.add(new Pair<>(distSq, ws));
-                            }
+                        if (distSq <= lineWidthSq) {
+                            WaySegment ws = WaySegment.forNodePair(w, s.a, s.b);
+                            l.add(new Pair<>(ws, distSq));
                         }
                     }
-                    n1 = n2;
                 }
             }
             // sort according to distance ascending
             // N.B. we must not sort selected ways in front of unselected
             // or the order in the middle-click-menu will change
-            Collections.sort(l, Comparator.comparing(i -> i.a));
+            Collections.sort(l, Comparator.comparing(i -> i.b));
         }
-        return l.stream().map(i -> i.b).collect(Collectors.toList());
+        return l.stream().map(i -> i.a).collect(Collectors.toList());
     }
 
     /**
@@ -1300,40 +1314,42 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * Return the nearest way segment to {@code p} that is closer than
-     * {@code mappaint.segment.snap-distance} and satisfies {@code predicate}.
+     * Return the nearest way segment to {@code p}.
      * <p>
-     * The following algorithm is used:
+     * The function first looks for all way segments whose screen representation
+     * contains the point {@code p} or whose centerlines are closer to {@code p} than
+     * the preference {@code mappaint.segment.snap-distance}.
+     * Then the following algorithm is used:
      * <ul>
-     *  <li>If {@code useSelected} is true, prefer the closest selected way segment.
-     *       Use case: remove a primitive from a selection.</li>
-     *  <li>Else if {@code preferredRefs} is not null, prefer the closest way segment
-     *   that is referred by any of the primitives in {@code preferredRefs}.</li>
+     *  <li>If {@code preferSelected} is true, prefer the closest selected way segment.
+     *      Use case: remove a primitive from a selection.</li>
+     *  <li>Else if {@code preferRefs} is not null, prefer the closest way segment
+     *      that is referred by any of the primitives in {@code preferRefs}.</li>
      *  <li>Else return the closest way segment.</li>
      *  <li>Else return null.</li>
      * </ul>
      *
      * @param p the screen point
      * @param predicate the way segment must satisfy
-     * @param useSelected prefer a selected way segment
-     * @param preferredRefs prefer way segments related to these primitives
+     * @param preferSelected if true prefer a selected way segment
+     * @param preferRefs if not null prefer way segments related to these primitives
      *
      * @return The nearest way segment
      * @see #getNearestWaySegments(Point, Collection, Predicate)
      * @since 6065
      */
     public final WaySegment getNearestWaySegment(Point p, Predicate<OsmPrimitive> predicate,
-            boolean useSelected, Collection<OsmPrimitive> preferredRefs) {
+            boolean preferSelected, Collection<OsmPrimitive> preferRefs) {
 
         List<WaySegment> wslist = getNearestWaySegments(p, predicate);
         if (wslist.isEmpty()) return null;
 
-        if (useSelected) {
+        if (preferSelected) {
             WaySegment result = wslist.stream().filter(ws -> ws.getWay().isSelected()).findFirst().orElse(null);
             if (result != null) return result;
         }
-        if (preferredRefs != null && !preferredRefs.isEmpty()) {
-            Set<OsmPrimitive> prefs = new HashSet<>(preferredRefs);
+        if (preferRefs != null && !preferRefs.isEmpty()) {
+            Set<OsmPrimitive> prefs = new HashSet<>(preferRefs);
             WaySegment result = wslist.stream().filter(
                 ws -> prefs.contains(ws.getFirstNode()) ||
                     prefs.contains(ws.getSecondNode()) ||
@@ -1388,18 +1404,11 @@ public class NavigatableComponent extends JComponent implements Helpful {
      * @return the nearest ways
      */
     public final List<Way> getNearestWays(Point p,
-            Collection<Way> ignore, Predicate<OsmPrimitive> predicate) {
-        Set<Way> seen = new HashSet<>();
-
-        List<Way> nearestList = getNearestWaySegments(p, predicate).stream()
+            Collection<OsmPrimitive> ignore, Predicate<OsmPrimitive> predicate) {
+        return getNearestWaySegments(p, ignore, predicate).stream()
                 .map(ws -> ws.getWay())
-                .filter(seen::add)
+                .distinct()
                 .collect(Collectors.toList());
-        if (ignore != null) {
-            nearestList.removeAll(ignore);
-        }
-
-        return nearestList;
     }
 
     /**
@@ -1456,15 +1465,10 @@ public class NavigatableComponent extends JComponent implements Helpful {
         List<OsmPrimitive> nearestList = Collections.emptyList();
         OsmPrimitive osm = getNearestNodeOrWay(p, predicate, false);
 
-        if (osm != null) {
-            if (osm instanceof Node) {
-                nearestList = new ArrayList<>(getNearestNodes(p, predicate));
-            } else if (osm instanceof Way) {
-                nearestList = new ArrayList<>(getNearestWays(p, predicate));
-            }
-            if (ignore != null) {
-                nearestList.removeAll(ignore);
-            }
+        if (osm instanceof Node) {
+            nearestList = new ArrayList<>(getNearestNodes(p, ignore, predicate));
+        } else if (osm instanceof Way) {
+            nearestList = new ArrayList<>(getNearestWays(p, ignore, predicate));
         }
 
         return nearestList;
@@ -1485,23 +1489,25 @@ public class NavigatableComponent extends JComponent implements Helpful {
     }
 
     /**
-     * Returns the squared size of the screen symbol representing the node.
+     * Returns true if the given screen point is inside the screen representation of the node.
      *
+     * @param p a screen point
      * @param n the node
-     * @return the size of the symbol squared
+     * @return true if inside
      */
-    private double getSymbolSizeSq(Node n) {
-        int size = 4; // default
+    private boolean hitTest(Point p, Node n) {
+        Point2D loc = getPoint2D(n);
         for (StyleElement e : getStyleElementList(n)) {
             if (e instanceof NodeElement) {
                 NodeElement ne = (NodeElement) e;
-                if (ne.symbol != null) {
-                    size = ne.symbol.size;
-                    break;
-                }
+                Rectangle r = ne.getBoxProvider().get().getBox();
+                r.x += loc.getX();
+                r.y += loc.getY();
+                if (r.contains(p))
+                    return true;
             }
         }
-        return size * size;
+        return false;
     }
 
     /**
@@ -1531,28 +1537,26 @@ public class NavigatableComponent extends JComponent implements Helpful {
         Collection<OsmPrimitive> sel = (useSelected && ds != null) ? ds.getSelected() : null;
 
         Node n = getNearestNode(p, predicate, useSelected, sel);
-        if (n != null) {
-            if (useSelected && n.isSelected())
-                return n;
-            if (n.isTagged())
-                return n;
-            if (p.distanceSq(getPoint2D(n)) <= getSymbolSizeSq(n))
-                return n;
-        }
+        if (n != null)
+            return n;
+
         WaySegment ws = getNearestWaySegment(p, predicate, useSelected, sel);
         if (ws != null)
             return ws.getWay();
 
-        return n; // which may be null
+        return null;
     }
 
     /**
      * Return all primitives that are closest to {@code p}, and are not in
      * {@code ignore}, and satisfy {@code predicate}.
      * <p>
-     * Return a list containing: the closest ways in ascending order of distance
-     * from {@code p}, then the nodes in the same order, then all parent
-     * relations of those ways and nodes.
+     * Return a list containing:
+     * <ul>
+     * <li>the closest ways in ascending order of distance from {@code p},
+     * <li>then the closest nodes in the same order,
+     * <li>then all direct parent relations of those ways and nodes.
+     * </ul>
      * <p>
      * Use case: the "middle-click" dialog.
      *
@@ -1563,23 +1567,20 @@ public class NavigatableComponent extends JComponent implements Helpful {
      * @return the primitives
      */
     public final List<OsmPrimitive> getAllNearest(Point p,
-            Collection<OsmPrimitive> ignore, Predicate<OsmPrimitive> predicate) {
+            Collection<OsmPrimitive> ignore,
+            Predicate<OsmPrimitive> predicate) {
 
         List<OsmPrimitive> nearestList = new ArrayList<>();
-        nearestList.addAll(getNearestWays(p, predicate));
-        nearestList.addAll(getNearestNodes(p, predicate));
+        nearestList.addAll(getNearestWays(p, ignore, predicate));
+        nearestList.addAll(getNearestNodes(p, ignore, predicate));
 
         // add the parent relations
-        Set<OsmPrimitive> seen = new HashSet<>();
         nearestList.addAll(nearestList.stream()
                 .flatMap(o -> o.referrers(Relation.class))
                 .filter(predicate)
-                .filter(seen::add)
+                .filter(r -> ignore == null || !ignore.contains(r))
+                .distinct()
                 .collect(Collectors.toList()));
-
-        if (ignore != null) {
-            nearestList.removeAll(ignore);
-        }
 
         return nearestList;
     }

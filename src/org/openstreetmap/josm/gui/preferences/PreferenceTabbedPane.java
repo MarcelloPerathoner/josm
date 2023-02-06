@@ -214,7 +214,7 @@ public final class PreferenceTabbedPane extends JTabbedPane implements ExpertMod
     /**
      * Panel used for preference settings.
      * <p>
-     * This is the contents of a tab in the outermost JTtabbedPane. It contains a
+     * This is the contents of a tab in the outermost JTabbedPane. It contains a
      * header, a big icon and one or more panels.
      *
      * @since 4968

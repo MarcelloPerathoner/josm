@@ -79,6 +79,9 @@ class NavigatableComponentTest {
 
     private static final int HEIGHT = 200;
     private static final int WIDTH = 300;
+    private static final int SEARCH_DISTANCE = 32;
+    private static final int NODE_SNAP_DISTANCE = 16;
+    private static final int SEGMENT_SNAP_DISTANCE = 8;
     private NavigatableComponentMock component;
 
     /**
@@ -93,6 +96,9 @@ class NavigatableComponentTest {
      */
     @BeforeEach
     public void setUp() {
+        Config.getPref().putInt("mappaint.search-distance", SEARCH_DISTANCE);
+        Config.getPref().putInt("mappaint.node.snap-distance", NODE_SNAP_DISTANCE);
+        Config.getPref().putInt("mappaint.segment.snap-distance", SEGMENT_SNAP_DISTANCE);
         component = new NavigatableComponentMock();
         component.setBounds(new Rectangle(WIDTH, HEIGHT));
         // wait for the event to be propagated.
@@ -304,45 +310,35 @@ class NavigatableComponentTest {
     class Hit_Tests {
 
         DataSet ds;
-        Node n1;
-        Node n2;
-        Node n3;
-        Node n4;
-        Node n5;
-        Way w1;
-        Way w2;
-        Way w3;
-        Way w4;
-        Relation r1;
-        Relation r2;
-        Relation r3;
-        Relation r4;
-        int SnapDistance = 10;
+        Node n1, n2, n3, n4, n5, n6;
+        Way w1, w2, w3, w4;
+        Relation r1, r2, r3, r4;
 
         @BeforeEach
         public void setUp() {
-            Config.getPref().putInt("mappaint.node.snap-distance", SnapDistance);
-            Config.getPref().putInt("mappaint.segment.snap-distance", SnapDistance);
             ds = new DataSet();
-            n1 = new Node(new EastNorth(0, 0));
-            n2 = new Node(new EastNorth(WIDTH, 0));
-            n3 = new Node(new EastNorth(0, SnapDistance));
-            n4 = new Node(new EastNorth(WIDTH, SnapDistance));
+            n1 = new Node(new EastNorth(0, 0));                     // bottom left
+            n2 = new Node(new EastNorth(WIDTH, 0));                 // bottom right
+            n3 = new Node(new EastNorth(0, HEIGHT));                // topl left
+            n4 = new Node(new EastNorth(WIDTH, HEIGHT));            // top right
+            n5 = new Node(new EastNorth(NODE_SNAP_DISTANCE / 2, 0));    // within snap of n1
+            n6 = new Node(new EastNorth(WIDTH / 2, HEIGHT / 2));    // center (not in ds)
             ds.addPrimitive(n1);
             ds.addPrimitive(n2);
             ds.addPrimitive(n3);
             ds.addPrimitive(n4);
+            ds.addPrimitive(n5);
             w1 = new Way();
             w2 = new Way();
             w3 = new Way();
             w4 = new Way();
-            w1.addNode(n1);
+            w1.addNode(n1);  // bottom
             w1.addNode(n2);
-            w2.addNode(n3);
+            w2.addNode(n3);  // top
             w2.addNode(n4);
-            w3.addNode(n1);
+            w3.addNode(n1);  // ascending diagonal
             w3.addNode(n4);
-            w4.addNode(n3);
+            w4.addNode(n3);  // descending diagonal
             w4.addNode(n2);
             ds.addPrimitive(w1);
             ds.addPrimitive(w2);
@@ -368,12 +364,13 @@ class NavigatableComponentTest {
         }
 
         final <T> void assertEqualsList(List<T> expected, List<T> found) {
+            if (!expected.equals(found))
+                fail("Expected list \n" + expected + "\nfound list \n" + found);
             Iterator<T> iter = expected.iterator();
             for (T p : found) {
                 T n = iter.next();
                 if (p != n) {
                     fail("Expected item " + p + " found item " + n);
-                    fail("Expected list " + expected + "\nfound list " + found);
                     return;
                 }
             }
@@ -398,15 +395,15 @@ class NavigatableComponentTest {
             Point p;
 
             p = new Point(component.getPoint(n1));
-            p.translate(0, 1); // move 1px down, n3 barely outside
             l = component.getNearestNodes(p, null, x -> true);
-            assertEqualsList(Arrays.asList(n1), l);
+            assertEqualsList(Arrays.asList(n1, n5), l);
 
-            p.translate(0, -2); // move 2px up, n3 barely inside
+            p = new Point(component.getPoint(n5));
             l = component.getNearestNodes(p, null, x -> true);
-            assertEqualsList(Arrays.asList(n1, n3), l);
+            assertEqualsList(Arrays.asList(n5, n1), l);
 
-            p.translate(0, HEIGHT); // nothing here
+            // nothing here
+            p = new Point(component.getPoint(n6));
             l = component.getNearestNodes(p, null, x -> true);
             assertEqualsList(new ArrayList<Node>(), l);
         }
@@ -416,30 +413,51 @@ class NavigatableComponentTest {
             Point p;
             Node n;
 
-            p = new Point(component.getPoint(n1));
-            p.translate(0, -1); // move 1px up
+            p = new Point(component.getPoint(n5));
+
+            // prefer nothing
+            n = component.getNearestNode(p, x -> true, false, null);
+            assertEquals(n5, n);
 
             // prefer selected but there ain't any
             n = component.getNearestNode(p, x -> true, true, null);
-            assertEquals(n1, n);
+            assertEquals(n5, n);
 
-            ds.setSelected(n3);
+            // prefer referred by way but there ain't any
+            n = component.getNearestNode(p, x -> true, true, Collections.singletonList(w2));
+            assertEquals(n5, n);
 
-            // don't prefer
+            ds.setSelected(n1);
+
+            // don't prefer anything
             n = component.getNearestNode(p, x -> true, false, null);
+            assertEquals(n5, n);
+
+            // prefer selected
+            n = component.getNearestNode(p, x -> true, true, null);
             assertEquals(n1, n);
 
-            // prefer selected node n3
-            n = component.getNearestNode(p, x -> true, true, null);
-            assertEquals(n3, n);
+            // prefer node n1 as part of w1
+            n = component.getNearestNode(p, x -> true, false, Collections.singletonList(w1));
+            assertEquals(n1, n);
 
-            // prefer node n3 as part of w2
-            n = component.getNearestNode(p, x -> true, false, Collections.singletonList(w2));
-            assertEquals(n3, n);
-
-            p.translate(0, HEIGHT); // nothing here
+            // nothing to see here
+            p = new Point(component.getPoint(n6));
             n = component.getNearestNode(p, x -> true, false, null);
             assertEquals(null, n);
+        }
+
+        @Test
+        void testNearestWaySegments() {
+            List<WaySegment> l;
+            Point p;
+
+            p = new Point(component.getPoint(n1)); // 0, 200
+            l = component.getNearestWaySegments(p, null, x -> true);
+            assertEquals(2, l.size());
+
+            l = component.getNearestWaySegments(p, Arrays.asList(w3), x -> true);
+            assertEquals(1, l.size());
         }
 
         @Test
@@ -448,14 +466,12 @@ class NavigatableComponentTest {
             Point p;
 
             p = new Point(component.getPoint(n1));
-            p.translate(WIDTH / 3, -1);
+            p.translate(0, -1); // make it nearer to w3
             l = component.getNearestWays(p, null, x -> true);
-            assertEqualsList(Arrays.asList(w1, w3, w4, w2), l);
+            assertEqualsList(Arrays.asList(w3, w1), l);
 
-            p = new Point(component.getPoint(n3));
-            p.translate(0, HEIGHT);
-            l = component.getNearestWays(p, null, x -> true);
-            assertEqualsList(new ArrayList<Way>(), l);
+            l = component.getNearestWays(p, Arrays.asList(w3), x -> true);
+            assertEqualsList(Arrays.asList(w1), l);
         }
 
         @Test
@@ -463,17 +479,22 @@ class NavigatableComponentTest {
             WaySegment ws;
             Point p;
 
-            p = new Point(component.getPoint(n1));
-            p.translate(WIDTH / 3, -1);
+            p = new Point(component.getPoint(n1)); // 0, 200
+            p.translate(0, -1);
+
+            // nearest way is w3
             ws = component.getNearestWaySegment(p, x -> true, false, null);
+            assertEquals(w3, ws.getWay());
+
+            ds.setSelected(w1);
+
+            // prefer selected w1
+            ws = component.getNearestWaySegment(p, x -> true, true, null);
             assertEquals(w1, ws.getWay());
 
-            ds.setSelected(w2);
-            ws = component.getNearestWaySegment(p, x -> true, true, null);
-            assertEquals(w2, ws.getWay());
-
-            ws = component.getNearestWaySegment(p, x -> true, false, Collections.singletonList(r3));
-            assertEquals(w3, ws.getWay());
+            // prefer w1 referenced by r1
+            ws = component.getNearestWaySegment(p, x -> true, false, Collections.singletonList(r1));
+            assertEquals(w1, ws.getWay());
         }
 
         @Test
@@ -482,13 +503,9 @@ class NavigatableComponentTest {
             Point p;
 
             p = new Point(component.getPoint(n1));
-            p.translate(1, 1); // move 1px down, n3 barely outside
+            p.translate(1, -1); // w3 -> w1 -> n1 -> n5
             l = component.getAllNearest(p, null, x -> true);
-            assertEqualsList(Arrays.asList(w1, w3, n1, r1, r3), l);
-
-            p.translate(0, -2); // move 2px up, n3 barely inside
-            l = component.getAllNearest(p, null, x -> true);
-            assertEqualsList(Arrays.asList(w3, w1, w4, w2, n1, n3, r3, r1, r4, r2), l);
+            assertEqualsList(Arrays.asList(w3, w1, n1, n5, r3, r1), l);
 
             p.translate(0, HEIGHT); // nothing here
             l = component.getAllNearest(p, null, x -> true);

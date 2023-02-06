@@ -334,7 +334,8 @@ public final class MapPaintStyles {
         if (entry.url == null && entry instanceof MapCSSStyleSource) {
             return (MapCSSStyleSource) entry;
         }
-        try (CachedFile cf = new CachedFile(entry.url).setHttpAccept(MapCSSStyleSource.MAPCSS_STYLE_MIME_TYPES)) {
+        try (CachedFile cf = new CachedFile(entry.url)) {
+            cf.setHttpAccept(MapCSSStyleSource.MAPCSS_STYLE_MIME_TYPES);
             String zipEntryPath = cf.findZipEntryPath("mapcss", "style");
             if (zipEntryPath != null) {
                 entry.isZip = true;

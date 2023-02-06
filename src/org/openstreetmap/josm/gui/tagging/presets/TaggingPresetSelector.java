@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
@@ -71,7 +70,7 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
                 boolean isSelected, boolean cellHasFocus) {
             JLabel result = (JLabel) def.getListCellRendererComponent(list, tp, index, isSelected, cellHasFocus);
             result.setText(tp.getName());
-            result.setIcon(tp.getIcon(Action.SMALL_ICON));
+            result.setIcon(tp.getSmallIcon());
             return result;
         }
     }
@@ -83,9 +82,9 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
         /** The preset to classify */
         public final TaggingPreset preset;
         /** how well this preset matches */
-        public int classification;
+        private int classification;
         /** where to put it in the list */
-        public int favoriteIndex;
+        private int favoriteIndex;
         private final Collection<String> groups;
         private final Collection<String> names;
         private final Collection<String> tags;
@@ -169,7 +168,7 @@ public class TaggingPresetSelector extends SearchTextResultListPanel<TaggingPres
         public int compareTo(PresetClassification o) {
             int result = o.classification - classification;
             if (result == 0)
-                return preset.getName().compareTo(o.preset.getName());
+                return preset.getRawName().compareTo(o.preset.getRawName());
             else
                 return result;
         }

@@ -1,12 +1,21 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 import org.openstreetmap.josm.actions.AdaptableAction;
 import org.openstreetmap.josm.data.osm.OsmDataManager;
@@ -14,6 +23,8 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
+import org.openstreetmap.josm.tools.AlphanumComparator;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageResource;
 
 /**
@@ -24,8 +35,6 @@ import org.openstreetmap.josm.tools.ImageResource;
  * @since xxx
  */
 abstract class TaggingPresetBase extends Composite {
-    /** The action key for optional tooltips */
-    public static final String OPTIONAL_TOOLTIP_TEXT = "Optional tooltip text";
     /** Prefix of preset icon loading failure error message */
     public static final String PRESET_ICON_ERROR_MSG_PREFIX = "Could not get presets icon ";
 
@@ -34,15 +43,23 @@ abstract class TaggingPresetBase extends Composite {
      * @see #getRawName()
      */
     private final String name;
-    /** Translation context for name */
+    /** Translation context for this preset */
     private final String nameContext;
     /**
      * A cache for the local name. Should never be accessed directly.
      * @see #getLocaleName()
      */
     private final String localeName;
+    /** The localized menu tooltip or null */
+    private final String tooltip;
     /** The icon name assigned to this preset. */
     private final String iconName;
+    /** A custom size for the displayed icon or null to use the default size. */
+    private Dimension iconSize;
+    /** Base directory for all icons in this group */
+    private String iconBase;
+
+    final boolean bSortMenu;
 
     /** The english full name of this preset, eg. {@code Highways/Streets/Motorway} */
     private String fullName;
@@ -68,36 +85,76 @@ abstract class TaggingPresetBase extends Composite {
     TaggingPresetBase(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
 
-        name = attributes.get("name");
         nameContext = attributes.get("name_context");
+        name = attributes.getOrDefault("name", "");
         localeName = TaggingPresetUtils.buildLocaleString(attributes.get("locale_name"), name, nameContext);
+        fullName = name;
+        localeFullName = localeName;
+        tooltip = TaggingPresetUtils.buildLocaleString(
+            attributes.get("locale_tooltip"), attributes.get("tooltip"), nameContext);
         iconName = attributes.get("icon");
+        int s = Integer.parseInt(attributes.getOrDefault("icon_size", "-1"));
+        if (s != -1) {
+            s = ImageProvider.adj(s);
+            iconSize = new Dimension(s, s);
+        }
+        iconBase = attributes.getOrDefault("icon_base", "");
+        bSortMenu = TaggingPresetUtils.parseBoolean(
+            attributes.getOrDefault("sort_menu", TaggingPresets.SORT_VALUES.get() ? "on" : "off"));
     }
 
     @Override
     void fixup(Map<String, Chunk> chunks, Item parent) {
-        if (parent instanceof TaggingPresetBase) {
+        // Implements some inheritances from outer elements
+        // FIXME: this is messy. Find a better way.
+        if (parent == null) {
+            // FIXME: we really should include a root name
+            groupName = "";
+            localeGroupName = "";
+            fullName = "";
+            localeFullName = "";
+        } else if (parent instanceof Root) {
+            groupName = "";
+            localeGroupName = "";
+            fullName = name;
+            localeFullName = localeName;
+        } else {
             TaggingPresetBase p = (TaggingPresetBase) parent;
             groupName = p.fullName;
             localeGroupName = p.localeFullName;
             fullName = p.fullName + "/" + name;
             localeFullName = p.localeFullName + "/" + localeName;
-        } else {
-            groupName = "";
-            localeGroupName = "";
-            fullName = name;
-            localeFullName = localeName;
+            iconBase = p.getIconBase() + iconBase;
+            if (iconSize == null)
+                iconSize = p.iconSize; // do not use getIconSize() !
         }
-        super.fixup(chunks, this);
+        super.fixup(chunks, parent);
     }
 
     @Override
     void destroy() {
         super.destroy();
-        action.removeListener();
+        if (action != null)
+            action.removeListener();
         action = null;
         iconFuture = null;
     }
+
+    /**
+     * Returns the menu or menu item if found. Compares by menu action.
+     */
+    JMenuItem findMenu(JMenu parentMenu) {
+        for (Component c : parentMenu.getMenuComponents()) {
+            if (c instanceof JMenuItem) {
+                JMenuItem menu = (JMenuItem) c;
+                if (getAction() == menu.getAction()) {
+                    return menu;
+                }
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Returns the untranslated name. eg. {@code Motorway}
@@ -122,7 +179,7 @@ abstract class TaggingPresetBase extends Composite {
      * @return the localized full name
      */
     public String getName() {
-        return localeFullName;
+        return getLocaleFullName();
     }
 
     /**
@@ -158,21 +215,20 @@ abstract class TaggingPresetBase extends Composite {
     }
 
     /**
-     * Returns the preset icon image resource
-     * @return The resource, or {@code null}
-     * @since xxx
+     * Returns the tooltip
+     * @return the tooltip
      */
-    public final ImageResource getIconResource() {
-        return ImageResource.getAttachedImageResource(getAction());
+    public String getTooltip() {
+        return tooltip;
     }
 
     /**
-     * Returns the preset icon (16 or 24px).
-     * @param size Key determining icon size: {@code Action.SMALL_ICON} for 16x, {@code Action.LARGE_ICON_KEY} for 24px
+     * Returns the preset icon in menu or toolbar size.
+     * @param size {@code Action.SMALL_ICON} for menu size, {@code Action.LARGE_ICON_KEY} for toolbar size
      * @return The preset icon, or {@code null} if none defined
      * @since 10849
      */
-    public final ImageIcon getIcon(String size) {
+    private ImageIcon getIcon(String size) {
         Object icon = getAction().getValue(size);
         if (icon instanceof ImageIcon) {
             return (ImageIcon) icon;
@@ -181,12 +237,36 @@ abstract class TaggingPresetBase extends Composite {
     }
 
     /**
-     * Returns the preset icon (16px).
+     * Returns the preset icon in menu size.
      * @return The preset icon, or {@code null} if none defined
-     * @since 6403
+     * @since xxx
      */
-    public final ImageIcon getIcon() {
+    public final ImageIcon getSmallIcon() {
         return getIcon(Action.SMALL_ICON);
+    }
+
+    /**
+     * Returns the preset icon in toolbar size.
+     * @return The preset icon, or {@code null} if none defined
+     * @since xxx
+     */
+    public final ImageIcon getLargeIcon() {
+        return getIcon(Action.LARGE_ICON_KEY);
+    }
+
+    /**
+     * Returns the preset icon as an image resource
+     * <p>
+     * To get the icon in any size, use:
+     * <pre>
+     * if (getIconResource() != null)
+     *     icon = getIconResource().getPaddedIcon(dimension);
+     * </pre>
+     * @return The resource, or {@code null}
+     * @since xxx
+     */
+    public final ImageResource getIconResource() {
+        return ImageResource.getAttachedImageResource(getAction());
     }
 
     /**
@@ -194,7 +274,29 @@ abstract class TaggingPresetBase extends Composite {
      * @return the icon name
      */
     public String getIconName() {
-        return iconName;
+        if (iconName == null)
+            return null;
+        try {
+            return new URI(getIconBase()).resolve(iconName).toString();
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the (custom) icon size to use in menus
+     * @return the icon size
+     */
+    public Dimension getIconSize() {
+        return iconSize != null ? iconSize : ImageProvider.ImageSizes.SMALLICON.getImageDimension();
+    }
+
+    /**
+     * Returns the icon base
+     * @return the icon base
+     */
+    String getIconBase() {
+        return iconBase;
     }
 
     /**
@@ -216,13 +318,44 @@ abstract class TaggingPresetBase extends Composite {
     }
 
     /**
+     * Sorts the menu items using the local name.
+     * <p>
+     * This method sorts only runs of {@code TaggingPresetBase}, which may be
+     * interrupted by separators (or other stuff like chunks).
+     *
+     * @param items the list of menu items to sort in place
+     */
+    @SuppressWarnings("unchecked")
+    static void sortMenu(List<? extends Item> items) {
+        MenuItemComparator comp = new MenuItemComparator();
+        int startIndex = 0;
+        int endIndex = 0;
+        for (Item item : items) {
+            if (!(item instanceof TaggingPresetBase)) {
+                Collections.sort((List<TaggingPresetBase>) items.subList(startIndex, endIndex), comp);
+                startIndex = endIndex + 1; // re-start sorting after this item
+            }
+            endIndex++;
+        }
+        Collections.sort((List<TaggingPresetBase>) items.subList(startIndex, endIndex), comp);
+    }
+
+    static class MenuItemComparator implements Comparator<TaggingPresetBase> {
+        @Override
+        public int compare(TaggingPresetBase b1, TaggingPresetBase b2) {
+            return AlphanumComparator.getInstance().compare(b1.getLocaleName(), b2.getLocaleName());
+        }
+    }
+
+    /**
      * An action that opens the preset dialog.
      */
-    abstract static class TaggingPresetBaseAction extends AbstractAction implements ActiveLayerChangeListener, AdaptableAction {
+    abstract class TaggingPresetBaseAction extends AbstractAction implements ActiveLayerChangeListener, AdaptableAction {
         TaggingPresetBaseAction() {
             // Logging.info("Adding LayerChangeListener {0}", this);
             MainApplication.getLayerManager().addActiveLayerChangeListener(this);
             updateEnabledState();
+            putValue(SHORT_DESCRIPTION, getTooltip());
         }
 
         @Override

@@ -128,6 +128,45 @@ public abstract class StyleElement implements StyleKeys {
         return null;
     }
 
+    /**
+     * Returns a property value of type Width.
+     * <p>
+     * If the value is a Float or a Keyword, we return it.  If the value is a
+     * RelativeFloat, we look at the same key in cDef to read the base value and add the
+     * relative value to it.
+     *
+     * @param c the cascade
+     * @param cDef the deafult cascade
+     * @param key the property key
+     * @param keyDef the default cascade property key
+     * @return width or null
+     */
+    protected static Float getWidth(Cascade c, Cascade cDef, String key, String keyDef) {
+        Object v = c.get(key);
+        Float val = Cascade.convertTo(v, Float.class);
+        if (val != null && val > 0f) {
+            return MapPaintSettings.INSTANCE.adj(val);
+        }
+        if (v instanceof RelativeFloat && cDef != null) {
+            RelativeFloat rel = (RelativeFloat) v;
+            // get the base value
+            val = getWidth(cDef, null, keyDef, null); // NOSONAR S2234
+            if (val != null)
+                return val + MapPaintSettings.INSTANCE.adj(rel.val);
+        }
+        if (v instanceof Keyword) {
+            if (Keyword.THINNEST.equals(v))
+                return 0f;
+            if (Keyword.DEFAULT.equals(v))
+                return MapPaintSettings.INSTANCE.adj((float) MapPaintSettings.INSTANCE.getDefaultSegmentWidth());
+        }
+        return null;
+    }
+
+    protected static Float getWidth(Cascade c, Cascade cDef, String key) {
+        return getWidth(c, cDef, key, key);
+    }
+
     /* ------------------------------------------------------------------------------- */
     /* cached values                                                                   */
     /* ------------------------------------------------------------------------------- */

@@ -231,7 +231,7 @@ abstract class Composite extends Item {
 
     @Override
     void fixup(Map<String, Chunk> chunks, Item parent) {
-        items.forEach(item -> item.fixup(chunks, parent));
+        items.forEach(item -> item.fixup(chunks, this));
     }
 
     @Override

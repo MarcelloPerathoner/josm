@@ -7,6 +7,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import org.openstreetmap.josm.tools.ImageProvider;
+
 /**
  * A tagging preset item displaying a localizable text.
  * @since 6190
@@ -35,7 +37,8 @@ abstract class TextItem extends Item {
         text = v != null ? v : getDefaultText();
         textContext = attributes.get("text_context");
         icon = attributes.get("icon");
-        iconSize = Integer.parseInt(attributes.getOrDefault("icon_size", "16"));
+        iconSize = Integer.parseInt(attributes.getOrDefault("icon_size",
+            String.valueOf(ImageProvider.ImageSizes.SMALLICON.getHeight())));
         localeText = TaggingPresetUtils.buildLocaleString(attributes.get("locale_text"), text, textContext);
     }
 

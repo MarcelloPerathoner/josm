@@ -28,6 +28,7 @@ import com.kitfox.svg.SVGDiagram;
  * @since 4271
  */
 public class ImageResource {
+    static public final String IMAGE_RESOURCE_KEY = "JosmImageResource";
 
     /**
      * Caches the image data for resized versions of the same image. The key is obtained using {@link ImageResizeMode#cacheKey(Dimension)}.
@@ -109,13 +110,13 @@ public class ImageResource {
     /**
      * Set both icons of an Action
      * @param a The action for the icons
-     * @param attachImageResource Adds an resource named "ImageResource" if <code>true</code>
+     * @param attachImageResource If <code>true</code> also adds a resource named after {@code IMAGE_RESOURCE_KEY}
      * @since 10369
      */
     public void attachImageIcon(AbstractAction a, boolean attachImageResource) {
         attachImageIcon(a);
         if (attachImageResource) {
-            a.putValue("ImageResource", this);
+            a.putValue(IMAGE_RESOURCE_KEY, this);
         }
     }
 
@@ -126,7 +127,7 @@ public class ImageResource {
      * @since 18099
      */
     public static ImageResource getAttachedImageResource(Action a) {
-        return (ImageResource) a.getValue("ImageResource");
+        return (ImageResource) a.getValue(IMAGE_RESOURCE_KEY);
     }
 
     /**

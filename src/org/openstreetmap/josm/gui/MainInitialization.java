@@ -75,7 +75,7 @@ public class MainInitialization implements InitializationSequence {
             new InitializationTask(tr("Updating user interface"), () -> {
                 UndoRedoHandler.getInstance().addCommandQueueListener(application.redoUndoListener);
                 // creating toolbar
-                GuiHelper.runInEDTAndWait(() -> MainApplication.contentPanePrivate.add(MainApplication.toolbar.control, BorderLayout.NORTH));
+                GuiHelper.runInEDTAndWait(() -> MainApplication.contentPanePrivate.add(MainApplication.toolbar.toolbar, BorderLayout.NORTH));
                 // help shortcut
                 MainApplication.registerActionShortcut(MainApplication.menu.help,
                         Shortcut.registerShortcut("system:help", tr("Help: {0}", tr("Help")), KeyEvent.VK_F1, Shortcut.DIRECT));
@@ -149,7 +149,7 @@ public class MainInitialization implements InitializationSequence {
                 FeatureAdapter.registerSettingsAdapter(new JosmSettingsAdapter());
                 // UI update
                 MainApplication.toolbar.refreshToolbarControl();
-                MainApplication.toolbar.control.updateUI();
+                MainApplication.toolbar.toolbar.updateUI();
                 MainApplication.contentPanePrivate.updateUI();
             }))
         );

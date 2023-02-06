@@ -4,13 +4,10 @@ package org.openstreetmap.josm.gui.tagging.presets;
 import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trc;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -22,15 +19,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
+import org.openstreetmap.josm.actions.PreferencesAction;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchParseError;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.tools.AlphanumComparator;
+import org.openstreetmap.josm.gui.MainMenu;
+import org.openstreetmap.josm.gui.preferences.map.TaggingPresetPreference;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageResource;
 import org.openstreetmap.josm.tools.Logging;
@@ -43,7 +40,6 @@ import org.openstreetmap.josm.tools.template_engine.TemplateParser;
  * Utility class for tagging presets.
  */
 public final class TaggingPresetUtils {
-
     private TaggingPresetUtils() {}
 
     /**
@@ -99,12 +95,12 @@ public final class TaggingPresetUtils {
      * <p>
      * The image resource is loaded in the background, and then the EDT is invoked to put the icon
      * on the action.
-     * @param iconName the iconname
+     * @param iconName the icon name
      * @param action the action where to put the icon
      *
      * @return a future completed when the icon is put on the action
      */
-    static CompletableFuture<ImageResource> loadIcon(String iconName, AbstractAction action) {
+    static CompletableFuture<ImageResource> loadIconAsync(String iconName, AbstractAction action) {
         if (action != null && iconName != null && TaggingPresetReader.isLoadIcons()) {
             return new ImageProvider(iconName)
                 .setDirs(TaggingPresets.ICON_SOURCES.get())
@@ -120,7 +116,7 @@ public final class TaggingPresetUtils {
                             // attach padded icons instead, they look better in preset lists
                             action.putValue(Action.SMALL_ICON, imageResource.getPaddedIcon(ImageSizes.SMALLICON.getImageDimension()));
                             action.putValue(Action.LARGE_ICON_KEY, imageResource.getPaddedIcon(ImageSizes.LARGEICON.getImageDimension()));
-                            action.putValue("ImageResource", imageResource);
+                            action.putValue(ImageResource.IMAGE_RESOURCE_KEY, imageResource);
                         }
                         future.complete(imageResource);
                     });
@@ -157,7 +153,7 @@ public final class TaggingPresetUtils {
      * @return The name that should be displayed to the user.
      */
     public static String buildLocaleString(String localeText, String text, String textContext) {
-        if (localeText != null)
+        if (localeText != null && !localeText.isEmpty())
             return localeText;
         text = fixPresetString(text);
         if (textContext != null) {
@@ -254,59 +250,17 @@ public final class TaggingPresetUtils {
     }
 
     /**
-     * Sorts the menu items using the translated item text
-     * @param menu menu to sort
+     * Initializes the preset menu.
      */
-    public static void sortMenu(JMenu menu) {
-        Component[] items = menu.getMenuComponents();
-        PresetTextComparator comp = new PresetTextComparator();
-        List<JMenuItem> sortarray = new ArrayList<>();
-        int lastSeparator = 0;
-        for (int i = 0; i < items.length; i++) {
-            Object item = items[i];
-            if (item instanceof JMenu) {
-                sortMenu((JMenu) item);
-            }
-            if (item instanceof JMenuItem) {
-                sortarray.add((JMenuItem) item);
-                if (i == items.length-1) {
-                    handleMenuItem(menu, comp, sortarray, lastSeparator);
-                    sortarray = new ArrayList<>();
-                    lastSeparator = 0;
-                }
-            } else if (item instanceof JSeparator) {
-                handleMenuItem(menu, comp, sortarray, lastSeparator);
-                sortarray = new ArrayList<>();
-                lastSeparator = i;
-            }
-        }
+    public static void initializePresetsMenu() {
+        MainMenu mainMenu = MainApplication.getMenu();
+        JMenu presetsMenu = mainMenu.presetsMenu;
+        presetsMenu.removeAll();
+        MainMenu.add(presetsMenu, mainMenu.presetSearchAction);
+        MainMenu.add(presetsMenu, mainMenu.presetSearchPrimitiveAction);
+        MainMenu.add(presetsMenu, PreferencesAction.forPreferenceTab(tr("Preset preferences..."),
+                tr("Click to open the tagging presets tab in the preferences"), TaggingPresetPreference.class));
+        presetsMenu.addSeparator();
     }
 
-    private static void handleMenuItem(JMenu menu, PresetTextComparator comp, List<JMenuItem> sortarray, int lastSeparator) {
-        sortarray.sort(comp);
-        int pos = 0;
-        for (JMenuItem menuItem : sortarray) {
-            int oldPos;
-            if (lastSeparator == 0) {
-                oldPos = pos;
-            } else {
-                oldPos = pos+lastSeparator+1;
-            }
-            menu.add(menuItem, oldPos);
-            pos++;
-        }
-    }
-
-    private static class PresetTextComparator implements Comparator<JMenuItem>, Serializable {
-        private static final long serialVersionUID = 1L;
-        @Override
-        public int compare(JMenuItem o1, JMenuItem o2) {
-            if (MainApplication.getMenu().presetSearchAction.equals(o1.getAction()))
-                return -1;
-            else if (MainApplication.getMenu().presetSearchAction.equals(o2.getAction()))
-                return 1;
-            else
-                return AlphanumComparator.getInstance().compare(o1.getText(), o2.getText());
-        }
-    }
 }

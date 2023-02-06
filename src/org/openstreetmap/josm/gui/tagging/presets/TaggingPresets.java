@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.tagging.presets;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -17,28 +18,46 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 
-import org.openstreetmap.josm.actions.PreferencesAction;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.IntegerProperty;
 import org.openstreetmap.josm.data.preferences.ListProperty;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MainMenu;
 import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
-import org.openstreetmap.josm.gui.preferences.map.TaggingPresetPreference;
+import org.openstreetmap.josm.tools.Destroyable;
+import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.MultiMap;
+import org.xml.sax.SAXException;
 
 /**
  * The Tagging Presets System.
  * <p>
  * The preset system has many uses:
  * <ul>
- * <li>To let users edit osm primitives in an easy intuitive way,
- * <li>to generate custom names for primitives, and
- * <li>to give information about standard tags for a given primitive.
+ * <li>it lets users edit osm primitives in an easy intuitive way,
+ * <li>it can generate customized names for primitives, and
+ * <li>it knows about the standard tags for a given primitive.
  * </ul>
+ * If a plugin wishes to add new tagging preset sources it should call:
+ * <pre>
+ *   addSource(url, TaggingPresetReader.read(url, false));
+ *   unInitializeMenus();
+ *   initializeMenus();
+ *   notifyListeners();
+ * </pre>
+ * To remove sources it should call:
+ * <pre>
+ *   removeSource(url);
+ *   unInitializeMenus();
+ *   clearCache();
+ *   initCache();
+ *   initializeMenus();
+ *   notifyListeners();
+ * </pre>
  * <p>
+ * @implNote
  * TaggingPresets used to be a global static class, but that caused troubles with unit
  * testing, especially:
  * <p>
@@ -50,12 +69,12 @@ import org.openstreetmap.josm.tools.MultiMap;
  * followed by a stack trace. Many tests load defaultpresets.xml, with ~873 items in it,
  * so we get 873 stack traces in the output, which takes JUint forever to process.
  * <p>
- * Plugin authors should use {@code MainApplication.getTaggingPresets()} instead of
+ * Plugin authors should use {@link MainApplication#getTaggingPresets} instead of
  * {@code TaggingPresets}.
  *
  * @since xxx (non-static)
  */
-public final class TaggingPresets {
+public final class TaggingPresets implements Destroyable {
     /**
      * Defines whether the validator should be active in the preset dialog
      * @see TaggingPresetValidator
@@ -69,7 +88,7 @@ public final class TaggingPresets {
     public static final ListProperty ICON_SOURCES = new ListProperty("taggingpreset.icon.sources", null);
 
     /** The root elements of all XML files. */
-    private final Collection<Root> rootElements = new LinkedList<>();
+    private final Map<String, Root> rootElements = new LinkedHashMap<>();
     /** The registered listeners */
     private final Collection<TaggingPresetListener> listeners = new LinkedList<>();
     /** caches all presets fullname->preset */
@@ -112,31 +131,111 @@ public final class TaggingPresets {
     }
 
     /**
-     * Standard initialization during app startup. Obeys users prefs.
-     */
-    public void initialize() {
-        initFromUserPrefs();
-        initializeMenus();
-    }
-
-    /**
-     * Initializes tagging presets from user preferences.
-     */
-    public void initFromUserPrefs() {
-        TaggingPresetReader.readFromPreferences(false, false).forEach(this::addRoot);
-        notifyListeners();
-    }
-
-    // Cannot implement Destroyable since this is static
-    /**
-     * Call to deconstruct the TaggingPresets menus and other information so that it
-     * can be rebuilt later.
-     *
+     * Free resources.
      * @since 15582
      */
     public void destroy() {
-        unInitializeMenus();
-        cleanUp();
+        rootElements.values().forEach(Root::destroy);
+        rootElements.clear();
+        clearCache();
+        notifyListeners();
+    }
+
+    /**
+     * Add a tagging preset sources from an url. May displays an error message.
+     */
+    public void addSourceFromUrl(String url) {
+        String errorMessage = null;
+        try {
+            addSource(url, TaggingPresetReader.read(url, false));
+        } catch (SAXException e) {
+            errorMessage = tr("Tagging preset source {0} contains errors.", url);
+        } catch (IOException e) {
+            errorMessage = tr("Could not read tagging preset source: {0}", url);
+        }
+        if (errorMessage != null) {
+            Logging.error(errorMessage);
+            JOptionPane.showMessageDialog(
+                MainApplication.getMainFrame(),
+                errorMessage,
+                tr("Error"),
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Initialize the cache from the known root elements
+     */
+    void initCache() {
+        rootElements.values().forEach(this::cachePresets);
+    }
+
+    /**
+     * Clears the cache
+     */
+    void clearCache() {
+        PRESET_CACHE.clear();
+        PRESET_WITH_NAMETEMPLATE_CACHE.clear();
+        PRESET_TAG_CACHE.clear();
+        PRESET_ROLE_CACHE.clear();
+    }
+
+    /**
+     * Adds a new source of tagging presets
+     * <p>
+     * After adding new sources it is the caller's responsibility to call
+     * {@link #reInit}.
+     *
+     * @param url the url of the XML resource
+     * @param root the parsed root element of the XML resource
+     */
+    public void addSource(String url, Root root) {
+        Map<String, Chunk> chunks = new HashMap<>();
+        root.fixup(chunks, null);
+        rootElements.put(url, root);
+    }
+
+    /**
+     * Removes a source of tagging presets
+     * <p>
+     * After removing sources it is the caller's responsibility to call
+     * {@link #reInit}.
+     *
+     * @param url the url of the XML resource
+     */
+    public void removeSource(String url) {
+        Root root = rootElements.remove(url);
+        if (root != null) {
+            root.destroy();
+        }
+    }
+
+    /**
+     * Re-initializes the presets system after a change in sources.
+     * <p>
+     * This should run in the EDT.
+     * @param presetsMenu
+     * @param toolbar
+     */
+    public void reInit(JMenu presetsMenu, ToolbarPreferences toolbar){
+        clearCache();
+        initCache();
+        notifyListeners();
+        if (presetsMenu != null) {
+            TaggingPresetUtils.initializePresetsMenu();
+            rootElements.values().forEach(
+                root -> root.addToMenu(presetsMenu));
+            finalizePresetsMenu(presetsMenu);
+        }
+        if (toolbar != null) {
+            toolbar.unregisterPresets();
+            getAllItems(TaggingPresetBase.class).forEach(tp -> {
+                if (tp.getAction() != null)
+                    toolbar.register(tp.getAction());
+            });
+            toolbar.refreshToolbarControl();
+        }
     }
 
     /**
@@ -272,24 +371,13 @@ public final class TaggingPresets {
     }
 
     /**
-     * Add a new root element
-     * @param root the new root element
-     */
-    void addRoot(Root root) {
-        Map<String, Chunk> chunks = new HashMap<>();
-        root.fixup(chunks, root);
-        rootElements.add(root);
-        cachePresets(root);
-    }
-
-    /**
      * Returns all items that satisfy a given predicate.
      * @param p the predicate all items must satisfy
      * @return the items that satisfy the predicate
      */
     List<Item> getAllItems(Predicate<Item> p) {
         List<Item> list = new LinkedList<>();
-        rootElements.forEach(r -> r.addToItemList(list, p, false));
+        rootElements.values().forEach(r -> r.addToItemList(list, p, false));
         return list;
     }
 
@@ -301,70 +389,28 @@ public final class TaggingPresets {
      */
     <E> List<E> getAllItems(Class<E> type) {
         List<E> list = new LinkedList<>();
-        rootElements.forEach(r -> r.addToItemList(list, type, false));
+        rootElements.values().forEach(r -> r.addToItemList(list, type, false));
         return list;
     }
 
     /**
      * Notifies all listeners that presets have changed.
      */
-    void notifyListeners() {
+    private void notifyListeners() {
         listeners.forEach(TaggingPresetListener::taggingPresetsModified);
     }
 
     /**
-     * Initializes the preset menu and toolbar.
-     * <p>
-     * Builds the tagging presets menu and registers all preset actions with the application
-     * toolbar.
+     * Apply final touches to the presets menu after changes.
+     * @param presetsMenu the presets menu
      */
-    private void initializeMenus() {
-        MainMenu mainMenu = MainApplication.getMenu();
-        JMenu presetsMenu = mainMenu.presetsMenu;
-        if (presetsMenu.getComponentCount() == 0) {
-            MainMenu.add(presetsMenu, mainMenu.presetSearchAction);
-            MainMenu.add(presetsMenu, mainMenu.presetSearchPrimitiveAction);
-            MainMenu.add(presetsMenu, PreferencesAction.forPreferenceTab(tr("Preset preferences..."),
-                    tr("Click to open the tagging presets tab in the preferences"), TaggingPresetPreference.class));
-            presetsMenu.addSeparator();
-        }
-
-        // register all presets with the application toolbar
-        ToolbarPreferences toolBar = MainApplication.getToolbar();
-        getAllItems(TaggingPresetBase.class).forEach(tp -> toolBar.register(tp.getAction()));
-        toolBar.refreshToolbarControl();
-
+    private void finalizePresetsMenu(JMenu presetsMenu) {
         // add presets and groups to the presets menu
-        if (rootElements.isEmpty()) {
-            presetsMenu.setVisible(false);
-        } else {
-            rootElements.forEach(e -> e.addToMenu(presetsMenu));
-            if (TaggingPresets.SORT_VALUES.get()) {
-                TaggingPresetUtils.sortMenu(presetsMenu);
-            }
-        }
-    }
-
-    private void unInitializeMenus() {
-        ToolbarPreferences toolBar = MainApplication.getToolbar();
-        if (toolBar != null)
-            getAllItems(TaggingPresetBase.class).forEach(tp -> toolBar.unregister(tp.getAction()));
-        MainMenu menu = MainApplication.getMenu();
-        if (menu != null)
-            menu.presetsMenu.removeAll();
-    }
-
-    private void cleanUp() {
-        PRESET_CACHE.clear();
-        PRESET_WITH_NAMETEMPLATE_CACHE.clear();
-        PRESET_TAG_CACHE.clear();
-        PRESET_ROLE_CACHE.clear();
-        rootElements.forEach(Root::destroy);
-        rootElements.clear();
+        presetsMenu.setVisible(!rootElements.isEmpty());
     }
 
     /**
-     * Initialize the cache with presets.
+     * Caches various aspects of the given presets.
      *
      * @param root the root of the xml file
      */

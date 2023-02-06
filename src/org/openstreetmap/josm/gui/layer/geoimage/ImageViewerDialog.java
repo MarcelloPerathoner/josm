@@ -861,7 +861,8 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
      * icon in the map.  (Or for any other selection change initiated by the geoimage
      * layer.)
      * <p>
-     * {@implNote} {@code oldImages} is not used and can be null.
+     * @implNote
+     * {@code oldImages} is not used and can be null.
      */
     @Override
     public void imageChanged(IGeoImageLayer geoLayer, List<? extends IImageEntry<?>> oldImages,

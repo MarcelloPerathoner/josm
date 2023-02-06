@@ -116,7 +116,7 @@ public abstract class SourceEditor extends JPanel {
 
     /** the type of source entry **/
     protected final SourceType sourceType;
-    /** determines if the entry type can be enabled (set as active) **/
+    /** there will be a checkbox if true **/
     protected final boolean canEnable;
 
     /** the table of active sources **/
@@ -154,9 +154,9 @@ public abstract class SourceEditor extends JPanel {
 
         this.availableSourcesModel = new AvailableSourcesModel();
         this.tblAvailableSources = new JTable();
-        availableSourcesModel.addTableModelListener(e -> {
-            TableHelper.setColumnWidth(tblAvailableSources, 0);
-        });
+        availableSourcesModel.addTableModelListener(e ->
+            TableHelper.setColumnWidth(tblAvailableSources, 0)
+        );
         // Note: The model must be set after the setColumnWidth listener. See #20849
         this.tblAvailableSources.setModel(availableSourcesModel);
         this.tblAvailableSources.setAutoCreateRowSorter(true);
@@ -174,6 +174,7 @@ public abstract class SourceEditor extends JPanel {
         tblActiveSources = new JTable(activeSourcesModel);
         tblActiveSources.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tblActiveSources.setSelectionModel(selectionModel);
+        tblActiveSources.setAutoscrolls(false);
         TableHelper.setRowHeight(tblActiveSources, ImageProvider.ImageSizes.TABLE); // make both tables same row height
         Stream.of(tblAvailableSources, tblActiveSources).forEach(t -> {
             t.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -184,12 +185,14 @@ public abstract class SourceEditor extends JPanel {
             t.setFillsViewportHeight(true);
         });
         SourceEntryTableCellRenderer sourceEntryRenderer = new SourceEntryTableCellRenderer();
-        TableColumnModel cm = tblActiveSources.getColumnModel();
+        TableColumnModel cm = tblActiveSources.getColumnModel(); // columns: source, active
         if (canEnable) {
+            cm.moveColumn(1, 0); // put the checkbox before the text
             cm.getColumn(0).setPreferredWidth(40);
             cm.getColumn(0).setResizable(false);
             cm.getColumn(1).setCellRenderer(sourceEntryRenderer);
         } else {
+            cm.removeColumn(cm.getColumn(1)); // remove the checkbox column
             cm.getColumn(0).setCellRenderer(sourceEntryRenderer);
         }
 
@@ -346,7 +349,7 @@ public abstract class SourceEditor extends JPanel {
      * Load the list of source entries that the user has configured.
      * @return list of source entries that the user has configured
      */
-    public abstract Collection<? extends SourceEntry> getInitialSourcesList();
+    public abstract List<SourceEntry> getInitialSourcesList();
 
     /**
      * Load the list of configured icon paths.
@@ -396,6 +399,13 @@ public abstract class SourceEditor extends JPanel {
      */
     protected abstract String getStr(I18nString ident);
 
+    /**
+     * A table that does not scroll the selected cell into view horizontally
+     * <p>
+     * Normally a table would scroll the selected cell into view both horizontally and
+     * vertically.  But that would have the effect of scrolling the checkbox column out
+     * of view whenever a user clicks on the text.
+     */
     static final class ScrollHackTable extends JTable {
         ScrollHackTable(TableModel dm) {
             super(dm);
@@ -443,11 +453,11 @@ public abstract class SourceEditor extends JPanel {
      * @return {@code true} if the list of active sources has changed, {@code false} otherwise
      */
     public boolean hasActiveSourcesChanged() {
-        Collection<? extends SourceEntry> prev = getInitialSourcesList();
+        List<SourceEntry> prev = getInitialSourcesList();
         List<SourceEntry> cur = activeSourcesModel.getSources();
         if (prev.size() != cur.size())
             return true;
-        Iterator<? extends SourceEntry> p = prev.iterator();
+        Iterator<SourceEntry> p = prev.iterator();
         Iterator<SourceEntry> c = cur.iterator();
         while (p.hasNext()) {
             SourceEntry pe = p.next();
@@ -459,10 +469,18 @@ public abstract class SourceEditor extends JPanel {
     }
 
     /**
+     * Returns the table model
+     * @return the model
+     */
+    public ActiveSourcesModel getModel() {
+        return activeSourcesModel;
+    }
+
+    /**
      * Returns the list of active sources.
      * @return the list of active sources
      */
-    public Collection<SourceEntry> getActiveSources() {
+    public List<SourceEntry> getActiveSources() {
         return activeSourcesModel.getSources();
     }
 
@@ -554,8 +572,12 @@ public abstract class SourceEditor extends JPanel {
 
     /**
      * Table model of active sources.
+     * <p>
+     * This model always has 2 columns.   It returns the SourceEntry in column 0 and the
+     * active state in column 1.  If you are not interested in the active state, remove
+     * the column from your table.
      */
-    protected class ActiveSourcesModel extends AbstractTableModel implements ReorderableTableModel<SourceEntry> {
+    public class ActiveSourcesModel extends AbstractTableModel implements ReorderableTableModel<SourceEntry> {
         private transient List<SourceEntry> data;
         private final DefaultListSelectionModel selectionModel;
 
@@ -570,7 +592,7 @@ public abstract class SourceEditor extends JPanel {
 
         @Override
         public int getColumnCount() {
-            return canEnable ? 2 : 1;
+            return 2;
         }
 
         @Override
@@ -580,7 +602,7 @@ public abstract class SourceEditor extends JPanel {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            if (canEnable && columnIndex == 0)
+            if (columnIndex == 1)
                 return data.get(rowIndex).active;
             else
                 return data.get(rowIndex);
@@ -588,12 +610,12 @@ public abstract class SourceEditor extends JPanel {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return canEnable && columnIndex == 0;
+            return columnIndex == 1;
         }
 
         @Override
         public Class<?> getColumnClass(int column) {
-            if (canEnable && column == 0)
+            if (column == 1)
                 return Boolean.class;
             else return SourceEntry.class;
         }
@@ -602,7 +624,7 @@ public abstract class SourceEditor extends JPanel {
         public void setValueAt(Object aValue, int row, int column) {
             if (row < 0 || row >= getRowCount() || aValue == null)
                 return;
-            if (canEnable && column == 0) {
+            if (column == 1) {
                 data.get(row).active = !data.get(row).active;
             }
         }
@@ -633,6 +655,15 @@ public abstract class SourceEditor extends JPanel {
             if (idx >= 0) {
                 selectionModel.setSelectionInterval(idx, idx);
             }
+        }
+
+        /**
+         * Removes an active source.
+         * @param entry source to remove
+         */
+        public void removeSource(SourceEntry entry) {
+            data = data.stream().filter(e -> !e.equals(entry)).collect(Collectors.toList());
+            fireTableDataChanged();
         }
 
         /**
@@ -918,7 +949,7 @@ public abstract class SourceEditor extends JPanel {
             if (pos < 0 || pos >= tblActiveSources.getRowCount())
                 return;
 
-            SourceEntry e = (SourceEntry) activeSourcesModel.getValueAt(pos, 1);
+            SourceEntry e = (SourceEntry) activeSourcesModel.getValueAt(pos, 0);
 
             EditSourceEntryDialog editEntryDialog = new EditSourceEntryDialog(
                     SourceEditor.this, tr("Edit source entry:"), e);
@@ -1453,7 +1484,7 @@ public abstract class SourceEditor extends JPanel {
 
     class FileOrUrlCellEditor extends JPanel implements TableCellEditor {
         private final JosmTextField tfFileName = new JosmTextField();
-        private final CopyOnWriteArrayList<CellEditorListener> listeners;
+        private final transient CopyOnWriteArrayList<CellEditorListener> listeners;
         private String value;
         private final boolean isFile;
 

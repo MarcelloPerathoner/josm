@@ -5,6 +5,7 @@ import java.awt.Color;
 
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
 
 /**
@@ -15,6 +16,9 @@ public final class MapPaintSettings implements PreferenceChangedListener {
 
     /** The unique instance **/
     public static final MapPaintSettings INSTANCE = new MapPaintSettings();
+
+    /** scale factor that applies to map elements except text. set by pref: mappaint.mapscale */
+    private double mapScale;
 
     private boolean useRealWidth;
     /** Preference: should directional arrows be displayed */
@@ -72,6 +76,7 @@ public final class MapPaintSettings implements PreferenceChangedListener {
     }
 
     private void load() {
+        mapScale = Config.getPref().getDouble("mappaint.mapscale", 1.0);
         showDirectionArrow = Config.getPref().getBoolean("draw.segment.direction", false);
         showOnewayArrow = Config.getPref().getBoolean("draw.oneway", true);
         useRealWidth = Config.getPref().getBoolean("mappaint.useRealWidth", false);
@@ -355,6 +360,34 @@ public final class MapPaintSettings implements PreferenceChangedListener {
      */
     public boolean isOutlineOnly() {
         return outlineOnly;
+    }
+
+    /**
+     * Scales the given width according to the current screen resolution and the user
+     * preference {@code mappaint.mapscale}.
+     * <p>
+     * Use this function to scale map objects. Use {@link ImageProvider#adj} to scale
+     * gui objects.
+     *
+     * @param unscaled the unscaled value
+     * @return the scaled value
+     */
+    public Float adj(Float unscaled) {
+        return (float) (mapScale * ImageProvider.adj(unscaled));
+    }
+
+    /**
+     * Scales the given width according to the current screen resolution and the user
+     * preference {@code mappaint.mapscale}.
+     * <p>
+     * Use this function to scale map objects. Use {@link ImageProvider#adj} to scale
+     * gui objects.
+     *
+     * @param unscaled the unscaled value
+     * @return the scaled value
+     */
+    public Integer adj(Integer unscaled) {
+        return (int) (mapScale * ImageProvider.adj(unscaled));
     }
 
     @Override

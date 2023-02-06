@@ -11,11 +11,15 @@ import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -40,6 +44,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -537,6 +542,45 @@ public final class GuiHelper {
             return new Dimension(800, 600);
         }
         return new Dimension(width, height);
+    }
+
+    /**
+     * Return the screen bounds of the screen this component is in.
+     * <p>
+     * The component must have been realized.
+     * @implNote Most of this is copied from {@link JMenu#getPopupMenuOrigin}.
+     */
+    public static Rectangle getScreenBounds(Component component) {
+        Point position = component.getLocationOnScreen();
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        GraphicsConfiguration gc = component.getGraphicsConfiguration();
+        Rectangle screenBounds = new Rectangle(toolkit.getScreenSize());
+        GraphicsEnvironment ge =
+            GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gd = ge.getScreenDevices();
+        for(int i = 0; i < gd.length; i++) {
+            if(gd[i].getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
+                GraphicsConfiguration dgc =
+                    gd[i].getDefaultConfiguration();
+                if(dgc.getBounds().contains(position)) {
+                    gc = dgc;
+                    break;
+                }
+            }
+        }
+
+        if (gc != null) {
+            screenBounds = gc.getBounds();
+            // take screen insets (e.g. taskbar) into account
+            Insets screenInsets = toolkit.getScreenInsets(gc);
+            screenBounds.x -= Math.abs(screenInsets.left);
+            screenBounds.y -= Math.abs(screenInsets.top);
+            screenBounds.width -=
+                        Math.abs(screenInsets.left + screenInsets.right);
+            screenBounds.height -=
+                        Math.abs(screenInsets.top + screenInsets.bottom);
+        }
+        return screenBounds;
     }
 
     /**

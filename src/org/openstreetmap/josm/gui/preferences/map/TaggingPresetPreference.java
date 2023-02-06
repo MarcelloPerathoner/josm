@@ -8,10 +8,13 @@ import java.awt.GridBagLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -20,7 +23,6 @@ import org.openstreetmap.josm.data.preferences.sources.PresetPrefHelper;
 import org.openstreetmap.josm.data.preferences.sources.SourceEntry;
 import org.openstreetmap.josm.data.preferences.sources.SourceProvider;
 import org.openstreetmap.josm.data.preferences.sources.SourceType;
-import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
@@ -30,6 +32,7 @@ import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.PreferencePanel;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.ValidationListener;
 import org.openstreetmap.josm.gui.preferences.SourceEditor;
+import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -48,86 +51,44 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
     private final class TaggingPresetValidationListener implements ValidationListener {
         @Override
         public boolean validatePreferences() {
-            if (sources.hasActiveSourcesChanged()) {
-                List<Integer> sourcesToRemove = new ArrayList<>();
-                int i = -1;
-                SOURCES:
-                    for (SourceEntry source: sources.getActiveSources()) {
-                        i++;
-                        boolean canLoad = false;
-                        try {
-                            TaggingPresetReader.read(source.url, false);
-                            canLoad = true;
-                        } catch (IOException e) {
-                            Logging.log(Logging.LEVEL_WARN, tr("Could not read tagging preset source: {0}", source), e);
-                            ExtendedDialog ed = new ExtendedDialog(MainApplication.getMainFrame(), tr("Error"),
-                                    tr("Yes"), tr("No"), tr("Cancel"));
-                            ed.setContent(tr("Could not read tagging preset source: {0}\nDo you want to keep it?", source));
-                            switch (ed.showDialog().getValue()) {
-                            case 1:
-                                continue SOURCES;
-                            case 2:
-                                sourcesToRemove.add(i);
-                                continue SOURCES;
-                            default:
-                                return false;
-                            }
-                        } catch (SAXException e) {
-                            // We will handle this in step with validation
-                            Logging.trace(e);
-                        }
+            Set<SourceEntry> newSources = new HashSet<>(sources.getModel().getSources());
+            newSources.removeAll(sources.getInitialSourcesList());
 
-                        String errorMessage = null;
+            for (SourceEntry source: newSources) {
+                String errorMessage = null;
 
-                        try {
-                            TaggingPresetReader.read(source.url, true);
-                        } catch (IOException e) {
-                            // Should not happen, but at least show message
-                            String msg = tr("Could not read tagging preset source: {0}", source);
-                            Logging.log(Logging.LEVEL_ERROR, msg, e);
-                            JOptionPane.showMessageDialog(MainApplication.getMainFrame(), msg);
-                            return false;
-                        } catch (SAXParseException e) {
-                            if (canLoad) {
-                                errorMessage = tr("<html>Tagging preset source {0} can be loaded but it contains errors. " +
-                                        "Do you really want to use it?<br><br><table width=600>Error is: [{1}:{2}] {3}</table></html>",
-                                        source, e.getLineNumber(), e.getColumnNumber(), Utils.escapeReservedCharactersHTML(e.getMessage()));
-                            } else {
-                                errorMessage = tr("<html>Unable to parse tagging preset source: {0}. " +
-                                        "Do you really want to use it?<br><br><table width=400>Error is: [{1}:{2}] {3}</table></html>",
-                                        source, e.getLineNumber(), e.getColumnNumber(), Utils.escapeReservedCharactersHTML(e.getMessage()));
-                            }
-                            Logging.log(Logging.LEVEL_WARN, errorMessage, e);
-                        } catch (SAXException e) {
-                            if (canLoad) {
-                                errorMessage = tr("<html>Tagging preset source {0} can be loaded but it contains errors. " +
-                                        "Do you really want to use it?<br><br><table width=600>Error is: {1}</table></html>",
-                                        source, Utils.escapeReservedCharactersHTML(e.getMessage()));
-                            } else {
-                                errorMessage = tr("<html>Unable to parse tagging preset source: {0}. " +
-                                        "Do you really want to use it?<br><br><table width=600>Error is: {1}</table></html>",
-                                        source, Utils.escapeReservedCharactersHTML(e.getMessage()));
-                            }
-                            Logging.log(Logging.LEVEL_ERROR, errorMessage, e);
-                        }
+                try {
+                    TaggingPresetReader.read(source.url, true);
+                } catch (IOException e) {
+                    errorMessage = tr("Could not read tagging preset source: {0}\nDo you want to keep it?", source);
+                    Logging.log(Logging.LEVEL_WARN, tr("Could not read tagging preset source: {0}", source), e);
+                } catch (SAXParseException e) {
+                    errorMessage = tr("<html>Tagging preset source {0} can be loaded but it contains errors. " +
+                            "Do you really want to use it?<br><br><table width=600>Error is: [{1}:{2}] {3}</table></html>",
+                            source, e.getLineNumber(), e.getColumnNumber(), Utils.escapeReservedCharactersHTML(e.getMessage()));
+                    Logging.log(Logging.LEVEL_WARN, errorMessage, e);
+                } catch (SAXException e) {
+                    errorMessage = tr("<html>Tagging preset source {0} can be loaded but it contains errors. " +
+                            "Do you really want to use it?<br><br><table width=600>Error is: {1}</table></html>",
+                            source, Utils.escapeReservedCharactersHTML(e.getMessage()));
+                    Logging.log(Logging.LEVEL_WARN, errorMessage, e);
+                }
 
-                        if (errorMessage != null) {
-                            Logging.error(errorMessage);
-                            int result = JOptionPane.showConfirmDialog(MainApplication.getMainFrame(), new JLabel(errorMessage), tr("Error"),
-                                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                if (errorMessage != null) {
+                    Logging.error(errorMessage);
+                    int result = JOptionPane.showConfirmDialog(MainApplication.getMainFrame(), new JLabel(errorMessage), tr("Error"),
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
 
-                            switch (result) {
-                            case JOptionPane.YES_OPTION:
-                                continue SOURCES;
-                            case JOptionPane.NO_OPTION:
-                                sourcesToRemove.add(i);
-                                continue SOURCES;
-                            default:
-                                return false;
-                            }
-                        }
+                    switch (result) {
+                    case JOptionPane.YES_OPTION:
+                        continue;
+                    case JOptionPane.NO_OPTION:
+                        sources.getModel().removeSource(source);
+                        continue;
+                    default:
+                        return false;
                     }
-                sources.removeSources(sourcesToRemove);
+                }
             }
             return true;
         }
@@ -194,7 +155,7 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
         }
 
         @Override
-        public Collection<? extends SourceEntry> getInitialSourcesList() {
+        public List<SourceEntry> getInitialSourcesList() {
             return PresetPrefHelper.INSTANCE.get();
         }
 
@@ -250,12 +211,25 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public boolean ok() {
-        TaggingPresets.USE_VALIDATOR.put(useValidator.isSelected());
-        if (sources.finish() || TaggingPresets.SORT_VALUES.put(sortMenu.isSelected())) {
-            MainApplication.getTaggingPresets().destroy();
-            MainApplication.getTaggingPresets().initialize();
-        }
+        Set<SourceEntry> removedSources = new HashSet<>(sources.getInitialSourcesList());
+        removedSources.removeAll(sources.getModel().getSources());
 
+        Set<SourceEntry> addedSources = new HashSet<>(sources.getModel().getSources());
+        addedSources.removeAll(sources.getInitialSourcesList());
+
+        TaggingPresets.USE_VALIDATOR.put(useValidator.isSelected());
+
+        boolean settingsChanged = TaggingPresets.SORT_VALUES.put(sortMenu.isSelected());
+        boolean sourcesChanged = !addedSources.isEmpty() || !removedSources.isEmpty();
+
+        if (sources.finish() || sourcesChanged || settingsChanged) {
+            JMenu presetsMenu = MainApplication.getMenu().presetsMenu;
+            ToolbarPreferences toolbar = MainApplication.getToolbar();
+            TaggingPresets taggingPresets = MainApplication.getTaggingPresets();
+            removedSources.forEach(s -> taggingPresets.removeSource(s.url));
+            addedSources.forEach(s -> taggingPresets.addSourceFromUrl(s.url));
+            taggingPresets.reInit(presetsMenu, toolbar);
+        }
         return false;
     }
 
