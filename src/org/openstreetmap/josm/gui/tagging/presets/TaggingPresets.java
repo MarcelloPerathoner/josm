@@ -215,10 +215,10 @@ public final class TaggingPresets implements Destroyable {
      * Re-initializes the presets system after a change in sources.
      * <p>
      * This should run in the EDT.
-     * @param presetsMenu
-     * @param toolbar
+     * @param presetsMenu the presets menu
+     * @param toolbar the toolbar
      */
-    public void reInit(JMenu presetsMenu, ToolbarPreferences toolbar){
+    public void reInit(JMenu presetsMenu, ToolbarPreferences toolbar) {
         clearCache();
         initCache();
         notifyListeners();

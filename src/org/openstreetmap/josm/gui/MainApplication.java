@@ -127,7 +127,6 @@ import org.openstreetmap.josm.gui.preferences.display.LafPreference;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.gui.preferences.server.ProxyPreference;
 import org.openstreetmap.josm.gui.progress.swing.ProgressMonitorExecutor;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetUtils;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.CheckThreadViolationRepaintManager;
 import org.openstreetmap.josm.gui.util.GuiHelper;

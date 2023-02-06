@@ -1,6 +1,7 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
+import java.awt.Dimension;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -24,7 +25,7 @@ abstract class TextItem extends Item {
     /** The location of icon file to display */
     final String icon;
     /** The size of displayed icon. If not set, default is 16px */
-    final int iconSize;
+    final Dimension iconSize;
 
     /**
      * Constructor.
@@ -36,10 +37,9 @@ abstract class TextItem extends Item {
         String v = attributes.get("text");
         text = v != null ? v : getDefaultText();
         textContext = attributes.get("text_context");
-        icon = attributes.get("icon");
-        iconSize = Integer.parseInt(attributes.getOrDefault("icon_size",
-            String.valueOf(ImageProvider.ImageSizes.SMALLICON.getHeight())));
         localeText = TaggingPresetUtils.buildLocaleString(attributes.get("locale_text"), text, textContext);
+        icon = attributes.get("icon");
+        iconSize = parseIconSize(attributes, ImageProvider.ImageSizes.SMALLICON);
     }
 
     /**

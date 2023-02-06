@@ -558,11 +558,11 @@ public final class GuiHelper {
         GraphicsEnvironment ge =
             GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gd = ge.getScreenDevices();
-        for(int i = 0; i < gd.length; i++) {
-            if(gd[i].getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
+        for (int i = 0; i < gd.length; i++) {
+            if (gd[i].getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
                 GraphicsConfiguration dgc =
                     gd[i].getDefaultConfiguration();
-                if(dgc.getBounds().contains(position)) {
+                if (dgc.getBounds().contains(position)) {
                     gc = dgc;
                     break;
                 }

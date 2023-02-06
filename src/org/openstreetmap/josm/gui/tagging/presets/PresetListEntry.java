@@ -6,6 +6,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trc;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.util.Map;
 import java.util.Objects;
@@ -18,6 +19,7 @@ import javax.swing.ListCellRenderer;
 
 import org.openstreetmap.josm.gui.widgets.JosmListCellRenderer;
 import org.openstreetmap.josm.tools.AlphanumComparator;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Utils;
 
 /**
@@ -45,7 +47,7 @@ final class PresetListEntry extends Item {
     /** The location of icon file to display */
     private final String icon;
     /** The size of displayed icon. If not set, default is size from icon file */
-    private final int iconSize;
+    private final Dimension iconSize;
 
     /** The localized version of {@link #displayValue}. */
     private final String localeDisplayValue;
@@ -67,7 +69,7 @@ final class PresetListEntry extends Item {
         shortDescription = attributes.get("short_description");
         localeShortDescription = attributes.get("locale_short_description");
         icon = attributes.get("icon");
-        iconSize = Integer.parseInt(attributes.getOrDefault("icon_size", "0"));
+        iconSize = parseIconSize(attributes, ImageProvider.ImageSizes.SMALLICON);
     }
 
     /**
@@ -94,7 +96,7 @@ final class PresetListEntry extends Item {
         this.shortDescription = "";
         this.localeShortDescription = "";
         this.icon = null;
-        this.iconSize = 0;
+        this.iconSize = null;
     }
 
     /**
@@ -127,7 +129,7 @@ final class PresetListEntry extends Item {
         }
         return Utils.firstNonNull(
             localeDisplayValue,
-            tr(displayValue),
+            trc(cms.valuesContext, displayValue),
             trc(cms.valuesContext, value),
             " "
         );
@@ -137,10 +139,10 @@ final class PresetListEntry extends Item {
      * Returns the short description to display.
      * @return the short description to display
      */
-    String getShortDescription() {
+    String getShortDescription(ComboMultiSelect cms) {
         return Utils.firstNonNull(
             localeShortDescription,
-            tr(shortDescription),
+            trc(cms.valuesContext, shortDescription),
             ""
         );
     }
@@ -188,7 +190,7 @@ final class PresetListEntry extends Item {
             this.toolTip = PresetListEntry.this.getToolTipText(cms.getKey());
 
             displayValue = getDisplayValue(cms);
-            shortDescription = getShortDescription();
+            shortDescription = getShortDescription(cms);
         }
 
         Instance(ComboMultiSelect.Instance cmsInstance, String value) {

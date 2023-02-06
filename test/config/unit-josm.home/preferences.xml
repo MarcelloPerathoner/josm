@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18706'>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='0'>
   <maps key='imagery.entries'>
     <map>
       <tag key='max-zoom' value='22'/>
@@ -43,5 +43,5 @@
   </list>
   <maps key='imagery.offsetbookmarks'>
   </maps>
-  <tag key='josm.version' value='18706'/>
+  <tag key='josm.version' value='0'/>
 </preferences>

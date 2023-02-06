@@ -1244,7 +1244,8 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
         String tt = Optional.ofNullable(actionDefinition.getDisplayTooltip()).orElse("");
 
         if (sc == null || paramCode != 0) {
-            String name = Optional.ofNullable((String) actionDefinition.getAction().getValue(TOOLBAR_KEY)).orElseGet(actionDefinition::getDisplayName);
+            String name = Optional.ofNullable((String) actionDefinition.getAction().getValue(TOOLBAR_KEY))
+                    .orElseGet(actionDefinition::getDisplayName);
             if (paramCode != 0) {
                 name = name+paramCode;
             }

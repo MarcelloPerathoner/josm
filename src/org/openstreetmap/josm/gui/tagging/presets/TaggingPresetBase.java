@@ -95,8 +95,7 @@ abstract class TaggingPresetBase extends Composite {
         iconName = attributes.get("icon");
         int s = Integer.parseInt(attributes.getOrDefault("icon_size", "-1"));
         if (s != -1) {
-            s = ImageProvider.adj(s);
-            iconSize = new Dimension(s, s);
+            iconSize = ImageProvider.adj(new Dimension(s, s));
         }
         iconBase = attributes.getOrDefault("icon_base", "");
         bSortMenu = TaggingPresetUtils.parseBoolean(
@@ -154,7 +153,6 @@ abstract class TaggingPresetBase extends Composite {
         }
         return null;
     }
-
 
     /**
      * Returns the untranslated name. eg. {@code Motorway}

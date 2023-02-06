@@ -1,6 +1,7 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.util.Map;
 
@@ -9,6 +10,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * A tab in a tabbed pane.
@@ -25,7 +28,7 @@ class Tab extends Composite {
     /** The location of icon file to display */
     final String icon;
     /** The size of displayed icon. If not set, default is 16px */
-    final int iconSize;
+    final Dimension iconSize;
 
     /**
      * Constructor.
@@ -39,7 +42,7 @@ class Tab extends Composite {
         localeText = TaggingPresetUtils.buildLocaleString(attributes.get("locale_text"), text, textContext);
         toolTip = attributes.get("tooltip");
         icon = attributes.get("icon");
-        iconSize = Integer.parseInt(attributes.getOrDefault("icon_size", "16"));
+        iconSize = parseIconSize(attributes, ImageProvider.ImageSizes.SMALLICON);
     }
 
     /**

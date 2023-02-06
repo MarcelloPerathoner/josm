@@ -3,10 +3,8 @@ package org.openstreetmap.josm.gui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Optional;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
@@ -36,7 +34,6 @@ public class IconToggleButton extends JToggleButton implements HideableButton, P
     public IconToggleButton(Action action) {
         this(action, false);
     }
-
 
     /**
      * Sets a toolbar-sized icon from resource if present on the action

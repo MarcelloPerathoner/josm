@@ -1,11 +1,12 @@
 This is my personal edition of JOSM.
 
+.. contents::
 
 Changes From the Official Version
 =================================
 
 Caveat: this changed version is not binary compatible with most official plugins.
-Plugins have been fixed but are not yet published.
+Plugins have been fixed but are not yet published.  Start with --skip-plugins.
 
 HiDPI
 -----
@@ -18,6 +19,14 @@ themes and open issues with screenshots attached.
    with row height.
 
 #. Captions of dialogs in the sidebar are now the correct height.
+
+   .. figure:: demo/properties-18622.png
+
+      Wrong caption and row height in 18622.
+
+   .. figure:: demo/properties.png
+
+      Correct caption and row height.
 
 #. Resizing icons with MapCSS now does resize hit test area.
 

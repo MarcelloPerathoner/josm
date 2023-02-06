@@ -108,7 +108,7 @@ public class MultiColumnMenu extends JMenu {
         final int hgap;
         final int vgap;
 
-        public MultiColumnMenuLayout(int maxHeight, int hgap, int vgap) {
+        MultiColumnMenuLayout(int maxHeight, int hgap, int vgap) {
             this.maxHeight = maxHeight;
             this.hgap = hgap;
             this.vgap = vgap;

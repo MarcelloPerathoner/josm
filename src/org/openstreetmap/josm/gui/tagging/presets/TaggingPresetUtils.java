@@ -130,16 +130,15 @@ public final class TaggingPresetUtils {
      * Loads a tagging preset icon
      * @param iconName the icon name
      * @param zipIcons zip file where the image is located
-     * @param maxSize maximum image size (or null)
+     * @param size scaled image size
      * @return the requested image or null if the request failed
      */
-    public static ImageIcon loadImageIcon(String iconName, File zipIcons, int maxSize) {
+    public static ImageIcon loadImageIcon(String iconName, File zipIcons, Dimension size) {
         final Collection<String> s = TaggingPresets.ICON_SOURCES.get();
         ImageProvider imageProvider = new ImageProvider(iconName).setDirs(s).setId("presets").setArchive(zipIcons).setOptional(true);
         ImageResource resource = imageProvider.getResource();
         if (resource != null) {
-            maxSize = ImageProvider.adj(maxSize);
-            return resource.getPaddedIcon(new Dimension(maxSize, maxSize));
+            return resource.getPaddedIcon(size);
         }
         return null;
     }

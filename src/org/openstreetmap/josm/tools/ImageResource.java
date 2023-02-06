@@ -28,7 +28,7 @@ import com.kitfox.svg.SVGDiagram;
  * @since 4271
  */
 public class ImageResource {
-    static public final String IMAGE_RESOURCE_KEY = "JosmImageResource";
+    public static final String IMAGE_RESOURCE_KEY = "JosmImageResource";
 
     /**
      * Caches the image data for resized versions of the same image. The key is obtained using {@link ImageResizeMode#cacheKey(Dimension)}.
@@ -255,7 +255,7 @@ public class ImageResource {
     /**
      * Returns an {@link ImageIcon} for the given map image, at the specified size.
      * Uses a cache to improve performance.
-     * @param iconSize size in pixels
+     * @param iconSize scaled size in pixels
      * @return an {@code ImageIcon} for the given map image, at the specified size
      */
     public ImageIcon getPaddedIcon(Dimension iconSize) {

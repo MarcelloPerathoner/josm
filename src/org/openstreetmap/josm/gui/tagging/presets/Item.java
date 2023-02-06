@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.tagging.presets;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -10,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * Template class for preset dialog construction.
@@ -226,6 +228,21 @@ abstract class Item {
     <E> void addToItemList(List<E> list, Class<E> type, boolean followReferences) {
         if (type.isInstance(this))
             list.add(type.cast(this));
+    }
+
+    /**
+     * Parse an icon size from the attributes.
+     * @param attributes the attributes to parse
+     * @param defaultSize the default size
+     * @return the parsed or default size
+     */
+    Dimension parseIconSize(Map<String, String> attributes, ImageProvider.ImageSizes defaultSize) {
+        int s = Integer.parseInt(attributes.getOrDefault("icon_size", "-1"));
+        if (s != -1) {
+            return ImageProvider.adj(new Dimension(s, s));
+        } else {
+            return defaultSize.getImageDimension();
+        }
     }
 
     /**

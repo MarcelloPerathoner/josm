@@ -223,8 +223,8 @@ public class ImageProvider {
         }
 
         /**
-         * Returns the image width in pixels
-         * @return the image width in pixels
+         * Returns the scaled image width in pixels
+         * @return the scaled image width in pixels
          * @since XXX
          */
         public int getWidth() {
@@ -232,8 +232,8 @@ public class ImageProvider {
         }
 
         /**
-         * Returns the image height in pixels
-         * @return the image height in pixels
+         * Returns the scaled image height in pixels
+         * @return the scaled image height in pixels
          * @since XXX
          */
         public int getHeight() {
@@ -281,8 +281,8 @@ public class ImageProvider {
         }
 
         /**
-         * Returns the image size as dimension
-         * @return the image size as dimension
+         * Returns the scaled image size as dimension
+         * @return the scaled image size as dimension
          * @since 9705
          */
         public Dimension getImageDimension() {
@@ -427,6 +427,18 @@ public class ImageProvider {
      */
     public static double adj(double size) {
         return size * guiScale;
+    }
+
+    /**
+     * Returns the size adjusted for display resolution.
+     *
+     * @param size the size on a 96 dpi screen
+     * @return adapted size (may be unmodified)
+     * @since XXX
+     * @seealso int adj(int)
+     */
+    public static Dimension adj(Dimension size) {
+        return new Dimension(adj(size.width), adj(size.height));
     }
 
     /**
