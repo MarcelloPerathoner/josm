@@ -513,6 +513,19 @@ way[sidewalk=yes] {
   throwWarning: tr("Unusual key {0}, maybe {1} or {2} is meant", "{0.key}", "level", "building:levels");
 }
 
+/* #22481 */
+*[building:level][!building:levels] {
+  throwWarning: tr("{0} is deprecated", "{0.key}");
+  suggestAlternative: "building:levels";
+  group: tr("deprecated tagging");
+  fixChangeKey: "building:level => building:levels";
+}
+*[building:level][building:levels] {
+  throwWarning: tr("{0} is deprecated", "{0.key}");
+  suggestAlternative: "building:levels";
+  group: tr("deprecated tagging");
+}
+
 /* #10691 */
 *[protected_class] {
   throwWarning: tr("{0} is deprecated", "{0.key}");
@@ -2040,8 +2053,8 @@ way[highway][construction=yes][highway!=construction] {
   group: tr("deprecated tagging");
 }
 
-/* #18659 */
-*[car][amenity=charging_station] {
+/* #18659, #20539 */
+*[car] {
   throwWarning: tr("{0} is deprecated", "{0.key}");
   suggestAlternative: "motorcar";
   group: tr("deprecated tagging");
