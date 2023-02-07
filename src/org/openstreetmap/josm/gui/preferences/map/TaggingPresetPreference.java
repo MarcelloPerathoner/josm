@@ -104,15 +104,16 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
         }
     }
 
-    private TaggingPresetPreference() {
-        super("dialogs/propertiesdialog", tr("Tagging Presets"), tr("Tagging Presets"));
-    }
-
     private static final List<SourceProvider> presetSourceProviders = new ArrayList<>();
+    private final ValidationListener validationListener = new TaggingPresetValidationListener();
 
     private SourceEditor sources;
     private JCheckBox useValidator;
     private JCheckBox sortMenu;
+
+    private TaggingPresetPreference() {
+        super("dialogs/propertiesdialog", tr("Tagging Presets"), tr("Tagging Presets"));
+    }
 
     /**
      * Registers a new additional preset source provider.
@@ -124,8 +125,6 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
             return presetSourceProviders.add(provider);
         return false;
     }
-
-    private final ValidationListener validationListener = new TaggingPresetValidationListener();
 
     @Override
     public void addGui(PreferenceTabbedPane gui) {

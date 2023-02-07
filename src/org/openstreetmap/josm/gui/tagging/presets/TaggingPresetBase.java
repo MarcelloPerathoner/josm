@@ -146,7 +146,7 @@ abstract class TaggingPresetBase extends Composite {
         for (Component c : parentMenu.getMenuComponents()) {
             if (c instanceof JMenuItem) {
                 JMenuItem menu = (JMenuItem) c;
-                if (getAction() == menu.getAction()) {
+                if (getAction().equals(menu.getAction())) {
                     return menu;
                 }
             }

@@ -116,14 +116,14 @@ final class Combo extends ComboMultiSelect {
             addEntry(dropDownModel, PresetListEntry.ENTRY_DIFFERENT.newInstance(instance));
         }
         presetListEntries.forEach(e -> addEntry(dropDownModel, e.newInstance(instance)));
-        if (default_ != null) {
-            addEntry(dropDownModel, new PresetListEntry(this, default_).newInstance(instance));
+        if (defaultValue != null) {
+            addEntry(dropDownModel, new PresetListEntry(defaultValue).newInstance(instance));
         }
         addEntry(dropDownModel, PresetListEntry.ENTRY_EMPTY.newInstance(instance));
 
-        usage.map.forEach((value, count) -> {
-            addEntry(dropDownModel, new PresetListEntry(this, value).newInstance(instance));
-        });
+        usage.map.forEach((value, count) ->
+            addEntry(dropDownModel, new PresetListEntry(value).newInstance(instance))
+        );
 
         AutoCompComboBoxEditor<AutoCompletionItem> editor = new AutoCompComboBoxEditor<>();
         combobox.setEditor(editor);
@@ -218,7 +218,7 @@ final class Combo extends ComboMultiSelect {
                 PresetListEntry.Instance selItem = find((String) sel);
                 if (selItem != null)
                     return selItem;
-                return new PresetListEntry(Combo.this, (String) sel).newInstance(this);
+                return new PresetListEntry((String) sel).newInstance(this);
             }
             return PresetListEntry.ENTRY_EMPTY.newInstance(this);
         }
@@ -260,7 +260,7 @@ final class Combo extends ComboMultiSelect {
     }
 
     static class ChooseColorAction extends AbstractAction {
-        private Instance instance;
+        private transient Instance instance;
 
         ChooseColorAction(Instance instance) {
             this.instance = instance;

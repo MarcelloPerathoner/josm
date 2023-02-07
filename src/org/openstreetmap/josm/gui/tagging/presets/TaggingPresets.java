@@ -92,13 +92,13 @@ public final class TaggingPresets implements Destroyable {
     /** The registered listeners */
     private final Collection<TaggingPresetListener> listeners = new LinkedList<>();
     /** caches all presets fullname->preset */
-    private final Map<String, TaggingPreset> PRESET_CACHE = new LinkedHashMap<>();
+    private final Map<String, TaggingPreset> presetCache = new LinkedHashMap<>();
     /** caches all presets with nametemplates fullname->preset */
-    private final Map<String, TaggingPreset> PRESET_WITH_NAMETEMPLATE_CACHE = new LinkedHashMap<>();
+    private final Map<String, TaggingPreset> presetWithNametemplateCache = new LinkedHashMap<>();
     /** caches the tags in all presets key -> values */
-    private final MultiMap<String, String> PRESET_TAG_CACHE = new MultiMap<>();
+    private final MultiMap<String, String> presetTagCache = new MultiMap<>();
     /** caches the roles in all presets key -> role */
-    private final Set<Role> PRESET_ROLE_CACHE = new HashSet<>();
+    private final Set<Role> presetRoleCache = new HashSet<>();
 
     /**
      * Returns all tagging presets. Only for plugin compatibility.
@@ -175,10 +175,10 @@ public final class TaggingPresets implements Destroyable {
      * Clears the cache
      */
     void clearCache() {
-        PRESET_CACHE.clear();
-        PRESET_WITH_NAMETEMPLATE_CACHE.clear();
-        PRESET_TAG_CACHE.clear();
-        PRESET_ROLE_CACHE.clear();
+        presetCache.clear();
+        presetWithNametemplateCache.clear();
+        presetTagCache.clear();
+        presetRoleCache.clear();
     }
 
     /**
@@ -263,7 +263,7 @@ public final class TaggingPresets implements Destroyable {
      * @return all tagging presets
      */
     public Collection<TaggingPreset> getAllPresets() {
-        return Collections.unmodifiableCollection(PRESET_CACHE.values());
+        return Collections.unmodifiableCollection(presetCache.values());
     }
 
     /**
@@ -271,7 +271,7 @@ public final class TaggingPresets implements Destroyable {
      * @return the roles
      */
     public Set<Role> getPresetRoles() {
-        return Collections.unmodifiableSet(PRESET_ROLE_CACHE);
+        return Collections.unmodifiableSet(presetRoleCache);
     }
 
     /**
@@ -279,7 +279,7 @@ public final class TaggingPresets implements Destroyable {
      * @return the set of all keys
      */
     public Set<String> getPresetKeys() {
-        return Collections.unmodifiableSet(PRESET_TAG_CACHE.keySet());
+        return Collections.unmodifiableSet(presetTagCache.keySet());
     }
 
     /**
@@ -288,7 +288,7 @@ public final class TaggingPresets implements Destroyable {
      * @return the set of all values
      */
     public Set<String> getPresetValues(String key) {
-        Set<String> values = PRESET_TAG_CACHE.get(key);
+        Set<String> values = presetTagCache.get(key);
         if (values != null)
             return Collections.unmodifiableSet(values);
         return Collections.emptySet();
@@ -301,7 +301,7 @@ public final class TaggingPresets implements Destroyable {
      * @since 18281
      */
     public boolean isKeyInPresets(String key) {
-        return PRESET_TAG_CACHE.get(key) != null;
+        return presetTagCache.get(key) != null;
     }
 
     /**
@@ -312,7 +312,7 @@ public final class TaggingPresets implements Destroyable {
      * @since xxx
      */
     public Collection<TaggingPreset> getMatchingPresets(final Collection<TaggingPresetType> types) {
-        return PRESET_CACHE.values().stream().filter(preset -> preset.typeMatches(types)).collect(Collectors.toList());
+        return presetCache.values().stream().filter(preset -> preset.typeMatches(types)).collect(Collectors.toList());
     }
 
     /**
@@ -334,7 +334,7 @@ public final class TaggingPresets implements Destroyable {
      */
     public Collection<TaggingPreset> getMatchingPresets(final Collection<TaggingPresetType> types,
                                                             final Map<String, String> tags, final boolean onlyShowable) {
-        return PRESET_CACHE.values().stream().filter(preset -> preset.matches(types, tags, onlyShowable)).collect(Collectors.toList());
+        return presetCache.values().stream().filter(preset -> preset.matches(types, tags, onlyShowable)).collect(Collectors.toList());
     }
 
     /**
@@ -346,7 +346,7 @@ public final class TaggingPresets implements Destroyable {
      * @since 13623 (signature)
      */
     public Collection<TaggingPreset> getMatchingPresets(final IPrimitive primitive) {
-        return PRESET_CACHE.values().stream().filter(preset -> preset.test(primitive)).collect(Collectors.toList());
+        return presetCache.values().stream().filter(preset -> preset.test(primitive)).collect(Collectors.toList());
     }
 
     /**
@@ -357,7 +357,7 @@ public final class TaggingPresets implements Destroyable {
      */
     public TaggingPreset getFirstMatchingPresetWithNameTemplate(final IPrimitive primitive) {
         Collection<TaggingPresetType> type = EnumSet.of(TaggingPresetType.forPrimitive(primitive));
-        for (TaggingPreset tp : PRESET_WITH_NAMETEMPLATE_CACHE.values()) {
+        for (TaggingPreset tp : presetWithNametemplateCache.values()) {
             if (tp.typeMatches(type)) {
                 if (tp.getNameTemplateFilter() != null) {
                     if (tp.getNameTemplateFilter().match(primitive))
@@ -416,15 +416,15 @@ public final class TaggingPresets implements Destroyable {
      */
     private void cachePresets(Root root) {
         for (TaggingPreset tp : root.getAllItems(TaggingPreset.class, false)) {
-            PRESET_CACHE.put(tp.getRawName(), tp);
+            presetCache.put(tp.getRawName(), tp);
             if (tp.getNameTemplate() != null)
-                PRESET_WITH_NAMETEMPLATE_CACHE.put(tp.getRawName(), tp);
+                presetWithNametemplateCache.put(tp.getRawName(), tp);
         }
 
-        PRESET_ROLE_CACHE.addAll(root.getAllItems(Role.class, false));
+        presetRoleCache.addAll(root.getAllItems(Role.class, false));
         root.getAllItems(KeyedItem.class, false).forEach(item -> {
             if (item.key != null && item.getValues() != null) {
-                PRESET_TAG_CACHE.putAll(item.key, item.getValues());
+                presetTagCache.putAll(item.key, item.getValues());
             }
         });
     }

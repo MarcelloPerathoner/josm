@@ -22,7 +22,7 @@ import org.openstreetmap.josm.tools.GBC;
  */
 final class Roles extends Container {
     /** the right margin */
-    private static final int right = 10;
+    private static final int RIGHT = 10;
 
     /**
      * Private constructor. Use {@link #fromXML} instead.
@@ -50,8 +50,8 @@ final class Roles extends Container {
 
     @Override
     JPanel getPanel() {
-        GBC std = GBC.std().insets(0, 0, right, 10);
-        GBC eol = GBC.eol().insets(0, 0, right, 10).fill(GridBagConstraints.HORIZONTAL);
+        GBC std = GBC.std().insets(0, 0, RIGHT, 10);
+        GBC eol = GBC.eol().insets(0, 0, RIGHT, 10).fill(GridBagConstraints.HORIZONTAL);
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setAlignmentX(0);

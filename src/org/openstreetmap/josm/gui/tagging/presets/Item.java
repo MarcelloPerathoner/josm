@@ -49,6 +49,7 @@ abstract class Item {
      * @throws IllegalArgumentException on illegal attributes
      */
     Item(Map<String, String> attributes) throws IllegalArgumentException {
+        // empty
     }
 
     /**
@@ -59,9 +60,9 @@ abstract class Item {
      */
     abstract static class Instance {
         /** The template item that created us. */
-        private Item item;
+        private final Item item;
         /** Our parent instance, most probably the TaggingPresetDialog */
-        private Composite.Instance parent;
+        private final Composite.Instance parent;
 
         Instance(Item item, Composite.Instance parent) {
             this.item = item;
@@ -91,8 +92,7 @@ abstract class Item {
          *
          * @param currentTags The map to add to.
          */
-        void addCurrentTag(Map<String, String> currentTags) {
-        }
+        abstract void addCurrentTag(Map<String, String> currentTags);
 
         /**
          * Adds the key and the value to the map only if the value was edited.
@@ -101,8 +101,7 @@ abstract class Item {
          *
          * @param changedTags The map to add to.
          */
-        void addChangedTag(Map<String, String> changedTags) {
-        }
+        abstract void addChangedTag(Map<String, String> changedTags);
 
         /**
          * Returns the OSM key associated with the instance.
@@ -124,13 +123,14 @@ abstract class Item {
          * Programmatically sets the a value.
          */
         void setValue(String newValue) {
-            assert false : "Setting a value on a preset item that does not support values.";
+            // empty
         }
 
         /**
          * Recalculates a calculated field. Does nothing for non-calculated fields.
          */
         void recalculate() {
+            // empty
         }
 
         /**
@@ -143,6 +143,7 @@ abstract class Item {
          * @param message the tooltip to set
          */
         void highlight(Color color, String message) {
+            // empty
         }
     }
 
@@ -151,12 +152,14 @@ abstract class Item {
      * @param s the content to set
      */
     void setContent(String s) {
+        // empty
     }
 
     /**
      * for use of {@link TaggingPresetReader} only
      */
     void endElement() {
+        // empty
     }
 
     /**
@@ -164,7 +167,7 @@ abstract class Item {
      * @param item the item to add
      */
     void addItem(Item item) {
-        // nothing to do as I'm no container
+        // empty
     }
 
     /**
@@ -173,6 +176,7 @@ abstract class Item {
      * Use to remove listeners, etc.
      */
     void destroy() {
+        // empty
     }
 
     /**
@@ -193,6 +197,7 @@ abstract class Item {
      * @param parentMenu the parent menu
      */
     void addToMenu(JMenu parentMenu) {
+        // empty
     }
 
     /**
@@ -253,7 +258,8 @@ abstract class Item {
      * @param chunks the chunks map
      * @param parent the parent item
      */
-    void fixup(Map<String, Chunk> chunks, Item parent) {
+    void fixup(Map<String, Chunk> chunks, Item parent) { // NOSONAR
+        // empty
     }
 
     @Override

@@ -28,7 +28,7 @@ import org.openstreetmap.josm.tools.ImageProvider;
  */
 public final class Role extends TextItem {
     /** the right margin */
-    private static final int right = 10;
+    private static final int RIGHT = 10;
 
     /** Role name used in a relation */
     private final String key;
@@ -142,14 +142,15 @@ public final class Role extends TextItem {
      * @see #required
      */
     public long getValidCount(long c) {
-        if (count > 0 && !required)
+        if (count > 0 && !required) {
             return c != 0 ? count : 0;
-        else if (count > 0)
+        } else if (count > 0) {
             return count;
-        else if (!required)
+        } else if (!required) {
             return c != 0 ? c : 0;
-        else
+        } else {
             return c != 0 ? c : 1;
+        }
     }
 
     /**
@@ -212,8 +213,8 @@ public final class Role extends TextItem {
      */
     @Override
     boolean addToPanel(JComponent p, Composite.Instance parentInstance) {
-        GBC std = GBC.std().insets(0, 0, right, 0);
-        GBC eol = GBC.eol().insets(0, 0, right, 0);
+        GBC std = GBC.std().insets(0, 0, RIGHT, 0);
+        GBC eol = GBC.eol().insets(0, 0, RIGHT, 0);
 
         String cstring;
         if (count > 0 && !required) {
@@ -265,9 +266,7 @@ public final class Role extends TextItem {
                 return false;
         } else if (!key.equals(other.key))
             return false;
-        if (!types.equals(other.types))
-            return false;
-        return true;
+        return types.equals(other.types);
     }
 
     @Override

@@ -99,13 +99,13 @@ public enum TaggingPresetType {
      * Returns a set of types
      *
      * @param types the types as comma-separated string. eg. "node,way,relation"
-     * @param default_ the default value, returned if {@code types} is null
+     * @param defaultValue the default value, returned if {@code types} is null
      * @return the types as set
      * @throws IllegalArgumentException on input error
      */
-    public static EnumSet<TaggingPresetType> getOrDefault(String types, EnumSet<TaggingPresetType> default_) throws IllegalArgumentException {
+    public static EnumSet<TaggingPresetType> getOrDefault(String types, EnumSet<TaggingPresetType> defaultValue) throws IllegalArgumentException {
         if (types == null)
-            return default_;
+            return defaultValue;
         if (types.isEmpty())
             throw new IllegalArgumentException(tr("Unknown type: {0}", types));
         if (TYPE_CACHE.containsKey(types))

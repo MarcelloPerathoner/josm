@@ -1,19 +1,20 @@
 This is my personal edition of JOSM.
 
-.. contents::
-
 Changes From the Official Version
 =================================
 
 Caveat: this changed version is not binary compatible with most official plugins.
-Plugins have been fixed but are not yet published.  Start with --skip-plugins.
+Plugins have been fixed but are not yet published.  Start JOSM with --skip-plugins.
+
+.. contents::
+    :local:
 
 HiDPI
 -----
 
 Make JOSM more HiDPI-friendly especially when using non-integer scaling factors.  Tested
-themes: GTK, flatlaf.  Metal, Nimbus, CDE do not scale.  Please test Windows and Mac
-themes and open issues with screenshots attached.
+themes: GTK, flatlaf.  Metal, Nimbus, and CDE are not designed to scale.  Please test
+Windows and Mac themes and open issues with screenshots attached.
 
 #. Table rows are now the correct height.  Added more functions in TableHelper to deal
    with row height.
@@ -22,7 +23,7 @@ themes and open issues with screenshots attached.
 
    .. figure:: demo/properties-18622.png
 
-      Wrong caption and row height in 18622.
+      Wrong caption and row height in JOSM 18622.
 
    .. figure:: demo/properties.png
 

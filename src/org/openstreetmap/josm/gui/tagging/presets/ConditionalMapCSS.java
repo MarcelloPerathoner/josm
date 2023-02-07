@@ -49,11 +49,11 @@ abstract class ConditionalMapCSS extends Conditional {
         boolean result = false;
         if (handler instanceof DataSetHandler) {
             Collection<OsmPrimitive> selection = ((DataSetHandler) handler).get();
-            if (matchMode.equals("any")) {
+            if ("any".equals(matchMode)) {
                 result = selection.stream().anyMatch(osm -> selectors.stream()
                     .anyMatch(selector -> selector.matches(new Environment(osm))));
             }
-            if (matchMode.equals("all")) {
+            if ("all".equals(matchMode)) {
                 result = selection.stream().allMatch(osm -> selectors.stream()
                     .anyMatch(selector -> selector.matches(new Environment(osm))));
             }

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.AbstractPrimitive;
 import org.openstreetmap.josm.data.osm.Tag;
 import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
@@ -40,12 +40,12 @@ import org.openstreetmap.josm.tools.Utils;
  * @since xxx
  */
 public class TagTableModel extends DefaultTableModel {
-    String[] COLUMN_NAMES = new String[]{tr("Key"), tr("Value")};
+    String[] columnNames = new String[]{tr("Key"), tr("Value")};
 
     /** a data interface (or null if none shall be used) */
     private final TaggedHandler handler;
 
-    private final BooleanProperty PROP_DISPLAY_DISCARDABLE_KEYS = new BooleanProperty("display.discardable-keys", false);
+    private final BooleanProperty propDisplayDiscardableKeys = new BooleanProperty("display.discardable-keys", false);
 
     /**
      * Class that holds zero or more values with respective frequency count.
@@ -192,8 +192,8 @@ public class TagTableModel extends DefaultTableModel {
      * @return this
      */
     public TagTableModel initFromTaggedCollection(Collection<? extends Tagged> taggedCollection) {
-        final boolean displayDiscardableKeys = PROP_DISPLAY_DISCARDABLE_KEYS.get();
-        Set<String> discardableKeys = new HashSet<>(OsmPrimitive.getDiscardableKeys());
+        final boolean displayDiscardableKeys = propDisplayDiscardableKeys.get();
+        Set<String> discardableKeys = new HashSet<>(AbstractPrimitive.getDiscardableKeys());
 
         setRowCount(0);
         for (Tagged tagged : taggedCollection) {
@@ -231,15 +231,6 @@ public class TagTableModel extends DefaultTableModel {
         map.forEach((k, v) -> addRow(k, new ValueType(v)));
         ensureTags();
         return this;
-    }
-
-    /**
-     * Clones the model
-     * @return the cloned model
-     */
-    @Override
-    public TagTableModel clone() {
-        return new TagTableModel(getHandler()).initFromMap(getTags());
     }
 
     /**
@@ -296,12 +287,11 @@ public class TagTableModel extends DefaultTableModel {
             if (newKey.equals(key))
                 return;
 
-            if (keySet().contains(newKey)) {
-                if (!TagEditHelper.warnOverwriteKey(tr("You changed the key from ''{0}'' to ''{1}''.", key, newKey)
-                        + "\n" + tr("The new key is already used, overwrite values?"),
-                        "overwriteEditKey"))
+            if (keySet().contains(newKey) && !TagEditHelper.warnOverwriteKey (
+                    tr("You changed the key from ''{0}'' to ''{1}''.", key, newKey) + "\n" +
+                    tr("The new key is already used, overwrite values?"),
+                    "overwriteEditKey"))
                 return;
-            }
             Logging.info("Change tag key: {0}={1} to {2}={3}", key, value, newKey, value);
             super.setValueAt(newKey, rowIndex, columnIndex);
             if (!value.isEmpty()) {
@@ -520,14 +510,14 @@ public class TagTableModel extends DefaultTableModel {
 
     @Override
     public int getColumnCount() {
-        return COLUMN_NAMES.length;
+        return columnNames.length;
     }
 
     @Override
     public String getColumnName(int column) {
         if (column < 0 || column >= getColumnCount())
             return "";
-        return COLUMN_NAMES[column];
+        return columnNames[column];
     }
 
     @Override

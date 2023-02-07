@@ -108,7 +108,7 @@ public final class TaggingPresetUtils {
                 .setArchive(TaggingPresetReader.getZipIcons())
                 .setOptional(true)
                 .getResourceFuture()
-                .thenCompose((imageResource) -> {
+                .thenCompose(imageResource -> {
                     CompletableFuture<ImageResource> future = new CompletableFuture<>();
                     SwingUtilities.invokeLater(() -> {
                         if (imageResource != null) {
@@ -191,10 +191,10 @@ public final class TaggingPresetUtils {
      * @return splitted items
      */
     public static List<String> splitEscaped(char delimiter, String s) {
-        if (s == null)
-            return null; // NOSONAR
-
         List<String> result = new ArrayList<>();
+        if (s == null)
+            return result;
+
         boolean backslash = false;
         StringBuilder item = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {

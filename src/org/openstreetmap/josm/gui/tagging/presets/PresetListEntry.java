@@ -30,9 +30,9 @@ import org.openstreetmap.josm.tools.Utils;
  */
 final class PresetListEntry extends Item {
     /** Used to display an entry matching several different values. */
-    static final PresetListEntry ENTRY_DIFFERENT = new PresetListEntry(null, InteractiveItem.DIFFERENT);
+    static final PresetListEntry ENTRY_DIFFERENT = new PresetListEntry(InteractiveItem.DIFFERENT);
     /** Used to display an empty entry used to clear values. */
-    static final PresetListEntry ENTRY_EMPTY = new PresetListEntry(null, "");
+    static final PresetListEntry ENTRY_EMPTY = new PresetListEntry("");
 
     /**
      * This is the value that is going to be written to the tag on the selected primitive(s). Except
@@ -88,7 +88,7 @@ final class PresetListEntry extends Item {
      * @param value value
      * @param cms the ComboMultiSelect
      */
-    PresetListEntry(ComboMultiSelect cms, String value) {
+    PresetListEntry(String value) {
         super(ItemFactory.attributesToMap());
         this.value = value;
         this.displayValue = value;
@@ -125,7 +125,7 @@ final class PresetListEntry extends Item {
      */
     String getDisplayValue(ComboMultiSelect cms) {
         if (cms.valuesNoI18n) {
-            return Utils.firstNonNull(PresetListEntry.this.value, " ");
+            return Utils.firstNonNull(value, " ");
         }
         return Utils.firstNonNull(
             localeDisplayValue,
@@ -177,11 +177,11 @@ final class PresetListEntry extends Item {
     }
 
     class Instance implements Comparable<Instance> {
-        private String displayValue;
+        private final String displayValue;
         private String shortDescription;
         private String toolTip;
         private ImageIcon icon;
-        private Usage usage;
+        private final Usage usage;
 
         Instance(ComboMultiSelect.Instance cmsInstance) {
             this.usage = cmsInstance.usage;
@@ -298,8 +298,9 @@ final class PresetListEntry extends Item {
          */
         public void setWidth(int width) {
             if (width <= 0)
-                width = 200;
-            this.width = width - 20;
+                this.width = 180;
+            else
+                this.width = width - 20;
         }
 
         @Override

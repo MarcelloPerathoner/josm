@@ -35,7 +35,7 @@ abstract class TextItem extends Item {
     TextItem(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
         String v = attributes.get("text");
-        text = v != null ? v : getDefaultText();
+        text = v != null ? v : getDefaultText(); // NOPMD
         textContext = attributes.get("text_context");
         localeText = TaggingPresetUtils.buildLocaleString(attributes.get("locale_text"), text, textContext);
         icon = attributes.get("icon");

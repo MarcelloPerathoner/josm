@@ -41,7 +41,7 @@ public class AutoCompTextField<E> extends JosmTextField implements TableCellEdit
     /** the model */
     protected AutoCompComboBoxModel<E> model;
     /** Whether to autocomplete numbers */
-    private final boolean AUTOCOMPLETE_NUMBERS = !Config.getPref().getBoolean("autocomplete.dont_complete_numbers", true);
+    private final boolean autocompleteNumbers = !Config.getPref().getBoolean("autocomplete.dont_complete_numbers", true);
     /** a regex that matches numbers */
     private static final Pattern IS_NUMBER = Pattern.compile("^\\d+$");
 
@@ -162,7 +162,7 @@ public class AutoCompTextField<E> extends JosmTextField implements TableCellEdit
         if (getInputMethodRequests().getCommittedTextLength() != getDocument().getLength())
             // do not autocomplete if there is uncommitted text (breaks Microsoft Japanese IME, see #21507)
             return;
-        if (!AUTOCOMPLETE_NUMBERS && IS_NUMBER.matcher(newText).matches())
+        if (!autocompleteNumbers && IS_NUMBER.matcher(newText).matches())
             // do not autocomplete text consisting of numbers only
             return;
 

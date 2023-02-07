@@ -70,6 +70,7 @@ import org.openstreetmap.josm.actions.ParameterizedActionDecorator;
 import org.openstreetmap.josm.actions.ToggleAction;
 import org.openstreetmap.josm.data.imagery.ImageryInfo;
 import org.openstreetmap.josm.data.imagery.ImageryLayerInfo;
+import org.openstreetmap.josm.gui.IconButton;
 import org.openstreetmap.josm.gui.IconToggleButton;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapFrame;
@@ -1133,7 +1134,7 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
         } else {
             Action r = regactions.get(toolbarKey);
             if (r != null) {
-                Logging.info(tr("Registered toolbar action {0} overwritten: {1} gets {2}",
+                Logging.debug(tr("Registered toolbar action {0} overwritten: {1} gets {2}",
                     toolbarKey, r.getClass().getName(), action.getClass().getName()));
             }
             regactions.put(toolbarKey, action);
@@ -1223,10 +1224,10 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
         final AbstractButton button;
         if (action instanceof ToggleAction) {
             button = new IconToggleButton(action);
-            toolbar.add(button);
         } else {
-            button = toolbar.add(action);
+            button = new IconButton(action);
         }
+        toolbar.add(button);
 
         Shortcut sc = null;
         if (actionDefinition.getAction() instanceof JosmAction) {

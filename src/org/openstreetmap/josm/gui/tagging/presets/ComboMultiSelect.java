@@ -30,7 +30,7 @@ abstract class ComboMultiSelect extends InteractiveItem {
     /** Disabled internationalisation for value to avoid mistakes, see #11696 */
     final boolean valuesNoI18n;
     /** The default value for the item. If not specified, the current value of the key is chosen as default (if applicable).*/
-    final String default_;
+    final String defaultValue;
     /** Whether to sort the values, defaults to true. */
     private final boolean valuesSort;
     /** Whether to offer display values for search via {@link TaggingPresetSelector} */
@@ -64,7 +64,7 @@ abstract class ComboMultiSelect extends InteractiveItem {
         valuesNoI18n = TaggingPresetUtils.parseBoolean(attributes.get("values_no_i18n"));
         valuesSort = TaggingPresetUtils.parseBoolean(attributes.getOrDefault("values_sort", "on"));
         valuesSearchable = TaggingPresetUtils.parseBoolean(attributes.get("values_searchable"));
-        default_ = attributes.get("default");
+        defaultValue = attributes.get("default");
         delimiter = attributes.getOrDefault("delimiter", getDefaultDelimiter()).charAt(0);
 
         initPresetListEntries(attributes);
@@ -118,8 +118,15 @@ abstract class ComboMultiSelect extends InteractiveItem {
         return label;
     }
 
+    /**
+     * Gets the values from a Java function.
+     * <p>
+     * The function's signature must be: public static String[] methodName()
+     *
+     * @param valuesFrom a Java function written as: class#method
+     * @return values or empty list
+     */
     private List<String> getValuesFromCode(String valuesFrom) {
-        // get the values from a Java function
         String[] classMethod = valuesFrom.split("#", -1);
         if (classMethod.length == 2) {
             try {
@@ -139,25 +146,27 @@ abstract class ComboMultiSelect extends InteractiveItem {
                 Logging.debug(e);
             }
         }
-        return null; // NOSONAR
+        return new ArrayList<>();
     }
 
     /**
-     * Checks if list {@code a} is either null or the same length as list {@code b}.
+     * Checks if lists {@code a} and {@code b} are the same length, otherwise logs error.
      *
      * @param a The list to check
      * @param b The other list
      * @param name The name of the list for error reporting
      * @return {@code a} if both lists have the same length or {@code null}
      */
-    private List<String> checkListsSameLength(List<String> a, List<String> b, String name) {
-        if (a != null && a.size() != b.size()) {
-            Logging.error(tr("Broken tagging preset \"{0}-{1}\" - number of items in ''{2}'' must be the same as in ''values''",
-                            key, text, name));
-            Logging.error(tr("Detailed information: {0} <> {1}", a, b));
-            return null; // NOSONAR
-        }
-        return a;
+    private boolean checkListsSameLength(List<String> a, List<String> b, String name) {
+        if (a.isEmpty())
+            return false;
+        if (a.size() == b.size())
+            return true;
+
+        Logging.error(tr("Broken tagging preset \"{0}-{1}\" - number of items in ''{2}'' must be the same as in ''values''",
+                        key, text, name));
+        Logging.error(tr("Detailed information: {0} <> {1}", a, b));
+        return false;
     }
 
     private void initPresetListEntries(Map<String, String> attributes) {
@@ -168,15 +177,15 @@ abstract class ComboMultiSelect extends InteractiveItem {
          * If a value contains a backslash, it must also be escaped with a backslash. */
         final String values = attributes.get("values");
         /**
-         * To use instead of {@link #valueEditor} if the list of values has to be obtained with a Java method of this form:
+         * To use instead of {@link #values} if the list of values has to be obtained with a Java method of this form:
          * <p>{@code public static String[] getValues();}<p>
          * The value must be: {@code full.package.name.ClassName#methodName}.
          */
         final String valuesFrom = attributes.get("values_from");
         /**
          * A list of entries that is displayed to the user.
-         * Must be the same number and order of entries as {@link #valueEditor} and editable must be false or not specified.
-         * For the delimiter character and escaping, see the remarks at {@link #valueEditor}.
+         * Must be the same number and order of entries as {@link #values} and editable must be false or not specified.
+         * For the delimiter character and escaping, see the remarks at {@link #values}.
          */
         final String displayValues = attributes.get("display_values");
         /** The localized version of {@link #displayValues}. */
@@ -184,7 +193,7 @@ abstract class ComboMultiSelect extends InteractiveItem {
         /**
          * A delimiter-separated list of texts to be displayed below each {@code display_value}.
          * (Only if it is not possible to describe the entry in 2-3 words.)
-         * Instead of comma separated list instead using {@link #valueEditor}, {@link #displayValues} and {@link #shortDescriptions},
+         * Instead of comma separated list instead using {@link #values}, {@link #displayValues} and {@link #shortDescriptions},
          * the following form is also supported:<p>
          * {@code <list_entry value="" display_value="" short_description="" icon="" icon_size="" />}
          */
@@ -193,21 +202,19 @@ abstract class ComboMultiSelect extends InteractiveItem {
         final String localeShortDescriptions = attributes.get("locale_short_descriptions");
 
         List<String> valueList = null;
-        List<String> displayList = null;
-        List<String> localeDisplayList = null;
 
         if (valuesFrom != null) {
             valueList = getValuesFromCode(valuesFrom);
-        }
-
-        if (valueList == null) {
+        } else {
             // get from {@code values} attribute
             valueList = TaggingPresetUtils.splitEscaped(delimiter, values);
         }
-        if (valueList == null) {
+        if (valueList.isEmpty()) {
             return;
         }
 
+        List<String> localeDisplayList = new ArrayList<>();
+        List<String> displayList = new ArrayList<>();
         if (!valuesNoI18n) {
             localeDisplayList = TaggingPresetUtils.splitEscaped(delimiter, localeDisplayValues);
             displayList = TaggingPresetUtils.splitEscaped(delimiter, displayValues);
@@ -215,23 +222,24 @@ abstract class ComboMultiSelect extends InteractiveItem {
         List<String> localeShortDescriptionsList = TaggingPresetUtils.splitEscaped(delimiter, localeShortDescriptions);
         List<String> shortDescriptionsList = TaggingPresetUtils.splitEscaped(delimiter, shortDescriptions);
 
-        displayList = checkListsSameLength(displayList, valueList, "display_values");
-        localeDisplayList = checkListsSameLength(localeDisplayList, valueList, "locale_display_values");
-        shortDescriptionsList = checkListsSameLength(shortDescriptionsList, valueList, "short_descriptions");
-        localeShortDescriptionsList = checkListsSameLength(localeShortDescriptionsList, valueList, "locale_short_descriptions");
+        boolean useDisplayList = checkListsSameLength(displayList, valueList, "display_value");
+        boolean useLocaleDisplayList = checkListsSameLength(localeDisplayList, valueList, "locale_display_values");
+        boolean useShortDescriptionsList = checkListsSameLength(shortDescriptionsList, valueList, "short_descriptions");
+        boolean useLocaleShortDescriptionsList = checkListsSameLength(localeShortDescriptionsList, valueList, "locale_short_descriptions");
 
+        Map<String, String> attribs = new HashMap<>();
         for (int i = 0; i < valueList.size(); i++) {
-            Map<String, String> attribs = new HashMap<>();
             attribs.put("value", valueList.get(i));
-            if (displayList != null)
+            if (useDisplayList)
                 attribs.put("display_value", displayList.get(i));
-            if (localeDisplayList != null)
+            if (useLocaleDisplayList)
                 attribs.put("locale_display_value", localeDisplayList.get(i));
-            if (shortDescriptionsList != null)
+            if (useShortDescriptionsList)
                 attribs.put("short_description", shortDescriptionsList.get(i));
-            if (localeShortDescriptionsList != null)
+            if (useLocaleShortDescriptionsList)
                 attribs.put("locale_short_description", localeShortDescriptionsList.get(i));
             addItem(PresetListEntry.fromXML(attribs));
+            attribs.clear();
         }
     }
 
@@ -313,7 +321,7 @@ abstract class ComboMultiSelect extends InteractiveItem {
                 if (!getPresetInstance().isPresetInitiallyMatches() && isUseLastAsDefault() && LAST_VALUES.containsKey(key)) {
                     initialValue = LAST_VALUES.get(key);
                 } else {
-                    initialValue = default_;
+                    initialValue = defaultValue;
                 }
             }
             return initialValue != null ? initialValue : "";

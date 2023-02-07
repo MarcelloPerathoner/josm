@@ -5,7 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
-import javax.swing.JToggleButton;
+import javax.swing.JButton;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.actions.ExpertToggleAction.ExpertModeChangeListener;
@@ -16,23 +16,23 @@ import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageResource;
 
 /**
- * Just a toggle button, with smaller border and icon only to display in
+ * Just a button, with smaller border and icon only to display in
  * MapFrame toolbars.
  * Also provides methods for storing hidden state in preferences
- * FIXME: code duplicated in IconButton.java
+ * FIXME: code duplicated in IconToggleButton.java
  * @author imi, akks
  */
-public class IconToggleButton extends JToggleButton implements HideableButton, PropertyChangeListener, Destroyable, ExpertModeChangeListener {
+public class IconButton extends JButton implements HideableButton, PropertyChangeListener, Destroyable, ExpertModeChangeListener {
 
     private transient ShowHideButtonListener listener;
     private boolean hideIfDisabled;
     private final boolean isExpert;
 
     /**
-     * Construct the toggle button with the given action.
+     * Construct the button with the given action.
      * @param action associated action
      */
-    public IconToggleButton(Action action) {
+    public IconButton(Action action) {
         this(action, false);
     }
 
@@ -68,7 +68,7 @@ public class IconToggleButton extends JToggleButton implements HideableButton, P
      * @param action associated action
      * @param isExpert {@code true} if it's reserved to expert mode
      */
-    public IconToggleButton(Action action, boolean isExpert) {
+    public IconButton(Action action, boolean isExpert) {
         super(action);
         CheckParameterUtil.ensureParameterNotNull(action, "action");
         this.isExpert = isExpert;

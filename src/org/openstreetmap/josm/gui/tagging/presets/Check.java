@@ -28,7 +28,7 @@ final class Check extends InteractiveItem {
     /** whether the off value is disabled in the dialog, i.e., only unset or yes are provided */
     private final boolean disableOff;
     /** "on" or "off" or unset (default is unset) */
-    private final String default_; // only used for tagless objects
+    private final String defaultValue; // only used for tagless objects
 
     /**
      * Private constructor. Use {@link #fromXML} instead.
@@ -40,7 +40,7 @@ final class Check extends InteractiveItem {
         valueOn = attributes.getOrDefault("value_on", OsmUtils.TRUE_VALUE);
         valueOff = attributes.getOrDefault("value_off", OsmUtils.FALSE_VALUE);
         disableOff = Boolean.parseBoolean(attributes.get("disable_off"));
-        default_ = attributes.get("default");
+        defaultValue = attributes.get("default");
     }
 
     /**
@@ -60,7 +60,7 @@ final class Check extends InteractiveItem {
         final Usage usage = Usage.determineBooleanUsage(presetInstance.getSelected(), key);
         final String oneValue = usage.map.isEmpty() ? null : usage.map.lastKey();
         State initialState;
-        Boolean def = "on".equals(default_) ? Boolean.TRUE : "off".equals(default_) ? Boolean.FALSE : null;
+        Boolean def = "on".equals(defaultValue) ? Boolean.TRUE : "off".equals(defaultValue) ? Boolean.FALSE : null;
 
         if (usage.map.size() < 2 && (oneValue == null || valueOn.equals(oneValue) || valueOff.equals(oneValue))) {
             if (def != null && !PROP_FILL_DEFAULT.get()) {
@@ -112,14 +112,12 @@ final class Check extends InteractiveItem {
     }
 
     class Instance extends InteractiveItem.Instance {
-        private JCheckBox checkbox;
-        private QuadStateButtonModel model;
-        private State originalState;
-        private Boolean def;
+        private final QuadStateButtonModel model;
+        private final State originalState;
+        private final Boolean def;
 
         Instance(Item item, Composite.Instance parent, JCheckBox checkbox, State originalState, Boolean def) {
             super(item, parent, checkbox);
-            this.checkbox = checkbox;
             this.model = (QuadStateButtonModel) checkbox.getModel();
             this.originalState = originalState;
             this.def = def;
@@ -175,6 +173,6 @@ final class Check extends InteractiveItem {
                 + (localeText != null ? "locale_text=" + localeText + ", " : "")
                 + (valueOn != null ? "value_on=" + valueOn + ", " : "")
                 + (valueOff != null ? "value_off=" + valueOff + ", " : "")
-                + "default_=" + default_ + ']';
+                + "default_=" + defaultValue + ']';
     }
 }

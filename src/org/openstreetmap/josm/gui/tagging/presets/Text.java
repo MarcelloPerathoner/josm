@@ -5,10 +5,9 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.util.ArrayList;
 import java.awt.Color;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +50,12 @@ final class Text extends InteractiveItem {
     private final TemplateEntry valueTemplate;
     /** The default value for the item. If not specified, the current value of the key is chosen as
      * default (if applicable). Defaults to "". */
-    private final String default_;
+    private final String defaultValue;
 
-    /** Calculates the field's value once when pressed */
-    private JButton calcButton;
     /** Automatically calculate the field's value */
     private JToggleButton calcLockButton;
+
+    private static final String PROPNAME_AUTOINCREMENT = ".autoincrement";
 
     /**
      * Private constructor. Use {@link #fromXML} instead.
@@ -68,7 +67,7 @@ final class Text extends InteractiveItem {
         valueTemplate = TaggingPresetUtils.parseTemplate(attributes.get("value_template"));
         autoIncrement = attributes.get("auto_increment");
         alternativeAutocompleteKeys = attributes.get("alternative_autocomplete_keys");
-        default_ = attributes.get("default");
+        defaultValue = attributes.get("default");
     }
 
     /**
@@ -135,7 +134,7 @@ final class Text extends InteractiveItem {
             int autoIncrementSelected = instance.getAutoIncrementValue();
             ButtonGroup bg = new ButtonGroup();
             JPanel pnl = new JPanel(new GridBagLayout());
-            pnl.add(component, GBC.std().fill(GBC.HORIZONTAL));
+            pnl.add(component, GBC.std().fill(GridBagConstraints.HORIZONTAL));
 
             // first, one button for each auto_increment value
             for (final String ai : autoIncrement.split(",", -1)) {
@@ -145,12 +144,11 @@ final class Text extends InteractiveItem {
                 minimizeMargins(aibutton);
                 bg.add(aibutton);
                 try {
-                    // TODO there must be a better way to parse a number like "+3" than this.
-                    final int buttonvalue = NumberFormat.getIntegerInstance().parse(ai.replace("+", "")).intValue();
+                    final int buttonvalue = Integer.parseInt(ai);
                     if (autoIncrementSelected == buttonvalue) aibutton.setSelected(true);
                     aibutton.addActionListener(e -> instance.setAutoIncrementValue(buttonvalue));
                     pnl.add(aibutton, GBC.std());
-                } catch (ParseException ex) {
+                } catch (NumberFormatException ex) {
                     Logging.error("Cannot parse auto-increment value of '" + ai + "' into an integer");
                 }
             }
@@ -181,26 +179,22 @@ final class Text extends InteractiveItem {
         //
         if (valueTemplate != null) {
             JPanel pnl = new JPanel(new GridBagLayout());
-            pnl.add(component, GBC.std().fill(GBC.BOTH).weight(1.0, 0.0));
+            pnl.add(component, GBC.std().fill(GridBagConstraints.BOTH).weight(1.0, 0.0));
             component = pnl;
 
-            calcButton = new JButton("Σ");
+            JButton calcButton = new JButton("Σ");
             calcButton.setToolTipText(tr("Calculate the value"));
             calcButton.setFocusable(false);
             minimizeMargins(calcButton);
-            calcButton.addActionListener(e -> {
-                instance.calculate(presetInstance);
-            });
-            pnl.add(calcButton, GBC.std().fill(GBC.VERTICAL));
+            calcButton.addActionListener(e -> instance.calculate(presetInstance));
+            pnl.add(calcButton, GBC.std().fill(GridBagConstraints.VERTICAL));
 
             calcLockButton = new JToggleButton("auto", instance.getCalcLockValue());
             calcLockButton.setToolTipText(tr("Enable automatic recalculation for this field"));
             calcLockButton.setFocusable(false);
             minimizeMargins(calcLockButton);
-            calcLockButton.addActionListener(e -> {
-                instance.setCalcLockValue(calcLockButton.isSelected());
-            });
-            pnl.add(calcLockButton, GBC.std().fill(GBC.VERTICAL));
+            calcLockButton.addActionListener(e -> instance.setCalcLockValue(calcLockButton.isSelected()));
+            pnl.add(calcLockButton, GBC.std().fill(GridBagConstraints.VERTICAL));
         }
 
         final JLabel label = new JLabel(tr("{0}:", localeText));
@@ -209,7 +203,7 @@ final class Text extends InteractiveItem {
         label.setComponentPopupMenu(getPopupMenu());
         label.setLabelFor(component);
         p.add(label, GBC.std().insets(0, 0, 10, 0).weight(0, 0));
-        p.add(component, GBC.eol().fill(GBC.HORIZONTAL).weight(1, 0));
+        p.add(component, GBC.eol().fill(GridBagConstraints.HORIZONTAL).weight(1, 0));
         label.applyComponentOrientation(TaggingPresetDialog.getDefaultComponentOrientation());
         component.setToolTipText(getKeyTooltipText());
         component.applyComponentOrientation(OrientationAction.getNamelikeOrientation(key));
@@ -239,18 +233,16 @@ final class Text extends InteractiveItem {
 
     @Override
     public List<String> getValues() {
-        if (Utils.isEmpty(default_))
+        if (Utils.isEmpty(defaultValue))
             return Collections.emptyList();
-        return Collections.singletonList(default_);
+        return Collections.singletonList(defaultValue);
     }
 
     public List<String> getAlternativeAutocompleteKeys() {
         List<String> keys = new ArrayList<>();
         keys.add(key);
         if (alternativeAutocompleteKeys != null) {
-            for (String k : alternativeAutocompleteKeys.split(",", -1)) {
-                keys.add(k);
-            }
+            Collections.addAll(keys, alternativeAutocompleteKeys.split(",", -1));
         }
         return keys;
     }
@@ -263,7 +255,7 @@ final class Text extends InteractiveItem {
         Instance(Item item, Composite.Instance parent, AutoCompTextField<AutoCompletionItem> textField) {
             super(item, parent, textField);
             this.textField = textField;
-            this.autoIncrementSelected = (Integer) parent.getPresetInstance().getPresetProperty(key + ".autoincrement", 0);
+            this.autoIncrementSelected = (Integer) parent.getPresetInstance().getPresetProperty(key + PROPNAME_AUTOINCREMENT, 0);
         }
 
         @Override
@@ -321,7 +313,7 @@ final class Text extends InteractiveItem {
                     if (!presetInstance.isPresetInitiallyMatches() && isUseLastAsDefault() && LAST_VALUES.containsKey(key)) {
                         textField.setText(LAST_VALUES.get(key));
                     } else {
-                        textField.setText(default_);
+                        textField.setText(defaultValue);
                     }
                 } else {
                     // selected osm primitives are tagged and filling default values feature is disabled
@@ -360,7 +352,7 @@ final class Text extends InteractiveItem {
                 textField.getDocument().addDocumentListener(DocumentAdapter.create(ignore ->
                     presetInstance.fireChangeEvent(this)));
             } else {  // only listen on calculated fields
-                presetInstance.addListener(new TaggingPreset.DebouncedChangeListener((event) -> {
+                presetInstance.addListener(new TaggingPreset.DebouncedChangeListener(event -> {
                     if (calcLockButton.isSelected()) {
                         calculate(presetInstance);
                     }
@@ -369,11 +361,11 @@ final class Text extends InteractiveItem {
         }
 
         private Integer getAutoIncrementValue() {
-            return (Integer) getPresetInstance().getPresetProperty(key + ".autoincrement", 0);
+            return (Integer) getPresetInstance().getPresetProperty(key + PROPNAME_AUTOINCREMENT, 0);
         }
 
         private void setAutoIncrementValue(Integer i) {
-            getPresetInstance().putPresetProperty(key + ".autoincrement", i);
+            getPresetInstance().putPresetProperty(key + PROPNAME_AUTOINCREMENT, i);
         }
 
         private String getCalcLockPrefName() {

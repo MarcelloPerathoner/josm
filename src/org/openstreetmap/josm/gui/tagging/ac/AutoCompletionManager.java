@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,15 +137,15 @@ public class AutoCompletionManager implements DataSetListener {
     /**
      * The tag cache subdivided for {@link TaggingPresetType tagging preset type} and key.
      */
-    private final Map<TaggingPresetType, MultiMap<String, String>> PRESET_TAG_CACHE = new HashMap<>();
+    private final EnumMap<TaggingPresetType, MultiMap<String, String>> presetTagCache = new EnumMap<>(TaggingPresetType.class);
     /**
      * The primitive cache subdivided for {@link #classifyPrimitive(Map) classification} and tag key.
      */
-    private final Map<String, MultiMap<String, String>> CATEGORY_TAG_CACHE = new HashMap<>();
+    private final Map<String, MultiMap<String, String>> categoryTagCache = new HashMap<>();
     /**
      * The cached relations further subdivided by {@link #classifyRelation(Map) relation type}.
      */
-    private final MultiMap<String, Relation> RELATION_CACHE = new BetterMultiMap<>();
+    private final MultiMap<String, Relation> relationCache = new BetterMultiMap<>();
     /**
      * Cache for tags that have been entered by the user.
      */
@@ -154,7 +155,7 @@ public class AutoCompletionManager implements DataSetListener {
     private static final Map<DataSet, AutoCompletionManager> INSTANCES = new HashMap<>();
 
     /** All known primitive types. This is an attempt to categorize primitives starting at the most `rootish´ tag. */
-    private static Set<String> ALL_PRIMITIVE_TYPES = new HashSet<>(Arrays.asList(new String[]{
+    private static Set<String> allPrimitiveTypes = new HashSet<>(Arrays.asList(
         "advertising",
         "aerialway",
         "aeroway",
@@ -198,7 +199,7 @@ public class AutoCompletionManager implements DataSetListener {
         "traffic_sign",
         "tunnel",
         "waterway"
-    }));
+    ));
 
     /**
      * Constructs a new {@code AutoCompletionManager}.
@@ -212,21 +213,21 @@ public class AutoCompletionManager implements DataSetListener {
 
     Map<TaggingPresetType, MultiMap<String, String>> getPresetTagCache() {
         rebuild();
-        return PRESET_TAG_CACHE;
+        return presetTagCache;
     }
 
     MultiMap<String, String> getPresetTagCache(TaggingPresetType type) {
-        return getPresetTagCache().getOrDefault(type, new BetterMultiMap<String, String>());
+        return getPresetTagCache().getOrDefault(type, new BetterMultiMap<>());
     }
 
     MultiMap<String, String> getCategoryTagCache(String category) {
         rebuild();
-        return CATEGORY_TAG_CACHE.getOrDefault(category, new BetterMultiMap<String, String>());
+        return categoryTagCache.getOrDefault(category, new BetterMultiMap<>());
     }
 
     MultiMap<String, Relation> getRelationCache() {
         rebuild();
-        return RELATION_CACHE;
+        return relationCache;
     }
 
     /**
@@ -234,9 +235,9 @@ public class AutoCompletionManager implements DataSetListener {
      */
     void rebuild() {
         if (dirty) {
-            PRESET_TAG_CACHE.clear();
-            CATEGORY_TAG_CACHE.clear();
-            RELATION_CACHE.clear();
+            presetTagCache.clear();
+            categoryTagCache.clear();
+            relationCache.clear();
             cachePrimitives(ds.allNonDeletedCompletePrimitives());
             dirty = false;
         }
@@ -251,7 +252,7 @@ public class AutoCompletionManager implements DataSetListener {
         for (OsmPrimitive primitive : primitives) {
             cachePrimitive(primitive);
             if (primitive instanceof Relation) {
-                RELATION_CACHE.put(classifyRelation(primitive.getKeys()), (Relation) primitive);
+                relationCache.put(classifyRelation(primitive.getKeys()), (Relation) primitive);
             }
         }
     }
@@ -263,10 +264,10 @@ public class AutoCompletionManager implements DataSetListener {
      */
     void cachePrimitive(OsmPrimitive primitive) {
         MultiMap<String, String> mmap =
-            PRESET_TAG_CACHE.computeIfAbsent(TaggingPresetType.forPrimitive(primitive), key -> new BetterMultiMap<>());
+            presetTagCache.computeIfAbsent(TaggingPresetType.forPrimitive(primitive), key -> new BetterMultiMap<>());
         primitive.visitKeys((p, key, value) -> mmap.put(key, value));
         classifyPrimitive(primitive.getKeys()).forEach(category -> {
-            MultiMap<String, String> mmap2 = CATEGORY_TAG_CACHE.computeIfAbsent(category, key -> new BetterMultiMap<>());
+            MultiMap<String, String> mmap2 = categoryTagCache.computeIfAbsent(category, key -> new BetterMultiMap<>());
             primitive.visitKeys((p, key, value) -> mmap2.put(key, value));
         });
     }
@@ -284,7 +285,7 @@ public class AutoCompletionManager implements DataSetListener {
      * @return the primitive type or {@code ""}
      */
     public static Set<String> classifyPrimitive(Map<String, String> tags) {
-        return intersection(tags.keySet(), ALL_PRIMITIVE_TYPES);
+        return intersection(tags.keySet(), allPrimitiveTypes);
     }
 
     /**
@@ -368,7 +369,7 @@ public class AutoCompletionManager implements DataSetListener {
      */
     public Set<Role> getAllMemberRoles() {
         return getRelationCache().getAllValues().stream()
-            .flatMap(rel -> rel.getMembers().stream()).map(r -> mkRole(r)).collect(Collectors.toSet());
+            .flatMap(rel -> rel.getMembers().stream()).map(this::mkRole).collect(Collectors.toSet());
     }
 
     /**
@@ -384,7 +385,7 @@ public class AutoCompletionManager implements DataSetListener {
         Set<Relation> relations = getRelationCache().get(relationType);
         if (relations == null)
             return Collections.emptySet();
-        return relations.stream().flatMap(rel -> rel.getMembers().stream()).map(r -> mkRole(r)).collect(Collectors.toSet());
+        return relations.stream().flatMap(rel -> rel.getMembers().stream()).map(this::mkRole).collect(Collectors.toSet());
     }
 
     /**
@@ -400,7 +401,7 @@ public class AutoCompletionManager implements DataSetListener {
         Set<Relation> relations = tags != null ? getRelationCache().get(classifyRelation(tags)) : getRelationCache().getAllValues();
         if (relations == null)
             return set;
-        return relations.stream().flatMap(rel -> rel.getKeys().entrySet().stream()).map(e -> e.getKey()).collect(Collectors.toSet());
+        return relations.stream().flatMap(rel -> rel.getKeys().entrySet().stream()).map(Entry::getKey).collect(Collectors.toSet());
     }
 
     /**
@@ -447,13 +448,13 @@ public class AutoCompletionManager implements DataSetListener {
      * @param roleTypes all roles returned will match all of the types in this set.
      * @return the suggestions
      */
-    public Set<String> getRolesForRelation(Map<String, String> tags, EnumSet<TaggingPresetType> roleTypes) {
+    public Set<String> getRolesForRelation(Map<String, String> tags, Set<TaggingPresetType> roleTypes) {
         Set<String> set = new HashSet<>();
         Set<Relation> relations = tags != null ? getRelationCache().get(classifyRelation(tags)) : getRelationCache().getAllValues();
         if (relations == null)
             return set;
         return relations.stream().flatMap(rel -> rel.getMembers().stream())
-            .map(member -> mkRole(member)).filter(role -> role.appliesToAll(roleTypes)).map(role -> role.toString())
+            .map(this::mkRole).filter(role -> role.appliesToAll(roleTypes)).map(Object::toString)
             .collect(Collectors.toSet());
     }
 
@@ -574,9 +575,7 @@ public class AutoCompletionManager implements DataSetListener {
      */
     public Set<String> getDataSetValues(Collection<String> categories, String key) {
         Set<String> result = new HashSet<>();
-        categories.forEach(cat -> {
-            result.addAll(getCategoryTagCache(cat).get(key));
-        });
+        categories.forEach(cat -> result.addAll(getCategoryTagCache(cat).get(key)));
         return result;
     }
 
@@ -649,9 +648,7 @@ public class AutoCompletionManager implements DataSetListener {
      */
     private Collection<String> getDataSetKeys() {
         Set<String> result = new HashSet<>();
-        getPresetTagCache().values().forEach(mm -> {
-            result.addAll(mm.keySet());
-        });
+        getPresetTagCache().values().forEach(mm -> result.addAll(mm.keySet()));
         return result;
     }
 
@@ -666,9 +663,7 @@ public class AutoCompletionManager implements DataSetListener {
      */
     private Collection<String> getDataSetValues(String key) {
         Set<String> result = new HashSet<>();
-        getPresetTagCache().values().forEach(mm -> {
-            result.addAll(mm.getValues(key));
-        });
+        getPresetTagCache().values().forEach(mm -> result.addAll(mm.getValues(key)));
         return result;
     }
 
@@ -868,9 +863,9 @@ public class AutoCompletionManager implements DataSetListener {
                     ds.removeDataSetListener(AutoCompletionManager.this);
                     MainApplication.getLayerManager().removeLayerChangeListener(this);
                     dirty = true;
-                    PRESET_TAG_CACHE.clear();
-                    CATEGORY_TAG_CACHE.clear();
-                    RELATION_CACHE.clear();
+                    presetTagCache.clear();
+                    categoryTagCache.clear();
+                    relationCache.clear();
                     ds = null;
                 }
             }

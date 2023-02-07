@@ -51,7 +51,7 @@ abstract class InteractiveItem extends KeyedItem {
 
     abstract class Instance extends KeyedItem.Instance {
         /** The main component the user will interact with */
-        private JComponent component;
+        private final JComponent component;
 
         Instance(Item item, Composite.Instance parent, JComponent component) {
             super(item, parent);

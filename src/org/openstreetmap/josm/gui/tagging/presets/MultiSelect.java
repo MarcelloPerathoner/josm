@@ -80,7 +80,7 @@ final class MultiSelect extends ComboMultiSelect {
         // sure we won't lose them.
         usage.splitValues();
         for (String value: usage.map.keySet()) {
-            addEntry(model, new PresetListEntry(this, value).newInstance(instance));
+            addEntry(model, new PresetListEntry(value).newInstance(instance));
         }
 
         instance.setValue(instance.getInitialValue());
@@ -132,7 +132,7 @@ final class MultiSelect extends ComboMultiSelect {
 
         @Override
         PresetListEntry.Instance getSelectedItem() {
-            return new PresetListEntry(MultiSelect.this, list.getSelectedValuesList()
+            return new PresetListEntry(list.getSelectedValuesList()
                 .stream().map(e -> e.getValue()).distinct().sorted()
                 .collect(Collectors.joining(";"))).newInstance(this);
         }
@@ -144,7 +144,7 @@ final class MultiSelect extends ComboMultiSelect {
         void setValue(String newValue) {
             if (!newValue.isEmpty() && !DIFFERENT.equals(newValue)) {
                 for (String value : newValue.split(";", -1)) {
-                    PresetListEntry.Instance pi = new PresetListEntry(MultiSelect.this, value).newInstance(this);
+                    PresetListEntry.Instance pi = new PresetListEntry(value).newInstance(this);
                     DefaultListModel<PresetListEntry.Instance> model =
                         (DefaultListModel<PresetListEntry.Instance>) list.getModel();
                     addEntry(model, pi);

@@ -157,7 +157,11 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             Map<String, String> changedTags = presetInstance.getChangedTags();
             // why not putAll? see #22580
             get().forEach(p -> changedTags.forEach((k, v) -> {
-                if (Utils.isEmpty(v)) p.remove(k); else p.put(k, v);
+                if (Utils.isEmpty(v)) {
+                    p.remove(k);
+                } else {
+                    p.put(k, v);
+                }
             }));
             getDataSet().endUpdate();
         }
@@ -528,14 +532,6 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             parentMenu.add(menuItem);
             // don't recurse into children
         }
-    }
-
-    /**
-     * Returns whether the preset name should be shown in the dialog
-     * @return whether the preset name should be shown in the dialog
-     */
-    public boolean getPresetNameLabel() {
-        return showPresetName;
     }
 
     /**
