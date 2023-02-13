@@ -51,8 +51,8 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
     private final class TaggingPresetValidationListener implements ValidationListener {
         @Override
         public boolean validatePreferences() {
-            Set<SourceEntry> newSources = new HashSet<>(sources.getModel().getSources());
-            newSources.removeAll(sources.getInitialSourcesList());
+            Set<SourceEntry> newSources = new HashSet<>(getActiveSources());
+            newSources.removeAll(sourceEditor.getInitialSourcesList());
 
             for (SourceEntry source: newSources) {
                 String errorMessage = null;
@@ -83,7 +83,7 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
                     case JOptionPane.YES_OPTION:
                         continue;
                     case JOptionPane.NO_OPTION:
-                        sources.getModel().removeSource(source);
+                        sourceEditor.getModel().removeSource(source);
                         continue;
                     default:
                         return false;
@@ -107,7 +107,7 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
     private static final List<SourceProvider> presetSourceProviders = new ArrayList<>();
     private final ValidationListener validationListener = new TaggingPresetValidationListener();
 
-    private SourceEditor sources;
+    private SourceEditor sourceEditor;
     private JCheckBox useValidator;
     private JCheckBox sortMenu;
 
@@ -138,12 +138,12 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
 
         panel.add(sortMenu, GBC.eop());
 
-        sources = new TaggingPresetSourceEditor();
-        panel.add(sources, GBC.eop().fill());
+        sourceEditor = new TaggingPresetSourceEditor();
+        panel.add(sourceEditor, GBC.eop().fill());
 
         PreferencePanel preferencePanel = gui.createPreferenceTab(this);
         preferencePanel.add(decorate(panel), GBC.eol().fill());
-        sources.deferLoading(gui, preferencePanel);
+        sourceEditor.deferLoading(gui, preferencePanel);
         gui.addValidationListener(validationListener);
     }
 
@@ -210,18 +210,18 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
 
     @Override
     public boolean ok() {
-        Set<SourceEntry> removedSources = new HashSet<>(sources.getInitialSourcesList());
-        removedSources.removeAll(sources.getModel().getSources());
+        Set<SourceEntry> removedSources = new HashSet<>(sourceEditor.getInitialSourcesList());
+        removedSources.removeAll(getActiveSources());
 
-        Set<SourceEntry> addedSources = new HashSet<>(sources.getModel().getSources());
-        addedSources.removeAll(sources.getInitialSourcesList());
+        Set<SourceEntry> addedSources = new HashSet<>(getActiveSources());
+        addedSources.removeAll(sourceEditor.getInitialSourcesList());
 
         TaggingPresets.USE_VALIDATOR.put(useValidator.isSelected());
 
         boolean settingsChanged = TaggingPresets.SORT_VALUES.put(sortMenu.isSelected());
         boolean sourcesChanged = !addedSources.isEmpty() || !removedSources.isEmpty();
 
-        if (sources.finish() || sourcesChanged || settingsChanged) {
+        if (sourceEditor.finish() || sourcesChanged || settingsChanged) {
             JMenu presetsMenu = MainApplication.getMenu().presetsMenu;
             ToolbarPreferences toolbar = MainApplication.getToolbar();
             TaggingPresets taggingPresets = MainApplication.getTaggingPresets();
@@ -230,6 +230,13 @@ public final class TaggingPresetPreference extends DefaultTabPreferenceSetting {
             taggingPresets.reInit(presetsMenu, toolbar);
         }
         return false;
+    }
+
+    /**
+     * Returns all active sources.
+     */
+    public List<SourceEntry> getActiveSources() {
+        return sourceEditor.getModel().getSources();
     }
 
     @Override

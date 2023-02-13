@@ -1,8 +1,5 @@
 // https://www.bruceeckel.com/2021/01/02/the-problem-with-gradle/
 
-import com.github.spotbugs.snom.Confidence
-import com.github.spotbugs.snom.Effort
-import com.github.spotbugs.snom.SpotBugsTask
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -14,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
-val java_lang_version = 19
+val java_lang_version = 17
 
 val javaccOutputDir = "${buildDir}/generated/javacc"
 val epsgOutputDir   = "${buildDir}/generated/epsg"
@@ -103,8 +100,8 @@ val versions = mapOf(
   "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.15.0" else "2.10.0",
   "jdatepicker" to "1.3.4",
   "junit" to "5.9.1",
-  "pmd" to "6.53.0",
-  "spotbugs" to "4.7.3",
+  "pmd" to "6.54.0",
+  "spotbugs" to "${spotbugs.toolVersion.get()}",
   "wiremock" to "2.35.0"
 )
 
@@ -650,17 +647,17 @@ tasks.withType(Javadoc::class) {
 // Spotbugs config
 spotbugs {
     ignoreFailures.set(true)
-    effort.set(Effort.MAX)
-    reportLevel.set(Confidence.LOW)
-    reportsDir.set(file("$reportsDir/spotbugs"))
+    effort.set(com.github.spotbugs.snom.Effort.MAX)
+    reportLevel.set(com.github.spotbugs.snom.Confidence.LOW)
+    reportsDir.set(file("$buildDir/reports/spotbugs"))
 }
-tasks.withType(SpotBugsTask::class) {
+tasks.spotbugsMain {
     reports.create("html") {
-        outputLocation.set(file(File(spotbugs.reportsDir.get().asFile, "baseName.html")))
-        // setStylesheet("color.xsl")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/spotbugs.html"))
+        setStylesheet("fancy-hist.xsl")
     }
 }
-
 
 // JaCoCo config
 jacoco {
@@ -678,12 +675,17 @@ tasks.jacocoTestReport {
 
 // PMD config
 pmd {
-    toolVersion = versions.getValue("pmd")
+    isConsoleOutput = true
     isIgnoreFailures = true
+    toolVersion = versions.getValue("pmd")
     ruleSetConfig = resources.text.fromFile("$projectDir/config/pmd/ruleset.xml")
     ruleSets = listOf()
+    // ruleSets = listOf("category/java/errorprone.xml", "category/java/bestpractices.xml")
     sourceSets = listOf(project.sourceSets.main.get(), project.sourceSets.test.get())
+    rulesMinimumPriority.set(1)
+    // threads.set(4)
 }
+
 
 // SonarQube config
 sonarqube {

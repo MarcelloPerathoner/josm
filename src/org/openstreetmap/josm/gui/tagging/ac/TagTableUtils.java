@@ -31,7 +31,7 @@ public class TagTableUtils {
 
     private AutoCompletionManager manager = null;
     private Set<TaggingPresetType> types;
-    private Set<String> categories;
+    private Set<String> categories = new HashSet<>();
 
     /** Autocomplete keys by default */
     public static final BooleanProperty AUTOCOMPLETE_KEYS = new BooleanProperty("properties.autocomplete-keys", true);

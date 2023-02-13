@@ -198,7 +198,7 @@ class TemplateParserTest {
         StringBuilder sb = new StringBuilder();
         entry.appendText(sb, dataProvider);
         Assert.assertEquals(
-            "description=Cycleway, description:de=Fahrradweg, description:de_CH=Veloweg, name=waypointName, number=10, special:key=specialKey", 
+            "description=Cycleway, description:de=Fahrradweg, description:de_CH=Veloweg, name=waypointName, number=10, special:key=specialKey",
             sb.toString()
         );
     }
@@ -222,7 +222,7 @@ class TemplateParserTest {
      */
     @Test
     void testSpecialVariable() throws ParseError {
-        assert_equals("{name}u{special:localName}u{special:special:key}", "waypointNameulocalNameuspecialKey");  
+        assert_equals("{name}u{special:localName}u{special:special:key}", "waypointNameulocalNameuspecialKey");
     }
 
     /**
@@ -233,16 +233,16 @@ class TemplateParserTest {
     void testSpecialLocalVariable() throws ParseError {
         Locale old_locale = Locale.getDefault();
 
-        Locale.setDefault(new Locale("de", "DE"));
+        Locale.setDefault(Locale.forLanguageTag("de-DE"));
         assert_equals("{special:local:description}", "Fahrradweg");
 
-        Locale.setDefault(new Locale("de", "AT"));
+        Locale.setDefault(Locale.forLanguageTag("de-AT"));
         assert_equals("{special:local:description}", "Fahrradweg");
 
-        Locale.setDefault(new Locale("de", "CH"));
+        Locale.setDefault(Locale.forLanguageTag("de-CH"));
         assert_equals("{special:local:description}", "Veloweg");
 
-        Locale.setDefault(new Locale("fr", "FR")); // default to unlocalized description
+        Locale.setDefault(Locale.forLanguageTag("fr-FR")); // default to unlocalized description
         assert_equals("{special:local:description}", "Cycleway");
 
         Locale.setDefault(old_locale);
@@ -258,7 +258,7 @@ class TemplateParserTest {
     void testSpecialLocalVariableImplicitCondition() throws ParseError {
         Locale old_locale = Locale.getDefault();
 
-        Locale.setDefault(new Locale("de", "DE"));
+        Locale.setDefault(Locale.forLanguageTag("de-DE"));
         assert_equals("?{'{special:local:description}' | 'y'}", "Fahrradweg");
         assert_equals("?{'{special:local:nosuchtag}'   | 'y'}", "y");
 

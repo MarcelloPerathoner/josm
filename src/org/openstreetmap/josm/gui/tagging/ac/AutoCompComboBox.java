@@ -142,7 +142,7 @@ public class AutoCompComboBox<E> extends JosmComboBox<E> implements TableCellEdi
         if (useFixedLocale) {
             Locale oldLocale = privateInputContext.getLocale();
             Logging.info("Using English input method");
-            if (!privateInputContext.selectInputMethod(Locale.of("en", "US"))) {
+            if (!privateInputContext.selectInputMethod(Locale.forLanguageTag("en-US"))) {
                 // Unable to use English keyboard layout, disable the feature
                 Logging.warn("Unable to use English input method");
                 useFixedLocale = false;

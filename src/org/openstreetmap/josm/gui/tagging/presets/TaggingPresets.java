@@ -142,7 +142,7 @@ public final class TaggingPresets implements Destroyable {
     }
 
     /**
-     * Add a tagging preset sources from an url. May displays an error message.
+     * Add a tagging preset source from an url. May displays an error message.
      */
     public void addSourceFromUrl(String url) {
         String errorMessage = null;

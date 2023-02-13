@@ -3,8 +3,23 @@ This is my personal edition of JOSM.
 Changes From the Official Version
 =================================
 
-Caveat: this changed version is not binary compatible with most official plugins.
-Plugins have been fixed but are not yet published.  Start JOSM with --skip-plugins.
+Caveat: this changed version is not binary compatible with following official plugins:
+
+- buildings_tools
+- CommandLine
+- imagery_cachexport
+- Mapillary (`fixed version <https://github.com/MarcelloPerathoner/JOSM-Plugins-Mapillary>`_)
+- OsmInspectorPlugin
+- photoadjust
+- surveyor
+- tageditor
+- tagging-preset-tester
+- trustosm
+- turnlanes
+- turnrestrictions
+
+Tip: If JOSM crashes start it with --skip-plugins.
+
 
 .. contents::
     :local:

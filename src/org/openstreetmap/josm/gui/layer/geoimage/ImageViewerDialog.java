@@ -101,8 +101,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     /** Pointer to the viewer if the tabbed pane is not visible */
     private ImageDisplay2 imageDisplay0 = createImageDisplay(null);
 
-    /** The map follows the image in the viewer if true */
-    private boolean centerView;
+    JToggleButton tbCentre;
 
     static void createInstance() {
         if (dialog != null)
@@ -149,7 +148,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     }
 
     void setup() {
-        JToggleButton tbCentre = new JToggleButton(new ImageCenterViewAction());
+        tbCentre = new JToggleButton(new ImageCenterViewAction());
         tbCentre.setSelected(Config.getPref().getBoolean(CENTRE_PREF, false));
 
         toolbar.setFloatable(false);
@@ -208,7 +207,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
         }
         tabbedPane.addChangeListener(this);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        centerView = Config.getPref().getBoolean(CENTRE_PREF, false);
+        tbCentre.setSelected(Config.getPref().getBoolean(CENTRE_PREF, false));
     }
 
     private ImageDisplay2 createImageDisplay(IGeoImageLayer geoLayer) {
@@ -742,7 +741,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
         if (onlyImage != null) {
             onlyImage.selectImage(null, onlyImage);
         }
-        if (centerView) {
+        if (isCenterView()) {
             IImageEntry<?> firstImage = getFirstImage(selectedImages);
             if (firstImage != null) {
                 panTo(firstImage);
@@ -820,8 +819,20 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
      * @return {@code true} if the center view is active, {@code false} otherwise
      * @since 9416
      */
-    public static boolean isCenterView() {
-        return getInstance().centerView;
+    public boolean isCenterView() {
+        return tbCentre.isEnabled() && tbCentre.isSelected();
+    }
+
+    /**
+     * Enables (or disables) the "Center view" button.
+     * @param value {@code true} to enable the button, {@code false} otherwise
+     * @return the old enabled value. Can be used to restore the original enable state
+     */
+    public boolean setCentreEnabled(boolean value) {
+        final boolean wasEnabled = isCenterView();
+        tbCentre.setEnabled(value);
+        tbCentre.getAction().actionPerformed(new ActionEvent(tbCentre, 0, null));
+        return wasEnabled;
     }
 
     /**
@@ -1100,7 +1111,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
         @Override
         public void actionPerformed(ActionEvent e) {
             final JToggleButton button = (JToggleButton) e.getSource();
-            centerView = button.isEnabled() && button.isSelected();
+            boolean centerView = isCenterView();
             Config.getPref().putBoolean(CENTRE_PREF, centerView);
             if (centerView)
                 panTo(getSelectedImage());

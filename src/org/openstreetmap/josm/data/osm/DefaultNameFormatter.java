@@ -170,8 +170,10 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
      * @return the preset or null
      */
     TaggingPreset getPresetFor(IPrimitive primitive) {
-        return (taggingPresets != null ? taggingPresets : MainApplication.getTaggingPresets())
-            .getFirstMatchingPresetWithNameTemplate(primitive);
+        TaggingPresets tp = taggingPresets != null ? taggingPresets : MainApplication.getTaggingPresets();
+        if (tp != null)
+            return tp.getFirstMatchingPresetWithNameTemplate(primitive);
+        return null;
     }
 
     /**

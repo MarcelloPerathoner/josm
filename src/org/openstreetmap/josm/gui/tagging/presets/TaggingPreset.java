@@ -97,9 +97,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     static Map<String, Object> properties = new HashMap<>();
 
     /**
-     * Create an empty tagging preset. This will not have any items and
-     * will be an empty string as text. createPanel will return null.
-     * Use this as default item for "do not select anything".
+     * Creates a tagging preset.
      *
      * @param attributes the XML attributes
      * @throws IllegalArgumentException on invalid attributes

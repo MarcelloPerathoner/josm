@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -105,7 +106,10 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         this.showNewRelationButton = false;
         this.disableApplyButton = false;
         presetInstance.dialog = this;
-        fontMetrics = getFontMetrics(getFont());
+        Font font = getFont();
+        if (font == null)
+            font = new JLabel().getFont(); // makes the constructor unit-testable
+        fontMetrics = getFontMetrics(font);
         TaggingPreset preset = presetInstance.getPreset();
 
         setTitle(presetInstance);
@@ -129,14 +133,17 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         JScrollPane scrollPane = new JScrollPane(contentPane);
         GuiHelper.setDefaultIncrement(scrollPane);
         scrollPane.setBorder(null);
-        if (MainApplication.getMainFrame() != null) {
+        Insets insets;
+        if (MainApplication.getMainFrame() != null) { // makes the constructor unit-testable
             scrollPane.applyComponentOrientation(MainApplication.getMainFrame().getComponentOrientation());
+            insets = MainApplication.getMainFrame().getInsets();
+        } else {
+            insets = new Insets(0, 0, 0, 0);
         }
         setContentPane(scrollPane);
 
         // set minimum dimensions
         // assume the main frame caption is the same height as the dialog caption
-        Insets insets = MainApplication.getMainFrame().getInsets();
         Dimension d = getPreferredSize();
         int minWidth = presetInstance.getPreset().minWidth;
         if (minWidth > 0) {

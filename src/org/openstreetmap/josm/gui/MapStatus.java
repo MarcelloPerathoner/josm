@@ -1096,7 +1096,7 @@ public final class MapStatus extends JPanel implements
     }
 
     /**
-     * Sets the heading to display in the heading panel
+     * Sets the heading to display in the heading panel. Null values yield "--".
      * @param h The heading
      */
     public void setHeading(Double h) {
@@ -1104,7 +1104,7 @@ public final class MapStatus extends JPanel implements
     }
 
     /**
-     * Sets the distance text to the given value
+     * Sets the distance text to the given value. Null values yield "--".
      * @param dist The distance value to display, in meters
      */
     public void setDist(Double dist) {
