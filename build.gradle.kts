@@ -348,6 +348,7 @@ tasks {
         })
     }
     jar {
+        archiveBaseName.set("josm") // always "josm" even if the dir we are in is "core"
         inputs.files(files(generateEpsg))
         manifest {
             attributes(
