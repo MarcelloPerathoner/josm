@@ -3,7 +3,7 @@ This is my personal edition of JOSM.
 Changes From the Official Version
 =================================
 
-Caveat: this changed version is not binary compatible with following official plugins:
+Caveat: this custom version is not binary compatible with following official plugins:
 
 - buildings_tools
 - CommandLine
@@ -17,6 +17,8 @@ Caveat: this changed version is not binary compatible with following official pl
 - trustosm
 - turnlanes
 - turnrestrictions
+
+Here are some `fixed plugins <https://github.com/MarcelloPerathoner/josm-plugins/releases>`_.
 
 Tip: If JOSM crashes start it with --skip-plugins.
 
