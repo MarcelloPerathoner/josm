@@ -4,10 +4,8 @@ package org.openstreetmap.josm.gui.preferences.server;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -62,34 +60,26 @@ public class AuthenticationPreferencesPanel extends VerticallyScrollablePanel im
      */
     protected final void build() {
         setLayout(new GridBagLayout());
-
         AuthenticationMethodChangeListener authChangeListener = new AuthenticationMethodChangeListener();
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         // -- radio button for basic authentication
-        gc.anchor = GridBagConstraints.NORTHWEST;
-        // gc.fill = GridBagConstraints.HORIZONTAL;
-        gc.gridx = 1;
-        gc.weightx = 1.0;
-        gc.insets = new Insets(0, 0, 0, 3);
-        add(rbBasicAuthentication, gc);
+        add(rbBasicAuthentication, GBC.eol());
         rbBasicAuthentication.setText(tr("Use Basic Authentication"));
         rbBasicAuthentication.setToolTipText(tr("Select to use HTTP basic authentication with your OSM username and password"));
         rbBasicAuthentication.addItemListener(authChangeListener);
 
         //-- radio button for OAuth 1.0a
-        buttonPanel.add(rbOAuth);
+        add(rbOAuth, GBC.eol());
         rbOAuth.setText(tr("Use OAuth {0}", "1.0a"));
         rbOAuth.setToolTipText(tr("Select to use OAuth {0} as authentication mechanism", "1.0a"));
         rbOAuth.addItemListener(authChangeListener);
 
         //-- radio button for OAuth 2.0
-        buttonPanel.add(rbOAuth20);
+        add(rbOAuth20, GBC.eol());
         rbOAuth20.setText(tr("Use OAuth {0}", "2.0"));
         rbOAuth20.setToolTipText(tr("Select to use OAuth {0} as authentication mechanism", "2.0"));
         rbOAuth20.addItemListener(authChangeListener);
 
-        add(buttonPanel, GBC.eol());
         //-- radio button for OAuth
         ButtonGroup bg = new ButtonGroup();
         bg.add(rbBasicAuthentication);
@@ -97,16 +87,7 @@ public class AuthenticationPreferencesPanel extends VerticallyScrollablePanel im
         bg.add(rbOAuth20);
 
         //-- add the panel which will hold the authentication parameters
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.anchor = GridBagConstraints.NORTHWEST;
-        gc.insets = new Insets(0, 0, 0, 3);
-        gc.gridx = 0;
-        gc.gridy = 1;
-        gc.gridwidth = 2;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        add(pnlAuthenticationParameters, gc);
+        add(pnlAuthenticationParameters, GBC.eol().fill(GridBagConstraints.HORIZONTAL));
 
         //-- the two panels for authentication parameters
         pnlBasicAuthPreferences = new BasicAuthenticationPreferencesPanel();
