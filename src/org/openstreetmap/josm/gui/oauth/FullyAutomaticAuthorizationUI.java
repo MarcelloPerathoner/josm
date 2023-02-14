@@ -28,6 +28,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.openstreetmap.josm.data.oauth.OAuthParameters;
 import org.openstreetmap.josm.data.oauth.OAuthToken;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -385,7 +386,7 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
             executor.execute(new TestAccessTokenTask(
                     FullyAutomaticAuthorizationUI.this,
                     getApiUrl(),
-                    getAdvancedPropertiesPanel().getAdvancedParameters(),
+                    (OAuthParameters) getAdvancedPropertiesPanel().getAdvancedParameters(),
                     getAccessToken()
             ));
         }
@@ -438,7 +439,7 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
                             + "a valid login URL from the OAuth Authorize Endpoint URL ''{0}''.<br><br>"
                             + "Please check your advanced setting and try again."
                             + "</html>",
-                            getAdvancedPropertiesPanel().getAdvancedParameters().getAuthoriseUrl()),
+                            ((OAuthParameters) getAdvancedPropertiesPanel().getAdvancedParameters()).getAuthoriseUrl()),
                     tr("OAuth authorization failed"),
                     JOptionPane.ERROR_MESSAGE,
                     HelpUtil.ht("/Dialog/OAuthAuthorisationWizard#FullyAutomaticProcessFailed")
@@ -446,7 +447,7 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
         }
 
         protected void alertLoginFailed() {
-            final String loginUrl = getAdvancedPropertiesPanel().getAdvancedParameters().getOsmLoginUrl();
+            final String loginUrl = ((OAuthParameters) getAdvancedPropertiesPanel().getAdvancedParameters()).getOsmLoginUrl();
             HelpAwareOptionPane.showOptionDialog(
                     FullyAutomaticAuthorizationUI.this,
                     tr("<html>"
@@ -480,7 +481,7 @@ public class FullyAutomaticAuthorizationUI extends AbstractAuthorizationUI {
             try {
                 getProgressMonitor().setTicksCount(3);
                 OsmOAuthAuthorizationClient authClient = new OsmOAuthAuthorizationClient(
-                        getAdvancedPropertiesPanel().getAdvancedParameters()
+                        (OAuthParameters) getAdvancedPropertiesPanel().getAdvancedParameters()
                 );
                 OAuthToken requestToken = authClient.getRequestToken(
                         getProgressMonitor().createSubTaskMonitor(1, false)
