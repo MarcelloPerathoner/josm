@@ -650,8 +650,10 @@ public final class Functions {
                         after = p.b;
                         break;
                     }
-                    if (p.b == n)
+                    if (p.b == n) {
                         before = p.a;
+                        break;
+                    }
                 }
             }
             if (!before.equals(after)) {
@@ -660,7 +662,7 @@ public final class Functions {
                 // bearing is wrong because the map is flat
                 // return (float) before.bearing(after);
                 if (!a.equalsEpsilon(b, 1e-7))
-                    return (float) (Math.PI / 2d - Geometry.getSegmentAngle(a, b));
+                    return (float) a.heading(b);
             }
         }
         return null;
