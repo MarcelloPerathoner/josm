@@ -129,6 +129,13 @@ public final class ExpressionFactory {
             };
         }
 
+        static <T> Factory ofEnv(Class<T> type, Function<Environment, ?> function, BiFunction<Environment, T, ?> biFunction) {
+            return args -> env -> {
+                T v = args.size() >= 1 ? Cascade.convertTo(args.get(0).evaluate(env), type) : null;
+                return v == null ? function.apply(env) : biFunction.apply(env, v);
+            };
+        }
+
         static <T, U> Factory ofEnv(Class<T> type1, Class<U> type2,
                                     BiFunction<Environment, T, ?> biFunction, TriFunction<Environment, T, U, ?> triFunction) {
             return args -> env -> {
@@ -257,7 +264,7 @@ public final class ExpressionFactory {
         FACTORY_MAP.put("uniq_list", Factory.of(List.class, Functions::uniq_list));
         FACTORY_MAP.put("upper", Factory.of(String.class, Functions::upper));
         FACTORY_MAP.put("waylength", Factory.ofEnv(Functions::waylength));
-        FACTORY_MAP.put("heading", Factory.ofEnv(Functions::heading));
+        FACTORY_MAP.put("heading", Factory.ofEnv(Double.class, Functions::heading, Functions::heading));
     }
 
     private ExpressionFactory() {

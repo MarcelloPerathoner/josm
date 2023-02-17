@@ -59,11 +59,11 @@ node.sign[direction=~/[NWSE]+/] {
 node.sign[direction=~/[.0-9]+/] {
     rotationprop: eval(degree_to_radians(tag("direction")) + 3.14);
 }
-node.sign[direction=forward] {
+way[highway] > node.sign[direction=forward] {
     rotationprop: heading();
 }
-node.sign[direction=backward] {
-    rotationprop: eval(heading() + 3.14);
+way[highway] > node.sign[direction=backward] {
+    rotationprop: heading(3.14);
 }
 
 node[prop(sign, default)]::* {
@@ -73,7 +73,7 @@ node[prop(sign, default)]::* {
     text-anchor-horizontal: center;
     text-anchor-vertical: center;
     text-rotation: prop(rotationprop, default);
-    font-size: eval(setting("icon_size") * 0.35);
+    font-size: eval(setting("icon_size") * 0.3);
     font-weight: bold;
     text-color: black;
 }

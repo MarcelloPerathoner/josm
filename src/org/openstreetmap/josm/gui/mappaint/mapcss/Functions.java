@@ -2,6 +2,9 @@
 package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +35,8 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.NullableArguments;
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.MapCSSParser;
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.ParseException;
 import org.openstreetmap.josm.io.XmlWriter;
 import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.ColorHelper;
@@ -624,48 +629,67 @@ public final class Functions {
     }
 
     /**
-     * Returns the heading of the way at node or {@code null}.
+     * Returns the heading of the node or {@code null}.
      * <p>
-     * Notes: this function returns the projected heading, not the great-circle bearing.
-     * It can be used to rotate icons in the direction of a way.  This function
-     * disregards ways that are areas.  If the node is member of more than two ways, the
-     * function will pick two ways at random.
+     * A heading exists only if the node is part of at most one incoming way segment and
+     * one outgoing way segment.  A node that is part of three or more way segments
+     * cannot have a heading.
+     * <p>
+     * If the rule was matched by a parent > child selector this function will consider
+     * only parent ways that match the parent selector. Consider the rule:
+     * <pre>
+     *   way[highway] > node[traffic_sign] { icon-rotation: heading(); }
+     * </pre>
+     * The function will only consider highways that pass through the node when
+     * calculating the heading.
+     * <p>
+     * This function returns the projected heading, not the great-circle bearing.
      *
      * @param env the environment
-     * @return the heading of the way at node in radians or {@code null}.
-     * @see ILatLon#bearing()
+     * @param refHeading heading in radians to add to the result or {@code null}.
+     *                   eg. add {@code 3.14} for backward facing signs.
+     * @return the heading of the way at node in radians
+     *         or {@code null} if no meaningful heading exists.
+     * @see EastNorth#heading()
      */
-    public static Float heading(final Environment env) {
+    public static Float heading(final Environment env, Double refHeading) {
         if (env.osm instanceof Node) {
             Node n = (Node) env.osm;
             Node before = n;
             Node after = n;
-
+            int incoming = 0;
+            int outgoing = 0;
             for (Way way : n.getParentWays()) {
-                // ignore landuse areas, which often share nodes with roads
-                if (way.isArea())
+                if (env.left != null && !env.left.matches(env.withPrimitive(way))) {
                     continue;
+                }
                 for (Pair<Node, Node> p : way.getNodePairs(false)) {
-                    if (p.a == n) {
-                        after = p.b;
-                        break;
-                    }
                     if (p.b == n) {
                         before = p.a;
-                        break;
+                        incoming++;
+                    }
+                    if (p.a == n) {
+                        after = p.b;
+                        outgoing++;
                     }
                 }
             }
-            if (!before.equals(after)) {
+            if (incoming <= 1 && outgoing <= 1) {
                 EastNorth a = before.getEastNorth();
                 EastNorth b = after.getEastNorth();
-                // bearing is wrong because the map is flat
-                // return (float) before.bearing(after);
                 if (!a.equalsEpsilon(b, 1e-7))
-                    return (float) a.heading(b);
+                    return (float) a.heading(b, refHeading != null ? refHeading : 0d);
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the heading of the node or {@code null}.
+     * @see #heading(Environment, Double)
+     */
+    public static Float heading(final Environment env) {
+        return heading(env, null);
     }
 
     /**

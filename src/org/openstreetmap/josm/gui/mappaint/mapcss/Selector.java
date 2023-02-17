@@ -225,6 +225,8 @@ public interface Selector {
                     // index is not needed, we can avoid the sequential search below
                     e.parent = parent;
                     e.count = count;
+                    e.left = left;
+                    e.link = link;
                     return;
                 }
                 // see #18964
@@ -238,6 +240,8 @@ public interface Selector {
                         e.parent = parent;
                         e.index = i;
                         e.count = count;
+                        e.left = left;
+                        e.link = link;
                         return;
                     }
                 }
@@ -321,6 +325,7 @@ public interface Selector {
                             e.parent = r;
                             e.index = openEndIndex;
                             e.count = openEnds.size();
+                            e.left = left;
                         }
                     }
                 }
@@ -384,6 +389,7 @@ public interface Selector {
                     if (isPrimitiveUsable(p) && Objects.equals(layer, OsmUtils.getLayer(p))
                             && left.matches(new Environment(p).withParent(e.osm)) && isArea(p)
                             && (toIgnore == null || !toIgnore.contains(p))) {
+                        e.left = left;
                         if (e.osm instanceof Way && ((Way) e.osm).referrers(Relation.class).anyMatch(ref -> ref == p))
                             continue;
                         visitArea(p);
@@ -450,6 +456,7 @@ public interface Selector {
             public void visit(Collection<? extends IPrimitive> primitives) {
                 for (IPrimitive p : primitives) {
                     if (p != e.osm && isPrimitiveUsable(p) && left.matches(new Environment(p).withParent(e.osm))) {
+                        e.left = left;
                         if (toCheck == null) {
                             toCheck = new ArrayList<>();
                         }
@@ -482,6 +489,7 @@ public interface Selector {
                 if (left.matches(new Environment(w).withParent(e.osm))
                         && w.getBBox().bounds(e.osm.getBBox())
                         && !Geometry.filterInsidePolygon(Collections.singletonList(e.osm), w).isEmpty()) {
+                    e.left = left;
                     addToChildren(e, w);
                 }
             }
@@ -491,6 +499,7 @@ public interface Selector {
                 if (r instanceof Relation && r.isMultipolygon() && r.getBBox().bounds(e.osm.getBBox())
                         && left.matches(new Environment(r).withParent(e.osm))
                         && !Geometry.filterInsideMultipolygon(Collections.singletonList(e.osm), (Relation) r).isEmpty()) {
+                    e.left = left;
                     addToChildren(e, r);
                 }
             }
@@ -529,6 +538,7 @@ public interface Selector {
 
             if (!right.matches(e))
                 return false;
+            e.right = right;
 
             if (ChildOrParentSelectorType.SUBSET_OR_EQUAL == type || ChildOrParentSelectorType.NOT_SUBSET_OR_EQUAL == type) {
 

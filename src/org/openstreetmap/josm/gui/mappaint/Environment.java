@@ -11,6 +11,7 @@ import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Condition.Context;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector.LinkSelector;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
@@ -51,6 +52,21 @@ public class Environment {
      * is evaluated in a {@link LinkSelector} (within a child selector)
      */
     public IPrimitive parent;
+
+    /**
+     * The left selector that matched or null.
+     */
+    public Selector left;
+
+    /**
+     * The right selector that matched or null.
+     */
+    public Selector right;
+
+    /**
+     * The link selector that matched or null.
+     */
+    public LinkSelector link;
 
     /**
      * The same for parent selector. Only one of the 2 fields (parent or child) is not null in any environment.
@@ -146,6 +162,9 @@ public class Environment {
         this.crossingWaysMap = other.crossingWaysMap;
         this.mpAreaCache = other.mpAreaCache;
         this.toMatchForSurrounding = other.toMatchForSurrounding;
+        this.left = other.left;
+        this.link = other.link;
+        this.right = other.right;
     }
 
     /**
@@ -315,6 +334,9 @@ public class Environment {
         children = null;
         intersections = null;
         crossingWaysMap = null;
+        left = null;
+        link = null;
+        right = null;
         return this;
     }
 
