@@ -3,6 +3,8 @@ package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -90,16 +92,16 @@ class IconRotationTest {
         ds.addPrimitiveRecursive(w);
 
         assertEquals(Utils.toRadians(225),
-                     NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n0), 
+                     NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n0),
                      0.01);
         assertEquals(Utils.toRadians(225),
-                     NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n1), 
+                     NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n1),
                      0.01);
         assertEquals(Utils.toRadians(-45),
-                     NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n2), 
+                     NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n2),
                      0.01);
         assertEquals(Utils.toRadians(-90),
-                     NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n3), 
+                     NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n3),
                      0.01);
     }
 
@@ -121,8 +123,86 @@ class IconRotationTest {
         ds.addPrimitiveRecursive(w2);
 
         assertEquals(Utils.toRadians(45),
-                     NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n), 
+                     NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n),
                      0.01);
+    }
+
+    @Test
+    void testHeadingFunction() {
+        Node n0 = new Node(new LatLon(0.0, 0.0)); // bl
+        Node n1 = new Node(new LatLon(0.0, 0.1)); // br
+        Node n2 = new Node(new LatLon(0.1, 0.1)); // tr
+        Node n3 = new Node(new LatLon(0.1, 0.0)); // tl
+        ds.addPrimitive(n0);
+        ds.addPrimitive(n1);
+        ds.addPrimitive(n2);
+        ds.addPrimitive(n3);
+
+        Way w0 = new Way();
+        Way w1 = new Way();
+        w0.addNode(n0);
+        w0.addNode(n1);
+        w0.addNode(n2);
+        w1.addNode(n2);
+        w1.addNode(n3);
+        w0.setKeys(Collections.singletonMap("highway", "primary"));
+        w1.setKeys(Collections.singletonMap("highway", "primary"));
+        ds.addPrimitive(w0);
+        ds.addPrimitive(w1);
+
+        MapCSSStyleSource cssForward = new MapCSSStyleSource("node { symbol-shape: triangle; icon-rotation: heading(); }");
+        MapCSSStyleSource cssBackward = new MapCSSStyleSource("node { symbol-shape: triangle; icon-rotation: heading(3.14159); }");
+        MapCSSStyleSource cssParentChild = new MapCSSStyleSource("way[highway] > node { symbol-shape: triangle; icon-rotation: heading(); }");
+
+        cssForward.loadStyleSource();
+        cssBackward.loadStyleSource();
+        cssParentChild.loadStyleSource();
+
+        // forward rotation
+        rotationTest(cssForward, n0,  90);
+        rotationTest(cssForward, n1,  45);
+        rotationTest(cssForward, n2, 315);
+        rotationTest(cssForward, n3, 270);
+
+        // backward rotation
+        rotationTest(cssBackward, n0, 270);
+        rotationTest(cssBackward, n1, 225);
+        rotationTest(cssBackward, n2, 135);
+        rotationTest(cssBackward, n3,  90);
+
+        // create direction conflicts at nodes n0 and n3
+        Way w2 = new Way();
+        w2.addNode(n0);
+        w2.addNode(n3);
+        w2.setKeys(Collections.singletonMap("waterway", "stream"));
+        ds.addPrimitive(w2);
+
+        rotationTest(cssForward, n0,   0); // conflict
+        rotationTest(cssForward, n1,  45);
+        rotationTest(cssForward, n2, 315);
+        rotationTest(cssForward, n3,   0); // conflict
+
+        // resolve conflicts at nodes n0 and n3 by selecting only highways
+        rotationTest(cssParentChild, n0,  90);
+        rotationTest(cssParentChild, n1,  45);
+        rotationTest(cssParentChild, n2, 315);
+        rotationTest(cssParentChild, n3, 270);
+
+        // change stream to highway: now it conflicts again
+        w2.setKeys(Collections.singletonMap("highway", "secondary"));
+
+        rotationTest(cssForward, n0,   0); // conflict
+        rotationTest(cssForward, n1,  45);
+        rotationTest(cssForward, n2, 315);
+        rotationTest(cssForward, n3,   0); // conflict
+    }
+
+    private void rotationTest(MapCSSStyleSource source, Node n, int expected) {
+        MultiCascade mc1 = new MultiCascade();
+        source.apply(mc1, n, 10, false);
+        assertEquals(Utils.toRadians(expected),
+            mc1.getCascade(null).get("icon-rotation", 0d, Double.class),
+            0.00001);
     }
 
     private Environment createStyleEnv(IPrimitive osm, String css) {
