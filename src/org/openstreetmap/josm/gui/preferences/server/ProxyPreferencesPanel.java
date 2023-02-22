@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ArrayList;
 
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -186,61 +187,16 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         gc.gridy = 1;
         gc.gridx = 0;
         gc.weightx = 1.0;
-        gc.fill = HORIZONTAL;
+        gc.fill = GridBagConstraints.HORIZONTAL;
         tfExceptionHosts.setMinimumSize(tfExceptionHosts.getPreferredSize());
         pnl.add(tfExceptionHosts, gc);
 
         gc.gridx = 1;
         gc.weightx = 1.0;
-        gc.fill = HORIZONTAL;
+        gc.fill = GridBagConstraints.HORIZONTAL;
         tfIncludeHosts.setMinimumSize(tfIncludeHosts.getPreferredSize());
         pnl.add(tfIncludeHosts, gc);
 
-        // add an extra spacer, otherwise the layout is broken
-        gc.gridy = 2;
-        gc.gridx = 0;
-        gc.gridwidth = 2;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        pnl.add(new JPanel(), gc);
-        return pnl;
-    }
-
-    protected final JPanel buildExceptionIncludesHostsProxyConfigurationPanel() {
-        JPanel pnl = new AutoSizePanel();
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.anchor = GridBagConstraints.LINE_START;
-        gc.insets = new Insets(5, 5, 0, 0);
-        gc.weightx = 0.0;
-        pnl.add(new JLabel(tr("No proxy for (hosts):")), gc);
-
-        gc.gridx = 1;
-        gc.weightx = 0.0;
-        gc.fill = GridBagConstraints.NONE;
-        pnl.add(new JLabel(tr("Proxy only for (hosts):")), gc);
-
-        gc.gridy = 1;
-        gc.gridx = 0;
-        gc.weightx = 1.0;
-        gc.fill = HORIZONTAL;
-        tfExceptionHosts.setMinimumSize(tfExceptionHosts.getPreferredSize());
-        pnl.add(tfExceptionHosts, gc);
-
-        gc.gridx = 1;
-        gc.weightx = 1.0;
-        gc.fill = HORIZONTAL;
-        tfIncludeHosts.setMinimumSize(tfIncludeHosts.getPreferredSize());
-        pnl.add(tfIncludeHosts, gc);
-
-        // add an extra spacer, otherwise the layout is broken
-        gc.gridy = 2;
-        gc.gridx = 0;
-        gc.gridwidth = 2;
-        gc.fill = GridBagConstraints.BOTH;
-        gc.weightx = 1.0;
-        gc.weighty = 1.0;
-        pnl.add(new JPanel(), gc);
         return pnl;
     }
 
@@ -284,13 +240,13 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
 
         // the panel with the SOCKS configuration parameters
         pnlSocksProxyConfigurationPanel = buildSocksProxyConfigurationPanel();
-        pnl.add(pnlSocksProxyConfigurationPanel, GBC.eop().fill(HORIZONTAL));
+        pnl.add(pnlSocksProxyConfigurationPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
 
         pnl.add(Box.createVerticalGlue(), eop);
 
         // the panel with the exception and includes hosts
         pnlIncludeOrExcludeHostsPanel = buildExceptionIncludesHostsProxyConfigurationPanel();
-        pnl.add(pnlIncludeOrExcludeHostsPanel, GBC.eop().fill(HORIZONTAL));
+        pnl.add(pnlIncludeOrExcludeHostsPanel, GBC.eop().fill(GridBagConstraints.HORIZONTAL));
 
         pnl.add(Box.createVerticalGlue(), GBC.eol().fill());
 
