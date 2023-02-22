@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
@@ -29,6 +30,7 @@ import org.openstreetmap.josm.gui.widgets.HtmlPanel;
 import org.openstreetmap.josm.gui.widgets.JosmPasswordField;
 import org.openstreetmap.josm.gui.widgets.JosmTextField;
 import org.openstreetmap.josm.gui.widgets.VerticallyScrollablePanel;
+import org.openstreetmap.josm.gui.widgets.EditableList;
 import org.openstreetmap.josm.io.DefaultProxySelector;
 import org.openstreetmap.josm.io.ProxyPolicy;
 import org.openstreetmap.josm.io.auth.CredentialsAgent;
@@ -44,7 +46,11 @@ import org.openstreetmap.josm.tools.Logging;
  */
 public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
 
+    private static final long serialVersionUID = -2479852374189976764L;
+
     static final class AutoSizePanel extends JPanel {
+        private static final long serialVersionUID = 7469560761925020366L;
+
         AutoSizePanel() {
             super(new GridBagLayout());
         }
@@ -62,9 +68,12 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
     private final JosmTextField tfProxySocksPort = new JosmTextField(5);
     private final JosmTextField tfProxyHttpUser = new JosmTextField(20);
     private final JosmPasswordField tfProxyHttpPassword = new JosmPasswordField(20);
+    private final EditableList tfExceptionHosts = new EditableList(tr("No proxy for"));
+    private final EditableList tfIncludeHosts = new EditableList(tr("Proxy only for"));
 
     private JPanel pnlHttpProxyConfigurationPanel;
     private JPanel pnlSocksProxyConfigurationPanel;
+    private JPanel pnlIncludeOrExcludeHostsPanel;
 
     /**
      * Builds the panel for the HTTP proxy configuration
@@ -161,6 +170,80 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         return pnl;
     }
 
+    protected final JPanel buildExceptionIncludesHostsProxyConfigurationPanel() {
+        JPanel pnl = new AutoSizePanel();
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.anchor = GridBagConstraints.LINE_START;
+        gc.insets = new Insets(5, 5, 0, 0);
+        gc.weightx = 0.0;
+        pnl.add(new JLabel(tr("No proxy for (hosts):")), gc);
+
+        gc.gridx = 1;
+        gc.weightx = 0.0;
+        gc.fill = GridBagConstraints.NONE;
+        pnl.add(new JLabel(tr("Proxy only for (hosts):")), gc);
+
+        gc.gridy = 1;
+        gc.gridx = 0;
+        gc.weightx = 1.0;
+        gc.fill = HORIZONTAL;
+        tfExceptionHosts.setMinimumSize(tfExceptionHosts.getPreferredSize());
+        pnl.add(tfExceptionHosts, gc);
+
+        gc.gridx = 1;
+        gc.weightx = 1.0;
+        gc.fill = HORIZONTAL;
+        tfIncludeHosts.setMinimumSize(tfIncludeHosts.getPreferredSize());
+        pnl.add(tfIncludeHosts, gc);
+
+        // add an extra spacer, otherwise the layout is broken
+        gc.gridy = 2;
+        gc.gridx = 0;
+        gc.gridwidth = 2;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = 1.0;
+        gc.weighty = 1.0;
+        pnl.add(new JPanel(), gc);
+        return pnl;
+    }
+
+    protected final JPanel buildExceptionIncludesHostsProxyConfigurationPanel() {
+        JPanel pnl = new AutoSizePanel();
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.anchor = GridBagConstraints.LINE_START;
+        gc.insets = new Insets(5, 5, 0, 0);
+        gc.weightx = 0.0;
+        pnl.add(new JLabel(tr("No proxy for (hosts):")), gc);
+
+        gc.gridx = 1;
+        gc.weightx = 0.0;
+        gc.fill = GridBagConstraints.NONE;
+        pnl.add(new JLabel(tr("Proxy only for (hosts):")), gc);
+
+        gc.gridy = 1;
+        gc.gridx = 0;
+        gc.weightx = 1.0;
+        gc.fill = HORIZONTAL;
+        tfExceptionHosts.setMinimumSize(tfExceptionHosts.getPreferredSize());
+        pnl.add(tfExceptionHosts, gc);
+
+        gc.gridx = 1;
+        gc.weightx = 1.0;
+        gc.fill = HORIZONTAL;
+        tfIncludeHosts.setMinimumSize(tfIncludeHosts.getPreferredSize());
+        pnl.add(tfIncludeHosts, gc);
+
+        // add an extra spacer, otherwise the layout is broken
+        gc.gridy = 2;
+        gc.gridx = 0;
+        gc.gridwidth = 2;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = 1.0;
+        gc.weighty = 1.0;
+        pnl.add(new JPanel(), gc);
+        return pnl;
+    }
+
     protected final JPanel buildProxySettingsPanel(JPanel pnl) {
         GBC eop = GBC.eop().fill(GridBagConstraints.HORIZONTAL);
 
@@ -201,7 +284,15 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
 
         // the panel with the SOCKS configuration parameters
         pnlSocksProxyConfigurationPanel = buildSocksProxyConfigurationPanel();
-        pnl.add(pnlSocksProxyConfigurationPanel, eop);
+        pnl.add(pnlSocksProxyConfigurationPanel, GBC.eop().fill(HORIZONTAL));
+
+        pnl.add(Box.createVerticalGlue(), eop);
+
+        // the panel with the exception and includes hosts
+        pnlIncludeOrExcludeHostsPanel = buildExceptionIncludesHostsProxyConfigurationPanel();
+        pnl.add(pnlIncludeOrExcludeHostsPanel, GBC.eop().fill(HORIZONTAL));
+
+        pnl.add(Box.createVerticalGlue(), GBC.eol().fill());
 
         return pnl;
     }
@@ -224,6 +315,8 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         tfProxyHttpPort.setText(pref.get(DefaultProxySelector.PROXY_HTTP_PORT, ""));
         tfProxySocksHost.setText(pref.get(DefaultProxySelector.PROXY_SOCKS_HOST, ""));
         tfProxySocksPort.setText(pref.get(DefaultProxySelector.PROXY_SOCKS_PORT, ""));
+        tfExceptionHosts.setItems(pref.getList(DefaultProxySelector.PROXY_EXCEPTIONS, new ArrayList<>()));
+        tfIncludeHosts.setItems(pref.getList(DefaultProxySelector.PROXY_INCLUDES, new ArrayList<>()));
 
         if (pp == ProxyPolicy.USE_SYSTEM_SETTINGS && !DefaultProxySelector.willJvmRetrieveSystemProxies()) {
             Logging.warn(tr("JOSM is configured to use proxies from the system setting, but the JVM is not configured to retrieve them. " +
@@ -263,6 +356,11 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         }
 
         rbProxyPolicy.get(ProxyPolicy.USE_SYSTEM_SETTINGS).setEnabled(DefaultProxySelector.willJvmRetrieveSystemProxies());
+
+        boolean proxyEnabled = !rbProxyPolicy.get(ProxyPolicy.NO_PROXY).isSelected();
+        for (Component c : pnlIncludeOrExcludeHostsPanel.getComponents()) {
+            c.setEnabled(proxyEnabled);
+        }
     }
 
     class ProxyPolicyChangeListener implements ItemListener {
@@ -297,6 +395,9 @@ public class ProxyPreferencesPanel extends VerticallyScrollablePanel {
         pref.put(DefaultProxySelector.PROXY_HTTP_PORT, tfProxyHttpPort.getText());
         pref.put(DefaultProxySelector.PROXY_SOCKS_HOST, tfProxySocksHost.getText());
         pref.put(DefaultProxySelector.PROXY_SOCKS_PORT, tfProxySocksPort.getText());
+        pref.putList(DefaultProxySelector.PROXY_EXCEPTIONS, tfExceptionHosts.getItems());
+        pref.putList(DefaultProxySelector.PROXY_INCLUDES, tfIncludeHosts.getItems());
+
 
         // update the proxy selector
         ProxySelector selector = ProxySelector.getDefault();
