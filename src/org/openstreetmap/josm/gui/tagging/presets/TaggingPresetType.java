@@ -103,7 +103,8 @@ public enum TaggingPresetType {
      * @return the types as set
      * @throws IllegalArgumentException on input error
      */
-    public static EnumSet<TaggingPresetType> getOrDefault(String types, EnumSet<TaggingPresetType> defaultValue) throws IllegalArgumentException {
+    public static EnumSet<TaggingPresetType> getOrDefault(
+            String types, EnumSet<TaggingPresetType> defaultValue) throws IllegalArgumentException {
         if (types == null)
             return defaultValue;
         if (types.isEmpty())

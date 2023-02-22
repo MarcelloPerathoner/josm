@@ -287,7 +287,7 @@ public class TagTableModel extends DefaultTableModel {
             if (newKey.equals(key))
                 return;
 
-            if (keySet().contains(newKey) && !TagEditHelper.warnOverwriteKey (
+            if (keySet().contains(newKey) && !TagEditHelper.warnOverwriteKey(
                     tr("You changed the key from ''{0}'' to ''{1}''.", key, newKey) + "\n" +
                     tr("The new key is already used, overwrite values?"),
                     "overwriteEditKey"))
