@@ -26,6 +26,7 @@ bintest/
 foobar
 hikemap
 lib/
+local/
 test/data/renderer/*/test-output.png
 test/data/renderer/*/test-differences.png
 test/build/
