@@ -2,9 +2,6 @@
 package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import java.awt.Color;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
-import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.gpx.GpxDistance;
@@ -35,14 +31,11 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.NullableArguments;
-import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.MapCSSParser;
-import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.ParseException;
 import org.openstreetmap.josm.io.XmlWriter;
 import org.openstreetmap.josm.tools.AlphanumComparator;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.Logging;
-import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.RightAndLefthandTraffic;
 import org.openstreetmap.josm.tools.RotationAngle;
 import org.openstreetmap.josm.tools.StreamUtils;
@@ -145,7 +138,7 @@ public final class Functions {
      * @return length of the list
      */
     public static Integer count(List<?> lst) {
-        return lst.size();
+        return lst == null ? null : lst.size();
     }
 
     /**
@@ -170,7 +163,7 @@ public final class Functions {
      */
     public static Object get(List<?> lst, float n) {
         int idx = Math.round(n);
-        if (idx >= 0 && idx < lst.size()) {
+        if (lst != null && idx >= 0 && idx < lst.size()) {
             return lst.get(idx);
         }
         return null;
@@ -629,70 +622,6 @@ public final class Functions {
     }
 
     /**
-     * Returns the heading of the node or {@code null}.
-     * <p>
-     * A heading exists only if the node is part of at most one incoming way segment and
-     * one outgoing way segment.  A node that is part of three or more way segments
-     * cannot have a heading.
-     * <p>
-     * If the rule was matched by a parent > child selector this function will consider
-     * only parent ways that match the parent selector. Consider the rule:
-     * <pre>
-     *   way[highway] > node[traffic_sign] { icon-rotation: heading(); }
-     * </pre>
-     * The function will only consider highways that pass through the node when
-     * calculating the heading.
-     * <p>
-     * This function returns the projected heading, not the great-circle bearing.
-     *
-     * @param env the environment
-     * @param refHeading heading in radians to add to the result or {@code null}.
-     *                   eg. add {@code 3.14} for backward facing signs.
-     * @return the heading of the way at node in radians
-     *         or {@code null} if no meaningful heading exists.
-     * @see EastNorth#heading()
-     */
-    public static Float heading(final Environment env, Double refHeading) {
-        if (env.osm instanceof Node) {
-            Node n = (Node) env.osm;
-            Node before = n;
-            Node after = n;
-            int incoming = 0;
-            int outgoing = 0;
-            for (Way way : n.getParentWays()) {
-                if (env.left != null && !env.left.matches(env.withPrimitive(way))) {
-                    continue;
-                }
-                for (Pair<Node, Node> p : way.getNodePairs(false)) {
-                    if (p.b == n) {
-                        before = p.a;
-                        incoming++;
-                    }
-                    if (p.a == n) {
-                        after = p.b;
-                        outgoing++;
-                    }
-                }
-            }
-            if (incoming <= 1 && outgoing <= 1) {
-                EastNorth a = before.getEastNorth();
-                EastNorth b = after.getEastNorth();
-                if (!a.equalsEpsilon(b, 1e-7))
-                    return (float) a.heading(b, refHeading != null ? refHeading : 0d);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the heading of the node or {@code null}.
-     * @see #heading(Environment, Double)
-     */
-    public static Float heading(final Environment env) {
-        return heading(env, null);
-    }
-
-    /**
      * Returns the length of the way in metres or {@code null}.
      * @param env the environment
      * @return the length of the way in metres or {@code null}.
@@ -791,6 +720,8 @@ public final class Functions {
      * @see Object#equals(Object)
      */
     public static boolean equal(Object a, Object b) {
+        if (a == null && b == null) return true;
+
         if (a.getClass() == b.getClass()) return a.equals(b);
         if (a.equals(Cascade.convertTo(b, a.getClass()))) return true;
         return b.equals(Cascade.convertTo(a, b.getClass()));

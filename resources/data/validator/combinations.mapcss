@@ -436,7 +436,7 @@ way[name][ref][eval(number_of_tags()) = 2] {
   group: tr("missing tag");
 }
 /* only {0.tag}, #15269 */
-node[tourism=attraction][eval(number_of_tags()) = 1], 
+node[tourism=attraction][eval(number_of_tags()) = 1],
 way[tourism=attraction][eval(number_of_tags()) = 1] {
   throwWarning: tr("incomplete object: only {0}", "{0.tag}");
   group: tr("missing tag");
@@ -1070,5 +1070,14 @@ relation[piste:type=nordic][!piste:grooming]{
 /* #21836 */
 *[voltage:primary][voltage:secondary][transformer=generator][tag("voltage:secondary")<tag("voltage:primary")] {
   throwWarning: tr("{0} is lower than {1} on {2}.", "{1.key}", "{0.key}", "{2.tag}");
+  group: tr("suspicious tag combination");
+}
+
+node[direction=forward][is_null(heading())] {
+  throwWarning: tr("Node with undefined forward direction.");
+  group: tr("suspicious tag combination");
+}
+node[direction=backward][is_null(heading())] {
+  throwWarning: tr("Node with undefined backward direction.");
   group: tr("suspicious tag combination");
 }

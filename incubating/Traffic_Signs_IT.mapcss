@@ -25,31 +25,33 @@ node[traffic_sign=~/IT:M?II/] {
     set .sign;
 }
 
-node.sign[direction=~/[NWSE]+/] {
-    rotationprop: eval(cardinal_to_radians(tag("direction")) + 3.14);
+node[prop(sign, default)][direction=~/[NWSE]+/] {
+    text-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
+    icon-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
 }
-node.sign[direction=~/[.0-9]+/] {
-    rotationprop: eval(degree_to_radians(tag("direction")) + 3.14);
+node[prop(sign, default)][direction=~/[.0-9]+/] {
+    text-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
+    icon-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
 }
-way[highway] > node.sign[direction=forward] {
-    rotationprop: heading();
+way[highway] > node[prop(sign, default)][direction=forward]::* {
+    text-transform: transform(rotate(heading()));
+    icon-transform: transform(rotate(heading()));
 }
-way[highway] > node.sign[direction=backward] {
-    rotationprop: heading(3.14);
+way[highway] > node[prop(sign, default)][direction=backward]::* {
+    text-transform: transform(rotate(heading(0.5turn)));
+    icon-transform: transform(rotate(heading(0.5turn)));
 }
 
 node[prop(sign, default)]::* {
     major-z-index: 7;
     icon-width: setting("icon_size");
-    icon-rotation: prop(rotationprop, default);
     text-anchor-horizontal: center;
     text-anchor-vertical: center;
-    text-rotation: prop(rotationprop, default);
     font-size: eval(setting("icon_size") * 0.3);
     font-weight: bold;
     text-color: black;
 }
-node.sign {
+node[prop(sign, default)] {
     major-z-index: 7;
     icon-height: setting("icon_size");
 

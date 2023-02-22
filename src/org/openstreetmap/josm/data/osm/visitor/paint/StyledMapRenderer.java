@@ -660,9 +660,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             } else throw new AssertionError();
         }
 
-        // x += p.getInViewX();
-        // y += p.getInViewY();
-
         final MapViewPoint viewPoint = mapState.getForView(p.getInViewX(), p.getInViewY());
         final AffineTransform at = new AffineTransform();
         at.setToTranslation(
@@ -670,6 +667,12 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 Math.round(viewPoint.getInViewY()));
         if (!RotationAngle.NO_ROTATION.equals(text.rotationAngle)) {
             at.rotate(text.rotationAngle.getRotationAngle(n));
+        }
+        if (text.rotationExpression != null) {
+            at.rotate((Double) text.rotationExpression.evaluate());
+        }
+        if (text.transformExpression != null) {
+            at.concatenate((AffineTransform) text.transformExpression.evaluate());
         }
         at.translate(x, y);
         displayText(n, text, s, at);
@@ -789,8 +792,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param selected {@code} true to render it as selected, {@code false} otherwise
      * @param member {@code} true to render it as a relation member, {@code false} otherwise
      * @param theta the angle of rotation in radians
+     * @param affineTransform the affine transformation or {@code null}
      */
-    public void drawNodeIcon(INode n, MapImage img, boolean disabled, boolean selected, boolean member, double theta) {
+    public void drawNodeIcon(INode n, MapImage img, boolean disabled, boolean selected, boolean member,
+            double theta, AffineTransform affineTransform) {
         MapViewPoint p = mapState.getPointFor(n);
 
         int w = img.getWidth();
@@ -799,7 +804,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             drawPointHighlight(p.getInView(), Math.max(w, h));
         }
 
-        drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, theta, (g, r) -> {
+        drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member,
+                theta, affineTransform, (g, r) -> {
             Color color = getSelectionHintColor(disabled, selected);
             g.setColor(color);
             g.draw(r);
@@ -827,7 +833,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 return;
             }
             MapViewPoint p = placement.getPoint();
-            drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, theta + placement.getRotation(), (g, r) -> {
+            drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, theta + placement.getRotation(), null, (g, r) -> {
                 if (useStrokes) {
                     g.setStroke(new BasicStroke(2));
                 }
@@ -841,7 +847,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     }
 
     private void drawIcon(final double x, final double y, MapImage img, boolean disabled, boolean selected, boolean member, double theta,
-            BiConsumer<Graphics2D, Rectangle2D> selectionDrawer) {
+            AffineTransform affineTransform, BiConsumer<Graphics2D, Rectangle2D> selectionDrawer) {
         float alpha = img.getAlphaFloat();
 
         Graphics2D temporaryGraphics = (Graphics2D) g.create();
@@ -851,6 +857,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
 
         temporaryGraphics.translate(Math.round(x), Math.round(y));
         temporaryGraphics.rotate(theta);
+        if (affineTransform != null)
+            temporaryGraphics.transform(affineTransform);
         int drawX = -img.getWidth() / 2 + img.offsetX;
         int drawY = -img.getHeight() / 2 + img.offsetY;
         temporaryGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -1133,7 +1141,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         drawIcon(
                 pVia.x + vx + vx2,
                 pVia.y + vy + vy2,
-                icon, disabled, false, false, Math.toRadians(iconAngle), (graphics2D, rectangle2D) -> {
+                icon, disabled, false, false, Math.toRadians(iconAngle), null, (graphics2D, rectangle2D) -> {
                 });
     }
 

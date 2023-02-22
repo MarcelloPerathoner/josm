@@ -1,7 +1,10 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.mapcss;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,8 +20,12 @@ import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
+import org.openstreetmap.josm.data.coor.EastNorth;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
+import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.SubclassFilteredCollection;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -126,13 +133,6 @@ public final class ExpressionFactory {
             return args -> env -> {
                 T v = Cascade.convertTo(args.get(0).evaluate(env), type);
                 return v == null ? null : function.apply(env, v);
-            };
-        }
-
-        static <T> Factory ofEnv(Class<T> type, Function<Environment, ?> function, BiFunction<Environment, T, ?> biFunction) {
-            return args -> env -> {
-                T v = args.size() >= 1 ? Cascade.convertTo(args.get(0).evaluate(env), type) : null;
-                return v == null ? function.apply(env) : biFunction.apply(env, v);
             };
         }
 
@@ -264,7 +264,6 @@ public final class ExpressionFactory {
         FACTORY_MAP.put("uniq_list", Factory.of(List.class, Functions::uniq_list));
         FACTORY_MAP.put("upper", Factory.of(String.class, Functions::upper));
         FACTORY_MAP.put("waylength", Factory.ofEnv(Functions::waylength));
-        FACTORY_MAP.put("heading", Factory.ofEnv(Double.class, Functions::heading, Functions::heading));
     }
 
     private ExpressionFactory() {
@@ -294,6 +293,22 @@ public final class ExpressionFactory {
             return new MinMaxFunction(args, false);
         else if ("inside".equals(name) && args.size() == 1)
             return new IsInsideFunction(args.get(0));
+        else if ("heading".equals(name))
+            return new HeadingFunctionExpression(args);
+        else if ("is_null".equals(name))
+            return new IsNullFunctionExpression(args);
+        else if ("transform".equals(name))
+            return new TransformFunctionExpression(args);
+        else if ("translate".equals(name))
+            return new TranslateFunctionExpression(args);
+        else if ("rotate".equals(name))
+            return new RotateFunctionExpression(args);
+        else if ("scale".equals(name))
+            return new ScaleFunctionExpression(args);
+        else if ("skew".equals(name))
+            return new SkewFunctionExpression(args);
+        else if ("matrix".equals(name))
+            return new MatrixFunctionExpression(args);
         else if ("random".equals(name))
             return env -> Math.random();
 
@@ -316,6 +331,347 @@ public final class ExpressionFactory {
 
         @Override
         public Object evaluate(Environment env) {
+            return null;
+        }
+    }
+
+    /**
+     * A generic function wrapped as Expression.
+     * <p>
+     * Cacheability: If the function is IMMUTABLE then
+     * {@link Instruction.AssignmentInstruction#execute execute} will evaluate the
+     * function against the given environment and store the <i>result</i> in a property of
+     * the cascade.
+     * <p>
+     * If the function is STABLE or VOLATILE, the Expression will be
+     * {@link EnvironmentExpression wrapped} together with the Environment and stored in
+     * a property of the cascade, and must be evaluated at painting time.
+     * <p>
+     * Notes: Cacheability is a new concept and should be expanded to include all
+     * expressions.  To make use of the distinction between STABLE and VOLATILE an edit
+     * counter needs to be implemented in the DataSet, so that STABLE functions can be
+     * cached against the edit counter.
+     */
+    public abstract static class FunctionExpression implements Expression {
+        /** The name of the function, for error reporting only */
+        String name;
+        /** The arguments to the function */
+        List<Expression> args;
+        /** The cacheablility of this expression */
+        Cacheability cacheability;
+
+        /**
+         * Constructor
+         * @param name the name of the function in mapcss (used for debugging only)
+         * @param args the argument list
+         */
+        FunctionExpression(String name, List<Expression> args) {
+            this.name = name;
+            this.args = args;
+            // find the least cacheable among the arguments
+            cacheability = Cacheability.IMMUTABLE;
+            for (Expression arg : args) {
+                cacheability = leastCacheable(cacheability, arg.getCacheability());
+            }
+        }
+
+        /**
+         * Returns the least cacheable of two cacheabilities
+         * @param a a cacheability
+         * @param b a cacheability
+         * @return the least cacheable of both
+         */
+        Cacheability leastCacheable(Cacheability a, Cacheability b) {
+            return a.compareTo(b) > 0 ? a : b;
+        }
+
+        @Override
+        public Cacheability getCacheability() {
+            return cacheability;
+        }
+
+        /**
+         * Checks the number of actual arguments
+         * @param expected the expected number of arguments
+         * @throws IllegalArgumentException if there are more or less arguments than that
+         */
+        void checkArgsSize(int expected) throws IllegalArgumentException {
+            if (args.size() != expected)
+                throw new IllegalArgumentException(tr(
+                    "Wrong number of arguments in function: ''{0}''. Expected {1}, but got {2}.",
+                    name, expected, args.size()));
+        }
+
+        /**
+         * Checks the number of actual arguments
+         * @param minExpected the minumum expected number of arguments
+         * @param maxExpected the maximum expected number of arguments
+         * @throws IllegalArgumentException if there are more or less arguments than that
+         */
+        void checkArgsSize(int minExpected, int maxExpected) throws IllegalArgumentException {
+            if (args.size() < minExpected || args.size() > maxExpected)
+                throw new IllegalArgumentException(tr(
+                    "Wrong number of arguments in function: ''{0}''. Expected between {1} and {2}, but got {3}.",
+                    name, minExpected, maxExpected, args.size()));
+        }
+
+        /**
+         * Returns the argument at position {@code index} or {@code null}.
+         * @param env the environment
+         * @param index the index of the argument
+         * @return the argument as {@code String} or {@code null} if the argument was not found
+         *         or the conversion failed
+         */
+        String argAsString(Environment env, int index) {
+            if (args.size() <= index) return null;
+            return Cascade.convertTo(args.get(index).evaluate(env), String.class);
+        }
+
+        /**
+         * Returns the argument at position {@code index} or {@code null}.
+         * @param env the environment
+         * @param index the index of the argument
+         * @param def the default value
+         * @return the argument as {@code Double} or {@code null} if the argument was not found
+         *         or the conversion failed
+         */
+        Double argAsDouble(Environment env, int index, Double def) {
+            Double result = null;
+            if (args.size() > index) {
+                result = Cascade.convertTo(args.get(index).evaluate(env), Double.class);
+            }
+            return result == null ? def : result;
+        }
+    }
+
+    /**
+     * Convenience class to capture an expression and an environment for later execution.
+     */
+    public static class EnvironmentExpression {
+        private Expression expression;
+        private Environment environment;
+        EnvironmentExpression(Expression expression, Environment environment) {
+            super();
+            this.expression = expression;
+            this.environment = environment;
+        }
+
+        /**
+         * Evaluates the expression in the captured environment.
+         * @return the result of the expression
+         */
+        public Object evaluate() {
+            return expression.evaluate(environment);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the argument is {@code null}.
+     * <p>
+     * Example usage:
+     * <pre>
+     *   node[direction=forward][is_null(heading())]
+     * </pre>
+     */
+    static class IsNullFunctionExpression extends FunctionExpression {
+        IsNullFunctionExpression(List<Expression> args) {
+            super("is_null", args);
+            checkArgsSize(1);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            return args.get(0).evaluate(env) == null;
+        }
+    }
+
+    /**
+     * Returns the heading of the node or {@code null}.
+     * <p>
+     * A heading exists only if the node is part of at most one incoming way segment and
+     * one outgoing way segment.  A node that is part of three or more way segments
+     * cannot have a heading.
+     * <p>
+     * If the rule was matched by a parent > child selector this function will consider
+     * only parent ways that match the parent selector. Consider the rules:
+     * <pre>
+     *   way[highway]  > node[ford=yes] { icon-rotation: heading(); }
+     *   way[waterway] > node[ford=yes] { icon-rotation: heading(); }
+     * </pre>
+     * The first rule will rotate the icon in relation to the highway, the second one in
+     * relation to the waterway.
+     * <p>
+     * The function can take zero or one parameters. The value of the parameter is added
+     * to the heading.  To get the backward heading use:
+     * <pre>
+     *   icon-rotation: heading(0.5turn);
+     * </pre>
+     * <p>
+     * This function returns the projected heading, not the great-circle bearing.
+     *
+     * @see EastNorth#heading(EastNorth)
+     */
+    static class HeadingFunctionExpression extends FunctionExpression {
+        HeadingFunctionExpression(List<Expression> args) {
+            super("heading", args);
+            checkArgsSize(0, 1);
+            cacheability = leastCacheable(cacheability, Cacheability.STABLE);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                Node n = (Node) env.osm;
+                Node before = n;
+                Node after = n;
+                int incoming = 0;
+                int outgoing = 0;
+                for (Way way : n.getParentWays()) {
+                    if (env.left != null && !env.left.matches(new Environment(way))) {
+                        continue;
+                    }
+                    for (Pair<Node, Node> p : way.getNodePairs(false)) {
+                        if (p.b == n) {
+                            before = p.a;
+                            incoming++;
+                        }
+                        if (p.a == n) {
+                            after = p.b;
+                            outgoing++;
+                        }
+                    }
+                }
+                if (incoming <= 1 && outgoing <= 1) {
+                    EastNorth a = before.getEastNorth();
+                    EastNorth b = after.getEastNorth();
+                    Double refHeading = argAsDouble(env, 0, 0d);
+                    if (!a.equalsEpsilon(b, 1e-7))
+                        return a.heading(b, refHeading);
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Returns a supplier of an affine transformation matrix.
+     * <p>
+     * The arguments to this function are one or more of the CSS transform functions to
+     * be applied. The transform functions are multiplied in order from left to right,
+     * meaning that composite transforms are effectively applied in order from right to
+     * left.
+     * <pre>
+     *   text-transform: transform(translate(x, y));
+     *   text-transform: transform(translate(-x, -y), rotate(0.5turn), translate(x, y));
+     * </pre>
+     */
+    static class TransformFunctionExpression extends FunctionExpression {
+        TransformFunctionExpression(List<Expression> args) {
+            super("transform", args);
+            checkArgsSize(1, Integer.MAX_VALUE);
+        }
+
+        @Override
+        public AffineTransform evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                AffineTransform at = new AffineTransform();
+                for (Expression arg : args) {
+                    Object tmp = arg.evaluate(env);
+                    if (tmp instanceof AffineTransform)
+                        at.concatenate((AffineTransform) tmp);
+                }
+                return at;
+            }
+            return null;
+        }
+    }
+
+    static class TranslateFunctionExpression extends FunctionExpression {
+        TranslateFunctionExpression(List<Expression> args) {
+            super("translate", args);
+            checkArgsSize(2);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                AffineTransform at = new AffineTransform();
+                at.translate(argAsDouble(env, 0, 0d), argAsDouble(env, 1, 0d));
+                return at;
+            }
+            return null;
+        }
+    }
+
+    static class RotateFunctionExpression extends FunctionExpression {
+        RotateFunctionExpression(List<Expression> args) {
+            super("rotate", args);
+            checkArgsSize(1);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                AffineTransform at = new AffineTransform();
+                at.rotate(argAsDouble(env, 0, 0d));
+                return at;
+            }
+            return null;
+        }
+    }
+
+    static class ScaleFunctionExpression extends FunctionExpression {
+        ScaleFunctionExpression(List<Expression> args) {
+            super("scale", args);
+            checkArgsSize(2);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                AffineTransform at = new AffineTransform();
+                at.scale(argAsDouble(env, 0, 0d), argAsDouble(env, 1, 0d));
+                return at;
+            }
+            return null;
+        }
+    }
+
+    static class SkewFunctionExpression extends FunctionExpression {
+        SkewFunctionExpression(List<Expression> args) {
+            super("skew", args);
+            checkArgsSize(2);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                AffineTransform at = new AffineTransform();
+                at.shear(argAsDouble(env, 0, 0d), argAsDouble(env, 1, 0d));
+                return at;
+            }
+            return null;
+        }
+    }
+
+    static class MatrixFunctionExpression extends FunctionExpression {
+        MatrixFunctionExpression(List<Expression> args) {
+            super("matrix", args);
+            checkArgsSize(6);
+        }
+
+        @Override
+        public Object evaluate(Environment env) {
+            if (env.osm instanceof Node) {
+                return new AffineTransform(
+                    argAsDouble(env, 0, 0d),
+                    argAsDouble(env, 1, 0d),
+                    argAsDouble(env, 2, 0d),
+                    argAsDouble(env, 3, 0d),
+                    argAsDouble(env, 4, 0d),
+                    argAsDouble(env, 5, 0d)
+                );
+            }
             return null;
         }
     }

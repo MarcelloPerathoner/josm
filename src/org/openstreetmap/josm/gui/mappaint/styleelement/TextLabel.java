@@ -12,6 +12,7 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.TagKeyReference;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy.DeriveLabelFromNameTagsCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy.StaticLabelCompositionStrategy;
@@ -43,6 +44,10 @@ public class TextLabel implements StyleKeys {
      * The rotation angle to be used when rendering
      */
     public RotationAngle rotationAngle;
+    /** Affine transformation expression for late evaluation, or {@code null} */
+    public final EnvironmentExpression transformExpression;
+    /** Rotation expression for late evaluation, or {@code null} */
+    public final EnvironmentExpression rotationExpression;
     /**
      * The color to draw the text in, includes alpha.
      */
@@ -62,19 +67,23 @@ public class TextLabel implements StyleKeys {
      * @param strategy the strategy indicating how the text is composed for a specific {@link OsmPrimitive} to be rendered.
      * If null, no label is rendered.
      * @param font the font to be used. Must not be null.
-     * @param rotationAngle the rotation angle to be used. Must not be null.
+     * @param env the environment
      * @param color the color to be used. Must not be null
      * @param haloRadius halo radius
      * @param haloColor halo color
      */
-    protected TextLabel(LabelCompositionStrategy strategy, Font font, RotationAngle rotationAngle,
+    protected TextLabel(LabelCompositionStrategy strategy, Font font, Environment env,
                         Color color, Float haloRadius, Color haloColor) {
         this.labelCompositionStrategy = strategy;
         this.font = Objects.requireNonNull(font, "font");
-        this.rotationAngle = Objects.requireNonNull(rotationAngle, "rotationAngle");
         this.color = Objects.requireNonNull(color, "color");
         this.haloRadius = haloRadius;
         this.haloColor = haloColor;
+        // until we implement rotationAngle in terms of Expression there will be set
+        // either a rotationAngle or a rotationExpression, not both.
+        this.rotationAngle = NodeElement.createTextRotationAngle(env);
+        this.rotationExpression = env.getCascade().get(ICON_ROTATION, null, EnvironmentExpression.class, true);
+        this.transformExpression = env.getCascade().get(TEXT_TRANSFORM, null, EnvironmentExpression.class, true);
     }
 
     /**
@@ -86,6 +95,8 @@ public class TextLabel implements StyleKeys {
         this.labelCompositionStrategy = other.labelCompositionStrategy;
         this.font = other.font;
         this.rotationAngle = other.rotationAngle;
+        this.rotationExpression = other.rotationExpression;
+        this.transformExpression = other.transformExpression;
         this.color = other.color;
         this.haloColor = other.haloColor;
         this.haloRadius = other.haloRadius;
@@ -144,7 +155,6 @@ public class TextLabel implements StyleKeys {
         String s = strategy.compose(env.osm);
         if (s == null) return null;
         Font font = StyleElement.getFont(c, s);
-        RotationAngle rotationAngle = NodeElement.createTextRotationAngle(env);
 
         Color color = c.get(TEXT_COLOR, defaultTextColor, Color.class);
         float alpha = c.get(TEXT_OPACITY, 1f, Float.class);
@@ -161,7 +171,7 @@ public class TextLabel implements StyleKeys {
             haloColor = ColorHelper.alphaMultiply(haloColor, haloAlphaFactor);
         }
 
-        return new TextLabel(strategy, font, rotationAngle, color, haloRadius, haloColor);
+        return new TextLabel(strategy, font, env, color, haloRadius, haloColor);
     }
 
     /**
@@ -218,7 +228,8 @@ public class TextLabel implements StyleKeys {
 
     @Override
     public int hashCode() {
-        return Objects.hash(labelCompositionStrategy, font, rotationAngle, color, haloRadius, haloColor);
+        return Objects.hash(labelCompositionStrategy, font, rotationAngle, rotationExpression,
+                            transformExpression, color, haloRadius, haloColor);
     }
 
     @Override
@@ -229,6 +240,8 @@ public class TextLabel implements StyleKeys {
         return Objects.equals(labelCompositionStrategy, textLabel.labelCompositionStrategy) &&
                 Objects.equals(font, textLabel.font) &&
                 Objects.equals(rotationAngle, textLabel.rotationAngle) &&
+                Objects.equals(rotationExpression, textLabel.rotationExpression) &&
+                Objects.equals(transformExpression, textLabel.transformExpression) &&
                 Objects.equals(color, textLabel.color) &&
                 Objects.equals(haloRadius, textLabel.haloRadius) &&
                 Objects.equals(haloColor, textLabel.haloColor);

@@ -129,14 +129,14 @@ public abstract class StyleElement implements StyleKeys {
     }
 
     /**
-     * Returns a property value of type Width.
+     * Returns a property value of type Width from the cascade.
      * <p>
      * If the value is a Float or a Keyword, we return it.  If the value is a
-     * RelativeFloat, we look at the same key in cDef to read the base value and add the
+     * RelativeFloat, we look at the default cascade to read the base value and add the
      * relative value to it.
      *
      * @param c the cascade
-     * @param cDef the deafult cascade
+     * @param cDef the default cascade
      * @param key the property key
      * @param keyDef the default cascade property key
      * @return width or null

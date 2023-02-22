@@ -5,6 +5,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.SimpleBoxProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -44,13 +46,22 @@ public class NodeElement extends StyleElement {
      */
     public final Symbol symbol;
 
+    /** Affine transformation expression for late evaluation, or {@code null} */
+    public final EnvironmentExpression transformExpression;
+    /** Rotation expression for late evaluation, or {@code null} */
+    public final EnvironmentExpression rotationExpression;
+
     private static final String[] ICON_KEYS = {ICON_IMAGE, ICON_WIDTH, ICON_HEIGHT, ICON_OPACITY, ICON_OFFSET_X, ICON_OFFSET_Y};
 
-    protected NodeElement(Cascade c, MapImage mapImage, Symbol symbol, float defaultMajorZindex, RotationAngle rotationAngle) {
-        super(c, defaultMajorZindex);
+    protected NodeElement(Environment env, MapImage mapImage, Symbol symbol, float defaultMajorZindex) {
+        super(env.getCascade(), defaultMajorZindex);
         this.mapImage = mapImage;
         this.symbol = symbol;
-        this.mapImageAngle = Objects.requireNonNull(rotationAngle, "rotationAngle");
+        // until we implement rotationAngle in terms of Expression there will be set
+        // either a mapImageAngle or a rotationExpression, not both.
+        this.mapImageAngle = createRotationAngle(env);
+        this.rotationExpression = env.getCascade().get(ICON_ROTATION, null, EnvironmentExpression.class, true);
+        this.transformExpression = env.getCascade().get(ICON_TRANSFORM, null, EnvironmentExpression.class, true);
     }
 
     /**
@@ -74,9 +85,7 @@ public class NodeElement extends StyleElement {
         // have to allocate a node element style.
         if (!allowDefault && symbol == null && mapImage == null) return null;
 
-        Cascade c = env.getCascade();
-        RotationAngle rotationAngle = createRotationAngle(env);
-        return new NodeElement(c, mapImage, symbol, defaultMajorZindex, rotationAngle);
+        return new NodeElement(env, mapImage, symbol, defaultMajorZindex);
     }
 
     /**
@@ -240,8 +249,18 @@ public class NodeElement extends StyleElement {
         if (primitive instanceof INode) {
             INode n = (INode) primitive;
             if (mapImage != null && painter.isShowIcons()) {
-                painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member,
-                        mapImageAngle == null ? 0.0 : mapImageAngle.getRotationAngle(primitive));
+                Double rotation = 0d;
+                AffineTransform at = null;
+                if (mapImageAngle != null) {
+                    rotation = mapImageAngle.getRotationAngle(primitive);
+                }
+                if (rotationExpression != null) {
+                    rotation = (Double) rotationExpression.evaluate();
+                }
+                if (transformExpression != null) {
+                    at = (AffineTransform) transformExpression.evaluate();
+                }
+                painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, rotation, at);
             } else if (symbol != null) {
                 paintWithSymbol(settings, painter, selected, member, n);
             } else {
@@ -345,7 +364,7 @@ public class NodeElement extends StyleElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mapImage, mapImageAngle, symbol);
+        return Objects.hash(super.hashCode(), mapImage, mapImageAngle, transformExpression, symbol);
     }
 
     @Override
@@ -356,6 +375,7 @@ public class NodeElement extends StyleElement {
         NodeElement that = (NodeElement) obj;
         return Objects.equals(mapImage, that.mapImage) &&
                Objects.equals(mapImageAngle, that.mapImageAngle) &&
+               Objects.equals(transformExpression, that.transformExpression) &&
                Objects.equals(symbol, that.symbol);
     }
 

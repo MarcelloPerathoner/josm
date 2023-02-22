@@ -95,6 +95,14 @@ public interface StyleKeys {
      */
     String TEXT_ROTATION = "text-rotation";
     /**
+     * MapCSS icon-transform property key
+     */
+    String ICON_TRANSFORM = "icon-transform";
+    /**
+     * MapCSS text-transform property key
+     */
+    String TEXT_TRANSFORM = "text-transform";
+    /**
      * MapCSS icon-width property key
      */
     String ICON_WIDTH = "icon-width";

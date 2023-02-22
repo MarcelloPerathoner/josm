@@ -8,6 +8,8 @@ import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
+import org.openstreetmap.josm.gui.mappaint.mapcss.Expression.Cacheability;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.tools.Logging;
 
@@ -91,11 +93,18 @@ public interface Instruction extends StyleKeys {
         public void execute(Environment env) {
             Object value;
             if (val instanceof Expression) {
-                try {
-                    value = ((Expression) val).evaluate(env);
-                } catch (RuntimeException ex) {
-                    Logging.error(ex);
-                    value = null;
+                if (((Expression) val).getCacheability() == Cacheability.IMMUTABLE) {
+                    // if the expression is IMMUTABLE we can evaluate it now and cache
+                    // the result
+                    try {
+                        value = ((Expression) val).evaluate(env);
+                    } catch (RuntimeException ex) {
+                        Logging.error(ex);
+                        value = null;
+                    }
+                } else {
+                    // capture the current environment for later execution
+                    value = new EnvironmentExpression((Expression) val, new Environment(env));
                 }
             } else {
                 value = val;
