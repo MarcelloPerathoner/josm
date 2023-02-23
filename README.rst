@@ -154,8 +154,8 @@ Property Dialog Made Editable
    .. image:: demo/properties-editable.png
 
 
-Heading in MapCSS
------------------
+MapCSS
+------
 
 #. A new function heading() has been added to rotate symbols in the direction of a way.
    Requested in #10271, #22539.
@@ -166,6 +166,19 @@ Heading in MapCSS
    Correct rotation of text and additional panels:
 
    .. image:: demo/rotation.png
+
+#. Generic CSS transformations to translate, rotate, scale, and skew have been
+   implemented.
+
+   .. image:: demo/transform.png
+
+#. Caching of expressions has been implemented.  Expressions can specify if they are
+   IMMUTABLE, STABLE or VOLATILE.  Results of evaluating IMMUTABLE expressions can
+   always be cached. Results of STABLE expression can be cached as long as the DataSet
+   does not change.
+
+   Cacheability does propagate: `max(1, 2)` is IMMUTABLE but `max(1, tag(lanes))` is
+   STABLE.
 
 
 ImageViewerDialog Rewritten

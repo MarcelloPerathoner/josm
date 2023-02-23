@@ -47,7 +47,7 @@ public class NodeElement extends StyleElement {
     public final Symbol symbol;
 
     /** Affine transformation expression for late evaluation, or {@code null} */
-    public final EnvironmentExpression transformExpression;
+    public final Object transformExpression;
     /** Rotation expression for late evaluation, or {@code null} */
     public final EnvironmentExpression rotationExpression;
 
@@ -61,7 +61,7 @@ public class NodeElement extends StyleElement {
         // either a mapImageAngle or a rotationExpression, not both.
         this.mapImageAngle = createRotationAngle(env);
         this.rotationExpression = env.getCascade().get(ICON_ROTATION, null, EnvironmentExpression.class, true);
-        this.transformExpression = env.getCascade().get(ICON_TRANSFORM, null, EnvironmentExpression.class, true);
+        this.transformExpression = env.getCascade().get(ICON_TRANSFORM);
     }
 
     /**
@@ -257,8 +257,10 @@ public class NodeElement extends StyleElement {
                 if (rotationExpression != null) {
                     rotation = (Double) rotationExpression.evaluate();
                 }
-                if (transformExpression != null) {
-                    at = (AffineTransform) transformExpression.evaluate();
+                if (transformExpression instanceof AffineTransform) {
+                    at = (AffineTransform) transformExpression;
+                } else if (transformExpression instanceof EnvironmentExpression) {
+                    at = (AffineTransform) ((EnvironmentExpression) transformExpression).evaluate();
                 }
                 painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, rotation, at);
             } else if (symbol != null) {

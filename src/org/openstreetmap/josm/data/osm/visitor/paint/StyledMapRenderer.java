@@ -70,6 +70,7 @@ import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.HorizontalTextAlignment;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.VerticalTextAlignment;
@@ -671,8 +672,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         if (text.rotationExpression != null) {
             at.rotate((Double) text.rotationExpression.evaluate());
         }
-        if (text.transformExpression != null) {
-            at.concatenate((AffineTransform) text.transformExpression.evaluate());
+        if (text.transformExpression instanceof AffineTransform) {
+            at.concatenate((AffineTransform) text.transformExpression);
+        } else if (text.transformExpression instanceof EnvironmentExpression) {
+            at.concatenate((AffineTransform) ((EnvironmentExpression) text.transformExpression).evaluate());
         }
         at.translate(x, y);
         displayText(n, text, s, at);

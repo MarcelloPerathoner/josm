@@ -45,7 +45,7 @@ public class TextLabel implements StyleKeys {
      */
     public RotationAngle rotationAngle;
     /** Affine transformation expression for late evaluation, or {@code null} */
-    public final EnvironmentExpression transformExpression;
+    public final Object transformExpression;
     /** Rotation expression for late evaluation, or {@code null} */
     public final EnvironmentExpression rotationExpression;
     /**
@@ -83,7 +83,7 @@ public class TextLabel implements StyleKeys {
         // either a rotationAngle or a rotationExpression, not both.
         this.rotationAngle = NodeElement.createTextRotationAngle(env);
         this.rotationExpression = env.getCascade().get(ICON_ROTATION, null, EnvironmentExpression.class, true);
-        this.transformExpression = env.getCascade().get(TEXT_TRANSFORM, null, EnvironmentExpression.class, true);
+        this.transformExpression = env.getCascade().get(TEXT_TRANSFORM);
     }
 
     /**
