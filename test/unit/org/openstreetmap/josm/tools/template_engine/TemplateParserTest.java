@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.JOSMFixture;
@@ -162,7 +161,7 @@ class TemplateParserTest {
         TemplateEntry entry = parser.parse();
         StringBuilder sb = new StringBuilder();
         entry.appendText(sb, dataProvider);
-        Assert.assertEquals("waypointName uu i10i", sb.toString());
+        assertEquals("waypointName uu i10i", sb.toString());
     }
 
     /**
@@ -178,12 +177,12 @@ class TemplateParserTest {
         Relation r = new Relation();
         r.put("admin_level", "2");
         templateEntry.appendText(sb, r);
-        Assert.assertEquals("NUTS 1", sb.toString());
+        assertEquals("NUTS 1", sb.toString());
 
         sb.setLength(0);
         r.put("admin_level", "5");
         templateEntry.appendText(sb, r);
-        Assert.assertEquals("5", sb.toString());
+        assertEquals("5", sb.toString());
     }
 
     /**
@@ -194,10 +193,10 @@ class TemplateParserTest {
     void testPrintAll() throws ParseError {
         TemplateParser parser = new TemplateParser("{special:everything}");
         TemplateEntry entry = parser.parse();
-        Assert.assertEquals("{special:everything}", entry.toString());
+        assertEquals("{special:everything}", entry.toString());
         StringBuilder sb = new StringBuilder();
         entry.appendText(sb, dataProvider);
-        Assert.assertEquals(
+        assertEquals(
             "description=Cycleway, description:de=Fahrradweg, description:de_CH=Veloweg, name=waypointName, number=10, special:key=specialKey",
             sb.toString()
         );
@@ -213,7 +212,7 @@ class TemplateParserTest {
         TemplateEntry entry = parser.parse();
         StringBuilder sb = new StringBuilder();
         entry.appendText(sb, dataProvider);
-        Assert.assertEquals("waypointName\n10", sb.toString());
+        assertEquals("waypointName\n10", sb.toString());
     }
 
     /**
@@ -296,7 +295,7 @@ class TemplateParserTest {
         TemplateEntry entry = parser.parse();
         entry.appendText(sb, child);
 
-        Assert.assertEquals("name_parent2", sb.toString());
+        assertEquals("name_parent2", sb.toString());
     }
 
     @Test
@@ -315,7 +314,7 @@ class TemplateParserTest {
         TemplateEntry entry = parser.parse();
         entry.appendText(sb, child);
 
-        Assert.assertEquals("name_parent1", sb.toString());
+        assertEquals("name_parent1", sb.toString());
     }
 
     @Test
@@ -342,7 +341,7 @@ class TemplateParserTest {
         entry.appendText(sb, child1);
         entry.appendText(sb, child2);
 
-        Assert.assertEquals("name_parent1name_parent2", sb.toString());
+        assertEquals("name_parent1name_parent2", sb.toString());
     }
 
     @Test
@@ -375,19 +374,19 @@ class TemplateParserTest {
         entry.appendText(sb, child1);
         entry.appendText(sb, child2);
 
-        Assert.assertEquals("grandparent_namename_parent2", sb.toString());
+        assertEquals("grandparent_namename_parent2", sb.toString());
     }
 
     @Test
     void testErrorsNot() {
         TemplateParser parser = new TemplateParser("!{-parent() '{name}'}");
-        assertThrows(ParseError.class, () -> parser.parse());
+        assertThrows(ParseError.class, parser::parse);
     }
 
     @Test
     void testErrorOr() {
         TemplateParser parser = new TemplateParser("!{parent() | type=type1 '{name}'}");
-        assertThrows(ParseError.class, () -> parser.parse());
+        assertThrows(ParseError.class, parser::parse);
     }
 
     @Test
@@ -413,7 +412,7 @@ class TemplateParserTest {
         TemplateEntry entry = parser.parse();
         entry.appendText(sb, parent2);
 
-        Assert.assertEquals("child2", sb.toString());
+        assertEquals("child2", sb.toString());
     }
 
     @Test
@@ -421,7 +420,7 @@ class TemplateParserTest {
         final String s1 = "?{ '{name} ({desc})' | '{name} ({cmt})' | '{name}' | '{desc}' | '{cmt}' }";
         final String s2 = new TemplateParser(s1).parse().toString();
         final String s3 = new TemplateParser(s2).parse().toString();
-        Assert.assertEquals(s1, s2);
-        Assert.assertEquals(s2, s3);
+        assertEquals(s1, s2);
+        assertEquals(s2, s3);
     }
 }

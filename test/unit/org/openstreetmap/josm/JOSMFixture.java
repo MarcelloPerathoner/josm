@@ -118,7 +118,7 @@ public class JOSMFixture {
         pref.enableSaveOnPut(false);
         I18n.init();
         // initialize the platform hook, and
-        // call the really early hook before we anything else
+        // call the really early hook before anything else
         PlatformManager.getPlatform().preStartupHook();
 
         Logging.setLogLevel(Logging.LEVEL_INFO);
@@ -151,7 +151,7 @@ public class JOSMFixture {
         DeleteCommand.setDeletionCallback(DeleteAction.defaultDeletionCallback);
 
         if (createGui) {
-            GuiHelper.runInEDTAndWaitWithException(() -> setupGUI());
+            GuiHelper.runInEDTAndWaitWithException(this::setupGUI);
         }
     }
 

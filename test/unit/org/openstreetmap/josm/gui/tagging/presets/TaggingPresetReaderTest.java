@@ -5,13 +5,13 @@ import static org.CustomMatchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.parallel.Execution;
@@ -64,7 +64,7 @@ class TaggingPresetReaderTest {
             TaggingPresetReader.read(presetfile, true);
         });
 
-        Assert.assertTrue(e.getMessage().contains("DOCTYPE is disallowed when"));
+        assertTrue(e.getMessage().contains("DOCTYPE is disallowed when"));
     }
 
     /**
@@ -77,6 +77,6 @@ class TaggingPresetReaderTest {
     void testReadDefaultPresets() throws SAXException, IOException {
         TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
         final Collection<TaggingPreset> presets = taggingPresets.getAllPresets();
-        Assert.assertTrue("Default presets are empty", presets.size() > 0);
+        assertTrue(presets.size() > 0, "Default presets are empty");
     }
 }
