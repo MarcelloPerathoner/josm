@@ -278,7 +278,7 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
             return rule.declaration.toString();
         } else {
             final Object val = errors.keySet().iterator().next().val;
-            selector = selector == null ? whichSelectorMatchesPrimitive(p) : selector;
+            selector = selector == null && p != null ? whichSelectorMatchesPrimitive(p) : selector;
             return String.valueOf(
                     val instanceof Expression
                             ? ((Expression) val).evaluate(new Environment(p).withSelector(selector))
