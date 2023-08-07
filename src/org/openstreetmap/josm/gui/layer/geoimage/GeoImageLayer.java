@@ -965,6 +965,8 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
 
     @Override
     public void imageDataUpdated(ImageData data) {
+        this.gpxFauxLayer = null;
+        this.gpxFauxData = null;
         updateBufferAndRepaint();
     }
 
