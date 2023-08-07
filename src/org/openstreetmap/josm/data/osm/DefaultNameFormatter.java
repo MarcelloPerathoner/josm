@@ -394,7 +394,7 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
             result.append(" (").append(relationName).append(", ");
         } else {
             preset.getNameTemplate().appendText(result, (TemplateEngineDataProvider) relation);
-            result.append('(');
+            result.append(" (");
         }
         return result;
     }
