@@ -70,12 +70,11 @@ public class UploadDialogModel extends TagTableModel {
      * @return the hashtags separated by ";" or null
      */
     String findHashTags(String comment) {
-        String hashTags = String.join(";",
-            Arrays.stream(comment.split("\\s", -1))
-                .map(s -> Utils.strip(s, ",;"))
-                .filter(s -> s.matches("#[a-zA-Z0-9][-_a-zA-Z0-9]+"))
-                .collect(Collectors.toList()));
-        return hashTags.isEmpty() ? null : hashTags;
+        String hashtags = Arrays.stream(comment.split("\\s", -1))
+            .map(s -> Utils.strip(s, ",;"))
+            .filter(s -> s.matches("#[a-zA-Z0-9][-_a-zA-Z0-9]+"))
+            .collect(Collectors.joining(";"));
+        return hashtags.isEmpty() ? null : hashtags;
     }
 
     /**

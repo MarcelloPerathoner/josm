@@ -10,7 +10,7 @@ import org.openstreetmap.josm.spi.preferences.Config;
 /**
  * Support class to handle size information of Gui elements
  * This is needed, because display resolution may vary a lot and a common set
- * of sizes wont work for all users alike.
+ * of sizes won't work for all users alike.
  * @since 12682 (moved from {@code gui.util} package)
  * @since 10358
  * @deprecated Java9 is HiDPI aware. See also: {@link ImageProvider.ImageSizes#adj}
@@ -23,7 +23,7 @@ public final class GuiSizesHelper {
     }
 
     /** cache value for screen resolution */
-    private static float screenDPI = -1;
+    private static volatile float screenDPI = -1;
 
     /**
      * Request the screen resolution (cached)

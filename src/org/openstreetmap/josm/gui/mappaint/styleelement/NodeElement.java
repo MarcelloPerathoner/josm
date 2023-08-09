@@ -20,7 +20,6 @@ import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Expression;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.RootExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.SimpleBoxProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -325,10 +324,10 @@ public class NodeElement extends StyleElement {
     public String toString() {
         StringBuilder s = new StringBuilder(64).append("NodeElement{").append(super.toString());
         if (mapImage != null) {
-            s.append(" icon=[" + mapImage + ']');
+            s.append(" icon=[").append(mapImage).append(']');
         }
         if (symbol != null) {
-            s.append(" symbol=[" + symbol + ']');
+            s.append(" symbol=[").append(symbol).append(']');
         }
         s.append('}');
         return s.toString();
