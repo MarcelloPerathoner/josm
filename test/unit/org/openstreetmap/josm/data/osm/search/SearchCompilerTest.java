@@ -21,6 +21,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -735,24 +736,27 @@ class SearchCompilerTest {
         }
     }
 
+    static Set<Class<? extends Match>> testEqualsContract() {
+        TestUtils.assumeWorkingEqualsVerifier();
+        final Set<Class<? extends Match>> matchers = TestUtils.getJosmSubtypes(Match.class);
+        assertTrue(matchers.size() >= 10, "There should be at least 10 matchers from JOSM core");
+        return matchers;
+    }
+
     /**
      * Unit test of methods {@link Match#equals} and {@link Match#hashCode}, including all subclasses.
+     * @param clazz The class to test
      */
-    @Test
-    void testEqualsContract() {
+    @ParameterizedTest
+    @MethodSource
+    void testEqualsContract(Class<? extends Match> clazz) {
         TaggingPresets taggingPresets = init3Presets();
-        MainApplicationTest.setTaggingPresets(taggingPresets);
-        TestUtils.assumeWorkingEqualsVerifier();
-        Set<Class<? extends Match>> matchers = TestUtils.getJosmSubtypes(Match.class);
-        assertTrue(matchers.size() >= 10); // if it finds less than 10 classes, something is broken
-        for (Class<?> c : matchers) {
-            Iterator<TaggingPreset> iter = taggingPresets.getAllPresets().iterator();
-            Logging.debug(c.toString());
-            EqualsVerifier.forClass(c).usingGetClass()
-                .suppress(Warning.NONFINAL_FIELDS, Warning.INHERITED_DIRECTLY_FROM_OBJECT)
-                .withPrefabValues(TaggingPreset.class, iter.next(), iter.next())
-                .verify();
-        }
+        Iterator<TaggingPreset> iter = taggingPresets.getAllPresets().iterator();
+
+        EqualsVerifier.forClass(clazz).usingGetClass()
+            .suppress(Warning.NONFINAL_FIELDS, Warning.INHERITED_DIRECTLY_FROM_OBJECT)
+            .withPrefabValues(TaggingPreset.class, iter.next(), iter.next())
+            .verify();
     }
 
     /**
