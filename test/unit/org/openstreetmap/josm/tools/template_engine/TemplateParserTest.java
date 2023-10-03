@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openstreetmap.josm.JOSMFixture;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
@@ -26,15 +24,6 @@ import org.openstreetmap.josm.testutils.DatasetFactory;
  * Unit tests of {@link TemplateParser} class.
  */
 class TemplateParserTest {
-
-    /**
-     * Setup test.
-     */
-    @BeforeAll
-    public static void setUp() {
-        JOSMFixture.createUnitTestFixture().init();
-    }
-
     /**
      * Test to parse an empty string.
      * @throws ParseError if the template cannot be parsed

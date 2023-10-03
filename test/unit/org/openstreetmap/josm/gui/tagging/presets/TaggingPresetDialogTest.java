@@ -2,17 +2,12 @@
 package org.openstreetmap.josm.gui.tagging.presets;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.ReadOnlyHandler;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.tools.template_engine.TemplateEntry;
 import org.openstreetmap.josm.tools.template_engine.TemplateParser;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collection;
@@ -26,13 +21,6 @@ import javax.swing.JPanel;
 class TaggingPresetDialogTest {
 
     /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules().main();
-
-    /**
      * Tests {@link TemplateEntry} evaluation
      * @throws Exception in case something goes wrong
      */
@@ -44,7 +32,7 @@ class TaggingPresetDialogTest {
         TaggingPresets taggingPresets = TaggingPresetsTest.initFromDefaultPresets();
         Collection<TaggingPreset> presets = taggingPresets.getMatchingPresets(primitive);
 
-        assertEquals(presets.size(), 1);
+        assertEquals(1, presets.size());
 
         TaggingPreset preset = presets.iterator().next();
         TaggingPreset.Instance presetInstance = preset.new Instance(
