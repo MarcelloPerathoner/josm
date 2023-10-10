@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.dialogs.properties;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trn;
+import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
 
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -374,7 +375,7 @@ public class TagEditHelper {
             String value = valueEditor.getText();
             tagTableModel.getHandler().update(key, newKey, value);
 
-            if (!value.isEmpty() && !ValueType.DIFFERENT.equals(value)) {
+            if (!value.isEmpty() && !DIFFERENT_I18N.equals(value)) {
                 recentTags.add(new Tag(newKey, value));
                 AutoCompletionManager.rememberUserInput(newKey, value, false);
             }

@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.dialogs.properties;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
+import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +42,7 @@ final class RelationRoleEditor {
                 formatter.formatAsHtmlUnorderedList(Utils.transform(members, RelationMember::getMember), 5),
                 formatter.formatAsHtmlUnorderedList(relation)),
                 oldRole);
-        if (newRole == null || oldRole.equals(newRole) || tr("<different>").equals(newRole)) {
+        if (newRole == null || oldRole.equals(newRole) || DIFFERENT_I18N.equals(newRole)) {
             return;
         }
         final List<RelationMember> newMembers = relation.getMembers();

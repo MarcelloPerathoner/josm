@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.tagging;
 
 import static org.openstreetmap.josm.tools.I18n.trn;
+import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -159,7 +160,7 @@ public class DataHandlers {
                 cmds.add(new ChangePropertyCommand(getDataSet(), get(), map));
             } else if (!newKey.equals(oldKey)) {
                 // update the key
-                if (ValueType.DIFFERENT.equals(value)) {
+                if (DIFFERENT_I18N.equals(value)) {
                     get().stream()
                         .filter(primitive -> primitive.hasKey(oldKey))
                         // group by current value
@@ -178,7 +179,7 @@ public class DataHandlers {
                 }
             } else {
                 // update the value
-                if (ValueType.DIFFERENT.equals(value))
+                if (DIFFERENT_I18N.equals(value))
                     return;
                 Map<String, String> map = new HashMap<>();
                 map.put(oldKey, value);

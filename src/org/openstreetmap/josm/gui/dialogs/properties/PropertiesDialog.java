@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.dialogs.properties;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
+import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -1177,7 +1178,7 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
                     if (roleString == null) {
                         roleString = r.getRole();
                     } else if (!roleString.equals(r.getRole())) {
-                        roleString = tr("<different>");
+                        roleString = DIFFERENT_I18N;
                         break;
                     }
                 }

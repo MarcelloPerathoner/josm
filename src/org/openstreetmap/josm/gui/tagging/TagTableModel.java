@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.tagging;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
+import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
 
 import java.text.Normalizer;
 import java.util.Collection;
@@ -51,8 +52,6 @@ public class TagTableModel extends DefaultTableModel {
      * Class that holds zero or more values with respective frequency count.
      */
     public static class ValueType {
-        /** The string shown to the user if the selection contains more than one value for a given key. */
-        public static final String DIFFERENT = tr("<different>");
         /** The string shown to the user instead of the empty string if the value is unset. */
         public static final String UNSET = tr("<unset>");
         /** our data: value -> count */
@@ -117,7 +116,7 @@ public class TagTableModel extends DefaultTableModel {
             switch (map.size()) {
                 case 0: s = null; break;
                 case 1: s = map.keySet().iterator().next(); break;
-                default: s = DIFFERENT;
+                default: s = DIFFERENT_I18N;
             }
             return s == null ? "" : s; // by contract toString should never return null
         }
@@ -308,7 +307,7 @@ public class TagTableModel extends DefaultTableModel {
             String newValue = (String) aValue;
             if (newValue.equals(value.toString()))
                 return; // no change
-            if (newValue.equals(ValueType.DIFFERENT))
+            if (newValue.equals(DIFFERENT_I18N))
                 newValue = ""; // never write this
             newValue = Normalizer.normalize(newValue, Normalizer.Form.NFC);
             Logging.info("Change tag value: {0}={1} to {2}={3}", key, value, key, newValue);
