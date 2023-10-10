@@ -30,8 +30,8 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.UIManager;
 
 import org.openstreetmap.josm.data.Preferences;
+import org.openstreetmap.josm.data.preferences.sources.PresetPrefHelper;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.io.CertificateAmendment.NativeCertAmend;
 
 /**
@@ -56,7 +56,7 @@ public class PlatformHookOsx implements PlatformHook, InvocationHandler {
 
         // But only use the menu bar if the Name Suggestion Index is not enabled -- see JDK-8297117 (can remove once that is fixed)
         // The NSI is especially egregious since it adds something like 8k presets, and is the most likely to trigger JDK-8297117.
-        if (TaggingPresetReader.getPresetSources().stream().noneMatch(url -> url.contains("name-suggestion-index"))) {
+        if (PresetPrefHelper.INSTANCE.get().stream().noneMatch(s -> s.url.contains("name-suggestion-index"))) {
             Utils.updateSystemProperty("apple.laf.useScreenMenuBar", "true");
         }
         Utils.updateSystemProperty("apple.awt.application.name", "JOSM");
