@@ -19,14 +19,13 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
+import org.openstreetmap.josm.gui.mappaint.mapcss.Expression;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.RootExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.SimpleBoxProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.ColorHelper;
-import org.openstreetmap.josm.tools.Logging;
-import org.openstreetmap.josm.tools.RotationAngle;
 import org.openstreetmap.josm.tools.Utils;
 
 /**
@@ -38,30 +37,23 @@ public class NodeElement extends StyleElement {
      */
     public final MapImage mapImage;
     /**
-     * The angle that is used to rotate {@link #mapImage}. May be <code>null</code> to indicate no rotation.
-     */
-    public final RotationAngle mapImageAngle;
-    /**
      * The symbol that should be used for drawing this node.
      */
     public final Symbol symbol;
-
-    /** Affine transformation expression for late evaluation, or {@code null} */
-    public final Object transformExpression;
-    /** Rotation expression for late evaluation, or {@code null} */
-    public final EnvironmentExpression rotationExpression;
+    /** The expression in {@code icon-rotation} or {@code null}. */
+    public final Expression iconRotation;
+    /** The expression in {@code icon-transform} or {@code null}. */
+    public final Expression iconTransform;
 
     private static final String[] ICON_KEYS = {ICON_IMAGE, ICON_WIDTH, ICON_HEIGHT, ICON_OPACITY, ICON_OFFSET_X, ICON_OFFSET_Y};
 
-    protected NodeElement(Environment env, MapImage mapImage, Symbol symbol, float defaultMajorZindex) {
-        super(env.getCascade(), defaultMajorZindex);
+    protected NodeElement(Cascade c, MapImage mapImage, Symbol symbol, float defaultMajorZindex,
+            Expression iconRotation, Expression iconTransform) {
+        super(c, defaultMajorZindex);
         this.mapImage = mapImage;
         this.symbol = symbol;
-        // until we implement rotationAngle in terms of Expression there will be set
-        // either a mapImageAngle or a rotationExpression, not both.
-        this.mapImageAngle = createRotationAngle(env);
-        this.rotationExpression = env.getCascade().get(ICON_ROTATION, null, EnvironmentExpression.class, true);
-        this.transformExpression = env.getCascade().get(ICON_TRANSFORM);
+        this.iconRotation = iconRotation;
+        this.iconTransform = iconTransform;
     }
 
     /**
@@ -85,51 +77,10 @@ public class NodeElement extends StyleElement {
         // have to allocate a node element style.
         if (!allowDefault && symbol == null && mapImage == null) return null;
 
-        return new NodeElement(env, mapImage, symbol, defaultMajorZindex);
-    }
-
-    /**
-     * Reads the icon-rotation property and creates a rotation angle from it.
-     * @param env The environment
-     * @return The angle
-     * @since 11670
-     */
-    public static RotationAngle createRotationAngle(Environment env) {
-        return createRotationAngle(env, ICON_ROTATION);
-    }
-
-    /**
-     * Reads the text-rotation property and creates a rotation angle from it.
-     * @param env The environment
-     * @return The angle
-     * @since 16253
-     */
-    public static RotationAngle createTextRotationAngle(Environment env) {
-        return createRotationAngle(env, TEXT_ROTATION);
-    }
-
-    private static RotationAngle createRotationAngle(Environment env, String key) {
-        Cascade c = env.getCascade();
-
-        RotationAngle rotationAngle = RotationAngle.NO_ROTATION;
-        final Float angle = c.get(key, null, Float.class, true);
-        if (angle != null) {
-            rotationAngle = RotationAngle.buildStaticRotation(angle);
-        } else {
-            final Keyword rotationKW = c.get(key, null, Keyword.class);
-            if (rotationKW != null) {
-                if ("way".equals(rotationKW.val)) {
-                    rotationAngle = RotationAngle.buildWayDirectionRotation();
-                } else {
-                    try {
-                        rotationAngle = RotationAngle.buildStaticRotation(rotationKW.val);
-                    } catch (IllegalArgumentException ignore) {
-                        Logging.trace(ignore);
-                    }
-                }
-            }
-        }
-        return rotationAngle;
+        return new NodeElement(env.getCascade(), mapImage, symbol, defaultMajorZindex,
+            env.getCascade().getExpression(ICON_ROTATION),
+            env.getCascade().getExpression(ICON_TRANSFORM)
+        );
     }
 
     /**
@@ -249,19 +200,8 @@ public class NodeElement extends StyleElement {
         if (primitive instanceof INode) {
             INode n = (INode) primitive;
             if (mapImage != null && painter.isShowIcons()) {
-                Double rotation = 0d;
-                AffineTransform at = null;
-                if (mapImageAngle != null) {
-                    rotation = mapImageAngle.getRotationAngle(primitive);
-                }
-                if (rotationExpression != null) {
-                    rotation = (Double) rotationExpression.evaluate();
-                }
-                if (transformExpression instanceof AffineTransform) {
-                    at = (AffineTransform) transformExpression;
-                } else if (transformExpression instanceof EnvironmentExpression) {
-                    at = (AffineTransform) ((EnvironmentExpression) transformExpression).evaluate();
-                }
+                Double rotation = iconRotation == null ? 0d : iconRotation.evaluate(Double.class, 0d);
+                AffineTransform at = iconTransform == null ? null : iconTransform.evaluate(AffineTransform.class, null);
                 painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, rotation, at);
             } else if (symbol != null) {
                 paintWithSymbol(settings, painter, selected, member, n);
@@ -366,7 +306,7 @@ public class NodeElement extends StyleElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mapImage, mapImageAngle, transformExpression, symbol);
+        return Objects.hash(super.hashCode(), mapImage, symbol, iconRotation, iconTransform);
     }
 
     @Override
@@ -376,9 +316,9 @@ public class NodeElement extends StyleElement {
         if (!super.equals(obj)) return false;
         NodeElement that = (NodeElement) obj;
         return Objects.equals(mapImage, that.mapImage) &&
-               Objects.equals(mapImageAngle, that.mapImageAngle) &&
-               Objects.equals(transformExpression, that.transformExpression) &&
-               Objects.equals(symbol, that.symbol);
+        Objects.equals(iconRotation, that.iconRotation) &&
+        Objects.equals(iconTransform, that.iconTransform) &&
+        Objects.equals(symbol, that.symbol);
     }
 
     @Override
@@ -386,9 +326,6 @@ public class NodeElement extends StyleElement {
         StringBuilder s = new StringBuilder(64).append("NodeElement{").append(super.toString());
         if (mapImage != null) {
             s.append(" icon=[" + mapImage + ']');
-        }
-        if (mapImage != null && mapImageAngle != null) {
-            s.append(" mapImageAngle=[" + mapImageAngle + ']');
         }
         if (symbol != null) {
             s.append(" symbol=[" + symbol + ']');

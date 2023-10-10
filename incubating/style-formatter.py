@@ -50,7 +50,18 @@ node[prop(maxspeedclass, default)]::* {
 }
 
 node[traffic_sign=~/IT:M?II/] {
+    sign_id: tag(traffic_sign);
     set .sign;
+}
+node[traffic_sign=~/IT:M?II/][direction=forward],
+node["traffic_sign:forward"=~/IT:M?II/] {
+    set .sign;
+    set .sign-forward;
+}
+node[traffic_sign=~/IT:M?II/][direction=backward],
+node["traffic_sign:backward"=~/IT:M?II/] {
+    set .sign;
+    set .sign-backward;
 }
 
 node[prop(sign, default)][direction=~/[NWSE]+/] {
@@ -61,26 +72,30 @@ node[prop(sign, default)][direction=~/[.0-9]+/] {
     text-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
     icon-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
 }
-way[highway] > node[prop(sign, default)][direction=forward]::* {
-    text-transform: transform(rotate(heading()));
-    icon-transform: transform(rotate(heading()));
+way[highway] > node[prop(sign-forward, default)]::forward {
+    text-transform: transform(rotate(heading()), translate(metric(5), 0));
+    icon-transform: transform(rotate(heading()), translate(metric(5), 0));
 }
-way[highway] > node[prop(sign, default)][direction=backward]::* {
-    text-transform: transform(rotate(heading(0.5turn)));
-    icon-transform: transform(rotate(heading(0.5turn)));
+way[highway] > node[prop(sign-backward, default)]::backward {
+    text-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
+    icon-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
 }
 
 node[prop(sign, default)]::* {
     major-z-index: 7;
     icon-width: setting("icon_size");
+    icon-height: setting("icon_size");
+
     text-anchor-horizontal: center;
     text-anchor-vertical: center;
     font-size: eval(setting("icon_size") * 0.3);
     font-weight: bold;
     text-color: black;
 }
-node[prop(sign, default)] {
+node[prop(sign-forward, default)]::forward,
+node[prop(sign-backward, default)]::backward {
     major-z-index: 7;
+    icon-width: setting("icon_size");
     icon-height: setting("icon_size");
 
     font-size: eval(setting("icon_size") * 0.85);
@@ -129,7 +144,10 @@ for item in items:
     url = item["urls"][0]
     if (id_ == "II.46"): # save the sign for the speed limit
         sign_46_url = url
-    print(f"node[traffic_sign=~/IT:{id_}(;|,|\\[|$)/] {{")
+    print(f"node[traffic_sign=~/IT:{id_}(;|,|\\[|$)/][direction=forward]::forward,")
+    print(f"node[traffic_sign=~/IT:{id_}(;|,|\\[|$)/][direction=backward]::backward,")
+    print(f"node[\"traffic_sign:forward\"=~/IT:{id_}(;|,|\\[|$)/]::forward,")
+    print(f"node[\"traffic_sign:backward\"=~/IT:{id_}(;|,|\\[|$)/]::backward {{")
     if (id_ == "II.50"): # draw the speed limit number
         print(f'    icon-image: "{sign_46_url}";')
         print(f'    text: tag(maxspeed);')

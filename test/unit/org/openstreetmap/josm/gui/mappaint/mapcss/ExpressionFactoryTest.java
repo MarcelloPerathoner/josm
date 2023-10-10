@@ -40,8 +40,8 @@ class ExpressionFactoryTest {
     @Test
     void testNoUnregisteredFunctions() {
         for (Method m : Functions.class.getDeclaredMethods()) {
-            if (!Modifier.isPrivate(m.getModifiers()) && !ExpressionFactory.FACTORY_MAP.containsKey(m.getName())) {
-                throw new AssertionError(m + " has not registered in ExpressionFactory.FACTORY_MAP");
+            if (!Modifier.isPrivate(m.getModifiers()) && !ExpressionFactory.expressionMap.containsKey(m.getName())) {
+                throw new AssertionError(m + " has not registered in ExpressionFactory.expressionMap");
             }
         }
     }

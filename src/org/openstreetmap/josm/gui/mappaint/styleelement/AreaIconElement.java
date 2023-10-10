@@ -12,7 +12,6 @@ import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PartiallyInsideAreaStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAreaStrategy;
-import org.openstreetmap.josm.tools.RotationAngle;
 
 /**
  * This class defines how an icon is rendered onto the area.
@@ -20,25 +19,21 @@ import org.openstreetmap.josm.tools.RotationAngle;
  * @since 11730
  */
 public class AreaIconElement extends StyleElement {
+    final Cascade c;
     /**
      * The icon that is displayed on the center of the area.
      */
     private final MapImage iconImage;
 
     /**
-     * The rotation of the {@link #iconImageAngle}
-     */
-    private final RotationAngle iconImageAngle;
-
-    /**
      * The position of the icon inside the area.
      */
     private final PositionForAreaStrategy iconPosition;
 
-    protected AreaIconElement(Cascade c, MapImage iconImage, RotationAngle iconImageAngle, PositionForAreaStrategy iconPosition) {
+    protected AreaIconElement(Cascade c, MapImage iconImage, PositionForAreaStrategy iconPosition) {
         super(c, 4.8f);
+        this.c = c;
         this.iconImage = Objects.requireNonNull(iconImage, "iconImage");
-        this.iconImageAngle = Objects.requireNonNull(iconImageAngle, "iconImageAngle");
         this.iconPosition = Objects.requireNonNull(iconPosition, "iconPosition");
     }
 
@@ -46,8 +41,9 @@ public class AreaIconElement extends StyleElement {
     public void paintPrimitive(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer painter,
             boolean selected, boolean outermember, boolean member) {
         if (painter.isShowIcons()) {
+            Double rotation = c.get(ICON_ROTATION, 0d, Double.class);
             painter.drawAreaIcon(osm, iconImage, painter.isInactiveMode() || osm.isDisabled(), selected, member,
-                    iconImageAngle.getRotationAngle(osm), iconPosition);
+                    rotation, iconPosition);
         }
     }
 
@@ -57,14 +53,12 @@ public class AreaIconElement extends StyleElement {
      * @return The area element or <code>null</code> if there is no icon.
      */
     public static AreaIconElement create(final Environment env) {
-         final Cascade c = env.getCascade();
+        final Cascade c = env.getCascade();
         MapImage iconImage = NodeElement.createIcon(env);
         if (iconImage != null) {
-            RotationAngle rotationAngle = NodeElement.createRotationAngle(env);
             Keyword positionKeyword = c.get(StyleKeys.ICON_POSITION, null, Keyword.class);
             PositionForAreaStrategy position = PositionForAreaStrategy.forKeyword(positionKeyword, PartiallyInsideAreaStrategy.INSTANCE);
-
-            return new AreaIconElement(c, iconImage, rotationAngle, position);
+            return new AreaIconElement(c, iconImage, position);
         } else {
             return null;
         }
@@ -72,7 +66,7 @@ public class AreaIconElement extends StyleElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), iconImage, iconImageAngle, iconPosition);
+        return Objects.hash(super.hashCode(), c, iconImage, iconPosition);
     }
 
     @Override
@@ -88,12 +82,12 @@ public class AreaIconElement extends StyleElement {
         }
         AreaIconElement other = (AreaIconElement) obj;
         return Objects.equals(iconImage, other.iconImage) &&
-                Objects.equals(iconImageAngle, other.iconImageAngle) &&
+                Objects.equals(c, other.c) &&
                 Objects.equals(iconPosition, other.iconPosition);
     }
 
     @Override
     public String toString() {
-        return "AreaIconElement{" + super.toString() + "iconImage=[" + iconImage + "] iconImageAngle=[" + iconImageAngle + "]}";
+        return "AreaIconElement{" + super.toString() + "iconImage=[" + iconImage + "]}";
     }
 }

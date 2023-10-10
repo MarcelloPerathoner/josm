@@ -137,7 +137,7 @@ public class InspectPrimitiveDialog extends ExtendedDialog {
                         heading = tr("{0} style \"{1}\"", getSort(s), s.getDisplayString());
                         txtMappaint.println(heading);
                         txtMappaint.println(repeatString("-", heading.length()));
-                        s.apply(mc, osm, scale, false);
+                        s.apply(mc, osm, scale, nc, false);
                         txtMappaint.println(tr("Display range: {0}", mc.range));
                         for (Entry<String, Cascade> e : mc.getLayers()) {
                             txtMappaint.println(tr("Layer {0}", e.getKey()));

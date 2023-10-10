@@ -30,6 +30,7 @@ import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.preferences.sources.SourceEntry;
+import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
@@ -347,7 +348,7 @@ public class MapCSSStyleSource extends StyleSource {
     }
 
     @Override
-    public void apply(MultiCascade mc, IPrimitive osm, double scale, boolean pretendWayIsClosed) {
+    public void apply(MultiCascade mc, IPrimitive osm, double scale, NavigatableComponent nc, boolean pretendWayIsClosed) {
 
         Environment env = new Environment(osm, mc, null, this);
         // the declaration indices are sorted, so it suffices to save the last used index
@@ -359,6 +360,7 @@ public class MapCSSStyleSource extends StyleSource {
             for (Selector s : r.selectors) {
                 env.clearSelectorMatchingInformation();
                 env.layer = s.getSubpart().getId(env);
+                env.nc = nc;
                 String sub = env.layer;
                 if (!s.matches(env)) { // as side effect env.parent will be set (if s is a child selector)
                     continue;

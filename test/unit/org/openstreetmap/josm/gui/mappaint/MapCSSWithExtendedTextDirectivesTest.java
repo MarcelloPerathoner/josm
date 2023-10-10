@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.TagKeyReference;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.CacheableExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy.DeriveLabelFromNameTagsCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy.TagLookupCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
@@ -38,7 +39,7 @@ class MapCSSWithExtendedTextDirectivesTest {
     void testCreateAutoTextElement() {
         MultiCascade mc = new MultiCascade();
         Cascade c = mc.getOrCreateCascade("default");
-        c.put("text", new Keyword("auto"));
+        c.put("text", new CacheableExpression(new Keyword("auto")));
         Node osm = new Node();
         osm.put("ref", "A456");
         Environment env = new Environment(osm, mc, "default", null);
@@ -55,7 +56,7 @@ class MapCSSWithExtendedTextDirectivesTest {
     void testCreateTextElementComposingTextFromTag() {
         MultiCascade mc = new MultiCascade();
         Cascade c = mc.getOrCreateCascade("default");
-        c.put("text", new TagKeyReference("my_name"));
+        c.put("text", new CacheableExpression(new TagKeyReference("my_name")));
         Node osm = new Node();
         osm.put("my_name", "foobar");
         Environment env = new Environment(osm, mc, "default", null);

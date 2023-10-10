@@ -15,6 +15,7 @@ import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
+import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.Projection;
@@ -46,7 +47,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(0f, ne.mapImageAngle.getRotationAngle(n));
+        assertEquals(null, ne.iconRotation);
     }
 
     @Test
@@ -56,7 +57,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(3.14f, ne.mapImageAngle.getRotationAngle(n));
+        assertEquals(3.14f, ne.iconRotation.evaluate(Double.class, 0.0));
     }
 
     @Test
@@ -66,7 +67,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(Math.PI/8, ne.mapImageAngle.getRotationAngle(n), 0.01);
+        assertEquals(Math.PI/8, ne.iconRotation.evaluate(Double.class, 0.0), 0.01);
     }
 
     @Test
@@ -75,11 +76,15 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION));
-        assertEquals(0f, ne.mapImageAngle.getRotationAngle(n));
+        assertEquals(0f, ne.iconRotation.evaluate(Double.class, 0.0));
     }
 
     @Test
     void testRotationWay() {
+        //   n0
+        // n1
+        //   n2
+        //   n3
         Node n0 = new Node(new LatLon(0.0, 0.2));
         Node n1 = new Node(new LatLon(-0.1, 0.1));
         Node n2 = new Node(LatLon.ZERO);
@@ -92,21 +97,21 @@ class IconRotationTest {
         ds.addPrimitiveRecursive(w);
 
         assertEquals(Utils.toRadians(225),
-                     NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n0),
+                     NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
                      0.01);
-        assertEquals(Utils.toRadians(225),
-                     NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n1),
+        assertEquals(Utils.toRadians(270),
+                     NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
                      0.01);
-        assertEquals(Utils.toRadians(-45),
-                     NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n2),
+        assertEquals(Utils.toRadians(270 + 26.56),
+                     NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
                      0.01);
-        assertEquals(Utils.toRadians(-90),
-                     NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n3),
+        assertEquals(Utils.toRadians(270),
+                     NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
                      0.01);
     }
 
     /**
-     * icon-rotation: way; picks first way when a node has multiple parent ways
+     * icon-rotation: way; refuses to rotate if direction is ambiguous
      */
     @Test
     void testRotationWayMultiple() {
@@ -122,8 +127,8 @@ class IconRotationTest {
         ds.addPrimitiveRecursive(w1);
         ds.addPrimitiveRecursive(w2);
 
-        assertEquals(Utils.toRadians(45),
-                     NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).mapImageAngle.getRotationAngle(n),
+        assertEquals(Utils.toRadians(0),
+                     NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
                      0.01);
     }
 

@@ -78,7 +78,7 @@ public class MapCSSParser {
             this.idx = idx;
         }
     }
-    
+
     /**
      * Constructor which initializes the parser with a certain lexical state.
      * @param in input
@@ -125,7 +125,7 @@ PARSER_END(MapCSSParser)
  * Lexical states for the preprocessor: <PREPROCESSOR>, <PP_COMMENT>
  * Lexical states for the main parser: <DEFAULT>, <COMMENT>
  */
- 
+
 <PREPROCESSOR>
 TOKEN:
 {
@@ -251,7 +251,7 @@ SKIP:
  *                    media_expression
  * </pre>
  */
- 
+
 
 /**
  * root method for the preprocessor.
@@ -386,7 +386,7 @@ void pp_w1():
 }
 {
     t=<PP_NEWLINECHAR> { sb.append(t.image); }
-        | 
+        |
     t=<PP_WHITESPACE> { sb.append(t.image); }
         |
     t=<PP_COMMENT_START> { sb.append(t.image); } t=<PP_COMMENT_END> { sb.append(t.image); }
@@ -520,7 +520,7 @@ void w() :
 /**
  * comma delimited list of floats (at least 2, all &gt;= 0)
  * @return list of floats
- * @throws ParseException in case of parsing error 
+ * @throws ParseException in case of parsing error
  */
 List<Float> float_array() :
 {
@@ -767,13 +767,13 @@ Condition simple_key_value_condition(Context context) :
             )
             s()
             ( <STAR> { considerValAsKey=true; } )?
-            ( 
-                LOOKAHEAD(2) 
+            (
+                LOOKAHEAD(2)
                         i=int_() { val=Integer.toString(i); }
-                    | 
-                        f=float_() { val=Float.toString(f); } 
                     |
-                        val=string_or_ident() 
+                        f=float_() { val=Float.toString(f); }
+                    |
+                        val=string_or_ident()
             )
         |
             (
@@ -800,7 +800,7 @@ Condition class_or_pseudoclass(Context context) :
     boolean pseudo;
 }
 {
-    ( <EXCLAMATION> { not = true; } )? 
+    ( <EXCLAMATION> { not = true; } )?
     (
         <FULLSTOP> { pseudo = false; }
     |
@@ -887,6 +887,7 @@ Expression expression() :
 {
     e=conditional_expression()
     {
+        e.setBeginPos(sheet == null ? null : sheet.url, token.beginLine, token.beginColumn);
         return e;
     }
 }
@@ -1049,10 +1050,10 @@ Expression primary() :
         fn=function() { return fn; }
     |
         lit=literal()
-        { 
+        {
             if (lit == null)
                 return NullExpression.INSTANCE;
-            return new LiteralExpression(lit);
+            return new LiteralExpression(lit, sheet == null ? null : sheet.url, token.beginLine, token.beginColumn);
         }
     |
         <LPAR> w() nested=expression() <RPAR> { return nested; }
@@ -1149,19 +1150,19 @@ JAVACODE
 void error_skipto(int kind, MapCSSException me) {
     if (token.kind == EOF)
         throw new ParseException("Reached end of file while parsing");
-        
-    Exception e = null;        
+
+    Exception e = null;
     ParseException pe = generateParseException();
 
     if (me != null) {
-        final Token token = Utils.firstNonNull(pe.currentToken.next, pe.currentToken);
+       final Token token = Utils.firstNonNull(pe.currentToken.next, pe.currentToken);
         me.setLine(token.beginLine);
         me.setColumn(token.beginColumn);
         e = me;
     } else {
         e = new ParseException(pe.getMessage()); // prevent memory leak
     }
-    
+
     Logging.error("Skipping to the next rule, because of an error:");
     Logging.error(e);
     if (sheet != null) {
@@ -1200,4 +1201,3 @@ String readRaw() {
         throw new ParseException("Reached end of file while parsing");
     return s.toString();
 }
-

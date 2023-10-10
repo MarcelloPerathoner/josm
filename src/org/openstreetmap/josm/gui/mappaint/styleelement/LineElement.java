@@ -18,6 +18,7 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
+import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Logging;
 
@@ -256,11 +257,11 @@ public class LineElement extends StyleElement {
     public static LineElement createSimpleLineStyle(Color color, boolean isAreaEdge) {
         MultiCascade mc = new MultiCascade();
         Cascade c = mc.getOrCreateCascade("default");
-        c.put(WIDTH, Keyword.DEFAULT);
-        c.put(COLOR, color != null ? color : PaintColors.UNTAGGED.get());
-        c.put(OPACITY, 1f);
+        c.put(WIDTH, new LiteralExpression(Keyword.DEFAULT));
+        c.put(COLOR, new LiteralExpression(color != null ? color : PaintColors.UNTAGGED.get()));
+        c.put(OPACITY, new LiteralExpression(1f));
         if (isAreaEdge) {
-            c.put(Z_INDEX, -3f);
+            c.put(Z_INDEX, new LiteralExpression(-3f));
         }
         return createLine(new Environment(new Way(), mc, "default", null));
     }

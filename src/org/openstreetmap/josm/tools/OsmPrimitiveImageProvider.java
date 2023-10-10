@@ -86,7 +86,7 @@ public final class OsmPrimitiveImageProvider {
             ds.getReadLock().lock();
         }
         try {
-            nodeStyles = MapPaintStyles.getStyles().generateStyles(primitive, 100, false);
+            nodeStyles = MapPaintStyles.getStyles().generateStyles(primitive, 100, null, false);
         } finally {
             if (ds != null) {
                 ds.getReadLock().unlock();

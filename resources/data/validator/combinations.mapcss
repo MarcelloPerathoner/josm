@@ -1014,8 +1014,8 @@ way[bicycle][/^cycleway(:|$)/][!/^bicycle:/][bicycle=~/^(no|use_sidepath)$/][/^c
 }
 
 /* #19980 */
-way[highway=living_street][maxspeed][maxspeed=~/mph/][get(split(" ", tag(maxspeed)), 0) > 15],
-way[highway=living_street][maxspeed][maxspeed!~/mph/][get(split(" ", tag(maxspeed)), 0) > 20] {
+way[highway=living_street][maxspeed][maxspeed=~/mph/][maxspeed!=walk][get(split(" ", tag(maxspeed)), 0) > 15],
+way[highway=living_street][maxspeed][maxspeed!~/mph/][maxspeed!=walk][get(split(" ", tag(maxspeed)), 0) > 20] {
   throwWarning: tr("{0} together with {1}", "{0.tag}", "{1.tag}");
   group: tr("suspicious tag combination");
   assertNoMatch: "way highway=living_street";

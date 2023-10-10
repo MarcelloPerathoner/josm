@@ -70,7 +70,7 @@ import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
+import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.HorizontalTextAlignment;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.VerticalTextAlignment;
@@ -88,7 +88,6 @@ import org.openstreetmap.josm.tools.Geometry.AreaAndPerimeter;
 import org.openstreetmap.josm.tools.HiDPISupport;
 import org.openstreetmap.josm.tools.JosmRuntimeException;
 import org.openstreetmap.josm.tools.Logging;
-import org.openstreetmap.josm.tools.RotationAngle;
 import org.openstreetmap.josm.tools.ShapeClipper;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.bugreport.BugReport;
@@ -662,23 +661,25 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
 
         final MapViewPoint viewPoint = mapState.getForView(p.getInViewX(), p.getInViewY());
-        final AffineTransform at = new AffineTransform();
-        at.setToTranslation(
+        final AffineTransform affineTransform = new AffineTransform();
+        affineTransform.setToTranslation(
                 Math.round(viewPoint.getInViewX()),
                 Math.round(viewPoint.getInViewY()));
-        if (!RotationAngle.NO_ROTATION.equals(text.rotationAngle)) {
-            at.rotate(text.rotationAngle.getRotationAngle(n));
+
+        if (text.textRotation != null) {
+            Double angle = text.textRotation.evaluate(Double.class, null);
+            if (angle != null) {
+                affineTransform.rotate(angle);
+            }
         }
-        if (text.rotationExpression != null) {
-            at.rotate((Double) text.rotationExpression.evaluate());
+        if (text.textTransform != null) {
+            AffineTransform at = text.textTransform.evaluate(AffineTransform.class, null);
+            if (at != null) {
+                affineTransform.concatenate(at);
+            }
         }
-        if (text.transformExpression instanceof AffineTransform) {
-            at.concatenate((AffineTransform) text.transformExpression);
-        } else if (text.transformExpression instanceof EnvironmentExpression) {
-            at.concatenate((AffineTransform) ((EnvironmentExpression) text.transformExpression).evaluate());
-        }
-        at.translate(x, y);
-        displayText(n, text, s, at);
+        affineTransform.translate(x, y);
+        displayText(n, text, s, affineTransform);
         g.setFont(defaultFont);
     }
 

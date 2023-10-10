@@ -102,33 +102,6 @@ public abstract class StyleElement implements StyleKeys {
     }
 
     /**
-     * Get a property value of type Width
-     * @param c the cascade
-     * @param key property key for the width value
-     * @param relativeTo reference width. Only needed, when relative width syntax is used, e.g. "+4".
-     * @return width
-     */
-    protected static Float getWidth(Cascade c, String key, Float relativeTo) {
-        Float width = c.get(key, null, Float.class, true);
-        if (width != null) {
-            if (width > 0)
-                return width;
-        } else {
-            Keyword widthKW = c.get(key, null, Keyword.class, true);
-            if (Keyword.THINNEST.equals(widthKW))
-                return 0f;
-            if (Keyword.DEFAULT.equals(widthKW))
-                return (float) MapPaintSettings.INSTANCE.getDefaultSegmentWidth();
-            if (relativeTo != null) {
-                RelativeFloat widthRel = c.get(key, null, RelativeFloat.class, true);
-                if (widthRel != null)
-                    return relativeTo + widthRel.val;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns a property value of type Width from the cascade.
      * <p>
      * If the value is a Float or a Keyword, we return it.  If the value is a

@@ -8,6 +8,7 @@ import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
 import org.openstreetmap.josm.gui.mappaint.StyleElementList;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
+import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 
 /**
@@ -46,7 +47,7 @@ public final class DefaultStyles implements StyleKeys {
     static {
         MultiCascade mc = new MultiCascade();
         Cascade c = mc.getOrCreateCascade("default");
-        c.put(TEXT, Keyword.AUTO);
+        c.put(TEXT, new LiteralExpression(Keyword.AUTO));
         Node n = new Node();
         n.put("name", "dummy");
         SIMPLE_NODE_TEXT_ELEMSTYLE = BoxTextElement.create(new Environment(n, mc, "default", null), SIMPLE_NODE_ELEMSTYLE.getBoxProvider());

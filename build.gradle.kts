@@ -110,6 +110,7 @@ val generateJavaCC by tasks.registering(JavaExec::class) {
     description = "Builds the MapCSS Parser sources."
     mainClass.set("org.javacc.parser.Main")
     classpath = sourceSets["main"].compileClasspath + files("tools/javacc")
+    inputs.files("src/${mapcssSrcDir}/MapCSSParser.jj")
     outputs.dir(javaccOutputDir)
 
     args = listOf(

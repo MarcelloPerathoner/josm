@@ -19,6 +19,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.StyleSource;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.CacheableExpression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProviderResult;
 import org.openstreetmap.josm.gui.util.GuiHelper;
@@ -73,6 +74,9 @@ public class MapImage {
      * The y offset of the anchor of this image
      */
     public int offsetY;
+
+    public CacheableExpression rotation;
+    public CacheableExpression transform;
 
     private boolean temporary;
 

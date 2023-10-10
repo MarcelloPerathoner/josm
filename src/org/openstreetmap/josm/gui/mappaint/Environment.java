@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Condition.Context;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector.LinkSelector;
@@ -36,6 +39,10 @@ public class Environment {
      * The current MapCSS layer
      */
     public String layer;
+    /**
+     * The navigatable component or {@code null}.
+     */
+    public @Nullable NavigatableComponent nc;
     /**
      * The style source that is evaluated
      */
@@ -150,6 +157,7 @@ public class Environment {
         CheckParameterUtil.ensureParameterNotNull(other);
         this.osm = other.osm;
         this.mc = other.mc;
+        this.nc = other.nc;
         this.layer = other.layer;
         this.parent = other.parent;
         this.child = other.child;

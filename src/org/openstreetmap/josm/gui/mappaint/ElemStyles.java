@@ -256,9 +256,9 @@ public class ElemStyles implements PreferenceChangedListener {
      */
     private Pair<StyleElementList, Range> getImpl(IPrimitive osm, double scale, NavigatableComponent nc) {
         if (osm instanceof INode)
-            return generateStyles(osm, scale, false);
+            return generateStyles(osm, scale, nc, false);
         else if (osm instanceof IWay) {
-            Pair<StyleElementList, Range> p = generateStyles(osm, scale, false);
+            Pair<StyleElementList, Range> p = generateStyles(osm, scale, nc, false);
 
             boolean isOuterWayOfSomeMP = false;
             Color wayColor = null;
@@ -342,7 +342,7 @@ public class ElemStyles implements PreferenceChangedListener {
                 final Multipolygon multipolygon = MultipolygonCache.getInstance().get((Relation) ref);
 
                 if (multipolygon.getInnerWays().contains(osm)) {
-                    p = generateStyles(osm, scale, false);
+                    p = generateStyles(osm, scale, nc, false);
                     boolean hasIndependentElemStyle = false;
                     for (StyleElement s : p.a) {
                         if (s.isProperLineStyle() || s instanceof AreaElement) {
@@ -369,7 +369,7 @@ public class ElemStyles implements PreferenceChangedListener {
             }
             return p;
         } else if (osm instanceof IRelation) {
-            return generateStyles(osm, scale, true);
+            return generateStyles(osm, scale, nc, true);
         }
         return null;
     }
@@ -388,14 +388,15 @@ public class ElemStyles implements PreferenceChangedListener {
      * @return the generated styles and the valid range as a pair
      * @since 13810 (signature)
      */
-    public Pair<StyleElementList, Range> generateStyles(IPrimitive osm, double scale, boolean pretendWayIsClosed) {
+    public Pair<StyleElementList, Range> generateStyles(IPrimitive osm,
+            double scale, NavigatableComponent nc, boolean pretendWayIsClosed) {
         List<StyleElement> sl = new ArrayList<>();
         MultiCascade mc = new MultiCascade();
         Environment env = new Environment(osm, mc, null, null);
 
         for (StyleSource s : styleSources) {
             if (s.active) {
-                s.apply(mc, osm, scale, pretendWayIsClosed);
+                s.apply(mc, osm, scale, nc, pretendWayIsClosed);
             }
         }
 
@@ -404,6 +405,7 @@ public class ElemStyles implements PreferenceChangedListener {
                 continue;
             }
             env.layer = e.getKey();
+            env.nc = nc;
             if (osm instanceof IWay) {
                 AreaElement areaStyle = AreaElement.create(env);
                 addIfNotNull(sl, areaStyle);
@@ -484,7 +486,7 @@ public class ElemStyles implements PreferenceChangedListener {
 
         for (StyleSource s : styleSources) {
             if (s.active) {
-                s.apply(mc, r, 1, false);
+                s.apply(mc, r, 1, null, false);
             }
         }
         return mc.getCascade("default").get(key, def, c);
@@ -553,7 +555,7 @@ public class ElemStyles implements PreferenceChangedListener {
         try {
             if (MapPaintStyles.getStyles() == null)
                 return null;
-            for (StyleElement s : MapPaintStyles.getStyles().generateStyles(p, 1.0, pretendWayIsClosed).a) {
+            for (StyleElement s : MapPaintStyles.getStyles().generateStyles(p, 1.0, null, pretendWayIsClosed).a) {
                 if (s instanceof AreaElement)
                     return (AreaElement) s;
             }
@@ -591,7 +593,7 @@ public class ElemStyles implements PreferenceChangedListener {
         try {
             if (MapPaintStyles.getStyles() == null)
                 return false;
-            StyleElementList styles = MapPaintStyles.getStyles().generateStyles(p, 1.0, false).a;
+            StyleElementList styles = MapPaintStyles.getStyles().generateStyles(p, 1.0, null, false).a;
             boolean hasAreaElement = false;
             for (StyleElement s : styles) {
                 if (s instanceof TextElement) {

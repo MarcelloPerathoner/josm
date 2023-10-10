@@ -141,7 +141,7 @@ class MapCSSStyleSourceFilterTest {
         timer = PerformanceTestUtils.startTimer(APPLY_CALLS + "x MapCSSStyleSource#apply(...) for " + description);
         for (int i = 0; i < APPLY_CALLS; i++) {
             MultiCascade mc = new MultiCascade();
-            source.apply(mc, data.randomNode(), 1, false);
+            source.apply(mc, data.randomNode(), 1, null, false);
         }
         timer.done();
     }

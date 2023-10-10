@@ -164,7 +164,7 @@ class FunctionsTest {
      */
     @Test
     void testPrefColor() {
-        String key = "Functions.JOSM_pref";
+        String key = "Functions.JOSM_pref.2";
         String colorKey = NamedColorProperty.NAMED_COLOR_PREFIX + NamedColorProperty.COLOR_CATEGORY_MAPPAINT + ".unknown." + key;
         Config.getPref().put(colorKey, null);
         assertEquals("#000000", Functions.JOSM_pref(null, key, "#000000"));

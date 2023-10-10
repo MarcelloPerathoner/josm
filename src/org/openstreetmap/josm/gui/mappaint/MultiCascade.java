@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 
 /**
@@ -47,7 +48,7 @@ public class MultiCascade implements StyleKeys {
                 // Everything that is not on the default layer is assumed to
                 // be a modifier. Can be overridden in style definition.
                 if (!"default".equals(layer) && !"*".equals(layer)) {
-                    c.put(MODIFIER, Boolean.TRUE);
+                    c.put(MODIFIER, new LiteralExpression(Boolean.TRUE));
                 }
             }
             layers.put(layer, c);
@@ -70,7 +71,7 @@ public class MultiCascade implements StyleKeys {
         if (c == null) {
             c = new Cascade();
             if (!"default".equals(layer) && !"*".equals(layer)) {
-                c.put(MODIFIER, Boolean.TRUE);
+                c.put(MODIFIER, new LiteralExpression(Boolean.TRUE));
             }
         }
         return c;

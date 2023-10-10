@@ -21,6 +21,7 @@ import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.User;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
@@ -37,7 +38,6 @@ import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.RightAndLefthandTraffic;
-import org.openstreetmap.josm.tools.RotationAngle;
 import org.openstreetmap.josm.tools.StreamUtils;
 import org.openstreetmap.josm.tools.Territories;
 import org.openstreetmap.josm.tools.Utils;
@@ -179,6 +179,7 @@ public final class Functions {
      * @since 5699
      */
     public static List<String> split(String sep, String toSplit) {
+        if (toSplit == null) return null;
         return Arrays.asList(toSplit.split(Pattern.quote(sep), -1));
     }
 
@@ -483,7 +484,7 @@ public final class Functions {
      * If there is no preceding parent way segment, the following way segment is used instead.
      * Requires a parent way object matched via
      * <a href="https://josm.openstreetmap.de/wiki/Help/Styles/MapCSSImplementation#LinkSelector">child selector</a>.
-     * 
+     *
      * @param env the environment
      * @return the rotation angle of the parent way segment at the node in radians,
      * otherwise null if there is no matching parent way or the object is not a node
@@ -720,14 +721,36 @@ public final class Functions {
      * {@code sw}, {@code southwest}, {@code w}, {@code west}, {@code nw}, {@code northwest}.
      * @param cardinal the angle in cardinal directions.
      * @return the angle in radians
-     * @see RotationAngle#parseCardinalRotation(String)
      */
     public static Double cardinal_to_radians(String cardinal) {
-        try {
-            return RotationAngle.parseCardinalRotation(cardinal);
-        } catch (IllegalArgumentException ignore) {
-            Logging.trace(ignore);
-            return null;
+        switch (cardinal.toLowerCase(Locale.ENGLISH)) {
+            case "n":
+            case "north":
+                return 0.0;
+            case "ne":
+            case "northeast":
+                return Math.PI * 0.25;
+            case "e":
+            case "east":
+                return Math.PI * 0.5;
+            case "se":
+            case "southeast":
+                return Math.PI * 0.75;
+            case "s":
+            case "south":
+                return Math.PI;
+            case "sw":
+            case "southwest":
+                return Math.PI * 1.25;
+            case "w":
+            case "west":
+                return Math.PI * 1.5;
+            case "nw":
+            case "northwest":
+                return Math.PI * 1.75;
+            default:
+                Logging.trace("Unexpected cardinal direction " + cardinal);
+                return null;
         }
     }
 
@@ -834,6 +857,7 @@ public final class Functions {
      * @since 5701
      */
     public static List<String> regexp_match(String pattern, String target, String flags) {
+        if (target == null) return null;
         int f = parse_regex_flags(flags);
         return Utils.getMatches(Pattern.compile(pattern, f).matcher(target));
     }
@@ -848,6 +872,7 @@ public final class Functions {
      * @since 5701
      */
     public static List<String> regexp_match(String pattern, String target) {
+        if (target == null) return null;
         return Utils.getMatches(Pattern.compile(pattern).matcher(target));
     }
 
@@ -869,7 +894,8 @@ public final class Functions {
      * @since 15246
      */
     public static String osm_user_name(final Environment env) {
-        return env.osm.getUser().getName();
+        User user = env.osm.getUser();
+        return user == null ? null : user.getName();
     }
 
     /**

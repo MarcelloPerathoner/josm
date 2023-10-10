@@ -22,7 +22,6 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Expression.Cacheability;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Instruction.AssignmentInstruction;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.Projection;
@@ -67,8 +66,8 @@ class AffineTransformationsTest {
 
         // this actually tests a legacy yet-unconverted function, those should always
         // return IMMUTABLE to mimick the legacy behaviour that just cached everything
-        cacheability("node { icon-rotation: atan(15, 100); }", "icon-rotation", Cacheability.IMMUTABLE);
-        cacheability("node { text-rotation: atan(15, 100); }", "text-rotation", Cacheability.IMMUTABLE);
+        cacheability("node { icon-rotation: atan2(15, 100); }", "icon-rotation", Cacheability.IMMUTABLE);
+        cacheability("node { text-rotation: atan2(15, 100); }", "text-rotation", Cacheability.IMMUTABLE);
     }
 
     private AffineTransform affine(String css) {
@@ -86,7 +85,7 @@ class AffineTransformationsTest {
             }
         }
 
-        Object o = mc1.getCascade(null).get("icon-transform");
+        Object o = mc1.getCascade(null).get("icon-transform", null, AffineTransform.class);
         assertNotNull(o);
         if (o instanceof AffineTransform) {
             return (AffineTransform) o;
@@ -181,10 +180,7 @@ class AffineTransformationsTest {
                 }
             }
 
-            Object o = mc1.getCascade(null).get("icon-rotation");
-            if (o instanceof EnvironmentExpression) {
-                o = ((EnvironmentExpression) o).evaluate();
-            }
+            Object o = mc1.getCascade(null).get("icon-rotation", null, Double.class);
             if (expected == null) {
                 assertNull(o);
             } else {

@@ -23,6 +23,7 @@ import javax.swing.ImageIcon;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.preferences.sources.SourceEntry;
 import org.openstreetmap.josm.data.preferences.sources.SourceType;
+import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
 import org.openstreetmap.josm.gui.mappaint.StyleSetting.StyleSettingGroup;
 import org.openstreetmap.josm.io.CachedFile;
@@ -103,7 +104,7 @@ public abstract class StyleSource extends SourceEntry {
      * outer ways of a multipolygon.
      * @since 13810 (signature)
      */
-    public abstract void apply(MultiCascade mc, IPrimitive osm, double scale, boolean pretendWayIsClosed);
+    public abstract void apply(MultiCascade mc, IPrimitive osm, double scale, NavigatableComponent nc, boolean pretendWayIsClosed);
 
     /**
      * Loads the complete style source.

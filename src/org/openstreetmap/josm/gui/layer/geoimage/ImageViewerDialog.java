@@ -384,13 +384,19 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     }
 
     /**
-     * Selects the tab with the given layer
+     * Selects the tab with the given layer.
+     * <p>
+     * If there is no tab with the given layer or the given layer is null then no tab is
+     * selected.
+     *
+     * @param layer the given layer or null
      */
     void setSelectedTabLayer(IGeoImageLayer layer) {
-        int index = getTabIndexFor(layer);
-        if (index != -1) {
-            tabbedPane.setSelectedIndex(index);
+        int index = -1;
+        if (layer != null) {
+            index = getTabIndexFor(layer);
         }
+        tabbedPane.setSelectedIndex(index);
     }
 
     /**

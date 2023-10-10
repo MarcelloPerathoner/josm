@@ -108,9 +108,9 @@ final class MapCSSTagCheckerAsserts {
                 .flatMap(s -> ((Selector.GeneralSelector) s).getConditions().stream())
                 .filter(c -> c instanceof ConditionFactory.ExpressionCondition)
                 .map(c -> ((ConditionFactory.ExpressionCondition) c).getExpression())
-                .filter(c -> c instanceof ExpressionFactory.IsInsideFunction)
-                .map(c -> (ExpressionFactory.IsInsideFunction) c)
-                .map(ExpressionFactory.IsInsideFunction::getArg)
+                .filter(c -> c instanceof ExpressionFactory.CacheableExpression
+                    && ("inside".equals(((ExpressionFactory.CacheableExpression) c).getName())))
+                .map(c -> ((ExpressionFactory.CacheableExpression) c).getArgs().get(0))
                 .filter(e -> e instanceof LiteralExpression)
                 .map(e -> ((LiteralExpression) e).getLiteral())
                 .filter(l -> l instanceof String)

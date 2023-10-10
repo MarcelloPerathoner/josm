@@ -8,17 +8,25 @@ import org.openstreetmap.josm.gui.mappaint.Environment;
  *
  * Can be evaluated in a certain {@link Environment}. Usually takes
  * parameters, that are also Expressions and have to be evaluated first.
+ *
+ * Notes:
+ *
+ * The parser works on Expressions.
+ * Arguments to an Expression are Expressions.
+ * The Cascade must store something that can be evaluated without providing an environment.
+ *
  * @since  3848 (creation)
  * @since 10600 (functional interface)
  * @since   xxx (cacheability)
  */
 public interface Expression {
     /**
-     * Evaluate this expression in a given environment.
-     * @param env The environment
-     * @return the result of the evaluation, its type depends on the expression's content
+     * Evaluates the expression.
+     * @return the result of the evaluation, it's type depends on the expression
      */
-    Object evaluate(Environment env);
+    Object evaluate(Environment environment);
+    Object evaluate();
+    <T> T evaluate(Class<T> klass, T def);
 
     /**
      * The behaviour of the function when repeatedly invoked.
@@ -26,12 +34,19 @@ public interface Expression {
      * Note: Keep this ordered from most cacheable to least cacheable.
      */
     enum Cacheability {
-        /** always returns the same result when given the same argument values, eg. sin(x), max(a, b) */
+        /**
+         * Always returns the same result when given the same argument values, eg.
+         * sin(x), max(a, b)
+         */
         IMMUTABLE,
-        /** returns the same result when given the same argument values
-        as long as the underlying dataSet didn't change, eg. tag(), heading(theta) */
+        /**
+         * Returns the same result when given the same argument values as long as the
+         * underlying dataSet didn't change, eg. tag(name), heading(theta)
+         */
         STABLE,
-        /** the returned value can change with every invocation, eg. zoom_level(), date() */
+        /**
+         * The returned value may change with every invocation, eg. metric(), date()
+         */
         VOLATILE
     }
 
@@ -41,10 +56,31 @@ public interface Expression {
      * This function is meant to be overridden.
      * <p>
      * Note: The default is IMMUTABLE to be compatible with the previous implementation
-     * that evaluated all expressions immediately.
+     * that evaluated all expressions immediately and stored the results in the
+     * properties.
+     *
      * @return the cacheability
      */
     default Cacheability getCacheability() {
         return Cacheability.IMMUTABLE;
+    }
+
+    default void setBeginPos(String sourceUrl, int beginLine, int beginColumn) {
+    }
+
+    default String getSourceLine() {
+        return null;
+    }
+
+    default String getSourceUrl() {
+        return null;
+    }
+
+    default int getBeginLine() {
+        return -1;
+    }
+
+    default int getBeginColumn() {
+        return -1;
     }
 }

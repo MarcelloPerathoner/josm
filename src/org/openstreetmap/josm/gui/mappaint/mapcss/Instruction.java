@@ -8,10 +8,9 @@ import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
-import org.openstreetmap.josm.gui.mappaint.mapcss.Expression.Cacheability;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.EnvironmentExpression;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.HeadingFunctionExpression;
+import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.RootExpression;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
-import org.openstreetmap.josm.tools.Logging;
 
 /**
  * A MapCSS Instruction.
@@ -57,7 +56,7 @@ public interface Instruction extends StyleKeys {
             this.key = key.intern();
             this.isSetInstruction = isSetInstruction;
             if (val instanceof LiteralExpression) {
-                Object litValue = ((LiteralExpression) val).evaluate(null);
+                Object litValue = ((LiteralExpression) val).evaluate();
                 if (litValue instanceof Keyword && "none".equals(((Keyword) litValue).val)) {
                     this.val = null;
                 } else if (TEXT.equals(key)) {
@@ -91,30 +90,26 @@ public interface Instruction extends StyleKeys {
 
         @Override
         public void execute(Environment env) {
-            Object value;
-            if (val instanceof Expression) {
-                if (((Expression) val).getCacheability() == Cacheability.IMMUTABLE) {
-                    // if the expression is IMMUTABLE we can evaluate it now and cache
-                    // the result
-                    try {
-                        value = ((Expression) val).evaluate(env);
-                    } catch (RuntimeException ex) {
-                        Logging.error(ex);
-                        value = null;
-                    }
+            Expression exp;
+            if (val != null) {
+                if (val instanceof Expression) {
+                    exp = new RootExpression((Expression) val, new Environment(env));
                 } else {
-                    // capture the current environment for later execution
-                    value = new EnvironmentExpression((Expression) val, new Environment(env));
+                    exp = new LiteralExpression(val);
                 }
+                if (ICON_IMAGE.equals(key) || FILL_IMAGE.equals(key) || REPEAT_IMAGE.equals(key)) {
+                    if (val instanceof String) {
+                        exp = new LiteralExpression(new IconReference((String) val, env.source));
+                    }
+                } else if (ICON_ROTATION.equals(key) && val instanceof Keyword && "way".equals(((Keyword) val).val)) {
+                    // special case icon-rotation: way
+                    exp = new RootExpression(new HeadingFunctionExpression(), new Environment(env));
+                    // new SupplierExpression(Functions::parent_way_angle);
+                }
+                env.mc.getOrCreateCascade(env.layer).putOrClear(key, exp);
             } else {
-                value = val;
+                env.mc.getOrCreateCascade(env.layer).putOrClear(key, null);
             }
-            if (ICON_IMAGE.equals(key) || FILL_IMAGE.equals(key) || REPEAT_IMAGE.equals(key)) {
-                if (value instanceof String) {
-                    value = new IconReference((String) value, env.source);
-                }
-            }
-            env.mc.getOrCreateCascade(env.layer).putOrClear(key, value);
         }
 
         @Override
