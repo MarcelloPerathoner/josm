@@ -48,7 +48,7 @@ import org.openstreetmap.josm.spi.preferences.Config;
 public final class Territories {
 
     /** Internal OSM filename */
-    public static final String FILENAME = "boundaries.osm";
+    protected static final String[] FILENAME = {"boundaries.osm", "boundaries.local.osm"};
 
     private static final String ISO3166_1 = "ISO3166-1:alpha2";
     private static final String ISO3166_2 = "ISO3166-2";
@@ -132,47 +132,53 @@ public final class Territories {
         taginfoCache = new TreeMap<>();
         customTagsCache = new TreeMap<>();
         Collection<Way> traffic = new ArrayList<>();
-        try (CachedFile cf = new CachedFile("resource://data/" + FILENAME);
-                InputStream is = cf.getInputStream()) {
-            dataSet = OsmReader.parseDataSet(is, null);
-            for (OsmPrimitive osm : dataSet.allPrimitives()) {
-                if (osm instanceof Node) {
-                    continue;
-                }
-                String iso1 = osm.get(ISO3166_1);
-                String iso2 = osm.get(ISO3166_2);
-                if (iso1 != null || iso2 != null) {
-                    TagMap tags = osm.getKeys();
-                    KNOWN_KEYS.forEach(tags::remove);
-                    GeoProperty<Boolean> gp;
-                    if (osm instanceof Way) {
-                        gp = new DefaultGeoProperty(Collections.singleton((Way) osm));
-                    } else {
-                        gp = new DefaultGeoProperty((Relation) osm);
+        for (String filename : FILENAME) {
+            try (CachedFile cf = new CachedFile("resource://data/" + filename);
+                    InputStream is = cf.getInputStream()) {
+                dataSet = OsmReader.parseDataSet(is, null);
+                for (OsmPrimitive osm : dataSet.allPrimitives()) {
+                    if (osm instanceof Node) {
+                        continue;
                     }
-                    GeoPropertyIndex<Boolean> gpi = new GeoPropertyIndex<>(gp, 24);
-                    addInCache(iso1, gpi, tags);
-                    addInCache(iso2, gpi, tags);
-                    if (iso1 != null) {
-                        String taginfo = osm.get(TAGINFO);
-                        if (taginfo != null) {
-                            taginfoCache.put(iso1, new TaginfoRegionalInstance(taginfo, Collections.singleton(iso1)));
+                    String iso1 = osm.get(ISO3166_1);
+                    String iso2 = osm.get(ISO3166_2);
+                    if (iso1 != null || iso2 != null) {
+                        TagMap tags = osm.getKeys();
+                        KNOWN_KEYS.forEach(tags::remove);
+                        GeoProperty<Boolean> gp;
+                        if (osm instanceof Way) {
+                            gp = new DefaultGeoProperty(Collections.singleton((Way) osm));
+                        } else {
+                            gp = new DefaultGeoProperty((Relation) osm);
+                        }
+                        GeoPropertyIndex<Boolean> gpi = new GeoPropertyIndex<>(gp, 24);
+                        addInCache(iso1, gpi, tags);
+                        addInCache(iso2, gpi, tags);
+                        if (iso1 != null) {
+                            String taginfo = osm.get(TAGINFO);
+                            if (taginfo != null) {
+                                taginfoCache.put(iso1, new TaginfoRegionalInstance(taginfo, Collections.singleton(iso1)));
+                            }
                         }
                     }
+                    RightAndLefthandTraffic.appendLeftDrivingBoundaries(osm, traffic);
                 }
-                RightAndLefthandTraffic.appendLeftDrivingBoundaries(osm, traffic);
-            }
-            RightAndLefthandTraffic.initialize(new DefaultGeoProperty(traffic));
-        } catch (IOException | IllegalDataException ex) {
-            throw new JosmRuntimeException(ex);
-        } finally {
-            if (dataSet != null)
-                MultipolygonCache.getInstance().clear(dataSet);
-            if (!Logging.isDebugEnabled()) {
-                // unset dataSet to save memory, see #18907
-                dataSet = null;
-            } else {
-                Logging.debug("Retaining {0} to allow editing via advanced preferences", FILENAME);
+                RightAndLefthandTraffic.initialize(new DefaultGeoProperty(traffic));
+            } catch (IOException ex) {
+                // a missing .local file is not an error
+                if (filename.equals(FILENAME[0]))
+                    throw new JosmRuntimeException(ex);
+            } catch (IllegalDataException ex) {
+                throw new JosmRuntimeException(ex);
+            } finally {
+                if (dataSet != null)
+                    MultipolygonCache.getInstance().clear(dataSet);
+                if (!Logging.isDebugEnabled()) {
+                    // unset dataSet to save memory, see #18907
+                    dataSet = null;
+                } else {
+                    Logging.debug("Retaining {0} to allow editing via advanced preferences", filename);
+                }
             }
         }
     }
