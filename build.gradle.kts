@@ -250,7 +250,7 @@ dependencies {
     implementation("com.formdev:svgSalamander:1.1.4")
     implementation("jakarta.json:jakarta.json-api:2.1.2")
     implementation("oauth.signpost:signpost-core:2.1.1")
-    implementation("org.apache.commons:commons-compress:1.22")
+    implementation("org.apache.commons:commons-compress:1.23.0")
     implementation("org.apache.commons:commons-jcs3-core:3.1")
     implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
     implementation("org.tukaani:xz:1.9")
@@ -285,10 +285,9 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine")
 
     testImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
-    testImplementation("io.github.classgraph:classgraph:4.8.154")
-    testImplementation("net.bytebuddy:byte-buddy:1.12.19")
+    testImplementation("io.github.classgraph:classgraph:4.8.158")
     testImplementation("net.trajano.commons:commons-testing:2.1.0")
-    testImplementation("nl.jqno.equalsverifier:equalsverifier:3.12.3")
+    testImplementation("nl.jqno.equalsverifier:equalsverifier:3.14.1")
     testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
     testImplementation("org.jmockit:jmockit:1.49.a") // patched version from JOSM nexus
 
@@ -673,7 +672,7 @@ tasks.spotbugsMain {
 
 // JaCoCo config
 jacoco {
-  toolVersion = "0.8.8"
+  toolVersion = "0.8.10"
 }
 
 tasks.jacocoTestReport {
