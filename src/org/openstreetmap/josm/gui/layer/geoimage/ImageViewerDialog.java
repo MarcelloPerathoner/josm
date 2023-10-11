@@ -956,9 +956,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     @Override
     public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
         if (e.getSource().getActiveLayer() instanceof IGeoImageLayer) {
-            if (!MainApplication.worker.isShutdown()) {
-                setSelectedTabLayer((IGeoImageLayer) e.getSource().getActiveLayer());
-            }
+            setSelectedTabLayer((IGeoImageLayer) e.getSource().getActiveLayer());
         }
     }
 
