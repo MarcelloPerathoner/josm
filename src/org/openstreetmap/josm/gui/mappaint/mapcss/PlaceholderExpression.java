@@ -16,7 +16,7 @@ import org.openstreetmap.josm.tools.Logging;
  * Used for expressions that contain placeholders
  * @since xxx
  */
-public final class PlaceholderExpression implements Expression {
+public final class PlaceholderExpression extends ExpressionFactory.CacheableExpression {
     /**
      * The regex used for pattern replacement
      */
@@ -28,12 +28,13 @@ public final class PlaceholderExpression implements Expression {
      * @param placeholder The placeholder expression
      */
     public PlaceholderExpression(String placeholder) {
+        super(Cacheability.IMMUTABLE, 1, 1);
         CheckParameterUtil.ensureParameterNotNull(placeholder);
         this.placeholder = placeholder.intern();
     }
 
     @Override
-    public Object evaluate(Environment env) {
+    public Object evalImpl(Environment env) {
         if (env.selector() == null) {
             return placeholder;
         }
@@ -81,7 +82,7 @@ public final class PlaceholderExpression implements Expression {
      * @param p                OSM primitive
      * @return argument value, can be {@code null}
      */
-    private static String determineArgument(Selector matchingSelector, int index, String type, Tagged p) {
+    public static String determineArgument(Selector matchingSelector, int index, String type, Tagged p) {
         try {
             final Condition c = matchingSelector.getConditions().get(index);
             final Tag tag = c instanceof Condition.TagCondition

@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.josm.command.Command;
@@ -328,7 +330,7 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
         Set<String> l = new HashSet<>();
         final Matcher m = Pattern.compile("\\{(\\d+)\\.(key|tag)\\}").matcher(getDescription(p));
         while (m.find()) {
-            l.add(determineArgument((Selector.GeneralSelector) matchingSelector,
+            l.add(PlaceholderExpression.determineArgument((Selector.GeneralSelector) matchingSelector,
                     Integer.parseInt(m.group(1)), "key", p));
         }
         return l;
