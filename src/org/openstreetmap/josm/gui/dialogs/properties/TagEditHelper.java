@@ -328,12 +328,12 @@ public class TagEditHelper {
             JPanel mainPanel = new JPanel(new GridBagLayout()) {
                 /**
                  * This hack allows the comboboxes to have their own orientation.
-                 *
+                 * <p>
                  * The problem is that
                  * {@link org.openstreetmap.josm.gui.ExtendedDialog#showDialog ExtendedDialog} calls
                  * {@code applyComponentOrientation} very late in the dialog construction process
                  * thus overwriting the orientation the components have chosen for themselves.
-                 *
+                 * <p>
                  * This stops the propagation of {@code applyComponentOrientation}, thus all
                  * components may (and have to) set their own orientation.
                  */
@@ -489,12 +489,12 @@ public class TagEditHelper {
             mainPanel = new JPanel(new GridBagLayout()) {
                 /**
                  * This hack allows the comboboxes to have their own orientation.
-                 *
+                 * <p>
                  * The problem is that
                  * {@link org.openstreetmap.josm.gui.ExtendedDialog#showDialog ExtendedDialog} calls
                  * {@code applyComponentOrientation} very late in the dialog construction process
                  * thus overwriting the orientation the components have chosen for themselves.
-                 *
+                 * <p>
                  * This stops the propagation of {@code applyComponentOrientation}, thus all
                  * components may (and have to) set their own orientation.
                  */

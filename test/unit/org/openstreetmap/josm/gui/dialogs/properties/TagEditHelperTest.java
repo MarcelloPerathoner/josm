@@ -96,7 +96,7 @@ class TagEditHelperTest {
         ds.setSelected(primitive);
 
         TagEditHelper helper = newTagEditHelper();
-        AddTagsDialog addTagsDialog = helper.new AddTagsDialog(new TagTableModel(new DataSetHandler(ds)));
+        AddTagsDialog addTagsDialog = helper.new AddTagsDialog(new TagTableModel(new DataSetHandler().setDataSet(ds)));
 
         assertNotNull(addTagsDialog.findIcon(key, value));
     }

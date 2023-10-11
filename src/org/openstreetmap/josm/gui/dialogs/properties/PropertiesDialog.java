@@ -266,10 +266,6 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
     private static class ActiveDataSetHandler extends DataSetHandler {
         private Collection<OsmPrimitive> selection;
 
-        ActiveDataSetHandler() {
-            super(null);
-        }
-
         @Override
         public DataSet getDataSet() {
             return OsmDataManager.getInstance().getActiveDataSet();
@@ -383,6 +379,16 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
 
     public TagTable getTagTable() {
         return tagTable;
+    }
+
+    /**
+     * Create a TagTableModel to edit the current selection in the current layer.
+     * <p>
+     * We cannot use the built-in tagTableModel because of: #23191.
+     */
+    public TagTableModel createTagTableModel() {
+        // return tagTableModel; // no good: see #23191
+        return new TagTableModel(new DataSetHandler().setDataSet(OsmDataManager.getInstance().getActiveDataSet()));
     }
 
     String getContextKey() {
@@ -1119,7 +1125,7 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
             } else {
                 // double-click in the empty area of tag table
                 // (on the rows it is consumed by the combo box)
-                editHelper.addTag(tagTableModel);
+                editHelper.addTag(createTagTableModel());
             }
         }
     }
@@ -1287,7 +1293,7 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
                 return;
             }
             try {
-                editHelper.addTag(tagTableModel);
+                editHelper.addTag(createTagTableModel());
                 // btnAdd.requestFocusInWindow();
             } finally {
                 isPerforming.set(false);
@@ -1317,9 +1323,9 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
                     int row = tagTable.getSelectedRow();
                     String key = tagTable.getKey(row);
                     if (key.isEmpty()) {
-                        editHelper.addTag(tagTableModel);
+                        editHelper.addTag(createTagTableModel());
                     } else {
-                        editHelper.editTag(tagTableModel, key, false);
+                        editHelper.editTag(createTagTableModel(), key, false);
                     }
                 } else if (membershipTable.getSelectedRowCount() == 1) {
                     int row = membershipTable.getSelectedRow();

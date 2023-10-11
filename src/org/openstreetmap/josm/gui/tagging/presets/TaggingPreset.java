@@ -816,7 +816,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                 // opened by pressing a hotkey, the hotkey sometimes bleeds through and
                 // appears in the focused editor control
                 SwingUtilities.invokeLater(() -> showDialog(
-                    new DataSetHandler(dataSet),
+                    new DataSetHandler().setDataSet(dataSet),
                     AutoCompletionManager.of(dataSet)
                 ));
             }

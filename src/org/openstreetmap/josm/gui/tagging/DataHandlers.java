@@ -7,6 +7,7 @@ import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERE
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,24 +105,22 @@ public class DataHandlers {
     public static class DataSetHandler implements TaggedHandler {
         protected List<Command> commands = new ArrayList<>();
         protected boolean inTransaction = false;
-        /** The DataSet. Never access this directly, always through getDataSet(). */
+        /** The DataSet we are operating on. */
         private DataSet dataSet;
+        /** The selection we are operating on. Immutable. We must cache the original
+        selection because the selection may change even if we are in a modal dialog. In
+        that case we want to update the original selection, not the new one. See also
+        #23191.*/
+        private Collection<OsmPrimitive> selected;
 
         /**
-         * Constructor
-         * @param dataSet the dataset
-         */
-        public DataSetHandler(DataSet dataSet) {
-            setDataSet(dataSet);
-        }
-
-        /**
-         * Constructs a handler that operates on a live {@link DataSet}
+         * Sets a {@link DataSet}
          * @param dataSet the dataset to edit
          * @return this
          */
         public DataSetHandler setDataSet(DataSet dataSet) {
             this.dataSet = dataSet;
+            this.selected = this.dataSet != null ? this.dataSet.getSelected() : Collections.emptyList();
             return this;
         }
 
@@ -135,7 +134,7 @@ public class DataHandlers {
 
         @Override
         public Collection<OsmPrimitive> get() {
-            return getDataSet().getSelected();
+            return selected;
         }
 
         @Override
@@ -212,7 +211,7 @@ public class DataHandlers {
         @Override
         public void commit(String title) {
             Logging.info("Commit: {0} on {1} objects", title, get().size());
-            if (inTransaction && commands.size() > 0) {
+            if (inTransaction && !commands.isEmpty()) {
                 if (commands.size() == 1 && Utils.isEmpty(title)) {
                     UndoRedoHandler.getInstance().add(commands.get(0));
                 } else {
@@ -244,7 +243,7 @@ public class DataHandlers {
          * @param selection the selection in the DataSet
          */
         public ReadOnlyHandler(Collection<OsmPrimitive> selection) {
-            super(new DataSet());
+            setDataSet(new DataSet());
             this.selection = selection;
             selection.forEach(p -> getDataSet().addPrimitive(p));
             getDataSet().addSelected(selection);
@@ -286,11 +285,10 @@ public class DataHandlers {
          * @param the parent DataSetHandler
          */
         public CloneDataSetHandler(DataSetHandler parentHandler) {
-            super(null);
             this.parentHandler = parentHandler;
 
             Collection<OsmPrimitive> parentSelection = parentHandler.get();
-            parentSelection.forEach(p -> clonePrimitive(p));
+            parentSelection.forEach(this::clonePrimitive);
             parentSelection.forEach(p -> clonedDataSet.addSelected(clonedMap.get(p)));
 
             clonedDataSet.setName("Cloned by CloneDataSetHandler");
@@ -320,7 +318,7 @@ public class DataHandlers {
             }
             if (p instanceof Way) {
                 Way w = (Way) p;
-                w.getNodes().forEach(n -> clonePrimitive(n));
+                w.getNodes().forEach(this::clonePrimitive);
 
                 Way newWay = new Way(w, false, false);
                 newWay.setNodes(w.getNodes().stream()
