@@ -331,9 +331,9 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
             return getKeysForMatchingSelector(p, ((Selector.ChildOrParentSelector) matchingSelector).right);
         }
         Set<String> l = new HashSet<>();
-        final Matcher m = Pattern.compile("\\{(\\d+)\\.(key|tag)\\}").matcher(getDescription(p));
+        final Matcher m = Pattern.compile("\\{(\\d+)\\.(key|tag)\\}").matcher(getDescription(matchingSelector, p));
         while (m.find()) {
-            l.add(PlaceholderExpression.determineArgument((Selector.GeneralSelector) matchingSelector,
+            l.add(PlaceholderExpression.determineArgument(matchingSelector,
                     Integer.parseInt(m.group(1)), "key", p));
         }
         return l;
