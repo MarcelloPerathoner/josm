@@ -99,7 +99,7 @@ val versions = mapOf(
   // Errorprone 2.11 requires Java 11+
   "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.15.0" else "2.10.0",
   "jdatepicker" to "1.3.4",
-  "junit" to "5.9.3",
+  "junit" to "5.10.0",
   "pmd" to "6.54.0",
   "spotbugs" to "${spotbugs.toolVersion.get()}",
   "wiremock" to "2.35.0"
@@ -265,7 +265,7 @@ dependencies {
     compileOnly("net.java.dev.javacc:javacc:7.0.12")
 
     implementation("com.google.code.findbugs:jsr305:3.0.2")
-    testImplementation("org.apache.commons:commons-lang3:3.12.0")
+    testImplementation("org.apache.commons:commons-lang3:3.13.0")
 
     if (!JavaVersion.current().isJava9Compatible) {
         errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
@@ -285,7 +285,7 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine")
 
     testImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
-    testImplementation("io.github.classgraph:classgraph:4.8.158")
+    testImplementation("io.github.classgraph:classgraph:4.8.162")
     testImplementation("net.trajano.commons:commons-testing:2.1.0")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.14.1")
     testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
