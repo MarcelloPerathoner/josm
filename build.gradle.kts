@@ -99,7 +99,7 @@ val versions = mapOf(
   // Errorprone 2.11 requires Java 11+
   "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.15.0" else "2.10.0",
   "jdatepicker" to "1.3.4",
-  "junit" to "5.9.1",
+  "junit" to "5.9.3",
   "pmd" to "6.54.0",
   "spotbugs" to "${spotbugs.toolVersion.get()}",
   "wiremock" to "2.35.0"
@@ -248,13 +248,18 @@ dependencies {
     implementation("com.adobe.xmp:xmpcore:6.1.11")
     implementation("com.drewnoakes:metadata-extractor:2.18.0") // { transitive = false }
     implementation("com.formdev:svgSalamander:1.1.4")
-    implementation("javax.json:javax.json-api:1.1.4")
+    implementation("jakarta.json:jakarta.json-api:2.1.2")
     implementation("oauth.signpost:signpost-core:2.1.1")
     implementation("org.apache.commons:commons-compress:1.22")
     implementation("org.apache.commons:commons-jcs3-core:3.1")
-    implementation("org.glassfish:javax.json:1.1.4")
     implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
     implementation("org.tukaani:xz:1.9")
+
+    // the following 2 are deprecated and scheduled for removal in 2024
+    implementation("org.glassfish:javax.json:1.1.4")
+    implementation("javax.json:javax.json-api:1.1.4")
+
+    runtimeOnly("org.eclipse.parsson:parsson:1.1.4")
     runtimeOnly("org.webjars.npm:tag2link:2022.11.28")
 
     compileOnly("net.java.dev.javacc:javacc:7.0.12")
@@ -270,9 +275,9 @@ dependencies {
     testImplementation("com.github.tomakehurst:wiremock-jre8:${versions["wiremock"]}")
 
     testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    // testImplementation("org.junit.jupiter:junit-jupiter")
+    // testImplementation("org.junit.jupiter:junit-jupiter-api")
+    // testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("com.ginsberg:junit5-system-exit:1.1.2")
 
     // This can be removed once JOSM drops all JUnit4 support.
@@ -463,19 +468,7 @@ tasks.register<Exec>("runJar") {
     commandLine = listOf("java", "-jar", jar, "sess.joz")
 }
 
-tasks.register<JavaExec>("runClasses") {
-    group = "Execution"
-    description = "Run JOSM from classes"
-    classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
-    main = "org.openstreetmap.josm.gui.MainApplication"
-    args = listOf("sess.joz")
-}
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-    jvmArgs = listOf(
-        "-Xmx2048m",
-        "-javaagent:test/lib/jmockit.jar",
+val jvmOpens = listOf(
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
 	    "--add-opens", "java.base/java.io=ALL-UNNAMED",
 	    "--add-opens", "java.base/java.lang=ALL-UNNAMED",
@@ -484,8 +477,25 @@ tasks.withType<Test>().configureEach {
 	    "--add-opens", "java.base/java.util=ALL-UNNAMED",
 	    "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED",
 	    "--add-opens", "java.desktop/java.awt=ALL-UNNAMED",
+	    "--add-opens", "java.desktop/javax.swing.text.html=ALL-UNNAMED",
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
-    )
+)
+
+tasks.register<JavaExec>("runClasses") {
+    group = "Execution"
+    description = "Run JOSM from classes"
+    classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
+    main = "org.openstreetmap.josm.gui.MainApplication"
+    args = listOf("sess.joz")
+    jvmArgs = jvmOpens
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    jvmArgs = listOf(
+        "-Xmx2048m",
+        "-javaagent:test/lib/jmockit.jar",
+    ) + jvmOpens
 
     systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
     systemProperty("java.awt.headless", true)
