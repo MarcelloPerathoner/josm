@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -305,13 +306,13 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
             if (action == null)
                 return null;
 
-            ActionDefinition result = new ActionDefinition(action);
+            ActionDefinition actionDefinition = new ActionDefinition(action);
 
             if (action instanceof ParameterizedAction) {
                 skip('(');
 
                 ParameterizedAction parametrizedAction = (ParameterizedAction) action;
-                Map<String, ActionParameter<?>> actionParams = new ConcurrentHashMap<>();
+                Map<String, ActionParameter<?>> actionParams = new HashMap<>();
                 for (ActionParameter<?> param: parametrizedAction.getActionParameters()) {
                     actionParams.put(param.getName(), param);
                 }
@@ -323,7 +324,7 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
                     if (!paramName.isEmpty() && !paramValue.isEmpty()) {
                         ActionParameter<?> actionParam = actionParams.get(paramName);
                         if (actionParam != null) {
-                            result.getParameters().put(paramName, actionParam.readFromString(paramValue));
+                            actionDefinition.getParameters().put(paramName, actionParam.readFromString(paramValue));
                         }
                     }
                     skip(',');
@@ -339,15 +340,16 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
                     String paramValue = readTillChar(',', '}');
                     if ("icon".equals(paramName) && !paramValue.isEmpty()) {
                         result.setIconName(paramValue);
+                        actionDefinition.setIcon(paramValue);
                     } else if ("name".equals(paramName) && !paramValue.isEmpty()) {
-                        result.setName(paramValue);
+                        actionDefinition.setName(paramValue);
                     }
                     skip(',');
                 }
                 skip('}');
             }
 
-            return result;
+            return actionDefinition;
         }
 
         private StringBuilder escape(String s) {
@@ -809,18 +811,25 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
 
         private JButton createButton(String name) {
             JButton b = new JButton();
-            if ("up".equals(name)) {
-                b.setIcon(ImageProvider.get("dialogs/up", ImageSizes.LARGEICON));
-                b.setToolTipText(tr("Move the currently selected members up"));
-            } else if ("down".equals(name)) {
-                b.setIcon(ImageProvider.get("dialogs/down", ImageSizes.LARGEICON));
-                b.setToolTipText(tr("Move the currently selected members down"));
-            } else if ("<".equals(name)) {
-                b.setIcon(ImageProvider.get("dialogs/conflict/copybeforecurrentright", ImageSizes.LARGEICON));
-                b.setToolTipText(tr("Add all objects selected in the current dataset before the first selected member"));
-            } else if (">".equals(name)) {
-                b.setIcon(ImageProvider.get("dialogs/delete", ImageSizes.LARGEICON));
-                b.setToolTipText(tr("Remove"));
+            switch (name) {
+                case "up":
+                    b.setIcon(ImageProvider.get("dialogs", "up", ImageSizes.LARGEICON));
+                    b.setToolTipText(tr("Move the currently selected members up"));
+                    break;
+                case "down":
+                    b.setIcon(ImageProvider.get("dialogs", "down", ImageSizes.LARGEICON));
+                    b.setToolTipText(tr("Move the currently selected members down"));
+                    break;
+                case "<":
+                    b.setIcon(ImageProvider.get("dialogs/conflict", "copybeforecurrentright", ImageSizes.LARGEICON));
+                    b.setToolTipText(tr("Add all objects selected in the current dataset before the first selected member"));
+                    break;
+                case ">":
+                    b.setIcon(ImageProvider.get("dialogs", "delete", ImageSizes.LARGEICON));
+                    b.setToolTipText(tr("Remove"));
+                    break;
+                default:
+                    // do nothing
             }
             b.addActionListener(moveAction);
             b.setActionCommand(name);
@@ -1041,9 +1050,9 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
                             action.getClass().getName()));
                         continue;
                     } else if (!(tb instanceof String)) {
-                        if (!(tb instanceof Boolean) || (boolean) tb) {
-                            Logging.info(tr("Strange toolbar key: {0}",
-                                action.getClass().getName()));
+                        if (!(tb instanceof Boolean) || Boolean.TRUE.equals(tb)) {
+                            Logging.info(tr("Strange toolbar value: {0}",
+                            action.getClass().getName()));
                         }
                         continue;
                     }
@@ -1168,7 +1177,7 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
 
     /**
      * Parse the toolbar preference setting and construct the toolbar GUI control.
-     *
+     * <p>
      * Call this, if anything has changed in the toolbar settings and you want to refresh
      * the toolbar content (e.g. after registering actions in a plugin)
      */

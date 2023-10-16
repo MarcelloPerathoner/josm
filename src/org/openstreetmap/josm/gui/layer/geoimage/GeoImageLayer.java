@@ -21,7 +21,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -192,10 +191,12 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
         this.useThumbs = useThumbs;
         this.data.addImageDataUpdateListener(this);
         this.data.setLayer(this);
-        synchronized (ImageViewerDialog.class) {
-            if (!ImageViewerDialog.hasInstance()) {
-                GuiHelper.runInEDTAndWait(ImageViewerDialog::createInstance);
-            }
+        if (!ImageViewerDialog.hasInstance()) {
+            GuiHelper.runInEDTAndWait(() -> {
+                if (!ImageViewerDialog.hasInstance()) {
+                    ImageViewerDialog.createInstance();
+                }
+            });
         }
         if (getInvalidGeoImages().size() == data.size()) {
             ImageEntry firstImage = this.data.getFirstImage();
@@ -816,7 +817,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
 
     /**
      * Stop to load thumbnails.
-     *
+     * <p>
      * Can be called at any time to make sure that the
      * thumbnail loader is stopped.
      */
@@ -829,7 +830,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
 
     /**
      * Called to signal that the loading of thumbnails has finished.
-     *
+     * <p>
      * Usually called from {@link ThumbsLoader} in another thread.
      */
     public void thumbsLoaded() {
@@ -877,7 +878,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
     public GpxLayer getGpxLayer() {
         return gpxData != null ? MainApplication.getLayerManager().getLayersOfType(GpxLayer.class)
                 .stream().filter(l -> gpxData.equals(l.getGpxData()))
-                .findFirst().orElseThrow(() -> new IllegalStateException()) : null;
+                .findFirst().orElseThrow(IllegalStateException::new) : null;
     }
 
     /**
@@ -915,7 +916,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
         if (gpxLayer != null) return gpxLayer.data;
         if (gpxFauxData == null) {
             gpxFauxData = new GpxData();
-            gpxFauxData.addTrack(new GpxTrack(Arrays.asList(
+            gpxFauxData.addTrack(new GpxTrack(Collections.singletonList(
                     data.getImages().stream().map(ImageEntry::asWayPoint).filter(Objects::nonNull).collect(toList())),
                     Collections.emptyMap()));
         }
@@ -977,7 +978,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
 
     @Override
     public Data getData() {
-        return data;
+        return getImageData();
     }
 
     void applyTmp() {
