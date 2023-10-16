@@ -9,27 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.ReadOnlyHandler;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.tools.TextTagParser;
 import org.openstreetmap.josm.tools.Utils;
 import org.xml.sax.SAXException;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Unit tests of {@link TaggingPresets} class.
  */
 public class TaggingPresetsTest {
-    /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules();
-
     /**
      * A convenience factory method to ease testing.
      *

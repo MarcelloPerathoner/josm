@@ -25,6 +25,7 @@ import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
+import org.openstreetmap.josm.testutils.annotations.MapPaintStyles;
 import org.openstreetmap.josm.testutils.annotations.Projection;
 
 /**
@@ -174,6 +175,7 @@ class FunctionsTest {
     /**
      * Unit test of {@link Functions#JOSM_pref}, color handling
      */
+    @MapPaintStyles
     @Test
     void testPrefColor() {
         String key = "Functions.JOSM_pref.2";

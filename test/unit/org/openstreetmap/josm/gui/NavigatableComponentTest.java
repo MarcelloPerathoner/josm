@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
@@ -45,19 +44,16 @@ import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.spi.preferences.Config;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.openstreetmap.josm.testutils.annotations.Projection;
 
 /**
  * Some tests for the {@link NavigatableComponent} class.
  * @author Michael Zangl
  *
  */
-
-// We need prefs for the hit tests.
 @BasicPreferences
+@Projection // We need the projection for coordinate conversions.
 class NavigatableComponentTest {
 
     private static final class NavigatableComponentMock extends NavigatableComponent {
@@ -83,13 +79,6 @@ class NavigatableComponentTest {
     private static final int NODE_SNAP_DISTANCE = 16;
     private static final int SEGMENT_SNAP_DISTANCE = 8;
     private NavigatableComponentMock component;
-
-    /**
-     * We need the projection for coordinate conversions.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
     /**
      * Create a new, fresh {@link NavigatableComponent}
@@ -288,7 +277,7 @@ class NavigatableComponentTest {
 
     /**
      * Check that EastNorth is the same as expected after zooming the NavigatableComponent.
-     *
+     * <p>
      * Adds tolerance of 0.5 pixel for pixel grid alignment, see
      * {@link NavigatableComponent#zoomTo(EastNorth, double, boolean)}
      * @param expected expected
