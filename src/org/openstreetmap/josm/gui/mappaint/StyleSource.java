@@ -71,6 +71,10 @@ public abstract class StyleSource extends SourceEntry {
      * Map of settings per group.
      */
     public final Map<StyleSettingGroup, List<StyleSetting>> settingGroups = new TreeMap<>();
+    /**
+     * Values of the globals for efficient lookup.
+     */
+    public Cascade globalsCascade = new Cascade();
 
     /**
      * Constructs a new, active {@link StyleSource}.

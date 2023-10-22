@@ -4,7 +4,6 @@
 
 See: https://www.aci.it/i-servizi/normative/codice-della-strada/titolo-ii-della-costruzione-e-tutela-delle-strade/art-39-segnali-verticali/regolamento-art-39.html
 """
-import collections
 import itertools
 import json
 import re
@@ -27,7 +26,10 @@ ICON = "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg"
 ICON_BASE = "https://upload.wikimedia.org/wikipedia/commons/"
 """The base url for all relative icons."""
 
-THUMBS = ["II.35", "II.37", "II.50", "II.88", "II.272", "II.275", "II.285", "II.294", "II.303", "II.356", "MII.7", "MII.8b" ]
+THUMBS = [
+    "II.35", "II.37", "II.50", "II.88", "II.272", "II.275", "II.285", "II.294",
+    "II.303", "II.356", "MII.7", "MII.8b"
+]
 """The icons to use to represent their groups."""
 
 TAGS : Dict[str,str|List[str]] = {

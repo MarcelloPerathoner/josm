@@ -14,10 +14,12 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -175,6 +177,7 @@ public class MapCSSStyleSource extends StyleSource {
                     if (!metadataOnly) {
                         loadCanvas();
                         loadSettings();
+                        loadGlobals();
                     } else {
                         rules.clear();
                     }
@@ -262,9 +265,12 @@ public class MapCSSStyleSource extends StyleSource {
         backgroundColorOverride = c.get("fill-color", null, Color.class);
     }
 
+    private void loadGlobals() {
+        globalsCascade = constructSpecial(Selector.BASE_GLOBALS);
+    }
+
     private static void loadSettings(MapCSSRule r, GeneralSelector gs, Environment env) {
         if (gs.matchesConditions(env)) {
-            env.layer = null;
             env.layer = gs.getSubpart().getId(env);
             r.execute(env);
         }
@@ -279,8 +285,8 @@ public class MapCSSStyleSource extends StyleSource {
         Node n = new Node();
         n.put("lang", LanguageInfo.getJOSMLocaleCode());
         // create a fake environment to read the meta data block
-        Environment env = new Environment(n, mc, "default", this);
-        Environment envGroups = new Environment(n, mcGroups, "default", this);
+        Environment env = new Environment(n, mc, MultiCascade.DEFAULT, this);
+        Environment envGroups = new Environment(n, mcGroups, MultiCascade.DEFAULT, this);
 
         // Parse rules
         for (MapCSSRule r : rules) {
@@ -295,7 +301,7 @@ public class MapCSSStyleSource extends StyleSource {
         }
         // Load groups
         for (Entry<String, Cascade> e : mcGroups.getLayers()) {
-            if ("default".equals(e.getKey())) {
+            if (MultiCascade.DEFAULT.equals(e.getKey())) {
                 Logging.warn("settings requires layer identifier e.g. 'settings::settings_group {...}'");
                 continue;
             }
@@ -303,7 +309,7 @@ public class MapCSSStyleSource extends StyleSource {
         }
         // Load settings
         for (Entry<String, Cascade> e : mc.getLayers()) {
-            if ("default".equals(e.getKey())) {
+            if (MultiCascade.DEFAULT.equals(e.getKey())) {
                 Logging.warn("setting requires layer identifier e.g. 'setting::my_setting {...}'");
                 continue;
             }
@@ -350,45 +356,70 @@ public class MapCSSStyleSource extends StyleSource {
         return backgroundColorOverride;
     }
 
+    /**
+     * This is a hack to restrict cascades to one zoom level only.
+     * Use it on styles that must be redone after every zooming, like those depending on
+     * real-world length.  As an experimental convention, those styles must be marked
+     * with the class .metric.
+     */
+    private boolean isSingleZoomLevel(Environment env) {
+        return env.mc.getCascade(env.layer).get("metric", false, Boolean.class);
+    }
+
+    static double epsilon = 0.001;
+
     @Override
     public void apply(MultiCascade mc, IPrimitive osm, double scale, NavigatableComponent nc, boolean pretendWayIsClosed) {
 
         Environment env = new Environment(osm, mc, null, this);
+
         // the declaration indices are sorted, so it suffices to save the last used index
-        int lastDeclUsed = -1;
+        Map<String, Integer> lastDeclarationIndex = new HashMap<>();
+        boolean singleZoomLevel = false;
 
         Iterator<MapCSSRule> candidates = ruleIndex.getRuleCandidates(osm);
         while (candidates.hasNext()) {
             MapCSSRule r = candidates.next();
             for (Selector s : r.selectors) {
+                final String subpart = s.getSubpart().getId(env);
                 env.clearSelectorMatchingInformation();
-                env.layer = s.getSubpart().getId(env);
+                env.layer = subpart;
                 env.nc = nc;
-                String sub = env.layer;
                 if (!s.matches(env)) { // as side effect env.parent will be set (if s is a child selector)
                     continue;
                 }
-                if (s.getRange().contains(scale)) {
-                    mc.range = Range.cut(mc.range, s.getRange());
-                } else {
+                if (!s.getRange().contains(scale)) {
                     mc.range = mc.range.reduceAround(scale, s.getRange());
                     continue;
                 }
 
-                if (r.declaration.idx == lastDeclUsed)
-                    continue; // don't apply one declaration more than once
-                lastDeclUsed = r.declaration.idx;
-                if ("*".equals(sub)) {
+                // don't apply the same declaration more than once per layer
+                if (r.declaration.idx == lastDeclarationIndex.getOrDefault(env.layer, -1))
+                    continue;
+
+                // Caveat: confusing software design ahead
+                // the WILDCARD "*" subpart matches all subparts,
+                // the TEMPLATE "*" layer is the template layer in a MultiCascade
+                if (MultiCascade.WILDCARD.equals(subpart)) {
                     for (Entry<String, Cascade> entry : mc.getLayers()) {
                         env.layer = entry.getKey();
-                        if ("*".equals(env.layer)) {
-                            continue;
+                        if (!(MultiCascade.TEMPLATE.equals(env.layer))) {
+                            r.execute(env);
+                            lastDeclarationIndex.put(env.layer, r.declaration.idx);
+                            if (isSingleZoomLevel(env))
+                                singleZoomLevel = true;
                         }
-                        r.execute(env);
                     }
+                } else {
+                    r.execute(env);
+                    lastDeclarationIndex.put(env.layer, r.declaration.idx);
                 }
-                env.layer = sub;
-                r.execute(env);
+                if (singleZoomLevel || isSingleZoomLevel(env)) {
+                    // mc.range = new Range(scale - EPSILON, scale + EPSILON);
+                    mc.range = Range.cut(mc.range, new Range(scale - epsilon, scale + epsilon));
+                } else {
+                    mc.range = Range.cut(mc.range, s.getRange());
+                }
             }
         }
     }

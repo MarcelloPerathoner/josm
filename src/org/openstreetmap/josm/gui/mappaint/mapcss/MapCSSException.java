@@ -1,11 +1,15 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.mapcss;
 
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
+
 /**
  * MapCSS parsing error, with line/column information in error message.
  */
 public class MapCSSException extends RuntimeException {
 
+    /** source identifier at which the parse error occurred */
+    protected String source = "";
     /** line number at which the parse error occurred */
     protected Integer line;
     /** column number at which the parse error occurred */
@@ -29,6 +33,34 @@ public class MapCSSException extends RuntimeException {
     }
 
     /**
+     * Constructs a new {@code MapCSSException} with an error message and a root cause.
+     * @param message error message
+     * @param cause the root cause
+     * @since xxx
+     */
+    public MapCSSException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Sets the source identifier at which the parse error occurred.
+     * @param source the source id at which the parse error occurred
+     */
+    public void setSource(MapCSSStyleSource source, Token token) {
+        this.source = source != null ? source.url : null;
+        this.line = token != null ? token.beginLine : null;
+        this.column = token != null ? token.beginColumn : null;
+    }
+
+    /**
+     * Sets the source identifier at which the parse error occurred.
+     * @param source the source id at which the parse error occurred
+     */
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    /**
      * Sets the column number at which the parse error occurred.
      * @param column the column number at which the parse error occurred
      */
@@ -48,6 +80,6 @@ public class MapCSSException extends RuntimeException {
     public String getMessage() {
         if (line == null || column == null)
             return super.getMessage();
-        return String.format("Error at line %s, column %s: %s", line, column, super.getMessage());
+        return String.format("%s:%s:%s Error: %s", source, line, column, super.getMessage());
     }
 }

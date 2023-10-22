@@ -5,12 +5,11 @@ import java.util.Objects;
 
 /**
  * Describes the priority of an item in an autocompletion set.
- * The selected flag is currently only used in plugins.
- *
+ * <p>
  * Instances of this class are not modifiable.
  * @since 12859 (copied from {@code gui.tagging.ac.AutoCompletionItemPriority})
  */
-public class AutoCompletionPriority implements Comparable<AutoCompletionPriority> {
+public class AutoCompletionPriority {
 
     /**
      * Indicates, that the value is standard and it is found in the data.
@@ -110,27 +109,36 @@ public class AutoCompletionPriority implements Comparable<AutoCompletionPriority
 
     /**
      * Imposes an ordering on the priorities.
-     * Currently, being in the current DataSet is worth more than being in the Presets.
+     * <p>
+     * Being in the current dataset beats being in the standard (as defined by the
+     * Presets).
+     *
+     * @param me first object to compare
+     * @param you second object to compare
+     * @return -1, 0, or +1
      */
-    @Override
-    public int compareTo(AutoCompletionPriority other) {
-        int ui = Integer.compare(other.userInput, userInput);
+    public static int compare(AutoCompletionPriority me, AutoCompletionPriority you) {
+        int ui = Integer.compare(you.userInput, me.userInput);
         if (ui != 0)
             return ui;
 
-        int sel = Boolean.compare(selected, other.selected);
+        int sel = Boolean.compare(me.selected, you.selected);
         if (sel != 0)
             return sel;
 
-        int ds = Boolean.compare(inDataSet, other.inDataSet);
+        int ds = Boolean.compare(me.inDataSet, you.inDataSet);
         if (ds != 0)
             return ds;
 
-        return Boolean.compare(inStandard, other.inStandard);
+        return Boolean.compare(me.inStandard, you.inStandard);
     }
 
     /**
-     * Alternate compare: Being in the standard beats being in the DataSet.
+     * Imposes an alternate ordering on the priorities.
+     * <p>
+     * Being in the standard (as defined by the Presets) beats being in the current
+     * dataset.
+     * <p>
      * @param me first object to compare
      * @param you second object to compare
      * @return -1, 0, or +1
@@ -148,11 +156,7 @@ public class AutoCompletionPriority implements Comparable<AutoCompletionPriority
         if (std != 0)
             return std;
 
-        int ds = Boolean.compare(me.inDataSet, you.inDataSet);
-        if (ds != 0)
-            return ds;
-
-        return 0;
+        return Boolean.compare(me.inDataSet, you.inDataSet);
     }
 
     /**

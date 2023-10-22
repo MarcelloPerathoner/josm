@@ -114,6 +114,7 @@ class MapCSSParserTest {
                 "way!.path            { color: orange; }\n"
         );
         css.loadStyleSource();
+        System.out.println(css.getErrors());
         assertTrue(css.getErrors().isEmpty());
         MultiCascade mc1 = new MultiCascade();
         css.apply(mc1, OsmUtils.createPrimitive("way highway=path"), 1, null, false);
@@ -486,7 +487,6 @@ class MapCSSParserTest {
 
     @Test
     void testSort() {
-        assertEquals(Arrays.asList("alpha", "beta"), Functions.sort(null, "beta", "alpha"));
         Way way1 = TestUtils.newWay("highway=residential name=Alpha alt_name=Beta ref=\"A9;A8\"", new Node(new LatLon(0.001, 0.001)),
                 new Node(new LatLon(0.002, 0.002)));
 
@@ -724,7 +724,7 @@ class MapCSSParserTest {
         MapCSSStyleSource sheet = new MapCSSStyleSource("node:connection:foobar {}");
         sheet.loadStyleSource();
         assertEquals(1, sheet.getErrors().size());
-        assertEquals("Error at line 1, column 17: Invalid pseudo class specified: foobar", sheet.getErrors().iterator().next().getMessage());
+        assertEquals(":1:17 Error: Invalid pseudo class specified: foobar", sheet.getErrors().iterator().next().getMessage());
     }
 
     /**

@@ -2,35 +2,25 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="13"
    height="16"
    viewBox="0 0 13 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="TJ-Openclipart-4-3-color-lamp-31-1-16b.svg"
-   inkscape:export-filename="TJ-Openclipart-4-3-color-lamp-31-1-16.png"
-   inkscape:export-xdpi="300"
-   inkscape:export-ydpi="300">
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <filter
-       inkscape:label="Silk Carpet"
-       inkscape:menu="Textures"
-       inkscape:menu-tooltip="Silk carpet texture, horizontal stripes"
        style="color-interpolation-filters:sRGB"
        id="filter4271"
-       height="1.3"
-       width="1.3"
-       y="-0.15000001"
-       x="-0.15000001">
+       height="1.0423721"
+       width="1.0247382"
+       y="-0.021186056"
+       x="-0.012369091">
       <feTurbulence
          baseFrequency="0.1"
          seed="50"
@@ -175,7 +165,6 @@
     </filter>
     <filter
        style="color-interpolation-filters:sRGB"
-       inkscape:label="Lighting"
        id="filter4412">
       <feComponentTransfer
          result="component"
@@ -201,43 +190,17 @@
       </feComponentTransfer>
     </filter>
     <filter
-       inkscape:collect="always"
        style="color-interpolation-filters:sRGB"
        id="filter4510"
-       x="-0.49192756"
-       width="1.9838551"
-       y="-0.39084661"
+       x="-0.4919274"
+       width="1.9838548"
+       y="-0.39084662"
        height="1.7816932">
       <feGaussianBlur
-         inkscape:collect="always"
          stdDeviation="67.93285"
          id="feGaussianBlur4512" />
     </filter>
   </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="25.584007"
-     inkscape:cx="9.7550036"
-     inkscape:cy="10.930057"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="true"
-     inkscape:window-width="1680"
-     inkscape:window-height="987"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     units="px"
-     scale-x="1">
-    <inkscape:grid
-       type="xygrid"
-       id="grid871" />
-  </sodipodi:namedview>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -246,27 +209,20 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Lamp Shade"
-     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1154.4725)">
     <path
        style="fill:#ffdd55;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter4271)"
        d="M 1348.1185,406.7647 H 175.84153 l 414.1134,-684.41244 h 341.6192 z"
        id="path4186"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc"
        transform="matrix(0.01007036,0,0,0.01094194,-1.1759149,1157.6654)" />
   </g>
   <g
-     inkscape:groupmode="layer"
      id="layer3"
-     inkscape:label="Lamp Lining"
      style="display:inline"
      transform="translate(0,-1873.7638)">
     <rect
@@ -289,9 +245,7 @@
        transform="scale(-1,1)" />
   </g>
   <g
-     inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="Lamp Stem"
      transform="translate(0,-1873.7638)">
     <rect
        style="opacity:1;fill:#502d16;fill-opacity:1;stroke:none;stroke-width:0.01154683;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -303,9 +257,7 @@
        ry="0.1346828" />
   </g>
   <g
-     inkscape:groupmode="layer"
      id="layer4"
-     inkscape:label="Lamp Base"
      transform="translate(0,-1873.7638)">
     <rect
        style="opacity:1;fill:#502d16;fill-opacity:1;stroke:none;stroke-width:0.01154683;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -333,9 +285,7 @@
        ry="0.20548525" />
   </g>
   <g
-     inkscape:groupmode="layer"
      id="layer5"
-     inkscape:label="Lamp Design"
      style="display:none"
      transform="translate(0,-1873.7638)">
     <ellipse
@@ -431,9 +381,7 @@
        ry="47.167923" />
   </g>
   <g
-     inkscape:groupmode="layer"
      id="layer6"
-     inkscape:label="Bulb"
      transform="translate(0,-1873.7638)">
     <ellipse
        style="opacity:0.81499999;fill:#fff6d5;fill-opacity:1;stroke:none;stroke-width:1.10000002;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter4510)"

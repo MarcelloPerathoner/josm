@@ -44,7 +44,7 @@ public abstract class AbstractExtendedSourceEntryTestCase {
 
     protected final void handleException(ExtendedSourceEntry source, Throwable e, Set<String> errors, List<String> ignoredErrors) {
         e.printStackTrace();
-        String s = source.url + " => " + e;
+        String s = source.url + " => [" + e.getClass() + "]" + e.getMessage();
         if (isIgnoredSubstring(source, s)) {
             ignoredErrors.add(s);
         } else {

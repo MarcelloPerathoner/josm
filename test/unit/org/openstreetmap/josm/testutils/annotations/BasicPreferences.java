@@ -47,7 +47,7 @@ public @interface BasicPreferences {
     class BasicPreferencesExtension implements AfterAllCallback, AfterEachCallback, BeforeAllCallback, BeforeEachCallback {
         @Override
         public void afterAll(ExtensionContext context) throws Exception {
-            AnnotationUtils.resetStaticClass(Config.class);
+            // AnnotationUtils.resetStaticClass(Config.class);
         }
 
         @Override

@@ -1,7 +1,7 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.ac;
 
-import java.util.ArrayList;
+import java.text.Collator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +34,6 @@ import org.openstreetmap.josm.data.osm.event.TagsChangedEvent;
 import org.openstreetmap.josm.data.osm.event.WayNodesChangedEvent;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionPriority;
-import org.openstreetmap.josm.data.tagging.ac.AutoCompletionSet;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerAddEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener;
@@ -115,11 +114,13 @@ public class AutoCompletionManager implements DataSetListener {
         }
     }
 
+    private static Collator currentLocaleCollator = Collator.getInstance();
+
     /**
      * Compares two AutoCompletionItems alphabetically.
      */
     public static final Comparator<AutoCompletionItem> ALPHABETIC_COMPARATOR =
-        (ac1, ac2) -> String.CASE_INSENSITIVE_ORDER.compare(ac1.getValue(), ac2.getValue());
+        (ac1, ac2) -> currentLocaleCollator.compare(ac1.toString(), ac2.toString());
 
     /**
      * Compares two AutoCompletionItems on priority, then alphabetically.
@@ -209,6 +210,7 @@ public class AutoCompletionManager implements DataSetListener {
     public AutoCompletionManager(DataSet ds) {
         this.ds = Objects.requireNonNull(ds);
         this.dirty = true;
+        currentLocaleCollator.setStrength(Collator.TERTIARY); // aka. case-independent
     }
 
     Map<TaggingPresetType, MultiMap<String, String>> getPresetTagCache() {
@@ -370,6 +372,22 @@ public class AutoCompletionManager implements DataSetListener {
     public Set<Role> getAllMemberRoles() {
         return getRelationCache().getAllValues().stream()
             .flatMap(rel -> rel.getMembers().stream()).map(this::mkRole).collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns all cached {@link AutoCompletionItem}s for all member roles.
+     * @return the currently cached roles, sorted by priority and alphabet
+     * @since xxx
+     */
+    public List<AutoCompletionItem> getAllRoles() {
+        Map<String, AutoCompletionPriority> map = new HashMap<>();
+
+        MainApplication.getTaggingPresets().getPresetRoles().forEach(role -> map.merge(role.getKey(),
+            AutoCompletionPriority.IS_IN_STANDARD, AutoCompletionPriority::mergeWith));
+        getAllMemberRoles().forEach(role -> map.merge(role.getKey(),
+            AutoCompletionPriority.IS_IN_DATASET, AutoCompletionPriority::mergeWith));
+
+        return toList(map, PRIORITY_COMPARATOR);
     }
 
     /**
@@ -583,6 +601,16 @@ public class AutoCompletionManager implements DataSetListener {
      * Fills a combobox dropdown with all known keys.
      */
     public class NaiveKeyAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
+        /**
+         * Returns all keys used in the dataset.
+         * @return the keys
+         */
+        private Collection<String> getDataSetKeys() {
+            Set<String> result = new HashSet<>();
+            getPresetTagCache().values().forEach(mm -> result.addAll(mm.keySet()));
+            return result;
+        }
+
         @Override
         protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
             Map<String, AutoCompletionPriority> map = merge(
@@ -618,6 +646,17 @@ public class AutoCompletionManager implements DataSetListener {
             this.keys = new HashSet<>(keys);
         }
 
+        /**
+         * Returns all values used in the dataset for the given key.
+         * @param key the key
+         * @return the values
+         */
+        private Collection<String> getDataSetValues(String key) {
+            Set<String> result = new HashSet<>();
+            getPresetTagCache().values().forEach(mm -> result.addAll(mm.getValues(key)));
+            return result;
+        }
+
         @Override
         protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
             Map<String, AutoCompletionPriority> map = new HashMap<>();
@@ -632,167 +671,6 @@ public class AutoCompletionManager implements DataSetListener {
             }
             model.replaceAllElements(toList(map, ALPHABETIC_COMPARATOR));
         }
-    }
-
-    /***************************/
-    /* Compatibility Functions */
-    /***************************/
-
-    /**
-     * Returns all keys used in the dataset.
-     * <p>
-     * Compatibility function.
-     *
-     * @return the keys
-     * @since xxx
-     */
-    private Collection<String> getDataSetKeys() {
-        Set<String> result = new HashSet<>();
-        getPresetTagCache().values().forEach(mm -> result.addAll(mm.keySet()));
-        return result;
-    }
-
-    /**
-     * Returns all values used in the dataset for the given key.
-     * <p>
-     * Compatibility function.
-     *
-     * @param key the key
-     * @return the values
-     * @since xxx
-     */
-    private Collection<String> getDataSetValues(String key) {
-        Set<String> result = new HashSet<>();
-        getPresetTagCache().values().forEach(mm -> result.addAll(mm.getValues(key)));
-        return result;
-    }
-
-    /**
-     * Returns all cached {@link AutoCompletionItem}s for all member roles.
-     * @return the currently cached roles, sorted by priority and alphabet
-     * @since xxx
-     */
-    public List<AutoCompletionItem> getAllRoles() {
-        Map<String, AutoCompletionPriority> map = new HashMap<>();
-
-        MainApplication.getTaggingPresets().getPresetRoles().forEach(role -> map.merge(role.getKey(),
-            AutoCompletionPriority.IS_IN_STANDARD, AutoCompletionPriority::mergeWith));
-        getAllMemberRoles().forEach(role -> map.merge(role.getKey(),
-            AutoCompletionPriority.IS_IN_DATASET, AutoCompletionPriority::mergeWith));
-
-        return toList(map, ALPHABETIC_COMPARATOR);
-    }
-
-    /*
-     * Populate {@link AutoCompletionList} functions.
-     * Only for backward compatibility.
-     */
-
-    /**
-     * Populates the an {@link AutoCompletionList} with the currently cached tag keys
-     *
-     * @param list the list to populate
-     */
-    public void populateWithKeys(AutoCompletionList list) {
-        list.add(MainApplication.getTaggingPresets().getPresetKeys(), AutoCompletionPriority.IS_IN_STANDARD);
-        list.add(new AutoCompletionItem("source", AutoCompletionPriority.IS_IN_STANDARD));
-        list.add(getDataSetKeys(), AutoCompletionPriority.IS_IN_DATASET);
-        list.addUserInput(getUserInputKeys());
-    }
-
-    /**
-     * Populates the an {@link AutoCompletionList} with the currently cached values for a tag
-     *
-     * @param list the list to populate
-     * @param key the tag key
-     */
-    public void populateWithTagValues(AutoCompletionList list, String key) {
-        populateWithTagValues(list, Arrays.asList(key));
-    }
-
-    /**
-     * Populates the {@link AutoCompletionList} with the currently cached values for some given tags
-     *
-     * @param list the list to populate
-     * @param keys the tag keys
-     */
-    public void populateWithTagValues(AutoCompletionList list, List<String> keys) {
-        for (String key : keys) {
-            list.add(MainApplication.getTaggingPresets().getPresetValues(key), AutoCompletionPriority.IS_IN_STANDARD);
-            list.add(getDataSetValues(key), AutoCompletionPriority.IS_IN_DATASET);
-            list.addUserInput(getUserInputValues(key));
-        }
-    }
-
-    private static List<AutoCompletionItem> setToList(AutoCompletionSet set, Comparator<AutoCompletionItem> comparator) {
-        List<AutoCompletionItem> list = new ArrayList<>(set);
-        list.sort(comparator);
-        return list;
-    }
-
-    /**
-     * Returns the currently cached tag keys.
-     * @return a set of tag keys
-     * @since 12859
-     */
-    public AutoCompletionSet getTagKeys() {
-        AutoCompletionList list = new AutoCompletionList();
-        populateWithKeys(list);
-        return list.getSet();
-    }
-
-    /**
-     * Returns the currently cached tag keys.
-     * @param comparator the custom comparator used to sort the list
-     * @return a list of tag keys
-     * @since 12859
-     */
-    public List<AutoCompletionItem> getTagKeys(Comparator<AutoCompletionItem> comparator) {
-        return setToList(getTagKeys(), comparator);
-    }
-
-    /**
-     * Returns the currently cached tag values for a given tag key.
-     * @param key the tag key
-     * @return a set of tag values
-     * @since 12859
-     */
-    public AutoCompletionSet getTagValues(String key) {
-        return getTagValues(Arrays.asList(key));
-    }
-
-    /**
-     * Returns the currently cached tag values for a given tag key.
-     * @param key the tag key
-     * @param comparator the custom comparator used to sort the list
-     * @return a list of tag values
-     * @since 12859
-     */
-    public List<AutoCompletionItem> getTagValues(String key, Comparator<AutoCompletionItem> comparator) {
-        return setToList(getTagValues(key), comparator);
-    }
-
-    /**
-     * Returns the currently cached tag values for a given list of tag keys.
-     * @param keys the tag keys
-     * @return a set of tag values
-     * @since 12859
-     */
-    public AutoCompletionSet getTagValues(List<String> keys) {
-        AutoCompletionList list = new AutoCompletionList();
-        populateWithTagValues(list, keys);
-        return list.getSet();
-    }
-
-    /**
-     * Returns the currently cached tag values for a given list of tag keys.
-     * @param keys the tag keys
-     * @param comparator the custom comparator used to sort the list
-     * @return a list of tag values
-     * @since 12859
-     */
-    public List<AutoCompletionItem> getTagValues(List<String> keys, Comparator<AutoCompletionItem> comparator) {
-        return setToList(getTagValues(keys), comparator);
     }
 
     /*
@@ -841,7 +719,7 @@ public class AutoCompletionManager implements DataSetListener {
 
     @Override
     public void relationMembersChanged(RelationMembersChangedEvent event) {
-        dirty = true; // TODO: not necessary to rebuild if a member is added
+        dirty = true; // TODO: it is not necessary to rebuild everything if a member is added
     }
 
     @Override
@@ -929,7 +807,8 @@ public class AutoCompletionManager implements DataSetListener {
      * @return the merged map
      */
     @SafeVarargs
-    public static final Map<String, AutoCompletionPriority> merge(Map<String, AutoCompletionPriority>... maps) {
+    public static final Map<String, AutoCompletionPriority> merge(
+            Map<String, AutoCompletionPriority>... maps) {
         return Stream.of(maps).flatMap(m -> m.entrySet().stream())
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue, AutoCompletionPriority::mergeWith));
     }
@@ -940,7 +819,8 @@ public class AutoCompletionManager implements DataSetListener {
      * @param comparator the sort order
      * @return the list of items
      */
-    public static List<AutoCompletionItem> toList(Map<String, AutoCompletionPriority> map, Comparator<AutoCompletionItem> comparator) {
+    public static List<AutoCompletionItem> toList(
+            Map<String, AutoCompletionPriority> map, Comparator<AutoCompletionItem> comparator) {
         return map.entrySet().stream().map(e -> new AutoCompletionItem(e.getKey(), e.getValue()))
             .sorted(comparator).collect(Collectors.toList());
     }
@@ -951,7 +831,8 @@ public class AutoCompletionManager implements DataSetListener {
      * @param priority the priority
      * @return the list of items
      */
-    public static Map<String, AutoCompletionPriority> toMap(Collection<String> values, AutoCompletionPriority priority) {
+    public static Map<String, AutoCompletionPriority> toMap(
+            Collection<String> values, AutoCompletionPriority priority) {
         return values.stream().collect(Collectors.toMap(k -> k, v -> priority));
     }
 }

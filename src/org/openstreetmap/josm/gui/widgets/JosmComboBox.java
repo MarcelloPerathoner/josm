@@ -207,7 +207,7 @@ public class JosmComboBox<E> extends JComboBox<E> implements PopupMenuListener, 
 
     /**
      * Selects an item and/or sets text
-     *
+     * <p>
      * Selects the item whose {@code toString()} equals {@code text}. If an item could not be found,
      * selects nothing and sets the text anyway.
      *

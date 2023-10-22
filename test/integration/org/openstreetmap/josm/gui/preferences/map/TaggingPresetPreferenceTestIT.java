@@ -120,7 +120,7 @@ class TaggingPresetPreferenceTestIT extends AbstractExtendedSourceEntryTestCase 
         try {
             TaggingPresetUtils.waitForIconsLoaded(presets, 30);
         } catch (InterruptedException | ExecutionException | TimeoutException e1) {
-            addOrIgnoreError(source, messages, e1.getMessage(), ignoredErrors);
+            addOrIgnoreError(source, messages, e1, ignoredErrors);
         }
         // check that links are correct and not redirections
         TaggingPresetsTest.getAllUrlsInLinks(taggingPresets).parallelStream().forEach(url -> {
@@ -134,12 +134,21 @@ class TaggingPresetPreferenceTestIT extends AbstractExtendedSourceEntryTestCase 
                     addOrIgnoreError(source, messages, "Found HTTP error for " + url + " -> " + code, ignoredErrors);
                 }
             } catch (IOException e) {
-                addOrIgnoreError(source, messages, e.getMessage(), ignoredErrors);
+                addOrIgnoreError(source, messages, e.getClass() + " while accessing '" + url + "'", ignoredErrors);
             }
         });
     }
 
     void addOrIgnoreError(ExtendedSourceEntry source, Set<String> messages, String message, List<String> ignoredErrors) {
+        if (isIgnoredSubstring(source, message)) {
+            ignoredErrors.add(message);
+        } else {
+            messages.add(message);
+        }
+    }
+
+    void addOrIgnoreError(ExtendedSourceEntry source, Set<String> messages, Throwable e, List<String> ignoredErrors) {
+        String message = "[" + e.getClass() + "] " + e.getMessage();
         if (isIgnoredSubstring(source, message)) {
             ignoredErrors.add(message);
         } else {

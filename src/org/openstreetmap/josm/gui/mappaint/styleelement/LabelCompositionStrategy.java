@@ -36,6 +36,7 @@ import org.openstreetmap.josm.tools.Utils;
  * @since  3987 (creation)
  * @since 10599 (functional interface)
  */
+@Deprecated
 @FunctionalInterface
 public interface LabelCompositionStrategy {
 

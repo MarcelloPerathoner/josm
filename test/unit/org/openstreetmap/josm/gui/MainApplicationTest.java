@@ -51,6 +51,7 @@ import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
 import org.openstreetmap.josm.gui.preferences.display.LafPreference;
 import org.openstreetmap.josm.gui.progress.NullProgressMonitor;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.plugins.PluginClassLoader;
 import org.openstreetmap.josm.plugins.PluginDownloadTask;
 import org.openstreetmap.josm.plugins.PluginHandler;
@@ -65,6 +66,7 @@ import org.openstreetmap.josm.tools.Shortcut;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openstreetmap.josm.tools.bugreport.BugReportQueue;
+import org.xml.sax.SAXException;
 
 /**
  * Unit tests of {@link MainApplication} class.
@@ -118,6 +120,13 @@ public class MainApplicationTest {
      * Make sure {@link MainApplication#toolbar} is initialized.
      */
     public static void initToolbar() {
+        try {
+            // Toolbar needs presets
+            MainApplicationTest.setTaggingPresets(TaggingPresetsTest.initFromDefaultPresets());
+        } catch (SAXException | IOException e) {
+            MainApplicationTest.setTaggingPresets(null);
+        }
+
         // init every time to avoid "Registered toolbar action"
         MainApplication.toolbar = new ToolbarPreferences();
     }

@@ -313,8 +313,7 @@ public class TagEditHelper {
 
         protected EditTagDialog(TagTableModel tagTableModel, String key, boolean initialFocusOnKey) {
             super(MainApplication.getMainFrame(), tagTableModel,
-                trn("Change value?", "Change values?", tagTableModel.getValueType(key).values().size()),
-                tr("OK"), tr("Cancel"));
+                tr("Change value?"), tr("OK"), tr("Cancel"));
 
             this.key = key;
             this.initialFocusOnKey = initialFocusOnKey;
@@ -343,6 +342,7 @@ public class TagEditHelper {
                 }
             };
 
+            this.setTitle(trn("Change value?", "Change values?", count));
             mainPanel.add(new JLabel(trn("This will change {0} object.",
                 "This will change up to {0} objects.", count, count)), GBC.eol());
             mainPanel.add(new JLabel(tr("An empty value deletes the tag.", key)), GBC.eop());

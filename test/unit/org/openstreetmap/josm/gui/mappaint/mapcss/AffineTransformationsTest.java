@@ -43,7 +43,7 @@ class AffineTransformationsTest {
                 if (i instanceof AssignmentInstruction) {
                     AssignmentInstruction ai = (AssignmentInstruction) i;
                     if (property.equals(ai.key)) {
-                        exp = (Expression) ai.val;
+                        exp = (Expression) ai.getValue();
                     }
                 }
             }

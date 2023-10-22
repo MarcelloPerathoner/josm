@@ -66,7 +66,7 @@ class DefaultNameFormatterTest {
 
             assertEquals("route_master (\"Bus 453\", 6 members)",                           f.format(p1));
             assertEquals("TMC (\"A 6 Kaiserslautern - Mannheim [negative]\", 123 members)", f.format(p2));
-            assertEquals("route(lcn Sal  Salier-Radweg(412 members)",                       f.format(p3));
+            assertEquals("route(lcn Sal  Salier-Radweg (412 members)",                      f.format(p3));
 
             assertEquals(-1, comparator.compare(p1, p2)); // p1 < p2
             assertEquals( 1, comparator.compare(p2, p1)); // p2 > p1

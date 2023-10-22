@@ -139,6 +139,7 @@ class ProjectionRegressionTest {
      */
     @Test
     void testNonRegression() throws IOException {
+        JOSMFixture.createUnitTestFixture().init();
         // Disable on Github Windows runners + Java 8, minor differences appeared around 2021-07-20
         Assumptions.assumeFalse(
                 Utils.getJavaVersion() == 8

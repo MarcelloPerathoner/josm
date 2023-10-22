@@ -24,8 +24,26 @@ public interface Expression {
      * Evaluates the expression.
      * @return the result of the evaluation, it's type depends on the expression
      */
-    Object evaluate(Environment environment);
     Object evaluate();
+
+    /**
+     * Evaluates the expression inside an environment.
+     * @return the result of the evaluation, it's type depends on the expression
+     */
+    Object evaluate(Environment environment);
+
+    /**
+     * Evaluates the expression and casts the result to type {@code klass} if possible.
+     * <p>
+     * If a cast to {@code klass} is not possible, {@code def} will be returned.
+     * <p>
+     * Example:
+     * {@code Double d = expr.evaluate(Double.class, 0.0)}
+     *
+     * @param klass the return value will be cast to this class
+     * @param def the default value
+     * @return the result of the evaluation or def
+     */
     <T> T evaluate(Class<T> klass, T def);
 
     /**

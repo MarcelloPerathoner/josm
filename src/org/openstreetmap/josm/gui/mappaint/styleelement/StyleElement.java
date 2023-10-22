@@ -11,9 +11,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
-import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
-import org.openstreetmap.josm.gui.mappaint.mapcss.Instruction.RelativeFloat;
 import org.openstreetmap.josm.spi.preferences.Config;
 
 /**
@@ -99,45 +97,6 @@ public abstract class StyleElement implements StyleKeys {
      */
     public boolean isProperLineStyle() {
         return false;
-    }
-
-    /**
-     * Returns a property value of type Width from the cascade.
-     * <p>
-     * If the value is a Float or a Keyword, we return it.  If the value is a
-     * RelativeFloat, we look at the default cascade to read the base value and add the
-     * relative value to it.
-     *
-     * @param c the cascade
-     * @param cDef the default cascade
-     * @param key the property key
-     * @param keyDef the default cascade property key
-     * @return width or null
-     */
-    protected static Float getWidth(Cascade c, Cascade cDef, String key, String keyDef) {
-        Object v = c.get(key);
-        Float val = Cascade.convertTo(v, Float.class);
-        if (val != null && val > 0f) {
-            return MapPaintSettings.INSTANCE.adj(val);
-        }
-        if (v instanceof RelativeFloat && cDef != null) {
-            RelativeFloat rel = (RelativeFloat) v;
-            // get the base value
-            val = getWidth(cDef, null, keyDef, null); // NOSONAR S2234
-            if (val != null)
-                return val + MapPaintSettings.INSTANCE.adj(rel.val);
-        }
-        if (v instanceof Keyword) {
-            if (Keyword.THINNEST.equals(v))
-                return 0f;
-            if (Keyword.DEFAULT.equals(v))
-                return MapPaintSettings.INSTANCE.adj((float) MapPaintSettings.INSTANCE.getDefaultSegmentWidth());
-        }
-        return null;
-    }
-
-    protected static Float getWidth(Cascade c, Cascade cDef, String key) {
-        return getWidth(c, cDef, key, key);
     }
 
     /* ------------------------------------------------------------------------------- */
@@ -226,7 +185,7 @@ public abstract class StyleElement implements StyleKeys {
             style = Font.ITALIC;
         }
         Font f = getCachedFont(name, style | weight, Math.round(size));
-        if (f.canDisplayUpTo(s) == -1)
+        if (s != null && f.canDisplayUpTo(s) == -1)
             return f;
         else {
             // fallback if the string contains characters that cannot be

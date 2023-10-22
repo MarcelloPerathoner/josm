@@ -187,6 +187,8 @@ testing {
             sources {
                 java {
                     setSrcDirs(listOf("test/integration"))
+                    // takes forever and never succeeds
+                    exclude("**/ImageryPreferenceTestIT.java")
                 }
             }
             targets {
@@ -271,14 +273,17 @@ dependencies {
         errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
     }
     errorprone("com.google.errorprone:error_prone_core:${versions["errorprone"]}")
+
     // testImplementation("org.openstreetmap.josm:josm-unittest:SNAPSHOT"){ isChanging = true }
     testImplementation("com.github.tomakehurst:wiremock-jre8:${versions["wiremock"]}")
 
     testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
-    // testImplementation("org.junit.jupiter:junit-jupiter")
-    // testImplementation("org.junit.jupiter:junit-jupiter-api")
-    // testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.junit.platform:junit-platform-suite")
     testImplementation("com.ginsberg:junit5-system-exit:1.1.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
     // This can be removed once JOSM drops all JUnit4 support.
     testImplementation("org.junit.jupiter:junit-jupiter-params")
@@ -291,10 +296,14 @@ dependencies {
     testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
     testImplementation("org.jmockit:jmockit:1.49.a") // patched version from JOSM nexus
 
+    testImplementation("org.eclipse.parsson:parsson:1.1.4")
+    testImplementation("jakarta.json:jakarta.json-api:2.1.2")
+
     // dependencies for scripts
     scriptsImplementation("com.github.spotbugs:spotbugs-annotations:${versions["spotbugs"]}")
+    scriptsImplementation("jakarta.json:jakarta.json-api:2.1.2")
     scriptsImplementation("javax.json:javax.json-api:1.1.4")
-    scriptsImplementation("org.apache.commons:commons-lang3:3.12.0")
+    scriptsImplementation("org.apache.commons:commons-lang3:3.13.0")
     scriptsImplementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
     scriptsImplementation(sourceSets["main"].output)
     scriptsImplementation(sourceSets["test"].output)

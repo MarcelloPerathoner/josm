@@ -166,13 +166,6 @@ public class JOSMFixture {
         assertNull(MainApplication.getLayerManager().getEditLayer());
         assertNull(MainApplication.getLayerManager().getActiveLayer());
 
-        try {
-            // Toolbar needs presets
-            MainApplicationTest.setTaggingPresets(TaggingPresetsTest.initFromDefaultPresets());
-        } catch (SAXException | IOException e) {
-            MainApplicationTest.setTaggingPresets(null);
-        }
-
         initContentPane();
         initMainPanel(false);
         initToolbar();

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.0"
+   width="200"
+   height="200"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="maxspeed-end-empty.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   sodipodi:modified="true"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata9">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:window-height="1011"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="1.4195169"
+     inkscape:cx="151.10775"
+     inkscape:cy="149.34659"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg2"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:window-maximized="1" />
+  <defs
+     id="defs5">
+    <foreignObject
+       requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="foreignObject1878" />
+    <foreignObject
+       requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="foreignObject1945" />
+  </defs>
+  <g
+     id="g2825">
+    <path
+       id="path4671"
+       style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:6.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 200,100 C 200.00924,155.22577 155.23501,200 100,200 C 44.764988,200 -0.0092436842,155.22577 9.4479491e-007,100 C -0.0092436842,44.774233 44.764988,3.8500019e-008 100,3.8500019e-008 C 155.23501,3.8500019e-008 200.00924,44.774233 200,100 L 200,100 z " />
+    <path
+       id="path4673"
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:6.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 199,100 C 199,154.67619 154.6762,199.00001 100,199.00001 C 45.323806,199.00001 0.99999621,154.67619 0.99999658,100 C 0.99999621,45.323807 45.323806,0.99999771 100,0.99999771 C 154.6762,0.99999771 199,45.323807 199,100 L 199,100 z " />
+    <path
+       id="path4675"
+       style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:6.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 196.99967,100.00005 C 196.99967,153.57168 153.5713,197.00007 99.999658,197.00007 C 46.428015,197.00007 2.9996419,153.57168 2.9996419,100.00005 C 2.9996419,46.42841 46.428015,3.0000238 99.999658,3.0000238 C 153.5713,3.0000238 196.99967,46.42841 196.99967,100.00005 z " />
+    <path
+       transform="matrix(2.381052,0,0,2.784,-83.15785,-149.6)"
+       d="M 117.24138 89.655174 A 40.318302 34.482758 0 1 1  36.604778,89.655174 A 40.318302 34.482758 0 1 1  117.24138 89.655174 z"
+       sodipodi:ry="34.482758"
+       sodipodi:rx="40.318302"
+       sodipodi:cy="89.655174"
+       sodipodi:cx="76.92308"
+       id="path4677"
+       style="fill:white;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:6.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       sodipodi:type="arc" />
+    <path
+       id="rect1925"
+       d="M 99.1875,3 L 74.46875,193.59375 C 82.601955,195.80638 91.165889,197 100,197 C 100.16739,197 100.33281,197.00085 100.5,197 L 125.25,6.34375 C 117.19984,4.1795488 108.73354,3 100,3 C 99.727999,3 99.458974,2.9977652 99.1875,3 z "
+       style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.50000024;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1" />
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:condensed;font-size:113.333px;line-height:125%;font-family:'Open Sans Condensed';-inkscape-font-specification:'Open Sans Condensed, Bold Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#999999;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="99.972328"
+     y="140.53537"
+     id="text350"><tspan
+       sodipodi:role="line"
+       id="tspan956"
+       x="99.972328"
+       y="140.53537">{{text0}}</tspan></text>
+</svg>

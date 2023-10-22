@@ -9,6 +9,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,6 +29,13 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
+import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
+import org.openstreetmap.josm.gui.mappaint.StyleSource;
+import org.openstreetmap.josm.gui.mappaint.mapcss.Selector.GeneralSelector;
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.MapCSSParser;
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
+import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Pair;
 
@@ -127,92 +135,96 @@ public final class ExpressionFactory {
         }
     }
 
+    // CHECKSTYLE.OFF: SingleSpaceSeparator
     @SuppressWarnings("unchecked")
     private static void initFactories() {
-        add("CRC32_checksum",   () -> new FunctionExpression<>(Functions::CRC32_checksum, String.class));
-        add("JOSM_pref",        () -> new EnvBiFunctionExpression<>(Functions::JOSM_pref, String.class, String.class));
-        add("JOSM_search",      () -> new EnvFunctionExpression<>(Functions::JOSM_search, String.class));
-        add("URL_decode",       () -> new FunctionExpression<>(Functions::URL_decode,  String.class));
-        add("URL_encode",       () -> new FunctionExpression<>(Functions::URL_encode,  String.class));
-        add("XML_encode",       () -> new FunctionExpression<>(Functions::XML_encode,  String.class));
-        add("any",              AnyFunctionExpression::new);
-        add("areasize",         () -> new EnvSupplierExpression(Functions::areasize));
-        add("boolean",          () -> new FunctionExpression<>(ExpressionFactory::fBoolean, String.class));
-        add("child_tag",        () -> new EnvFunctionExpression<>(Functions::child_tag, String.class));
-        add("concat",           ConcatFunctionExpression::new);
-        add("count",            () -> new FunctionExpression<>(Functions::count, List.class));
-        add("count_roles",      CountRolesFunctionExpression::new);
-        add("eq",               () -> new BiFunctionExpression<>(ExpressionFactory::eq, String.class, String.class));
-        add("equal",            () -> new BiFunctionExpression<>(ExpressionFactory::equal, String.class, String.class));
-        add("get",              () -> new BiFunctionExpression<>(Functions::get, List.class, Float.class));
-        add("gpx_distance",     () -> new EnvSupplierExpression(Functions::gpx_distance));
-        add("has_tag_key",      () -> new EnvFunctionExpression<>(Functions::has_tag_key, String.class));
-        add("hsb_color",        () -> new TriFunctionExpression<>(Functions::hsb_color, Float.class, Float.class, Float.class));
-        add("index",            () -> new EnvSupplierExpression(Functions::index));
-        add("int",              () -> new FunctionExpression<>(ExpressionFactory::fInt, Double.class));
-        add("is_anticlockwise", () -> new EnvSupplierExpression(Functions::is_anticlockwise));
-        add("is_clockwise",     () -> new EnvSupplierExpression(Functions::is_clockwise));
-        add("is_prop_set$1",    () -> new EnvFunctionExpression<>(Functions::is_prop_set, String.class));
-        add("is_prop_set$2",    () -> new EnvBiFunctionExpression<>(Functions::is_prop_set, String.class, String.class));
-        add("is_similar",       () -> new BiFunctionExpression<>(Functions::is_similar, String.class, String.class));
-        add("join",             JoinFunctionExpression::new);
-        add("join_list",        () -> new BiFunctionExpression<>(Functions::join_list, String.class, List.class));
-        add("length",           () -> new FunctionExpression<>(String::length, String.class));
-        add("list",             AsListFunctionExpression::new);
-        add("ne",               () -> new BiFunctionExpression<>(ExpressionFactory::ne, String.class, String.class));
-        add("num",              () -> new FunctionExpression<>(ExpressionFactory::num, String.class));
-        add("not_equal",        () -> new BiFunctionExpression<>(ExpressionFactory::notEqual, String.class, String.class));
-        add("number_of_tags",   () -> new EnvSupplierExpression(Functions::number_of_tags));
-        add("osm_changeset_id", () -> new EnvSupplierExpression(Functions::osm_changeset_id));
-        add("osm_id",           () -> new EnvSupplierExpression(Functions::osm_id));
-        add("osm_timestamp",    () -> new EnvSupplierExpression(Functions::osm_timestamp));
-        add("osm_user_id",      () -> new EnvSupplierExpression(Functions::osm_user_id));
-        add("osm_user_name",    () -> new EnvSupplierExpression(Functions::osm_user_name));
-        add("osm_version",      () -> new EnvSupplierExpression(Functions::osm_version));
-        add("parent_osm_id",    () -> new EnvSupplierExpression(Functions::parent_osm_id));
-        add("parent_tag",       () -> new EnvFunctionExpression<>(Functions::parent_tag, String.class));
-        add("parent_tags",      () -> new EnvFunctionExpression<>(Functions::parent_tags, String.class));
-        add("parent_way_angle", () -> new EnvSupplierExpression(Functions::parent_way_angle));
-        add("print",            () -> new FunctionExpression<>(Functions::print, Object.class));
-        add("println",          () -> new FunctionExpression<>(Functions::println, Object.class));
-        add("prop$1",           () -> new EnvFunctionExpression<>(Functions::prop, String.class));
-        add("prop$2",           () -> new EnvBiFunctionExpression<>(Functions::prop, String.class, String.class));
-        add("regexp_match$2",   () -> new BiFunctionExpression<>(Functions::regexp_match, String.class, String.class));
-        add("regexp_match$3",   () -> new TriFunctionExpression<>(Functions::regexp_match, String.class, String.class, String.class));
-        add("regexp_test$2",    () -> new BiFunctionExpression<>(Functions::regexp_test, String.class, String.class));
-        add("regexp_test$3",    () -> new TriFunctionExpression<>(Functions::regexp_test, String.class, String.class, String.class));
-        add("replace",          () -> new TriFunctionExpression<>(Functions::replace, String.class, String.class, String.class));
-        add("rgb",              () -> new TriFunctionExpression<>(Functions::rgb, Float.class, Float.class, Float.class));
-        add("rgba",             RGBAFunctionExpression::new);
-        add("role",             () -> new EnvSupplierExpression(Functions::role));
-        add("setting",          () -> new EnvFunctionExpression<>(Functions::setting, String.class));
-        add("str",              () -> new FunctionExpression<>(s -> s, String.class));
-        add("sort",             SortFunctionExpression::new);
-        add("sort_list",        () -> new FunctionExpression<>(Functions::sort_list, List.class));
-        add("split",            () -> new BiFunctionExpression<>(Functions::split, String.class, String.class));
-        add("substring$2",      () -> new BiFunctionExpression<>(Functions::substring, String.class, Float.class));
-        add("substring$3",      () -> new TriFunctionExpression<>(Functions::substring, String.class, Float.class, Float.class));
-        add("tag",              () -> new EnvFunctionExpression<>(Functions::tag, String.class));
-        add("tag_regex$1",      () -> new EnvFunctionExpression<>(Functions::tag_regex, String.class));
-        add("tag_regex$2",      () -> new EnvBiFunctionExpression<>(Functions::tag_regex, String.class, String.class));
-        add("title",            () -> new FunctionExpression<>(Functions::title, String.class));
-        add("to_boolean",       () -> new FunctionExpression<>(Functions::to_boolean, String.class));
-        add("to_byte",          () -> new FunctionExpression<>(Functions::to_byte, String.class));
-        add("to_double",        () -> new FunctionExpression<>(Functions::to_double, String.class));
-        add("to_float",         () -> new FunctionExpression<>(Functions::to_float, String.class));
-        add("to_int",           () -> new FunctionExpression<>(Functions::to_int, String.class));
-        add("to_long",          () -> new FunctionExpression<>(Functions::to_long, String.class));
-        add("to_short",         () -> new FunctionExpression<>(Functions::to_short, String.class));
-        add("tr",               TrFunctionExpression::new);
-        add("uniq",             UniqFunctionExpression::new);
-        add("trim_list",        () -> new FunctionExpression<>(Functions::trim_list, List.class));
-        add("uniq_list",        () -> new FunctionExpression<>(Functions::uniq_list, List.class));
-        add("waylength",        () -> new EnvSupplierExpression(Functions::waylength));
+        add("CRC32_checksum",    () -> new FunctionExpression<>(Functions::CRC32_checksum, String.class));
+        add("JOSM_pref",         () -> new EnvBiFunctionExpression<>(Functions::JOSM_pref, String.class, String.class));
+        add("JOSM_search",       () -> new EnvFunctionExpression<>(Functions::JOSM_search, String.class));
+        add("URL_decode",        () -> new FunctionExpression<>(Functions::URL_decode,  String.class));
+        add("URL_encode",        () -> new FunctionExpression<>(Functions::URL_encode,  String.class));
+        add("XML_encode",        () -> new FunctionExpression<>(Functions::XML_encode,  String.class));
+        add("any",               AnyFunctionExpression::new);
+        add("areasize",          () -> new EnvSupplierExpression(Functions::areasize));
+        add("boolean",           () -> new FunctionExpression<>(ExpressionFactory::fBoolean, String.class));
+        add("child_tag",         () -> new EnvFunctionExpression<>(Functions::child_tag, String.class));
+        add("concat",            ConcatFunctionExpression::new);
+        add("count",             () -> new FunctionExpression<>(Functions::count, List.class));
+        add("count_roles",       CountRolesFunctionExpression::new);
+        add("eq",                () -> new BiFunctionExpression<>(ExpressionFactory::eq, String.class, String.class));
+        add("equal",             () -> new BiFunctionExpression<>(ExpressionFactory::equal, String.class, String.class));
+        add("get$2",             () -> new BiFunctionExpression<>(Functions::get, List.class, Float.class));
+        add("get$3",             () -> new TriFunctionExpression<>(Functions::get, List.class, Float.class, Float.class));
+        add("gpx_distance",      () -> new EnvSupplierExpression(Functions::gpx_distance));
+        add("has_tag_key",       () -> new EnvFunctionExpression<>(Functions::has_tag_key, String.class));
+        add("hsb_color",         () -> new TriFunctionExpression<>(Functions::hsb_color, Float.class, Float.class, Float.class));
+        add("index",             () -> new EnvSupplierExpression(Functions::index));
+        add("int",               () -> new FunctionExpression<>(ExpressionFactory::fInt, Double.class));
+        add("is_anticlockwise",  () -> new EnvSupplierExpression(Functions::is_anticlockwise));
+        add("is_clockwise",      () -> new EnvSupplierExpression(Functions::is_clockwise));
+        add("is_prop_set$1",     () -> new EnvFunctionExpression<>(Functions::is_prop_set, String.class));
+        add("is_prop_set$2",     () -> new EnvBiFunctionExpression<>(Functions::is_prop_set, String.class, String.class));
+        add("is_similar",        () -> new BiFunctionExpression<>(Functions::is_similar, String.class, String.class));
+        add("join",              JoinFunctionExpression::new);
+        add("join_list",         () -> new BiFunctionExpression<>(Functions::join_list, String.class, List.class));
+        add("length",            () -> new FunctionExpression<>(String::length, String.class));
+        add("list",              AsListFunctionExpression::new);
+        add("ne",                () -> new BiFunctionExpression<>(ExpressionFactory::ne, String.class, String.class));
+        add("num",               () -> new FunctionExpression<>(ExpressionFactory::num, String.class));
+        add("not_equal",         () -> new BiFunctionExpression<>(ExpressionFactory::notEqual, String.class, String.class));
+        add("number_of_tags",    () -> new EnvSupplierExpression(Functions::number_of_tags));
+        add("osm_changeset_id",  () -> new EnvSupplierExpression(Functions::osm_changeset_id));
+        add("osm_id",            () -> new EnvSupplierExpression(Functions::osm_id));
+        add("osm_timestamp",     () -> new EnvSupplierExpression(Functions::osm_timestamp));
+        add("osm_user_id",       () -> new EnvSupplierExpression(Functions::osm_user_id));
+        add("osm_user_name",     () -> new EnvSupplierExpression(Functions::osm_user_name));
+        add("osm_version",       () -> new EnvSupplierExpression(Functions::osm_version));
+        add("parent_osm_id",     () -> new EnvSupplierExpression(Functions::parent_osm_id));
+        add("parent_tag",        () -> new EnvFunctionExpression<>(Functions::parent_tag, String.class));
+        add("parent_tags",       () -> new EnvFunctionExpression<>(Functions::parent_tags, String.class));
+        add("parent_way_angle",  () -> new EnvSupplierExpression(Functions::parent_way_angle));
+        add("print",             () -> new FunctionExpression<>(Functions::print, Object.class));
+        add("println",           () -> new FunctionExpression<>(Functions::println, Object.class));
+        add("prop$1",            () -> new EnvFunctionExpression<>(Functions::prop, String.class));
+        add("prop$2",            () -> new EnvBiFunctionExpression<>(Functions::prop, String.class, String.class));
+        add("regexp_match$2",    () -> new BiFunctionExpression<>(Functions::regexp_match, String.class, String.class));
+        add("regexp_match$3",    () -> new TriFunctionExpression<>(Functions::regexp_match, String.class, String.class, String.class));
+        add("regexp_test$2",     () -> new BiFunctionExpression<>(Functions::regexp_test, String.class, String.class));
+        add("regexp_test$3",     () -> new TriFunctionExpression<>(Functions::regexp_test, String.class, String.class, String.class));
+        add("replace",           () -> new TriFunctionExpression<>(Functions::replace, String.class, String.class, String.class));
+        add("rgb",               () -> new TriFunctionExpression<>(Functions::rgb, Float.class, Float.class, Float.class));
+        add("rgba",              RGBAFunctionExpression::new);
+        add("role",              () -> new EnvSupplierExpression(Functions::role));
+        add("setting",           () -> new EnvFunctionExpression<>(Functions::setting, String.class));
+        add("sort",              SortFunctionExpression::new);
+        add("sort_list",         () -> new FunctionExpression<>(Functions::sort_list, List.class));
+        add("split",             () -> new BiFunctionExpression<>(Functions::split, String.class, String.class));
+        add("str",               () -> new FunctionExpression<>(s -> s, String.class));
+        add("substring$2",       () -> new BiFunctionExpression<>(Functions::substring, String.class, Float.class));
+        add("substring$3",       () -> new TriFunctionExpression<>(Functions::substring, String.class, Float.class, Float.class));
+        add("sum",               () -> new FunctionExpression<>(Functions::sum, List.class));
+        add("tag",               () -> new EnvFunctionExpression<>(Functions::tag, String.class));
+        add("tag_regex$1",       () -> new EnvFunctionExpression<>(Functions::tag_regex, String.class));
+        add("tag_regex$2",       () -> new EnvBiFunctionExpression<>(Functions::tag_regex, String.class, String.class));
+        add("title",             () -> new FunctionExpression<>(Functions::title, String.class));
+        add("to_boolean",        () -> new FunctionExpression<>(Functions::to_boolean, String.class));
+        add("to_byte",           () -> new FunctionExpression<>(Functions::to_byte, String.class));
+        add("to_double",         () -> new FunctionExpression<>(Functions::to_double, String.class));
+        add("to_float",          () -> new FunctionExpression<>(Functions::to_float, String.class));
+        add("to_int",            () -> new FunctionExpression<>(Functions::to_int, String.class));
+        add("to_long",           () -> new FunctionExpression<>(Functions::to_long, String.class));
+        add("to_short",          () -> new FunctionExpression<>(Functions::to_short, String.class));
+        add("tr",                TrFunctionExpression::new);
+        add("uniq",              UniqFunctionExpression::new);
+        add("trim_list",         () -> new FunctionExpression<>(Functions::trim_list, List.class));
+        add("filter_list_regex", () -> new BiFunctionExpression<>(Functions::filter_list_regex, String.class, List.class));
+        add("uniq_list",         () -> new FunctionExpression<>(Functions::uniq_list, List.class));
+        add("waylength",         () -> new EnvSupplierExpression(Functions::waylength));
 
-        add("inside",           () -> new EnvFunctionExpression<>(Functions::inside, String.class));
-        add("outside",          () -> new EnvFunctionExpression<>(Functions::outside, String.class));
-        add("center",           () -> new EnvSupplierExpression(Functions::center));
-        add("at",               () -> new EnvBiFunctionExpression<>(Functions::at, Double.class, Double.class));
+        add("inside",            () -> new EnvFunctionExpression<>(Functions::inside, String.class));
+        add("outside",           () -> new EnvFunctionExpression<>(Functions::outside, String.class));
+        add("center",            () -> new EnvSupplierExpression(Functions::center));
+        add("at",                () -> new EnvBiFunctionExpression<>(Functions::at, Double.class, Double.class));
         add("is_right_hand_traffic", () -> new EnvSupplierExpression(Functions::is_right_hand_traffic));
 
         add("plus",       () -> new MathOperator((a, b) -> a + b));
@@ -263,23 +275,38 @@ public final class ExpressionFactory {
         add("color2html", () -> new FunctionExpression<>(Functions::color2html, Color.class));
         add("html2color", () -> new FunctionExpression<>(Functions::html2color, String.class));
 
-        add("transform", TransformFunctionExpression::new);
-        add("translate", TranslateFunctionExpression::new);
-        add("rotate",    RotateFunctionExpression::new);
-        add("scale",     ScaleFunctionExpression::new);
-        add("skew",      SkewFunctionExpression::new);
-        add("matrix",    MatrixFunctionExpression::new);
-        add("heading",   HeadingFunctionExpression::new);
-        add("metric",    MetricFunctionExpression::new);
-        add("null",      NullExpression::new);
-        add("is_null",   IsNullFunctionExpression::new);
-        add("random",    RandomFunctionExpression::new);
-        add("eval",      EvalFunctionExpression::new);
+        add("cond",       CondOperator::new);
+        add("and",        AndOperator::new);
+        add("or",         OrOperator::new);
 
-        add("cond",      CondOperator::new);
-        add("and",       AndOperator::new);
-        add("or",        OrOperator::new);
+        add("random",     RandomFunctionExpression::new);
+        add("eval",       EvalFunctionExpression::new);
+
+        // new functions
+
+        add("transform",          TransformFunctionExpression::new);
+        add("translate",          TranslateFunctionExpression::new);
+        add("rotate",             RotateFunctionExpression::new);
+        add("scale",              ScaleFunctionExpression::new);
+        add("skew",               SkewFunctionExpression::new);
+        add("matrix",             MatrixFunctionExpression::new);
+
+        add("heading",            HeadingFunctionExpression::new);
+        add("metric",             MetricFunctionExpression::new);
+        add("is_null",            IsNullFunctionExpression::new);
+
+        add("auto_text",          FunctionAutoText::new);
+        add("map_build",          MapBuilderExpression::new);
+        add("map_get",            MapGetExpression::new);
+        add("get_cond",           () -> new EnvFunctionExpression<>(Functions::get_cond, Integer.class));
+        add("icon_reference",     IconReferenceExpression::new);
+        add("image_provider",     ImageProviderExpression::new);
+        add("split_traffic_sign", FunctionSplitTrafficSign::new);
+        add("URL_query_encode$1", () -> new FunctionExpression<>(Functions::URL_query_encode, Map.class));
+        add("URL_query_encode$2", () -> new BiFunctionExpression<>(Functions::URL_query_encode, String.class, List.class));
+        add("zoom_level",         ZoomLevelFunctionExpression::new);
     }
+    // CHECKSTYLE.ON: SingleSpaceSeparator
 
     private ExpressionFactory() {
         // Hide default constructor for utils classes
@@ -294,25 +321,79 @@ public final class ExpressionFactory {
      *
      * @param name the name of the function or operator
      * @param args the list of arguments (as expressions)
+     * @param sheet the mapcss stylesheet
+     * @param token the current parser token
      * @return the generated Expression. If no suitable function can be found,
-     * returns {@link NullExpression#INSTANCE}.
+     *         returns a {@code LiteralExpression} containing null
+     * @throws MapCSSException if the function cannot be found
      */
-    public static Expression createFunctionExpression(String name, List<Expression> args) {
+    public static Expression createFunctionExpression(String name, List<Expression> args,
+                MapCSSStyleSource sheet, Token token) {
         int argCount = args.size();
-        String fn = name + "$" + argCount;
+        String specializedName = name + "$" + argCount;
         // look for the specialized version first, eg. unary minus before generic minus
-        Supplier<CacheableExpression> newExpression = expressionMap.get(fn);
-        if (newExpression == null) {
-            newExpression = expressionMap.get(name);
-            if (newExpression == null) {
-                Logging.error("MapCSS function with name: ''{0}'' or ''{1}'' not found.", name, fn);
-                return new NullExpression();
+        Supplier<CacheableExpression> expressionSupplier = expressionMap.get(specializedName);
+        if (expressionSupplier == null) {
+            expressionSupplier = expressionMap.get(name);
+            if (expressionSupplier == null) {
+                MapCSSException ex = new MapCSSException(tr(
+                    "MapCSS function ''{0}'' taking {1} arguments not found.", name, argCount));
+                ex.setSource(sheet, token);
+                throw ex;
             }
         }
-        CacheableExpression expression = newExpression.get();
+        CacheableExpression expression = expressionSupplier.get();
         expression.setName(name); // for debugging
         expression.setArgs(args);
+        expression.setBeginPos(sheet, token);
         return expression;
+    }
+
+    /**
+     * Creates a {@link RelativeFloatExpression} for the {@link MapCSSParser}.
+     *
+     * @param f the float
+     * @param property the property name
+     * @param sheet the stylesheet
+     * @param token the tokenbeing parsed
+     * @return a RelativeFloatExpression
+     */
+    public static Expression createRelativeFloatExpression(Float f, String property, Subpart subPart,
+                MapCSSStyleSource sheet, Token token) {
+        String layer = "default";
+
+        // special-case "casing-width" as it refers to the property "width" on the same
+        // layer
+        if ("casing-width".equals(property)) {
+            property = "width";
+            layer = null;
+        } else if (subPart == null) {
+            // Prevent endless loops
+            MapCSSException ex = new MapCSSException(tr("Relative float ''{0}: +{1}'' used on ''default'' subpart", property, f));
+            ex.setSource(sheet, token);
+            throw ex;
+        }
+
+        CacheableExpression expression = new RelativeFloatExpression(f, property, layer);
+        expression.setName("+" + f); // for debugging
+        expression.setBeginPos(sheet, token);
+        return expression;
+
+        // plus(prop(property, layer), f)
+
+        /*
+        Expression prop = createFunctionExpression("prop",
+            Arrays.asList(
+                LiteralExpression.create(property, sheet, token),
+                LiteralExpression.create(layer, sheet, token)
+            ), sheet, token);
+
+        return createFunctionExpression("plus",
+            Arrays.asList(
+                prop,
+                LiteralExpression.create(f, sheet, token)
+            ), sheet, token);
+        */
     }
 
     public abstract static class MapCSSExpression implements Expression {
@@ -338,7 +419,7 @@ public final class ExpressionFactory {
          */
         @Override
         public Object evaluate() {
-            return null;
+            return null; // only literal expressions can evaluate w/o environment
         }
 
         /**
@@ -359,11 +440,29 @@ public final class ExpressionFactory {
             return null;
         }
 
+        /**
+         * Evaluates the expression in the given environment and converts it to the
+         * given type.
+         * @return the result of the evaluation or {@code def}
+         */
+        public <T> T evaluate(Environment env, Class<T> klass, T def) {
+            T result = Cascade.convertTo(evaluate(env), klass);
+            return result != null ? result : def;
+        }
+
         @Override
         public void setBeginPos(String sourceUrl, int beginLine, int beginColumn) {
-            this.sourceUrl = sourceUrl;
+            this.sourceUrl = sourceUrl != null ? sourceUrl.intern() : null;
             this.beginLine = beginLine;
             this.beginColumn = beginColumn;
+        }
+
+        public void setBeginPos(MapCSSStyleSource sheet, Token token) {
+            setBeginPos(
+                sheet != null ? sheet.url : null,
+                token != null ? token.beginLine : -1,
+                token != null ? token.beginColumn : -1
+            );
         }
 
         @Override
@@ -385,6 +484,27 @@ public final class ExpressionFactory {
         public int getBeginColumn() {
             return beginColumn;
         }
+
+        public static String formatSourceLine(MapCSSStyleSource sheet, Token token) {
+            return sheet.url + ":" + token.beginLine + ":" + token.beginColumn;
+        }
+
+        public MapCSSException mapCSSException(String message) {
+            MapCSSException ex = new MapCSSException(message);
+            ex.setSource(getSourceUrl());
+            ex.setLine(getBeginLine());
+            ex.setColumn(getBeginColumn());
+            return ex;
+        }
+
+        public MapCSSException mapCSSException(String message, Throwable cause) {
+            MapCSSException ex = new MapCSSException(message, cause);
+            ex.setSource(getSourceUrl());
+            ex.setLine(getBeginLine());
+            ex.setColumn(getBeginColumn());
+            return ex;
+        }
+
     }
 
     /**
@@ -442,11 +562,22 @@ public final class ExpressionFactory {
         public Object evaluate(Environment environment) {
             if (cached != null)
                  return cached;
-            Object o = evalImpl(environment);
+            if (environment == null)
+                return null;
+            Object o;
+            try {
+                o = evalImpl(environment);
+            } catch (MapCSSException e) {
+                throw e;
+            } catch (Exception e) {
+                throw mapCSSException("MapCSS Runtime error", e);
+            }
             if (cacheability == Cacheability.IMMUTABLE) {
                 cached = o;
                 if (cached != null)
-                   args = Collections.emptyList(); // free some memory
+                    // if the result is cached we don't need the expression arguments anymore
+                    // frees some memory
+                    args = Collections.emptyList();
             }
             return o;
         }
@@ -617,6 +748,35 @@ public final class ExpressionFactory {
     }
 
     /**
+     * Expression representing a relative float, eg. {@code width: +1;}
+     *
+     * @params f the float to add
+     * @params property the name of the property
+     */
+    static class RelativeFloatExpression extends CacheableExpression {
+        final float f;
+        final String property;
+        final String layer;
+
+        RelativeFloatExpression(float f, String property, String layer) {
+            super(Cacheability.STABLE, 0, 0);
+            this.f = f;
+            this.property = property;
+            this.layer = layer;
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            Float base = Cascade.convertTo(env.getCascade(layer).get(property), Float.class);
+            if (base == null)
+                // return f;
+                throw mapCSSException(tr(
+                    "Relative float ''+{0}'': there is no ''{1}'' on the ''{2}'' layer.", f, property, layer));
+            return base + f;
+        }
+    }
+
+    /**
      * Expression representing a supplier of arbitrary type.
      *
      * @params f the function to call
@@ -775,25 +935,6 @@ public final class ExpressionFactory {
     }
 
     /**
-     * Expression that always evaluates to null.
-     */
-    public static class NullExpression extends CacheableExpression {
-        /**
-         * The unique instance.
-         */
-        public static final NullExpression INSTANCE = new NullExpression();
-
-        NullExpression() {
-            super(Cacheability.IMMUTABLE, 0, 0);
-        }
-
-        @Override
-        public Object evalImpl(Environment env) {
-            return null;
-        }
-    }
-
-    /**
      * Returns {@code true} if the argument is {@code null}.
      * <p>
      * Example usage:
@@ -852,6 +993,23 @@ public final class ExpressionFactory {
             Double metric = argAsDouble(env, 0, null); // represents a length in m
             if (metric == null) return null;
             return (env.nc == null) ? null : metric * 100 / env.nc.getDist100Pixel(false);
+        }
+    }
+
+    /**
+     * Returns the current zoom level
+     * <p>
+     * Example: {@code zoom_level()} yields 15 at zoom level 15
+     * @return the current zoom level as int
+     */
+    static class ZoomLevelFunctionExpression extends CacheableExpression {
+        ZoomLevelFunctionExpression() {
+            super(Cacheability.VOLATILE, 0, 0);
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            return (env.nc == null) ? null : GeneralSelector.scale2level(env.nc.getScale());
         }
     }
 
@@ -1222,12 +1380,14 @@ public final class ExpressionFactory {
     }
 
     /**
-     * Returns a map
+     * Builds a map from key, value pairs.
      * <p>
      * The arguments are interleaved keys and values.
+     * <p>
+     * A map is immutable.
      */
-    public static class MapFunctionExpression extends CacheableExpression {
-        public MapFunctionExpression() {
+    public static class MapBuilderExpression extends CacheableExpression {
+        public MapBuilderExpression() {
             super(Cacheability.IMMUTABLE, 0, null);
         }
 
@@ -1243,18 +1403,58 @@ public final class ExpressionFactory {
 
         @Override
         public Object evalImpl(Environment env) {
-            Map<Expression, Expression> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
             for (int i = 0; i < args.size(); i += 2) {
-                Expression key = args.get(i);
-                // Make sure the expression has been evaluated at least once before
-                // putting it into the map. If it is IMMUTABLE the hash will reflect the
-                // cached result.
-                key.evaluate(env);
-                map.put(key, args.get(i + 1));
+                String key = Cascade.convertTo(args.get(i).evaluate(env), String.class);
+                map.put(key, args.get(i + 1).evaluate(env));
             }
             return map;
         }
     }
+
+    /**
+     * Gets a value from a map.
+     * <p>
+     * Arguments: map, key[, default].
+     */
+    public static class MapGetExpression extends CacheableExpression {
+        public MapGetExpression() {
+            super(Cacheability.IMMUTABLE, 2, 3);
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            Map<String, Object> map = Cascade.convertTo(args.get(0).evaluate(env), Map.class);
+            if (map == null)
+                return null;
+            String key = Cascade.convertTo(args.get(1).evaluate(env), String.class);
+            if (key == null)
+                return null;
+            if (args.size() == 3) {
+                String def = Cascade.convertTo(args.get(2).evaluate(env), String.class);
+                return map.getOrDefault(key, def);
+            }
+            return map.get(key);
+        }
+    }
+
+    /**
+     * Returns the bounding box of the icon.
+     *
+     * @return the bounding box as list of left, top, right, bottom
+    public static class BoundingBoxExpression extends CacheableExpression {
+        public BoundingBoxExpression() {
+            super(Cacheability.VOLATILE, 0, 0);
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            MapImage img = NodeElement.createIcon(env);
+            Logging.info("Getting the bounding box: {0}", img.getHeight());
+            return Arrays.asList(0, 0, img.getWidth(), img.getHeight());
+        }
+    }
+    */
 
     /**
      * Returns the count of the members of a relation that have one of the given roles
@@ -1317,7 +1517,7 @@ public final class ExpressionFactory {
     }
 
     /**
-     * Returns a sorted list of the given strings.
+     * Returns a sorted list of the given arguments as strings.
      * <p>
      * Arbitrary many strings may be passed as arguments. Arguments that do not convert
      * to String are ignored.
@@ -1394,6 +1594,47 @@ public final class ExpressionFactory {
             return args.stream()
                 .map(arg -> arg.evaluate(env))
                 .collect(Collectors.toList());
+        }
+    }
+
+    public static class ImageProviderExpression extends CacheableExpression {
+
+        public ImageProviderExpression() {
+            super(Cacheability.IMMUTABLE, 2, 2);
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            final String iconName = argAsString(env, 0);
+            final StyleSource source = Cascade.convertTo(args.get(1).evaluate(env), StyleSource.class);
+            final String namespace = source.getPrefName();
+
+            return new ImageProvider(iconName)
+                    .setDirs(MapPaintStyles.getIconSourceDirs(source))
+                    .setId("mappaint." + namespace)
+                    .setArchive(source.zipIcons)
+                    .setInArchiveDir(source.getZipEntryDirName())
+                    .setOptional(true);
+        }
+    }
+
+    public static class IconReferenceExpression extends CacheableExpression {
+
+        public IconReferenceExpression() {
+            super(Cacheability.IMMUTABLE, 2, 2);
+        }
+
+        @Override
+        public Object evalImpl(Environment env) {
+            final String iconName = argAsString(env, 0);
+            final StyleSource source = Cascade.convertTo(args.get(1).evaluate(env), StyleSource.class);
+
+            return new IconReference(iconName, source);
+        }
+
+        @Override
+        public String toString() {
+            return getName() + "(" + args.get(0).toString() + ", sheet)";
         }
     }
 }

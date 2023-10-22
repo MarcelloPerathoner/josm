@@ -288,7 +288,7 @@ public class MapCSSTagChecker extends Test.TagTest {
              Reader reader = new BufferedReader(UTFInputStreamReader.create(s))) {
             if (zip != null)
                 I18n.addTexts(cache.getFile());
-            result = MapCSSTagCheckerRule.readMapCSS(reader, assertionConsumer);
+            result = MapCSSTagCheckerRule.readMapCSS(reader, url, assertionConsumer);
             checks.remove(url);
             checks.putAll(url, result.parseChecks);
             urlTitles.put(url, findURLTitle(url));

@@ -52,6 +52,8 @@ class TaggingPresetMenu extends TaggingPresetBase {
 
     @Override
     void addToMenu(JMenu parentMenu) {
+        if (bNoMenu)
+            return;
         JMenuItem menuItem = findMenu(parentMenu);
         JMenu subMenu;
         if (menuItem instanceof JMenu) {

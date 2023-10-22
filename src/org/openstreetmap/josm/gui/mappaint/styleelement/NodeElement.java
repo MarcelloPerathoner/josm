@@ -19,7 +19,6 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
-import org.openstreetmap.josm.gui.mappaint.mapcss.Expression;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.SimpleBoxProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
@@ -39,19 +38,17 @@ public class NodeElement extends StyleElement {
      * The symbol that should be used for drawing this node.
      */
     public final Symbol symbol;
-    /** The expression in {@code icon-rotation} or {@code null}. */
-    public final Expression iconRotation;
-    /** The expression in {@code icon-transform} or {@code null}. */
-    public final Expression iconTransform;
+
+    /** {@code icon-rotation} * {@code icon-transform} or {@code null}. */
+    public final AffineTransform iconTransform;
 
     private static final String[] ICON_KEYS = {ICON_IMAGE, ICON_WIDTH, ICON_HEIGHT, ICON_OPACITY, ICON_OFFSET_X, ICON_OFFSET_Y};
 
     protected NodeElement(Cascade c, MapImage mapImage, Symbol symbol, float defaultMajorZindex,
-            Expression iconRotation, Expression iconTransform) {
+            AffineTransform iconTransform) {
         super(c, defaultMajorZindex);
         this.mapImage = mapImage;
         this.symbol = symbol;
-        this.iconRotation = iconRotation;
         this.iconTransform = iconTransform;
     }
 
@@ -76,10 +73,14 @@ public class NodeElement extends StyleElement {
         // have to allocate a node element style.
         if (!allowDefault && symbol == null && mapImage == null) return null;
 
-        return new NodeElement(env.getCascade(), mapImage, symbol, defaultMajorZindex,
-            env.getCascade().getExpression(ICON_ROTATION),
-            env.getCascade().getExpression(ICON_TRANSFORM)
-        );
+        Cascade c = env.getCascade();
+        Float iconRotation = c.get(ICON_ROTATION, null, Float.class);
+        AffineTransform iconTransform = c.get(ICON_TRANSFORM, new AffineTransform(), AffineTransform.class);
+        if (iconRotation != null) {
+            iconTransform.rotate(iconRotation);
+        }
+
+        return new NodeElement(env.getCascade(), mapImage, symbol, defaultMajorZindex, iconTransform);
     }
 
     /**
@@ -105,19 +106,18 @@ public class NodeElement extends StyleElement {
         Cascade c = env.getCascade();
 
         final IconReference iconRef = c.get(keys[ICON_IMAGE_IDX], null, IconReference.class, true);
-        if (iconRef == null)
+        if (iconRef == null) {
             return null;
+        }
 
-        Cascade cDef = env.getCascade("default");
-
-        Float widthF = getWidth(c, cDef, keys[ICON_WIDTH_IDX]);
-        Float heightF = getWidth(c, cDef, keys[ICON_HEIGHT_IDX]);
+        Float widthF = c.getWidth(keys[ICON_WIDTH_IDX]);
+        Float heightF = c.getWidth(keys[ICON_HEIGHT_IDX]);
 
         Float offsetXF = 0f;
         Float offsetYF = 0f;
         if (keys.length >= 6) {
-            offsetXF = getWidth(c, cDef, keys[ICON_OFFSET_X_IDX]);
-            offsetYF = getWidth(c, cDef, keys[ICON_OFFSET_Y_IDX]);
+            offsetXF = c.getWidth(keys[ICON_OFFSET_X_IDX]);
+            offsetYF = c.getWidth(keys[ICON_OFFSET_Y_IDX]);
         }
 
         final MapImage mapImage = new MapImage(iconRef.iconName, iconRef.source);
@@ -151,13 +151,9 @@ public class NodeElement extends StyleElement {
             return null;
         }
 
-        Cascade cDef = env.getCascade("default");
+        Float size = c.getWidth("symbol-size", 10f);
 
-        Float size = getWidth(c, cDef, "symbol-size");
-        if (size == null)
-            size = 10f;
-
-        Float strokeWidth = getWidth(c, cDef, "symbol-stroke-width");
+        Float strokeWidth = c.getWidth("symbol-stroke-width");
 
         Color strokeColor = c.get("symbol-stroke-color", null, Color.class);
 
@@ -199,9 +195,7 @@ public class NodeElement extends StyleElement {
         if (primitive instanceof INode) {
             INode n = (INode) primitive;
             if (mapImage != null && painter.isShowIcons()) {
-                Double rotation = iconRotation == null ? 0d : iconRotation.evaluate(Double.class, 0d);
-                AffineTransform at = iconTransform == null ? null : iconTransform.evaluate(AffineTransform.class, null);
-                painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, rotation, at);
+                painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, iconTransform);
             } else if (symbol != null) {
                 paintWithSymbol(settings, painter, selected, member, n);
             } else {
@@ -305,7 +299,7 @@ public class NodeElement extends StyleElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mapImage, symbol, iconRotation, iconTransform);
+        return Objects.hash(super.hashCode(), mapImage, symbol, iconTransform);
     }
 
     @Override
@@ -315,7 +309,6 @@ public class NodeElement extends StyleElement {
         if (!super.equals(obj)) return false;
         NodeElement that = (NodeElement) obj;
         return Objects.equals(mapImage, that.mapImage) &&
-        Objects.equals(iconRotation, that.iconRotation) &&
         Objects.equals(iconTransform, that.iconTransform) &&
         Objects.equals(symbol, that.symbol);
     }

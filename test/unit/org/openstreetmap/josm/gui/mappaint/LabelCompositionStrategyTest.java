@@ -17,6 +17,7 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy
 /**
  * Unit tests of {@link LabelCompositionStrategy}.
  */
+@Deprecated
 class LabelCompositionStrategyTest {
     /**
      * Test {@link StaticLabelCompositionStrategy}.

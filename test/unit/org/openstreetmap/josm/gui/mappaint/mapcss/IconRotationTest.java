@@ -3,7 +3,7 @@ package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Collections;
+import java.awt.geom.AffineTransform;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,6 @@ import org.openstreetmap.josm.data.osm.OsmUtils;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
-import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.Projection;
@@ -40,6 +39,19 @@ class IconRotationTest {
         ds = new DataSet();
     }
 
+    private void assertRotated(double expected, AffineTransform actual) {
+        AffineTransform exp = new AffineTransform();
+        exp.rotate(expected);
+        double[] ex = new double[6];
+        double[] ac = new double[6];
+        exp.getMatrix(ex);
+        actual.getMatrix(ac);
+        for (int i = 0; i < 6; ++i) {
+            assertEquals(ex[i], ac[i], 0.001);
+        }
+    }
+
+
     @Test
     void testRotationNone() {
         String css = "node { symbol-shape: triangle; }";
@@ -47,7 +59,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(null, ne.iconRotation);
+        assertRotated(0f, ne.iconTransform);
     }
 
     @Test
@@ -57,7 +69,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(3.14f, ne.iconRotation.evaluate(Double.class, 0.0));
+        assertRotated(3.14f, ne.iconTransform);
     }
 
     @Test
@@ -67,7 +79,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, css));
-        assertEquals(Math.PI/8, ne.iconRotation.evaluate(Double.class, 0.0), 0.01);
+        assertRotated(Math.PI/8, ne.iconTransform);
     }
 
     @Test
@@ -76,7 +88,7 @@ class IconRotationTest {
         ds.addPrimitive(n);
 
         NodeElement ne = NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION));
-        assertEquals(0f, ne.iconRotation.evaluate(Double.class, 0.0));
+        assertRotated(0f, ne.iconTransform);
     }
 
     @Test
@@ -96,18 +108,14 @@ class IconRotationTest {
         w.addNode(n3);
         ds.addPrimitiveRecursive(w);
 
-        assertEquals(Utils.toRadians(225),
-                     NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
-                     0.01);
-        assertEquals(Utils.toRadians(270),
-                     NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
-                     0.01);
-        assertEquals(Utils.toRadians(270 + 26.56),
-                     NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
-                     0.01);
-        assertEquals(Utils.toRadians(270),
-                     NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
-                     0.01);
+        assertRotated(Utils.toRadians(225),
+                      NodeElement.create(createStyleEnv(n0, CSS_N_WAY_ROTATION)).iconTransform);
+        assertRotated(Utils.toRadians(270),
+                      NodeElement.create(createStyleEnv(n1, CSS_N_WAY_ROTATION)).iconTransform);
+        assertRotated(Utils.toRadians(270 + 26.56),
+                      NodeElement.create(createStyleEnv(n2, CSS_N_WAY_ROTATION)).iconTransform);
+        assertRotated(Utils.toRadians(270),
+                      NodeElement.create(createStyleEnv(n3, CSS_N_WAY_ROTATION)).iconTransform);
     }
 
     /**
@@ -127,9 +135,8 @@ class IconRotationTest {
         ds.addPrimitiveRecursive(w1);
         ds.addPrimitiveRecursive(w2);
 
-        assertEquals(Utils.toRadians(0),
-                     NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).iconRotation.evaluate(Double.class, 0.0),
-                     0.01);
+        assertRotated(Utils.toRadians(0),
+                      NodeElement.create(createStyleEnv(n, CSS_N_WAY_ROTATION)).iconTransform);
     }
 
     private Environment createStyleEnv(IPrimitive osm, String css) {

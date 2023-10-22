@@ -7,7 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openstreetmap.josm.data.osm.OsmPrimitiveType.NODE;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
@@ -122,6 +124,16 @@ class FunctionsTest {
         actual = Functions.parent_way_angle(environment);
         assertNotNull(actual);
         assertEquals(Math.toRadians(180), actual, 1e-9);
+    }
+
+    /**
+     * Test for {@link Functions#URL_query_decode}
+     */
+    @Test
+    void testURLQueryEncode() {
+        List<String> params = Arrays.asList("zero", "one", "two", "ä ö ü");
+        String query = Functions.URL_query_encode("text", params);
+        assertEquals("text0=zero&text1=one&text2=two&text3=%C3%A4+%C3%B6+%C3%BC", query);
     }
 
     /**

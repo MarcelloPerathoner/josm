@@ -213,7 +213,7 @@ public class BoxTextElement extends StyleElement {
         // Skip any primitives that don't have text to draw. (Styles are recreated for any tag change.)
         // The concrete text to render is not cached in this object, but computed for each
         // repaint. This way, one BoxTextElement object can be used by multiple primitives (to save memory).
-        if (text.labelCompositionStrategy.compose(env.osm) == null) return null;
+        if (text.text == null) return null;
 
         Cascade c = env.getCascade();
 

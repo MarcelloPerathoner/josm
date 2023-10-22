@@ -25,7 +25,6 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.ConditionFactory.Op;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Declaration;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Expression;
 import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.NullExpression;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Instruction;
 import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSException;
@@ -60,6 +59,8 @@ public class MapCSSParser {
     MapCSSStyleSource sheet;
     StringBuilder sb;
     int declarationCounter;
+    Subpart currentSubpart;
+    String currentProperty;
 
     /**
      * Nicer way to refer to a lexical state.
@@ -658,7 +659,7 @@ Selector selector() :
     ( r=zoom() )?
     ( ( c=condition(Context.PRIMITIVE) | c=class_or_pseudoclass(Context.PRIMITIVE) ) { if (c!= null) conditions.add(c); } )*
     ( sub=subpart() )?
-    { return new GeneralSelector(base.image, r, conditions, sub); }
+    { currentSubpart = sub; return new GeneralSelector(base.image, r, conditions, sub); }
 }
 
 Range zoom() :
@@ -851,26 +852,26 @@ Declaration declaration() :
             (<FULLSTOP>)? // specification allows "set .class" to set "class". we also support "set class"
             key=<IDENT> w()
             ( <EQUAL> val=expression() )?
-            { ins.add(new Instruction.AssignmentInstruction(key.image, val == null ? true : val, true)); }
+            { ins.add(new Instruction.AssignmentInstruction(key.image, val == null ? true : val, true, sheet, token)); }
             ( <RBRACE> { return new Declaration(ins, declarationCounter++); } | <SEMICOLON> w() )
         )
     |
         <MINUS> <IDENT> w() <COLON> w() expression() <SEMICOLON> w()
     |
-        key=<IDENT> w() <COLON> w()
+        key=<IDENT> { currentProperty = key.image; } w() <COLON> w()
         (
             LOOKAHEAD( float_array() w() ( <SEMICOLON> | <RBRACE> ) )
                 val=float_array()
-                { ins.add(new Instruction.AssignmentInstruction(key.image, val, false)); }
+                { ins.add(new Instruction.AssignmentInstruction(key.image, val, false, sheet, token)); }
                 w()
                 ( <RBRACE> { return new Declaration(ins, declarationCounter++); } | <SEMICOLON> w() )
             |
             LOOKAHEAD( expression() ( <SEMICOLON> | <RBRACE> ) )
                 val=expression()
-                { ins.add(new Instruction.AssignmentInstruction(key.image, val, false)); }
+                { ins.add(new Instruction.AssignmentInstruction(key.image, val, false, sheet, token)); }
                 ( <RBRACE> { return new Declaration(ins, declarationCounter++); } | <SEMICOLON> w() )
             |
-                val=readRaw() w() { ins.add(new Instruction.AssignmentInstruction(key.image, val, false)); }
+                val=readRaw() w() { ins.add(new Instruction.AssignmentInstruction(key.image, val, false, sheet, token)); }
         )
     )*
     <RBRACE>
@@ -888,7 +889,6 @@ Expression expression() :
 {
     e=conditional_expression()
     {
-        e.setBeginPos(sheet == null ? null : sheet.url, token.beginLine, token.beginColumn);
         return e;
     }
 }
@@ -906,7 +906,7 @@ Expression conditional_expression() :
         <COLON> w()
         e2=conditional_expression()
         {
-            e = ExpressionFactory.createFunctionExpression("cond", Arrays.asList(e, e1, e2));
+            e = ExpressionFactory.createFunctionExpression("cond", Arrays.asList(e, e1, e2), sheet, token);
         }
     )?
     {
@@ -925,7 +925,7 @@ Expression or_expression() :
         <PIPE> <PIPE> w()
         e2=and_expression()
         {
-            e = ExpressionFactory.createFunctionExpression("or", Arrays.asList(e, e2));
+            e = ExpressionFactory.createFunctionExpression("or", Arrays.asList(e, e2), sheet, token);
         }
     )*
     {
@@ -944,7 +944,7 @@ Expression and_expression() :
         <AMPERSAND> <AMPERSAND> w()
         e2=relational_expression()
         {
-            e = ExpressionFactory.createFunctionExpression("and", Arrays.asList(e, e2));
+            e = ExpressionFactory.createFunctionExpression("and", Arrays.asList(e, e2), sheet, token);
         }
     )*
     {
@@ -975,7 +975,7 @@ Expression relational_expression() :
         ) w()
         e2=additive_expression()
         {
-            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2));
+            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2), sheet, token);
         }
     )?
     {
@@ -994,7 +994,7 @@ Expression additive_expression() :
         ( <PLUS> { op = "plus"; } | <MINUS> { op = "minus"; } ) w()
         e2=multiplicative_expression()
         {
-            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2));
+            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2), sheet, token);
         }
     )*
     {
@@ -1013,7 +1013,7 @@ Expression multiplicative_expression() :
         ( <STAR> { op = "times"; } | <SLASH> { op = "divided_by"; } ) w()
         e2=unary_expression()
         {
-            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2));
+            e = ExpressionFactory.createFunctionExpression(op, Arrays.asList(e, e2), sheet, token);
         }
     )*
     {
@@ -1036,7 +1036,7 @@ Expression unary_expression() :
     {
         if (op == null)
             return e;
-        return ExpressionFactory.createFunctionExpression(op, Collections.singletonList(e));
+        return ExpressionFactory.createFunctionExpression(op, Collections.singletonList(e), sheet, token);
     }
 }
 
@@ -1053,11 +1053,11 @@ Expression primary() :
         lit=literal()
         {
             if (lit == null) {
-                return NullExpression.INSTANCE;
+                return LiteralExpression.create(null, sheet, token);
             } else if (lit instanceof String && PlaceholderExpression.PATTERN_PLACEHOLDER.matcher((String) lit).find()) {
                 return new PlaceholderExpression((String) lit);
             }
-            return new LiteralExpression(lit, sheet == null ? null : sheet.url, token.beginLine, token.beginColumn);
+            return LiteralExpression.create(lit, sheet, token);
         }
     |
         <LPAR> w() nested=expression() <RPAR> { return nested; }
@@ -1077,7 +1077,7 @@ Expression function() :
         ( <COMMA> w() arg=expression() { args.add(arg); } )*
     )?
     <RPAR>
-    { return ExpressionFactory.createFunctionExpression(name, args); }
+    { return ExpressionFactory.createFunctionExpression(name, args, sheet, token); }
 }
 
 Object literal() :
@@ -1100,7 +1100,7 @@ Object literal() :
     |
         val=string() { return val; }
     |
-        <PLUS> f=ufloat() { return new Instruction.RelativeFloat(f); }
+        <PLUS> f=ufloat() { return ExpressionFactory.createRelativeFloatExpression(f, currentProperty, currentSubpart, sheet, token); }
     |
         LOOKAHEAD(2)
         f=ufloat_unit() { return f; }

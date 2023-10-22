@@ -4,52 +4,72 @@
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/f/fa/Italian_traffic_signs_-_curva_pericolosa_a_sinistra.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=curve"
+        ],
         "names": {
             "it.name": "Curva a sinistra",
             "name": "Dangerous bend (to the left)"
         },
         "id": "II.5",
-        "vienna": "A, 1a"
+        "vienna": "A, 1a",
+        "filename": "curva_pericolosa_a_sinistra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_curva_pericolosa_a_destra.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=curve"
+        ],
         "names": {
             "it.name": "Curva a destra",
             "name": "Dangerous bend (to the right)"
         },
         "id": "II.4",
-        "vienna": "A, 1b"
+        "vienna": "A, 1b",
+        "filename": "curva_pericolosa_a_destra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/d/de/Italian_traffic_signs_-_doppia_curva_sx.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=curves"
+        ],
         "names": {
             "it.name": "Doppia curva, la prima a sinistra",
             "name": "Dangerous double bend (the first to the left)"
         },
         "id": "II.7",
-        "vienna": "A, 1c"
+        "vienna": "A, 1c",
+        "filename": "doppia_curva_sx.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/1/1b/Italian_traffic_signs_-_doppia_curva_dx.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=curves"
+        ],
         "names": {
             "it.name": "Doppia curva, la prima a destra",
             "name": "Dangerous double bend (the first to the right)"
         },
         "id": "II.6",
-        "vienna": "A, 1d"
+        "vienna": "A, 1d",
+        "filename": "doppia_curva_dx.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -57,15 +77,17 @@
             "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_discesa_pericolosa.svg"
         ],
         "tags": [
-            "highway=incline",
-            "highway=steep_incline"
+            "incline=*"
         ],
         "names": {
             "it.name": "Discesa pericolosa",
             "name": "Dangerous descent"
         },
         "id": "II.15",
-        "vienna": "A, 2a"
+        "vienna": "A, 2a",
+        "filename": "discesa_pericolosa.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -73,15 +95,17 @@
             "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_salita_ripida.svg"
         ],
         "tags": [
-            "highway=incline",
-            "highway=steep_incline"
+            "incline=*"
         ],
         "names": {
             "it.name": "Salita ripida",
             "name": "Dangerous ascent"
         },
         "id": "II.16",
-        "vienna": "A, 3a"
+        "vienna": "A, 3a",
+        "filename": "salita_ripida.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -98,7 +122,10 @@
             "name": "Carriageway narrows (both sides)"
         },
         "id": "II.17",
-        "vienna": "A, 4a"
+        "vienna": "A, 4a",
+        "filename": "strettoia_simmetrica.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -115,7 +142,10 @@
             "name": "Carriageway narrows (right side)"
         },
         "id": "II.19",
-        "vienna": "A, 4b"
+        "vienna": "A, 4b",
+        "filename": "strettoia_asimmetrica_a_destra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -128,7 +158,10 @@
             "name": "Carriageway narrows (left side)"
         },
         "id": "II.18",
-        "vienna": "A, 4b"
+        "vienna": "A, 4b",
+        "filename": "strettoia_asimmetrica_a_sinistra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -141,7 +174,10 @@
             "name": "Uneven road"
         },
         "id": "II.1",
-        "vienna": "A, 7a"
+        "vienna": "A, 7a",
+        "filename": "strada_dissestata.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -152,40 +188,54 @@
             "traffic_calming=bump",
             "traffic_calming=hump",
             "traffic_calming=table",
-            "traffic_calming=cushion"
+            "traffic_calming=cushion",
+            "hazard=bump"
         ],
         "names": {
             "it.name": "Dosso",
             "name": "Hump in road"
         },
         "id": "II.2",
-        "vienna": "A, 7b"
+        "vienna": "A, 7b",
+        "filename": "dosso.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/8/83/Italian_traffic_signs_-_cunetta.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=dip"
+        ],
         "names": {
             "it.name": "Cunetta",
             "name": "Dip in road"
         },
         "id": "II.3",
-        "vienna": "A, 7c"
+        "vienna": "A, 7c",
+        "filename": "cunetta.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_strada_sdrucciolevole.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=slippery"
+        ],
         "names": {
             "it.name": "Strada sdrucciolevole",
             "name": "Slippery road"
         },
         "id": "II.22",
-        "vienna": "A, 9"
+        "vienna": "A, 9",
+        "filename": "strada_sdrucciolevole.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -200,7 +250,10 @@
             "name": "Two-way traffic"
         },
         "id": "II.26",
-        "vienna": "A, 23"
+        "vienna": "A, 23",
+        "filename": "doppio_senso.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -215,7 +268,10 @@
             "name": "Light signals (vertical)"
         },
         "id": "II.31a",
-        "vienna": "A, 17a"
+        "vienna": "A, 17a",
+        "filename": "semaforo_verticale.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -230,7 +286,10 @@
             "name": "Light signals (horizontal)"
         },
         "id": "II.31b",
-        "vienna": "A, 17c"
+        "vienna": "A, 17c",
+        "filename": "semaforo_orizzontale.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -246,71 +305,101 @@
             "name": "Pedestrian crossing"
         },
         "id": "II.13",
-        "vienna": "A, 12"
+        "vienna": "A, 12",
+        "filename": "attraversamento_pericoloso.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/a/a0/Italian_traffic_signs_-_bambini.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=children"
+        ],
         "names": {
             "it.name": "Bambini",
             "name": "Children"
         },
         "id": "II.23",
-        "vienna": "A, 13"
+        "vienna": "A, 13",
+        "filename": "bambini.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/c/c2/Italian_traffic_signs_-_animali_domestici_vaganti.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=animal_crossing",
+            "hazard:animal=livestock"
+        ],
         "names": {
             "it.name": "Animali domestici vaganti",
             "name": "Cattle crossing"
         },
         "id": "II.24",
-        "vienna": "A, 15a"
+        "vienna": "A, 15a",
+        "filename": "animali_domestici_vaganti.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_animali_selvatici_vaganti.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=animal_crossing",
+            "hazard:animal=wild_animal"
+        ],
         "names": {
             "it.name": "Animali selvatici vaganti",
             "name": "Wildlife crossing"
         },
         "id": "II.25",
-        "vienna": "A, 15b"
+        "vienna": "A, 15b",
+        "filename": "animali_selvatici_vaganti.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_lavori.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=roadworks"
+        ],
         "names": {
             "it.name": "Lavori in corso",
             "name": "Road works"
         },
-        "vienna": "A, 16"
+        "vienna": "A, 16",
+        "filename": "lavori.svg",
+        "width": 199.00044,
+        "height": 174.8741
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_forte_vento_laterale.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=side_winds"
+        ],
         "names": {
             "it.name": "Forte vento laterale",
             "name": "Cross-wind"
         },
         "id": "II.33",
-        "vienna": "A, 31"
+        "vienna": "A, 31",
+        "filename": "forte_vento_laterale.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -323,7 +412,10 @@
             "name": "Dangerous shoulder"
         },
         "id": "II.21",
-        "vienna": "A, 8"
+        "vienna": "A, 8",
+        "filename": "banchina_pericolosa.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -335,59 +427,82 @@
             "it.name": "Pericolo di incendio",
             "name": "Danger of wildfires"
         },
-        "id": "II.34"
+        "id": "II.34",
+        "filename": "pericolo_di_incendio.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_materiale_instabile.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=loose_gravel"
+        ],
         "names": {
             "it.name": "Materiale instabile",
             "name": "Loose gravel"
         },
         "id": "II.29",
-        "vienna": "A, 10a"
+        "vienna": "A, 10a",
+        "filename": "materiale_instabile.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_caduta_massi_da_sinistra.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=falling_rocks"
+        ],
         "names": {
             "it.name": "Caduta massi",
             "name": "Falling rocks"
         },
         "id": "II.30a",
-        "vienna": "A, 11a"
+        "vienna": "A, 11a",
+        "filename": "caduta_massi_da_sinistra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/9/95/Italian_traffic_signs_-_caduta_massi_da_destra.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=falling_rocks"
+        ],
         "names": {
             "it.name": "Caduta massi",
             "name": "Falling rocks"
         },
         "id": "II.30b",
-        "vienna": "A, 11a"
+        "vienna": "A, 11a",
+        "filename": "caduta_massi_da_destra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
         "urls": [
             "https://upload.wikimedia.org/wikipedia/commons/d/db/Italian_traffic_signs_-_attraversamento_ciclabile.svg"
         ],
-        "tags": [],
+        "tags": [
+            "hazard=cyclists"
+        ],
         "names": {
             "it.name": "Attraversamento ciclabile",
             "name": "Cyclists entering or crossing"
         },
         "id": "II.14",
-        "vienna": "A, 14"
+        "vienna": "A, 14",
+        "filename": "attraversamento_ciclabile.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -400,7 +515,10 @@
             "name": "Airfield"
         },
         "id": "II.32",
-        "vienna": "A, 30"
+        "vienna": "A, 30",
+        "filename": "aeromobili.svg",
+        "width": 199.99997,
+        "height": 175.87384
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -415,7 +533,10 @@
             "name": "Roundabout ahead"
         },
         "id": "II.27",
-        "vienna": "A, 22"
+        "vienna": "A, 22",
+        "filename": "circolazione_rotatoria.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -428,7 +549,10 @@
             "name": "Other dangers"
         },
         "id": "II.35",
-        "vienna": "A, 32"
+        "vienna": "A, 32",
+        "filename": "altri_pericoli.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -441,7 +565,10 @@
             "name": "Intersection with a tramway line"
         },
         "id": "II.12",
-        "vienna": "A, 27"
+        "vienna": "A, 27",
+        "filename": "attraversamento_tramviario.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -454,7 +581,10 @@
             "name": "Road leads on to quay or river bank"
         },
         "id": "II.28",
-        "vienna": "A, 6"
+        "vienna": "A, 6",
+        "filename": "sbocco_su_molo.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -470,7 +600,10 @@
             "name": "Level-crossings with gates"
         },
         "id": "II.8",
-        "vienna": "A, 25"
+        "vienna": "A, 25",
+        "filename": "passaggio_a_livello_con_barriere.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -486,7 +619,10 @@
             "name": "Other level-crossings"
         },
         "id": "II.9",
-        "vienna": "A, 26"
+        "vienna": "A, 26",
+        "filename": "passaggio_a_livello_senza_barriere.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -499,7 +635,10 @@
             "name": "Single-rail level-crossing"
         },
         "id": "II.10a",
-        "vienna": "A, 28a"
+        "vienna": "A, 28a",
+        "filename": "croce_di_s.andrea.svg",
+        "width": 387.64276,
+        "height": 199.99991
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -512,7 +651,10 @@
             "name": "Multi-rail level-crossing"
         },
         "id": "II.10b",
-        "vienna": "A, 28b"
+        "vienna": "A, 28b",
+        "filename": "doppia_croce_di_santandrea.svg",
+        "width": 388.84784,
+        "height": 282.56247
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -525,7 +667,10 @@
             "name": "Advanced sign (240 m)"
         },
         "id": "II.11a",
-        "vienna": "A, 29a"
+        "vienna": "A, 29a",
+        "filename": "pannello_distanziometrico_150.svg",
+        "width": 725.0,
+        "height": 725.0
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -538,7 +683,10 @@
             "name": "Advanced sign (160 m)"
         },
         "id": "II.11b",
-        "vienna": "A, 29b"
+        "vienna": "A, 29b",
+        "filename": "pannello_distanziometrico_100.svg",
+        "width": 725.0,
+        "height": 725.0
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -551,7 +699,10 @@
             "name": "Advanced sign (80 m)"
         },
         "id": "II.11c",
-        "vienna": "A, 29c"
+        "vienna": "A, 29c",
+        "filename": "pannello_distanziometrico_50.svg",
+        "width": 725.0,
+        "height": 725.0
     },
     {
         "section": "Segnali di pericolo (Danger warning signs)",
@@ -563,10 +714,13 @@
         ],
         "names": {
             "it.name": "Ponte mobile",
-            "name": "Swing bridge"
+            "name": "Movable bridge"
         },
         "id": "II.20",
-        "vienna": "A, 5"
+        "vienna": "A, 5",
+        "filename": "ponte_mobile.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -581,7 +735,10 @@
             "name": "Give way"
         },
         "id": "II.36",
-        "vienna": "B, 1"
+        "vienna": "B, 1",
+        "filename": "dare_precedenza.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -589,6 +746,7 @@
             "https://upload.wikimedia.org/wikipedia/commons/1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg"
         ],
         "tags": [
+            "traffic_sign=stop",
             "highway=stop"
         ],
         "names": {
@@ -596,7 +754,10 @@
             "name": "Stop"
         },
         "id": "II.37",
-        "vienna": "B, 2a"
+        "vienna": "B, 2a",
+        "filename": "fermarsi_e_dare_precedenza_-_stop.svg",
+        "width": 1010.4,
+        "height": 1010.4002
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -609,7 +770,10 @@
             "it.name": "Preavviso di dare precedenza",
             "name": "Advance warning of give way"
         },
-        "id": "II.38"
+        "id": "II.38",
+        "filename": "distanza.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -622,7 +786,10 @@
             "it.name": "Preavviso di fermarsi e dare precedenza",
             "name": "Advance warning of stop"
         },
-        "id": "II.39"
+        "id": "II.39",
+        "filename": "preavviso.svg",
+        "width": 800.0,
+        "height": 270.0
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -635,7 +802,10 @@
             "name": "Intersection with general priority ahead"
         },
         "id": "II.40",
-        "vienna": "A, 18"
+        "vienna": "A, 18",
+        "filename": "intersezione_con_precedenza_a_destra.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -650,7 +820,10 @@
             "name": "Oncoming traffic has priority"
         },
         "id": "II.41",
-        "vienna": "B, 5"
+        "vienna": "B, 5",
+        "filename": "dare_precedenza_nei_sensi_unici_alternati.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -665,7 +838,10 @@
             "name": "End of priority road"
         },
         "id": "II.42",
-        "vienna": "B, 4"
+        "vienna": "B, 4",
+        "filename": "fine_del_diritto_di_precedenza.svg",
+        "width": 847.28552,
+        "height": 847.28552
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -678,7 +854,10 @@
             "name": "Intersection with a road the users of which must give way"
         },
         "id": "II.43a",
-        "vienna": "A, 19a"
+        "vienna": "A, 19a",
+        "filename": "intersezione_con_diritto_di_precedenza.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -691,7 +870,10 @@
             "name": "Intersection with a road the users of which must give way"
         },
         "id": "II.43b",
-        "vienna": "A, 19b"
+        "vienna": "A, 19b",
+        "filename": "intersezione_a_t_con_diritto_di_precedenza_dx.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -704,7 +886,10 @@
             "name": "Intersection with a road the users of which must give way"
         },
         "id": "II.43c",
-        "vienna": "A, 19b"
+        "vienna": "A, 19b",
+        "filename": "intersezione_a_t_con_diritto_di_precedenza_sx.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -717,7 +902,10 @@
             "name": "Intersection with a road the users of which must give way"
         },
         "id": "II.43d",
-        "vienna": "A, 19c"
+        "vienna": "A, 19c",
+        "filename": "confluenza_dx.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -730,7 +918,10 @@
             "name": "Intersection with a road the users of which must give way"
         },
         "id": "II.43e",
-        "vienna": "A, 19c"
+        "vienna": "A, 19c",
+        "filename": "confluenza_sx.svg",
+        "width": 834.08563,
+        "height": 734.98938
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -745,7 +936,10 @@
             "name": "Priority road"
         },
         "id": "II.44",
-        "vienna": "B, 3"
+        "vienna": "B, 3",
+        "filename": "diritto_di_precedenza.svg",
+        "width": 847.28552,
+        "height": 847.28552
     },
     {
         "section": "Segnali di precedenza (Priority signs)",
@@ -760,7 +954,10 @@
             "name": "Priority over oncoming traffic"
         },
         "id": "II.45",
-        "vienna": "B, 6"
+        "vienna": "B, 6",
+        "filename": "diritto_di_precedenza_nei_sensi_unici_alternati.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -775,7 +972,10 @@
             "name": "Closed to all vehicles in both directions"
         },
         "id": "II.46",
-        "vienna": "C, 2"
+        "vienna": "C, 2",
+        "filename": "divieto_di_transito.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -790,7 +990,10 @@
             "name": "No entry"
         },
         "id": "II.47",
-        "vienna": "C, 1a"
+        "vienna": "C, 1a",
+        "filename": "senso_vietato.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -805,7 +1008,10 @@
             "name": "Prohibition of overtaking"
         },
         "id": "II.48",
-        "vienna": "C, 13ab"
+        "vienna": "C, 13ab",
+        "filename": "divieto_di_sorpasso.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -820,7 +1026,10 @@
             "name": "Minimum distance between vehicles"
         },
         "id": "II.49",
-        "vienna": "C, 10"
+        "vienna": "C, 10",
+        "filename": "distanziamento_minimo_obbligatorio.svg",
+        "width": 600.0,
+        "height": 600.1004
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -828,14 +1037,18 @@
             "https://upload.wikimedia.org/wikipedia/commons/e/eb/Italian_traffic_signs_-_limite_di_velocit%C3%A0_50.svg"
         ],
         "tags": [
-            "maxspeed=*"
+            "maxspeed=*",
+            "source:maxspeed=sign"
         ],
         "names": {
             "it.name": "Limite massimo di velocità",
             "name": "Speed limit"
         },
         "id": "II.50",
-        "vienna": "C, 14"
+        "vienna": "C, 14",
+        "filename": "limite_di_velocità_50.svg",
+        "width": 600.09418,
+        "height": 599.95264
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -848,7 +1061,20 @@
             "name": "Prohibition of the use of audible warning devices"
         },
         "id": "II.51",
-        "vienna": "C, 15"
+        "vienna": "C, 15",
+        "filename": "divieto_di_segnalazioni_acustiche.svg",
+        "width": 600.0,
+        "height": 600.0
+    },
+    {
+        "section": "Segnali di divieto (Prohibitory or restrictive signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Divieto di inversione",
+            "name": "No U-turns"
+        },
+        "vienna": "C, 12"
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -863,7 +1089,10 @@
             "name": "Prohibition of overtaking for trucks"
         },
         "id": "II.52",
-        "vienna": "C, 13ba"
+        "vienna": "C, 13ba",
+        "filename": "divieto_di_sorpasso_per_veicoli_oltre_35t.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -878,7 +1107,10 @@
             "name": "No entry for animal-powered vehicles"
         },
         "id": "II.53",
-        "vienna": "C, 3j"
+        "vienna": "C, 3j",
+        "filename": "divieto_di_transito_alla_trazione_animale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -893,12 +1125,15 @@
             "name": "No entry for pedestrians"
         },
         "id": "II.54",
-        "vienna": "C, 3i"
+        "vienna": "C, 3i",
+        "filename": "transito_vietato_ai_pedoni.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_divieto_di_transito_alle_biciclette.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/8/8c/Italian_traffic_signs_-_transito_vietato_ai_velocipedi_%28figura_II_55%29.svg"
         ],
         "tags": [
             "bicycle=no"
@@ -908,7 +1143,10 @@
             "name": "No entry for bicycles"
         },
         "id": "II.55",
-        "vienna": "C, 3c"
+        "vienna": "C, 3c",
+        "filename": "transito_vietato_ai_velocipedi_figura_ii_55.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -923,7 +1161,10 @@
             "name": "No entry for motorcycles"
         },
         "id": "II.56",
-        "vienna": "C, 3b"
+        "vienna": "C, 3b",
+        "filename": "divieto_di_transito_motocicli.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -938,7 +1179,10 @@
             "name": "No entry for hand carts"
         },
         "id": "II.57",
-        "vienna": "C, 3k"
+        "vienna": "C, 3k",
+        "filename": "divieto_di_transito_a_veicoli_a_braccia.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -953,7 +1197,10 @@
             "name": "No entry for all motor vehicles"
         },
         "id": "II.58",
-        "vienna": "C, 3a"
+        "vienna": "C, 3a",
+        "filename": "divieto_di_transito_a_tutti_gli_autoveicoli.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -968,7 +1215,10 @@
             "it.name": "Transito vietato agli autobus",
             "name": "No entry for buses"
         },
-        "id": "II.59"
+        "id": "II.59",
+        "filename": "divieto_di_transito_agli_autobus.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -983,7 +1233,10 @@
             "name": "No entry for trucks (with a permissible maximum with more than 3.5 t)"
         },
         "id": "II.60a",
-        "vienna": "C, 3e"
+        "vienna": "C, 3e",
+        "filename": "divieto_di_transito_ai_veicoli_da_trasporto.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -997,7 +1250,10 @@
             "it.name": "Transito vietato ai veicoli di massa a pieno carico superiore a ... tonnellate",
             "name": "No entry for trucks with a permissible maximum with more than ... t"
         },
-        "id": "II.60b"
+        "id": "II.60b",
+        "filename": "divieto_di_transito_ai_veicoli_da_trasporto_65t.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1012,7 +1268,10 @@
             "name": "No entry for vehicles drawing a trailer"
         },
         "id": "II.61",
-        "vienna": "C, 3f"
+        "vienna": "C, 3f",
+        "filename": "divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1027,7 +1286,10 @@
             "name": "No entry for tractors"
         },
         "id": "II.62",
-        "vienna": "C, 3l"
+        "vienna": "C, 3l",
+        "filename": "divieto_di_transito_alle_macchine_agricole.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1042,7 +1304,10 @@
             "name": "No entry for vehicles transporting dangerous goods"
         },
         "id": "II.63",
-        "vienna": "C, 3h"
+        "vienna": "C, 3h",
+        "filename": "divieto_di_transito_a_trasporti_pericolosi.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1055,7 +1320,10 @@
             "name": "No entry for vehicles carrying explosives or readily inflammable substances"
         },
         "id": "II.64a",
-        "vienna": "C, 3m"
+        "vienna": "C, 3m",
+        "filename": "divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1070,7 +1338,10 @@
             "name": "No entry for vehicles carrying goods capable of water pollution"
         },
         "id": "II.64b",
-        "vienna": "C, 3n"
+        "vienna": "C, 3n",
+        "filename": "divieto_di_transito_agli_inquinanti_idrici.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1082,7 +1353,10 @@
             "it.name": "Transito vietato ai ciclomotori",
             "name": "No entry for mopeds"
         },
-        "vienna": "C, 3d"
+        "vienna": "C, 3d",
+        "filename": "divieto_di_transito_motocicli_b.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1097,7 +1371,10 @@
             "name": "No entry for vehicles wider than the specified limit"
         },
         "id": "II.65",
-        "vienna": "C, 5"
+        "vienna": "C, 5",
+        "filename": "divieto_di_transito_larghezza_230m.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1112,7 +1389,10 @@
             "name": "No entry for vehicles higher than the specified limit"
         },
         "id": "II.66",
-        "vienna": "C, 6"
+        "vienna": "C, 6",
+        "filename": "divieto_di_transito_altezza_350m.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1127,7 +1407,10 @@
             "name": "No entry for vehicles or vehicle combinations longer than the specified limit"
         },
         "id": "II.67",
-        "vienna": "C, 9"
+        "vienna": "C, 9",
+        "filename": "divieto_di_transito_ai_veicoli_lunghi.svg",
+        "width": 159.01459,
+        "height": 159.01459
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1142,7 +1425,10 @@
             "name": "No entry for vehicles heavier than the specified limit"
         },
         "id": "II.68",
-        "vienna": "C, 7"
+        "vienna": "C, 7",
+        "filename": "divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1157,7 +1443,10 @@
             "name": "No entry for vehicles which immediate weight per axle is over the specified limit"
         },
         "id": "II.69",
-        "vienna": "C, 8"
+        "vienna": "C, 8",
+        "filename": "divieto_di_transito_a_carico_su_asse_7t.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1170,7 +1459,10 @@
             "name": "End of all prohibitions"
         },
         "id": "II.70",
-        "vienna": "C, 17a"
+        "vienna": "C, 17a",
+        "filename": "via_libera.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1185,7 +1477,10 @@
             "name": "End of speed limit"
         },
         "id": "II.71",
-        "vienna": "C, 17b"
+        "vienna": "C, 17b",
+        "filename": "fine_limite_di_velocità_50.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1198,7 +1493,10 @@
             "name": "End of overtaking prohibition"
         },
         "id": "II.72",
-        "vienna": "C, 17c"
+        "vienna": "C, 17c",
+        "filename": "fine_del_divieto_di_sorpasso.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1211,7 +1509,10 @@
             "name": "End of overtaking prohibition for trucks"
         },
         "id": "II.73",
-        "vienna": "C, 17d"
+        "vienna": "C, 17d",
+        "filename": "fine_del_divieto_di_sorpasso_per_veicoli_oltre_35t.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1220,14 +1521,17 @@
         ],
         "tags": [
             "parking:side:",
-            "restriction=no_parking"
+            "restriction=no"
         ],
         "names": {
             "it.name": "Divieto di sosta",
             "name": "Parking prohibited"
         },
         "id": "II.74",
-        "vienna": "C, 18"
+        "vienna": "C, 18",
+        "filename": "divieto_di_sosta.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1243,7 +1547,10 @@
             "name": "Standing and parking prohibited"
         },
         "id": "II.75",
-        "vienna": "C, 19"
+        "vienna": "C, 19",
+        "filename": "divieto_di_fermata.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1258,7 +1565,10 @@
             "name": "Parking"
         },
         "id": "II.76",
-        "vienna": "E, 14a"
+        "vienna": "E, 14a",
+        "filename": "parcheggio.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1270,7 +1580,10 @@
             "it.name": "Preavviso di parcheggio",
             "name": "Advance warning of parking"
         },
-        "id": "II.77"
+        "id": "II.77",
+        "filename": "preavviso_di_parcheggio.svg",
+        "width": 200.86217,
+        "height": 362.43262
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1281,7 +1594,10 @@
         "names": {
             "it.name": "Passo carrabile"
         },
-        "id": "II.78"
+        "id": "II.78",
+        "filename": "passo_carrabile.svg",
+        "width": 400.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di divieto (Prohibitory or restrictive signs)",
@@ -1294,7 +1610,10 @@
             "it.name": "Sosta consentita a particolare categoria",
             "name": "Various parking exceptions"
         },
-        "id": "II.79"
+        "id": "II.79",
+        "filename": "parcheggio_riservato_pronto_soccorso.svg",
+        "width": 400.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1310,7 +1629,10 @@
         },
         "id": "II.80a",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzione_obbligatoria_dritto.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1326,7 +1648,10 @@
         },
         "id": "II.80b",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzione_obbligatoria_a_sinistra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1342,7 +1667,10 @@
         },
         "id": "II.80c",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzione_obbligatoria_a_destra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1358,7 +1686,10 @@
         },
         "id": "II.80d",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "preavviso_di_direzione_obbligatoria_a_destra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1374,7 +1705,10 @@
         },
         "id": "II.80e",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "preavviso_di_direzione_obbligatoria_a_sinistra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1389,7 +1723,10 @@
             "name": "Mandatory right or left turn"
         },
         "id": "II.81a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzioni_consentite_a_destra_ed_a_sinistra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1405,7 +1742,10 @@
         },
         "id": "II.81b",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzioni_consentite_a_dritto_ed_a_destra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1421,7 +1761,10 @@
         },
         "id": "II.81c",
         "vienna": "D, 1a",
-        "wiki": "/wiki/IT:Relation:restriction"
+        "wiki": "/wiki/IT:Relation:restriction",
+        "filename": "direzioni_consentite_a_dritto_ed_a_sinistra.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1434,7 +1777,10 @@
             "name": "Pass by on the left-hand side"
         },
         "id": "II.82a",
-        "vienna": "D, 2"
+        "vienna": "D, 2",
+        "filename": "passaggio_obbligatorio_a_sinistra.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1447,7 +1793,10 @@
             "name": "Pass by on the right-hand side"
         },
         "id": "II.82b",
-        "vienna": "D, 2"
+        "vienna": "D, 2",
+        "filename": "passaggio_obbligatorio_a_destra.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1459,7 +1808,10 @@
             "it.name": "Passaggi consentiti",
             "name": "Drive around"
         },
-        "id": "II.83"
+        "id": "II.83",
+        "filename": "passaggi_consentiti.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1474,12 +1826,15 @@
             "name": "Compulsary Roundabout"
         },
         "id": "II.84",
-        "vienna": "D, 3"
+        "vienna": "D, 3",
+        "filename": "rotatoria.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_limite_minimo_di_velocit%C3%A0_30.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/7/77/Italian_traffic_signs_-_limite_minimo_di_velocit%C3%A0_%28figura_II_85%29.svg"
         ],
         "tags": [
             "minspeed=*"
@@ -1489,7 +1844,10 @@
             "name": "Compulsory minimum speed"
         },
         "id": "II.85",
-        "vienna": "D, 7"
+        "vienna": "D, 7",
+        "filename": "limite_minimo_di_velocità_figura_ii_85.svg",
+        "width": 600.03906,
+        "height": 599.96027
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1502,7 +1860,10 @@
             "name": "End of compulsory minimum speed"
         },
         "id": "II.86",
-        "vienna": "D, 8"
+        "vienna": "D, 8",
+        "filename": "fine_limite_minimo_di_velocità_30.svg",
+        "width": 600.20398,
+        "height": 599.82776
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1515,7 +1876,20 @@
             "name": "Snow chains compulsory"
         },
         "id": "II.87",
-        "vienna": "D, 9"
+        "vienna": "D, 9",
+        "filename": "catene_da_neve_obbligatorie.svg",
+        "width": 201.25386,
+        "height": 201.25386
+    },
+    {
+        "section": "Segnali di obbligo (Mandatory signs)",
+        "urls": [],
+        "tags": [],
+        "names": {
+            "it.name": "Fine catene per neve obbligatorie",
+            "name": "End of snow chains compulsory"
+        },
+        "id": "II.87a"
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1530,7 +1904,10 @@
             "name": "Compulsory footpath"
         },
         "id": "II.88",
-        "vienna": "D, 5"
+        "vienna": "D, 5",
+        "filename": "percorso_pedonale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1542,7 +1919,10 @@
             "it.name": "Fine del percorso pedonale",
             "name": "End footpath"
         },
-        "id": "II.89"
+        "id": "II.89",
+        "filename": "fine_percorso_pedonale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1557,7 +1937,10 @@
             "name": "Compulsory cycle track"
         },
         "id": "II.90",
-        "vienna": "D, 4"
+        "vienna": "D, 4",
+        "filename": "pista_ciclabile.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1569,7 +1952,10 @@
             "it.name": "Fine pista ciclabile",
             "name": "End Cycleway"
         },
-        "id": "II.91"
+        "id": "II.91",
+        "filename": "fine_pista_ciclabile.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1587,7 +1973,10 @@
             "name": "Footpath and cycleway"
         },
         "id": "II.92a",
-        "vienna": "D, 11a"
+        "vienna": "D, 11a",
+        "filename": "pista_ciclabile_contigua_al_marciapiede.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1599,7 +1988,10 @@
             "it.name": "Fine della pista ciclabile contigua al marciapiede",
             "name": "End of footpath and cycleway"
         },
-        "id": "II.93a"
+        "id": "II.93a",
+        "filename": "fine_pista_ciclabile_contigua_al_marciapiede.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1617,7 +2009,10 @@
             "name": "Footpath and cycleway"
         },
         "id": "II.92b",
-        "vienna": "D, 11b"
+        "vienna": "D, 11b",
+        "filename": "percorso_pedonale_e_ciclabile.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1629,7 +2024,10 @@
             "it.name": "Fine del percorso pedonale e ciclabile",
             "name": "End of footpath and cycleway"
         },
-        "id": "II.93b"
+        "id": "II.93b",
+        "filename": "fine_percorso_pedonale_e_ciclabile.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1644,7 +2042,10 @@
             "name": "Compulsory track for riders on horseback"
         },
         "id": "II.94",
-        "vienna": "D, 6"
+        "vienna": "D, 6",
+        "filename": "percorso_riservato_ai_quadrupedi.svg",
+        "width": 52.387501,
+        "height": 52.398258
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1656,7 +2057,10 @@
             "it.name": "Fine del percorso riservato ai quadrupedi da soma o da sella",
             "name": "End of path for riders on animals"
         },
-        "id": "II.95"
+        "id": "II.95",
+        "filename": "fine_percorso_riservato_ai_quadrupedi.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1672,7 +2076,10 @@
             "name": "Prohibition of passing without stopping (Customs)"
         },
         "id": "II.96",
-        "vienna": "C, 16"
+        "vienna": "C, 16",
+        "filename": "dogana.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1684,7 +2091,10 @@
             "it.name": "Confine di Stato tra paesi della Comunità Europea",
             "name": "European state boundary"
         },
-        "id": "II.97a"
+        "id": "II.97a",
+        "filename": "confine_cee.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1697,12 +2107,15 @@
             "it.name": "Preavviso di confine di Stato tra paesi della Comunità Europea",
             "name": "Advance warning of european state boundary"
         },
-        "id": "II.97b"
+        "id": "II.97b",
+        "filename": "confine_francia.svg",
+        "width": 597.0,
+        "height": 597.0
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/b/bd/Italian_traffic_signs_-_old_-_alt_polizia.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/8/8a/Fig._52_-_Alt_-_Polizia_-_1959.svg"
         ],
         "tags": [],
         "names": {
@@ -1710,7 +2123,9 @@
             "name": "Prohibition of passing without stopping (Police)"
         },
         "id": "II.98",
-        "vienna": "C, 16"
+        "vienna": "C, 16",
+        "width": 159.27916,
+        "height": 159.27916
     },
     {
         "section": "Segnali di obbligo (Mandatory signs)",
@@ -1723,43 +2138,62 @@
             "name": "Prohibition of passing without stopping (Tollbooth)"
         },
         "id": "II.99",
-        "vienna": "C, 16"
+        "vienna": "C, 16",
+        "filename": "stazione.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnale di itinerario (Itinerary sign)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_segnale_di_itinerario.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/1/19/Italian_traffic_signs_-_segnale_di_itinerario_extraurbano_%28figura_II_272%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Segnale di itinerario",
             "name": "Itinerary sign"
         },
-        "id": "II.272"
+        "id": "II.272",
+        "filename": "segnale_di_itinerario_extraurbano_figura_ii_272.svg",
+        "width": 400.0,
+        "height": 370.0
     },
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_inizio_centro_abitato.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/0/08/Italian_traffic_signs_-_inizio_centro_abitato_%28figura_II_273%29.svg"
         ],
-        "tags": [],
+        "tags": [
+            "traffic_sign=city_limit",
+            "name=*"
+        ],
         "names": {
             "it.name": "Inizio centro abitato",
             "name": "Begin of city limits"
         },
-        "id": "II.273"
+        "id": "II.273",
+        "filename": "inizio_centro_abitato_figura_ii_273.svg",
+        "width": 3350.0,
+        "height": 1000.0
     },
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/c/c9/Italian_traffic_signs_-_fine_centro_abitato.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_fine_centro_abitato_%28figura_II_274%29.svg"
         ],
-        "tags": [],
+        "tags": [
+            "traffic_sign=city_limit",
+            "city_limit=end",
+            "name=*"
+        ],
         "names": {
             "it.name": "Fine centro abitato",
             "name": "End of city limits"
         },
-        "id": "II.274"
+        "id": "II.274",
+        "filename": "fine_centro_abitato_figura_ii_274.svg",
+        "width": 3350.0,
+        "height": 2830.0
     },
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
@@ -1771,7 +2205,10 @@
             "it.name": "Inizio e fine regione",
             "name": "Begin and end of region"
         },
-        "id": "II.275"
+        "id": "II.275",
+        "filename": "inizio_regione.svg",
+        "width": 632.91913,
+        "height": 397.47205
     },
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
@@ -1783,7 +2220,10 @@
             "it.name": "Inizio e fine provincia",
             "name": "Begin and end of province"
         },
-        "id": "II.276"
+        "id": "II.276",
+        "filename": "inizio_provincia.svg",
+        "width": 632.91913,
+        "height": 397.47205
     },
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
@@ -1858,26 +2298,32 @@
     {
         "section": "Segnali di località e di localizzazione (Place identification signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/5/50/Italian_traffic_signs_-_localizzazione_polizia_municipale.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_localizzazione_polizia_municipale_%28figura_II_284%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Polizia municipale",
             "name": "City police"
         },
-        "id": "II.284"
+        "id": "II.284",
+        "filename": "localizzazione_polizia_municipale_figura_ii_284.svg",
+        "width": 600.0,
+        "height": 900.0
     },
     {
         "section": "Segnali di conferma (Confirmatory signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/1/16/Italian_traffic_signs_-_conferma_autostradale.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/9/98/Italian_traffic_signs_-_segnale_di_conferma_autostradale_%28figura_II_285%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Segnale di conferma",
             "name": "Confirmatory sign"
         },
-        "id": "II.285"
+        "id": "II.285",
+        "filename": "segnale_di_conferma_autostradale_figura_ii_285.svg",
+        "width": 700.0,
+        "height": 380.0
     },
     {
         "section": "Segnali turistici e di territorio",
@@ -1889,7 +2335,10 @@
             "it.name": "Inizio territorio comunale",
             "name": "Begin of municipal area"
         },
-        "id": "II.294"
+        "id": "II.294",
+        "filename": "inizio_territorio_comunale.svg",
+        "width": 632.91925,
+        "height": 199.47226
     },
     {
         "section": "Segnali turistici e di territorio",
@@ -1901,7 +2350,10 @@
             "it.name": "Indicazione turistica",
             "name": "Indication for tourists"
         },
-        "id": "II.295"
+        "id": "II.295",
+        "filename": "fiume.svg",
+        "width": 403.31805,
+        "height": 277.38425
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1914,7 +2366,10 @@
             "name": "Hospital"
         },
         "id": "II.302",
-        "vienna": "E, 13b"
+        "vienna": "E, 13b",
+        "filename": "ospedale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1927,7 +2382,10 @@
             "name": "Pedestrian crossing"
         },
         "id": "II.303",
-        "vienna": "E, 12a"
+        "vienna": "E, 12a",
+        "filename": "attraversamento_pedonale.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1939,7 +2397,10 @@
             "it.name": "Scuolabus",
             "name": "School bus (stop)"
         },
-        "id": "II.304"
+        "id": "II.304",
+        "filename": "scuolabus.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1951,7 +2412,10 @@
             "it.name": "SOS",
             "name": "Emergency phone"
         },
-        "id": "II.305"
+        "id": "II.305",
+        "filename": "sos.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1964,7 +2428,10 @@
             "name": "Pedestrian underpass"
         },
         "id": "II.306",
-        "vienna": "G, 20"
+        "vienna": "G, 20",
+        "filename": "sottopassaggio_pedonale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1977,7 +2444,10 @@
             "name": "Pedestrian overpass"
         },
         "id": "II.307",
-        "vienna": "G, 20"
+        "vienna": "G, 20",
+        "filename": "sovrappassaggio_pedonale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -1990,7 +2460,10 @@
             "name": "Pedestrian underpass without steps"
         },
         "id": "II.308",
-        "vienna": "G, 21"
+        "vienna": "G, 21",
+        "filename": "rampa_pedonale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2003,7 +2476,10 @@
             "name": "No through road"
         },
         "id": "II.309",
-        "vienna": "G, 13"
+        "vienna": "G, 13",
+        "filename": "strada_senza_uscita.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2015,7 +2491,10 @@
             "it.name": "Preavviso di strada senza uscita",
             "name": "No through road on side road"
         },
-        "id": "II.310"
+        "id": "II.310",
+        "filename": "preavviso_di_strada_senza_uscita_osx.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2027,7 +2506,10 @@
             "it.name": "Preavviso di strada senza uscita",
             "name": "No through road on side road"
         },
-        "id": "II.311"
+        "id": "II.311",
+        "filename": "preavviso_di_strada_senza_uscita_dx.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2040,7 +2522,10 @@
             "name": "Advisory speed"
         },
         "id": "II.312",
-        "vienna": "G, 17"
+        "vienna": "G, 17",
+        "filename": "velocità_consigliata_50.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2052,7 +2537,10 @@
             "it.name": "Fine velocità consigliata",
             "name": "End advisory speed"
         },
-        "id": "II.313"
+        "id": "II.313",
+        "filename": "fine_velocità_consigliata_50.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2064,7 +2552,10 @@
             "it.name": "Strada riservata ai veicoli a motore",
             "name": "Motorroad (road for motor vehicles only)"
         },
-        "id": "II.314"
+        "id": "II.314",
+        "filename": "strada_riservata_ai_veicoli_a_motore.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2076,7 +2567,10 @@
             "it.name": "Fine strada riservata ai veicoli a motore",
             "name": "End of motorroad (end of road for motor vehicles only)"
         },
-        "id": "II.315"
+        "id": "II.315",
+        "filename": "fine_strada_riservata_ai_veicoli_a_motore.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2089,7 +2583,10 @@
             "name": "Tunnel"
         },
         "id": "II.316",
-        "vienna": "E, 11a"
+        "vienna": "E, 11a",
+        "filename": "galleria_blu.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2111,7 +2608,10 @@
             "it.name": "Ponte",
             "name": "Bridge"
         },
-        "id": "II.317"
+        "id": "II.317",
+        "filename": "ponte_blu.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2124,7 +2624,10 @@
             "name": "Home zone"
         },
         "id": "II.318",
-        "vienna": "E, 17"
+        "vienna": "E, 17",
+        "filename": "zona_residenziale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2136,7 +2639,10 @@
             "it.name": "Fine zona residenziale",
             "name": "End of home zone"
         },
-        "id": "II.319"
+        "id": "II.319",
+        "filename": "fine_zona_residenziale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2148,7 +2654,10 @@
             "it.name": "Area pedonale urbana",
             "name": "Pedestrian zone"
         },
-        "id": "II.320"
+        "id": "II.320",
+        "filename": "area_pedonale.svg",
+        "width": 609.133,
+        "height": 1251.9146
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2160,7 +2669,10 @@
             "it.name": "Fine area pedonale urbana",
             "name": "End of pedestrian zone"
         },
-        "id": "II.321"
+        "id": "II.321",
+        "filename": "fine_area_pedonale.svg",
+        "width": 606.14221,
+        "height": 604.06683
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2172,7 +2684,10 @@
             "it.name": "Zona a traffico limitato",
             "name": "Restricted vehicluar access zone"
         },
-        "id": "II.322a"
+        "id": "II.322a",
+        "filename": "zona_traffico_limitato.svg",
+        "width": 605.65186,
+        "height": 1245.1431
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2184,12 +2699,15 @@
             "it.name": "Fine zona a traffico limitato",
             "name": "End of restricted vehicluar access zone"
         },
-        "id": "II.322b"
+        "id": "II.322b",
+        "filename": "fine_zona_traffico_limitato.svg",
+        "width": 605.25714,
+        "height": 603.1886
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_zona_30_kmh.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_zona_a_velocit%C3%A0_limitata_%28figura_II_323-a%29.svg"
         ],
         "tags": [],
         "names": {
@@ -2197,12 +2715,15 @@
             "name": "Maximum speed zone"
         },
         "id": "II.323a",
-        "vienna": "E, 9d"
+        "vienna": "E, 9d",
+        "filename": "zona_a_velocità_limitata_figura_ii_323-a.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/7/76/Italian_traffic_signs_-_fine_zona_30.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/b/b7/Italian_traffic_signs_-_fine_zona_a_velocit%C3%A0_limitata_%28figura_II_323-b%29.svg"
         ],
         "tags": [],
         "names": {
@@ -2210,7 +2731,10 @@
             "name": "End maximum speed zone"
         },
         "id": "II.323b",
-        "vienna": "E, 10d"
+        "vienna": "E, 10d",
+        "filename": "fine_zona_a_velocità_limitata_figura_ii_323-b.svg",
+        "width": 600.0,
+        "height": 600.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2222,7 +2746,10 @@
             "it.name": "Attraversamento ciclabile",
             "name": "Bicycle crossing"
         },
-        "id": "II.324"
+        "id": "II.324",
+        "filename": "attraversamento_ciclabile_2.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2235,7 +2762,10 @@
             "name": "Route for making an indirect left turn"
         },
         "id": "II.325",
-        "vienna": "G, 3"
+        "vienna": "G, 3",
+        "filename": "svolta_a_sx_semidiretta.svg",
+        "width": 282.88794,
+        "height": 209.7413
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2247,7 +2777,10 @@
             "it.name": "Svolta a sinistra indiretta",
             "name": "Route for making an indirect left turn"
         },
-        "id": "II.326"
+        "id": "II.326",
+        "filename": "svolta_a_sx_indiretta.svg",
+        "width": 286.91455,
+        "height": 216.10721
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2259,7 +2792,10 @@
             "it.name": "Inversione di marcia",
             "name": "Infrastructure for reversing (u-turn)"
         },
-        "id": "II.327"
+        "id": "II.327",
+        "filename": "inversione_di_marcia.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2272,7 +2808,10 @@
             "name": "Emergency stopping place"
         },
         "id": "II.328",
-        "vienna": "E, 18a"
+        "vienna": "E, 18a",
+        "filename": "piazzola_su_viabilità_ordinaria.svg",
+        "width": 470.79257,
+        "height": 672.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2284,7 +2823,10 @@
             "it.name": "Piazzola + SOS autostradale",
             "name": "Emergency stopping place with emergency phone (on motorways)"
         },
-        "id": "II.329"
+        "id": "II.329",
+        "filename": "piazzola_autostradale_sos.svg",
+        "width": 470.79257,
+        "height": 672.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2297,60 +2839,75 @@
             "name": "Road open or closed"
         },
         "id": "II.330",
-        "vienna": "G, 15"
+        "vienna": "G, 15",
+        "filename": "transitabilità_1.svg",
+        "width": 741.94727,
+        "height": 998.47577
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/f/f4/Italian_traffic_signs_-_uso_corsie.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/b/b2/Italian_traffic_signs_-_uso_corsie_%28figura_II_337%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Uso corsie",
             "name": "Lanes usage (no trucks)"
         },
-        "id": "II.337"
+        "id": "II.337",
+        "filename": "uso_corsie_figura_ii_337.svg",
+        "width": 1200.0,
+        "height": 1200.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/4/4a/Italian_traffic_signs_-_uso_corsie_3.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/1/1b/Italian_traffic_signs_-_uso_corsie_%28figura_II_338%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Uso corsie",
             "name": "Lanes usage (minimum speed)"
         },
-        "id": "II.338"
+        "id": "II.338",
+        "filename": "uso_corsie_figura_ii_338.svg",
+        "width": 3000.0,
+        "height": 2000.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_uso_corsie_1.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/c/cf/Italian_traffic_signs_-_uso_corsie_%28figura_II_339%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Uso corsie",
             "name": "Lanes usage (bus lane)"
         },
-        "id": "II.339"
+        "id": "II.339",
+        "filename": "uso_corsie_figura_ii_339.svg",
+        "width": 451.52359,
+        "height": 450.84424
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_uso_corsie_2.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/b/ba/Italian_traffic_signs_-_uso_corsie_%28figura_II_340%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Uso corsie",
             "name": "Lanes usage (bus lane)"
         },
-        "id": "II.340"
+        "id": "II.340",
+        "filename": "uso_corsie_figura_ii_340.svg",
+        "width": 682.9281,
+        "height": 455.50955
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/b/b6/Italian_traffic_signs_-_variazione_corsie_disponibili_-_riduzione.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/8/84/Italian_traffic_signs_-_variazione_corsie_disponibili_%28figura_II_341%29.svg"
         ],
         "tags": [],
         "names": {
@@ -2358,19 +2915,25 @@
             "name": "Change in the number of lanes (2 -> 1)"
         },
         "id": "II.341",
-        "vienna": "G, 12a"
+        "vienna": "G, 12a",
+        "filename": "variazione_corsie_disponibili_figura_ii_341.svg",
+        "width": 355.06863,
+        "height": 355.06863
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_signs_-_variazione_corsie_disponibili_-_aumento.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/b/bf/Italian_traffic_signs_-_variazione_corsie_disponibili_%28figura_II_342%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Variazione corsie disponibili",
             "name": "Change in the number of lanes (1 -> 2)"
         },
-        "id": "II.342"
+        "id": "II.342",
+        "filename": "variazione_corsie_disponibili_figura_ii_342.svg",
+        "width": 355.0686,
+        "height": 354.56354
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2396,7 +2959,7 @@
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_inizio_autostrada.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/3/3d/Italian_traffic_signs_-_inizio_autostrada_%28figura_II_345%29.svg"
         ],
         "tags": [],
         "names": {
@@ -2404,7 +2967,10 @@
             "name": "Motorway (green background) / Expressway (blue background)"
         },
         "id": "II.345",
-        "vienna": "E, 5a"
+        "vienna": "E, 5a",
+        "filename": "inizio_autostrada_figura_ii_345.svg",
+        "width": 1700.0,
+        "height": 3000.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2417,7 +2983,10 @@
             "name": "End motorway (green background) / end expressway (blue background)"
         },
         "id": "II.346",
-        "vienna": "E, 5b"
+        "vienna": "E, 5b",
+        "filename": "segnale_fine_autostrada.svg",
+        "width": 1700.0,
+        "height": 3000.0
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2440,7 +3009,10 @@
             "name": "One way"
         },
         "id": "II.348",
-        "vienna": "E, 3b"
+        "vienna": "E, 3b",
+        "filename": "senso_unico_a_destra.svg",
+        "width": 264.58334,
+        "height": 66.145836
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2453,7 +3025,10 @@
             "name": "One way"
         },
         "id": "II.349",
-        "vienna": "E, 3a"
+        "vienna": "E, 3a",
+        "filename": "senso_unico_frontale.svg",
+        "width": 158.75,
+        "height": 158.75
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2465,7 +3040,10 @@
             "it.name": "Preavviso deviazione consigliata autocarri in transito",
             "name": "Suggested detour for trucks ahead"
         },
-        "id": "II.350"
+        "id": "II.350",
+        "filename": "preavviso_deviazione_consigliata_autocarri.svg",
+        "width": 395.52066,
+        "height": 592.41187
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
@@ -2477,12 +3055,15 @@
             "it.name": "Deviazione consigliata autocarri in transito",
             "name": "Advised itinerary for heavy vehicles"
         },
-        "id": "II.351"
+        "id": "II.351",
+        "filename": "direzione_autocarri_consigliata.svg",
+        "width": 394.00568,
+        "height": 590.71313
     },
     {
         "section": "Segnali utili per la guida (Indication signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_limiti_generali.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_limiti_di_velocit%C3%A0_generali_%28figura_II_352%29.svg"
         ],
         "tags": [],
         "names": {
@@ -2490,7 +3071,10 @@
             "name": "General speed limits"
         },
         "id": "II.352",
-        "vienna": "G, 14"
+        "vienna": "G, 14",
+        "filename": "limiti_di_velocità_generali_figura_ii_352.svg",
+        "width": 212.41559,
+        "height": 348.75323
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2503,7 +3087,10 @@
             "name": "First aid"
         },
         "id": "II.353",
-        "vienna": "F, 1a"
+        "vienna": "F, 1a",
+        "filename": "pronto_soccorso.svg",
+        "width": 600.0,
+        "height": 900.0
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2516,7 +3103,10 @@
             "name": "Breakdown service"
         },
         "id": "II.354",
-        "vienna": "F, 2"
+        "vienna": "F, 2",
+        "filename": "riparazioni.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2529,7 +3119,10 @@
             "name": "Telephone"
         },
         "id": "II.355",
-        "vienna": "F, 3"
+        "vienna": "F, 3",
+        "filename": "telefono.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2542,7 +3135,10 @@
             "name": "Filling station"
         },
         "id": "II.356",
-        "vienna": "F, 4"
+        "vienna": "F, 4",
+        "filename": "rifornimento.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2554,7 +3150,10 @@
             "it.name": "Rifornimento (verde)",
             "name": "Filling station (green)"
         },
-        "id": "II.357"
+        "id": "II.357",
+        "filename": "rifornimento_verde.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2566,7 +3165,10 @@
             "it.name": "Fermata autobus",
             "name": "Bus stop"
         },
-        "id": "II.358"
+        "id": "II.358",
+        "filename": "fermata_autobus.svg",
+        "width": 199.65237,
+        "height": 292.86557
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2578,19 +3180,25 @@
             "it.name": "Fermata tram",
             "name": "Tramway stop"
         },
-        "id": "II.359"
+        "id": "II.359",
+        "filename": "fermata_tram.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/3/36/Italian_traffic_signs_-_informazioni.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/4/49/Italian_traffic_signs_-_informazioni_%28figura_II_360%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Informazioni",
             "name": "Informations"
         },
-        "id": "II.360"
+        "id": "II.360",
+        "filename": "informazioni_figura_ii_360.svg",
+        "width": 600.0,
+        "height": 900.0
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2603,7 +3211,10 @@
             "name": "Youth hostel"
         },
         "id": "II.361",
-        "vienna": "F, 13"
+        "vienna": "F, 13",
+        "filename": "ostello_per_la_gioventù.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2616,7 +3227,10 @@
             "name": "Picnic site"
         },
         "id": "II.362",
-        "vienna": "F, 8"
+        "vienna": "F, 8",
+        "filename": "area_pic_nic.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2629,7 +3243,10 @@
             "name": "Camping and caravan site"
         },
         "id": "II.363",
-        "vienna": "F, 12"
+        "vienna": "F, 12",
+        "filename": "campeggio.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2642,7 +3259,10 @@
             "name": "Radio station giving traffic information"
         },
         "id": "II.364",
-        "vienna": "F, 14"
+        "vienna": "F, 14",
+        "filename": "radio_informazioni_stradali.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2655,7 +3275,10 @@
             "name": "Hotel or motel"
         },
         "id": "II.365",
-        "vienna": "F, 5"
+        "vienna": "F, 5",
+        "filename": "albergo.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2668,7 +3291,10 @@
             "name": "Refreshments or cafeteria"
         },
         "id": "II.366",
-        "vienna": "F, 7"
+        "vienna": "F, 7",
+        "filename": "bar.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2681,7 +3307,10 @@
             "name": "Restaurant"
         },
         "id": "II.367",
-        "vienna": "F, 6"
+        "vienna": "F, 6",
+        "filename": "ristorante.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2693,7 +3322,10 @@
             "it.name": "Parcheggio di scambio (bus)",
             "name": "Park and ride (bus)"
         },
-        "id": "II.368"
+        "id": "II.368",
+        "filename": "parcheggio_di_scambio_con_autobus.svg",
+        "width": 399.29825,
+        "height": 598.15424
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2705,7 +3337,10 @@
             "it.name": "Parcheggio di scambio (tram)",
             "name": "Park and ride (tramway)"
         },
-        "id": "II.369"
+        "id": "II.369",
+        "filename": "parcheggio_di_scambio_con_tram.svg",
+        "width": 399.29825,
+        "height": 598.15424
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2717,7 +3352,10 @@
             "it.name": "Parcheggio di scambio (treno)",
             "name": "Park and ride (railway)"
         },
-        "id": "II.370"
+        "id": "II.370",
+        "filename": "parcheggio_di_scambio_con_metro.svg",
+        "width": 399.29825,
+        "height": 598.15424
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2730,31 +3368,40 @@
             "name": "Starting-point for walks"
         },
         "id": "II.371",
-        "vienna": "F, 9"
+        "vienna": "F, 9",
+        "filename": "parcheggio__escursionismo.svg",
+        "width": 404.81619,
+        "height": 601.15558
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/9/93/Italian_traffic_signs_-_auto_al_seguito.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/1/17/Italian_traffic_signs_-_auto_su_treno_%28figura_II_372%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Auto su treno",
             "name": "Motorail"
         },
-        "id": "II.372"
+        "id": "II.372",
+        "filename": "auto_su_treno_figura_ii_372.svg",
+        "width": 402.80673,
+        "height": 599.3349
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
         "urls": [
-            "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_auto_su_treno.svg"
+            "https://upload.wikimedia.org/wikipedia/commons/a/a3/Italian_traffic_signs_-_auto_al_seguito_%28figura_II_373%29.svg"
         ],
         "tags": [],
         "names": {
             "it.name": "Auto al seguito",
             "name": "Motorail"
         },
-        "id": "II.373"
+        "id": "II.373",
+        "filename": "auto_al_seguito_figura_ii_373.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2766,7 +3413,10 @@
             "it.name": "Auto su nave",
             "name": "Ferry"
         },
-        "id": "II.374"
+        "id": "II.374",
+        "filename": "auto_su_nave.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2778,7 +3428,10 @@
             "it.name": "Taxi",
             "name": "Taxi"
         },
-        "id": "II.375"
+        "id": "II.375",
+        "filename": "taxi.svg",
+        "width": 377.62686,
+        "height": 253.81435
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2790,7 +3443,10 @@
             "it.name": "Area di servizio",
             "name": "Service area"
         },
-        "id": "II.376"
+        "id": "II.376",
+        "filename": "area_di_servizio.svg",
+        "width": 1246.9216,
+        "height": 783.5661
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2802,7 +3458,10 @@
             "it.name": "Area attrezzata con impianti di scarico",
             "name": "Caravan waste disposal site"
         },
-        "id": "II.377"
+        "id": "II.377",
+        "filename": "area_con_scarico_liquami.svg",
+        "width": 400.62433,
+        "height": 596.04578
     },
     {
         "section": "Segnali che forniscono indicazioni di servizi utili (Information, facilities or service signs)",
@@ -2889,7 +3548,10 @@
             "name": "Distance"
         },
         "id": "MII.1",
-        "vienna": "H, 1"
+        "vienna": "H, 1",
+        "filename": "distanza.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2902,7 +3564,10 @@
             "name": "Length"
         },
         "id": "MII.2",
-        "vienna": "H, 2"
+        "vienna": "H, 2",
+        "filename": "estesa_1.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2914,7 +3579,10 @@
             "it.name": "Periodo",
             "name": "Period"
         },
-        "id": "MII.3"
+        "id": "MII.3",
+        "filename": "validità_1.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2927,7 +3595,10 @@
             "name": "Limitations"
         },
         "id": "MII.4a",
-        "vienna": "H, 5"
+        "vienna": "H, 5",
+        "filename": "limitazione.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2940,7 +3611,10 @@
             "name": "Exceptions"
         },
         "id": "MII.4b",
-        "vienna": "H, 6"
+        "vienna": "H, 6",
+        "filename": "eccezione.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2953,7 +3627,10 @@
             "name": "Begin"
         },
         "id": "MII.5a1",
-        "vienna": "H, 4a"
+        "vienna": "H, 4a",
+        "filename": "inizio_vert.svg",
+        "width": 39.235321,
+        "height": 100.10065
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2966,7 +3643,10 @@
             "name": "Repeat"
         },
         "id": "MII.5a2",
-        "vienna": "H, 4b"
+        "vienna": "H, 4b",
+        "filename": "continua_vert.svg",
+        "width": 39.235321,
+        "height": 100.10065
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2979,7 +3659,10 @@
             "name": "End"
         },
         "id": "MII.5a3",
-        "vienna": "H, 4c"
+        "vienna": "H, 4c",
+        "filename": "fine_vert.svg",
+        "width": 39.235321,
+        "height": 100.10065
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -2992,7 +3675,10 @@
             "name": "Begin"
         },
         "id": "MII.5b1",
-        "vienna": "H, 3a"
+        "vienna": "H, 3a",
+        "filename": "inizio_orizz.svg",
+        "width": 100.10065,
+        "height": 39.235321
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3005,7 +3691,10 @@
             "name": "Repeat"
         },
         "id": "MII.5b2",
-        "vienna": "H, 3b"
+        "vienna": "H, 3b",
+        "filename": "continua_orizz.svg",
+        "width": 100.10065,
+        "height": 39.235321
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3018,7 +3707,10 @@
             "name": "End"
         },
         "id": "MII.5b3",
-        "vienna": "H, 3c"
+        "vienna": "H, 3c",
+        "filename": "fine_orizz.svg",
+        "width": 100.10065,
+        "height": 39.235321
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3030,7 +3722,10 @@
             "it.name": "Segni orizzontali in corso di rifacimento",
             "name": "Missing road markings"
         },
-        "id": "MII.6a"
+        "id": "MII.6a",
+        "filename": "segnaletica_in_rifacimento.svg",
+        "width": 198.0,
+        "height": 198.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3042,7 +3737,10 @@
             "it.name": "Incidente",
             "name": "Accident"
         },
-        "id": "MII.6b"
+        "id": "MII.6b",
+        "filename": "incidente.svg",
+        "width": 198.0,
+        "height": 198.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3054,7 +3752,10 @@
             "it.name": "Attraversamento di binari",
             "name": "Road intersects tracks"
         },
-        "id": "MII.6c"
+        "id": "MII.6c",
+        "filename": "attraversamento_binari.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3066,7 +3767,10 @@
             "it.name": "Sgombraneve in azione",
             "name": "Snowplow in action"
         },
-        "id": "MII.6d"
+        "id": "MII.6d",
+        "filename": "sgombraneve_in_azione.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3076,9 +3780,12 @@
         "tags": [],
         "names": {
             "it.name": "Zona soggetta ad allagamento",
-            "name": "Danger of flooding"
+            "name": "Flood prone zone"
         },
-        "id": "MII.6e"
+        "id": "MII.6e",
+        "filename": "zona_soggetta_ad_allagamento.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3090,7 +3797,10 @@
             "it.name": "Coda",
             "name": "Congestion"
         },
-        "id": "MII.6f"
+        "id": "MII.6f",
+        "filename": "coda.svg",
+        "width": 199.99998,
+        "height": 199.99998
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3102,7 +3812,10 @@
             "it.name": "Mezzi di lavoro in azione",
             "name": "Heavy equipment in action"
         },
-        "id": "MII.6g"
+        "id": "MII.6g",
+        "filename": "mezzi_di_lavoro_in_azione.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3115,7 +3828,10 @@
             "name": "Slippery road because of ice or snow"
         },
         "id": "MII.6h",
-        "vienna": "H, 9"
+        "vienna": "H, 9",
+        "filename": "strada_sdrucciolevole_per_ghiaccio.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3127,7 +3843,10 @@
             "it.name": "Strada sdrucciolevole per pioggia",
             "name": "Slippery road because of rain"
         },
-        "id": "MII.6i"
+        "id": "MII.6i",
+        "filename": "strada_sdrucciolevole_per_pioggia.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3139,7 +3858,10 @@
             "it.name": "Autocarri in rallentamento",
             "name": "Trucks slowing down"
         },
-        "id": "MII.6l"
+        "id": "MII.6l",
+        "filename": "autocarri_in_rallentamento.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3151,7 +3873,10 @@
             "it.name": "Zona rimozione coatta",
             "name": "Forced removal"
         },
-        "id": "MII.6m"
+        "id": "MII.6m",
+        "filename": "rimozione_forzata.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3162,7 +3887,10 @@
         "names": {
             "it.name": "Segnale di corsia"
         },
-        "id": "MII.6n"
+        "id": "MII.6n",
+        "filename": "segnale_di_corsia.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3174,7 +3902,10 @@
             "it.name": "Tornanti",
             "name": "Hairpin turn"
         },
-        "id": "MII.6p1"
+        "id": "MII.6p1",
+        "filename": "tornante.svg",
+        "width": 200.0,
+        "height": 157.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3186,7 +3917,10 @@
             "it.name": "Tornanti",
             "name": "Hairpin turn"
         },
-        "id": "MII.6p2"
+        "id": "MII.6p2",
+        "filename": "numero_del_tornante.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3198,7 +3932,10 @@
             "it.name": "Pulizia stradale",
             "name": "Road cleaning"
         },
-        "id": "MII.6q1"
+        "id": "MII.6q1",
+        "filename": "pulizia_meccanica_della_strada.svg",
+        "width": 200.0,
+        "height": 75.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3210,7 +3947,10 @@
             "it.name": "Pulizia stradale",
             "name": "Road cleaning"
         },
-        "id": "MII.6q2"
+        "id": "MII.6q2",
+        "filename": "pulizia_meccanica_della_strada_1.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3223,7 +3963,10 @@
             "name": "Bend in priority road"
         },
         "id": "MII.7",
-        "vienna": "H, 8"
+        "vienna": "H, 8",
+        "filename": "andamento_strada_principale.svg",
+        "width": 200.0,
+        "height": 200.0
     },
     {
         "section": "Pannelli integrativi (Additional panels)",
@@ -3243,7 +3986,10 @@
         "names": {
             "it.name": "Esempio di segnale composito"
         },
-        "id": "MII.8a"
+        "id": "MII.8a",
+        "filename": "divieto_di_sosta_temporaneo.svg",
+        "width": 200.0,
+        "height": 290.53296
     },
     {
         "section": "Segnali compositi (Composite signs)",
@@ -3256,7 +4002,10 @@
             "name": "Mandatory direction for vehicles carrying dangerous goods"
         },
         "id": "MII.8b",
-        "vienna": "D, 10c"
+        "vienna": "D, 10c",
+        "filename": "itinerario_obbligatorio_merci_pericolose.svg",
+        "width": 200.0,
+        "height": 290.53296
     },
     {
         "section": "Segnali compositi (Composite signs)",
@@ -3267,7 +4016,10 @@
         "names": {
             "it.name": "Esempio di segnale composito"
         },
-        "id": "MII.8c"
+        "id": "MII.8c",
+        "filename": "preavviso_deviazione_obbligatoria_autocarri.svg",
+        "width": 200.0,
+        "height": 290.53296
     },
     {
         "section": "Segnali compositi (Composite signs)",
@@ -3278,6 +4030,9 @@
         "names": {
             "it.name": "Esempio di segnale composito"
         },
-        "id": "MII.8d"
+        "id": "MII.8d",
+        "filename": "divieto_di_transito_autocarri.svg",
+        "width": 200.0,
+        "height": 290.53296
     }
 ]

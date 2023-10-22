@@ -110,6 +110,7 @@ public final class MapCSSStyleIndex {
                 case Selector.BASE_CANVAS:
                     canvasRules.add(optRule);
                     break;
+                case Selector.BASE_GLOBALS:
                 case Selector.BASE_META:
                 case Selector.BASE_SETTING:
                 case Selector.BASE_SETTINGS:

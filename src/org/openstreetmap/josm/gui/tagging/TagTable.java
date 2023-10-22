@@ -335,7 +335,7 @@ public class TagTable extends JTable {
             if (key1 == null || key1.isEmpty()) return 1;
             if (key2 == null || key2.isEmpty()) return -1;
             if (model.get(key1).isEmpty()) return 1;
-            if (model.get(key2).isEmpty()) return 1;
+            if (model.get(key2).isEmpty()) return -1;
             return 0;
         }
     }

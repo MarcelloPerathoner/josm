@@ -13,7 +13,11 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.Logging;
 
 /**
- * Used for expressions that contain placeholders
+ * Placeholder expression
+ * <p>
+ * A placeholder expression is any string that contains placeholders in the form:
+ * <code>{1.key}</code>, <code>{2.value}</code>, and <code>{3.tag}</code>
+ *
  * @since xxx
  */
 public final class PlaceholderExpression extends ExpressionFactory.CacheableExpression {

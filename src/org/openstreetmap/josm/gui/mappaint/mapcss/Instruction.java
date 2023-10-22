@@ -3,13 +3,10 @@ package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import java.util.Arrays;
 
-import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
-import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
-import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.HeadingFunctionExpression;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.RootExpression;
+import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
+import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 
 /**
@@ -29,87 +26,87 @@ public interface Instruction extends StyleKeys {
     void execute(Environment env);
 
     /**
-     * A float value that will be added to the current float value. Specified as +5 or -3 in MapCSS
-     */
-    class RelativeFloat {
-        public final float val;
-
-        public RelativeFloat(float val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return "RelativeFloat{" + "val=" + val + '}';
-        }
-    }
-
-    /**
      * An instruction that assigns a given value to a variable on evaluation
      */
     class AssignmentInstruction implements Instruction {
         public final String key;
-        public final Object val;
         public final boolean isSetInstruction;
+        private Object val;
 
-        public AssignmentInstruction(String key, Object val, boolean isSetInstruction) {
+        public AssignmentInstruction(String key, Object literal, boolean isSetInstruction,
+                MapCSSStyleSource sheet, Token token) {
             this.key = key.intern();
+            this.val = literal;
             this.isSetInstruction = isSetInstruction;
+
+            // Logging.info("{0}: {1}", key, expression.toString());
+
+            // Note: The mapcss parser parses +1 as literal and we get a
+            // RelativeFloatExpression inside a LiteralExpression, which doesn't make
+            // much sense. Also Keywords are returned inside LiteralExpressions.
             if (val instanceof LiteralExpression) {
-                Object litValue = ((LiteralExpression) val).evaluate();
-                if (litValue instanceof Keyword && "none".equals(((Keyword) litValue).val)) {
-                    this.val = null;
-                } else if (TEXT.equals(key)) {
-                    /* Special case for declaration 'text: ...'
-                     *
-                     * - Treat the value 'auto' as keyword.
-                     * - Treat any other literal value 'litval' as as reference to tag with key 'litval'
-                     *
-                     * - Accept function expressions as is. This allows for
-                     *     tag(a_tag_name)                 value of a tag
-                     *     eval("a static text")           a static text
-                     *     parent_tag(a_tag_name)          value of a tag of a parent relation
-                     */
-                    if (litValue.equals(Keyword.AUTO)) {
-                        this.val = Keyword.AUTO;
-                    } else {
-                        String s = Cascade.convertTo(litValue, String.class);
-                        if (s != null) {
-                            this.val = new MapPaintStyles.TagKeyReference(s);
-                        } else {
-                            this.val = litValue;
-                        }
-                    }
-                } else {
-                    this.val = litValue;
+                val = ((LiteralExpression) val).evaluate();
+                if (Keyword.NONE.equals(val)) {
+                    val = null;
+                    return;
                 }
-            } else {
-                this.val = val;
             }
+
+            if (TEXT.equals(key)) {
+                /* Special case for declaration 'text: ...'
+                 *
+                 * - Treat the value 'auto' as keyword.
+                 * - Treat any other literal value 'litval' as as reference to tag with key 'litval'
+                 *
+                 * - Accept function expressions as is. This allows for
+                 *     tag(a_tag_name)                 value of a tag
+                 *     eval("a static text")           a static text
+                 *     parent_tag(a_tag_name)          value of a tag of a parent relation
+                 */
+                if (Keyword.AUTO.equals(val)) {
+                    val = ExpressionFactory.createFunctionExpression("auto_text",
+                        Arrays.asList(), sheet, token
+                    );
+                } else if (!(val instanceof Expression)) {
+                    // tag(name)
+                    val = ExpressionFactory.createFunctionExpression("tag",
+                        Arrays.asList(LiteralExpression.create(val)),
+                        sheet, token
+                    );
+                }
+            }
+            else if (ICON_ROTATION.equals(key) && Keyword.WAY.equals(val)) {
+                // special case icon-rotation: way
+                val = ExpressionFactory.createFunctionExpression("heading",
+                    Arrays.asList(), sheet, token
+                );
+            } else if (ICON_IMAGE.equals(key) || FILL_IMAGE.equals(key) || REPEAT_IMAGE.equals(key)) {
+                val = ExpressionFactory.createFunctionExpression("icon_reference",
+                    Arrays.asList(
+                        val instanceof Expression ? (Expression) val : LiteralExpression.create(val),
+                        LiteralExpression.create(sheet)
+                    ), sheet, token
+                );
+            }
+
+            // Logging.info("{0}: {1}", key, expression.toString());
         }
 
         @Override
         public void execute(Environment env) {
-            Expression exp;
-            if (val != null) {
+            try {
                 if (val instanceof Expression) {
-                    exp = new RootExpression((Expression) val, new Environment(env));
+                    env.mc.getOrCreateCascade(env.layer).putOrClear(key, ((Expression) val).evaluate(env));
                 } else {
-                    exp = new LiteralExpression(val);
+                    env.mc.getOrCreateCascade(env.layer).putOrClear(key, val);
                 }
-                if (ICON_IMAGE.equals(key) || FILL_IMAGE.equals(key) || REPEAT_IMAGE.equals(key)) {
-                    if (val instanceof String) {
-                        exp = new LiteralExpression(new IconReference((String) val, env.source));
-                    }
-                } else if (ICON_ROTATION.equals(key) && val instanceof Keyword && "way".equals(((Keyword) val).val)) {
-                    // special case icon-rotation: way
-                    exp = new RootExpression(new HeadingFunctionExpression(), new Environment(env));
-                    // new SupplierExpression(Functions::parent_way_angle);
-                }
-                env.mc.getOrCreateCascade(env.layer).putOrClear(key, exp);
-            } else {
-                env.mc.getOrCreateCascade(env.layer).putOrClear(key, null);
+            } catch (MapCSSException e) {
+                Logging.error(e.getMessage());
             }
+        }
+
+        public Object getValue() {
+            return val;
         }
 
         @Override

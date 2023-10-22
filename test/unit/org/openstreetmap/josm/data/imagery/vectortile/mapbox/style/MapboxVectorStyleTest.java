@@ -294,10 +294,10 @@ public class MapboxVectorStyleTest {
           .map(Instruction.AssignmentInstruction.class::cast).filter(instruction -> Objects.equals(key, instruction.key))
           .collect(Collectors.toList());
         Optional<Instruction.AssignmentInstruction> instructionOptional = instructionKeys.stream()
-          .filter(instruction -> Objects.equals(value, instruction.val)).findAny();
+          .filter(instruction -> Objects.equals(value, instruction.getValue())).findAny();
         assertTrue(instructionOptional.isPresent(), MessageFormat
           .format("Expected {0}, but got {1}", value, instructionOptional.orElse(instructionKeys.stream().findAny()
-            .orElseThrow(() -> new AssertionError("No instruction with "+key+" found"))).val));
+            .orElseThrow(() -> new AssertionError("No instruction with "+key+" found"))).getValue()));
     }
 
     private static MapCSSRule getRule(MapCSSStyleSource source, String base, String subpart) {

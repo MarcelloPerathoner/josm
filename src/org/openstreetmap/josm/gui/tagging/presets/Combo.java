@@ -28,6 +28,7 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.CSSColors;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxEditor;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.widgets.JosmComboBox;
 import org.openstreetmap.josm.gui.widgets.OrientationAction;
 import org.openstreetmap.josm.tools.ColorHelper;
@@ -140,9 +141,11 @@ final class Combo extends ComboMultiSelect {
         combobox.setRenderer(new PresetListEntry.CellRenderer(combobox, combobox.getRenderer(), 200));
         combobox.setEditable(editable);
 
-        AutoCompComboBoxModel<AutoCompletionItem> autoCompModel = new AutoCompComboBoxModel<>(Comparator.<AutoCompletionItem>naturalOrder());
+        AutoCompComboBoxModel<AutoCompletionItem> autoCompModel = new AutoCompComboBoxModel<>(
+            AutoCompletionManager.ALPHABETIC_COMPARATOR);
         // TaggingPresetUtils.getAllForKeys(Arrays.asList(key)).forEach(autoCompModel::addElement);
-        getDisplayValues().forEach(s -> autoCompModel.addElement(new AutoCompletionItem(s, AutoCompletionPriority.IS_IN_STANDARD)));
+        getDisplayValues().forEach(s -> autoCompModel.addElement(
+            new AutoCompletionItem(s, AutoCompletionPriority.IS_IN_STANDARD)));
 
         AutoCompTextField<AutoCompletionItem> tf = editor.getEditorComponent();
         tf.setModel(autoCompModel);

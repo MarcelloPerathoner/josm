@@ -18,7 +18,6 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
-import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Logging;
 
@@ -87,7 +86,9 @@ public class LineElement extends StyleElement {
         RIGHT_CASING("right-casing-", 2.1f);
 
         /**
-         * The MapCSS line prefix used
+         * The MapCSS line prefix used.
+         * <p>
+         * "", "casing-", "left-casing-", "right-casing-"
          */
         public final String prefix;
         /**
@@ -256,14 +257,14 @@ public class LineElement extends StyleElement {
      */
     public static LineElement createSimpleLineStyle(Color color, boolean isAreaEdge) {
         MultiCascade mc = new MultiCascade();
-        Cascade c = mc.getOrCreateCascade("default");
-        c.put(WIDTH, new LiteralExpression(Keyword.DEFAULT));
-        c.put(COLOR, new LiteralExpression(color != null ? color : PaintColors.UNTAGGED.get()));
-        c.put(OPACITY, new LiteralExpression(1f));
+        Cascade c = mc.getOrCreateCascade(MultiCascade.DEFAULT);
+        c.put(WIDTH, Keyword.DEFAULT);
+        c.put(COLOR, color != null ? color : PaintColors.UNTAGGED.get());
+        c.put(OPACITY, 1f);
         if (isAreaEdge) {
-            c.put(Z_INDEX, new LiteralExpression(-3f));
+            c.put(Z_INDEX, -3f);
         }
-        return createLine(new Environment(new Way(), mc, "default", null));
+        return createLine(new Environment(new Way(), mc, MultiCascade.DEFAULT, null));
     }
 
     /**
@@ -316,13 +317,11 @@ public class LineElement extends StyleElement {
 
     private static LineElement createImpl(Environment env, LineType type) {
         Cascade c = env.getCascade();
-        Cascade cDef = env.getCascade("default");
-        Float width = computeWidth(type, c, cDef);
+        Float width = computeWidth(type, c);
         if (width == null)
             return null;
 
-        float realWidth = computeRealWidth(env, type, c);
-
+        Cascade cDef = env.getCascade(MultiCascade.DEFAULT);
         Float offset = computeOffset(type, c, cDef, width);
 
         int alpha = 255;
@@ -420,6 +419,7 @@ public class LineElement extends StyleElement {
         }
 
         boolean wayDirectionArrows = c.get(type.prefix + WAY_DIRECTION_ARROWS, env.osm.isSelected(), Boolean.class);
+        float realWidth = computeRealWidth(env, type, c);
 
         LineElement le = new LineElement(c, type.defaultMajorZIndex, line, color, dashesLine, dashesBackground,
                 offset, realWidth, wayDirectionArrows);
@@ -427,25 +427,22 @@ public class LineElement extends StyleElement {
         return le;
     }
 
-    private static Float computeWidth(LineType type, Cascade c, Cascade cDef) {
+    private static Float computeWidth(LineType type, Cascade c) {
         Float width;
         switch (type) {
             case NORMAL:
-                width = getWidth(c, cDef, WIDTH);
+                width = c.getWidth(WIDTH);
                 break;
             case CASING:
-                // "casing-width" is special in that is looks up "width" for relative values
-                Float casingWidth = getWidth(c, c, type.prefix + WIDTH, WIDTH);
+                // "casing-width" is special in that it includes "width"
+                Float casingWidth = c.getWidth(type.prefix + WIDTH);
                 if (casingWidth == null)
                     return null;
-                width = getWidth(c, cDef, WIDTH);
-                if (width == null)
-                    width = 0f;
-                width += casingWidth;
+                width = c.getWidth(WIDTH, 0f) + casingWidth;
                 break;
             case LEFT_CASING:
             case RIGHT_CASING:
-                width = getWidth(c, null, type.prefix + WIDTH);
+                width = c.getWidth(type.prefix + WIDTH);
                 break;
             default:
                 throw new AssertionError();
@@ -453,6 +450,9 @@ public class LineElement extends StyleElement {
         return width;
     }
 
+    /**
+     * The real width is the value of the "width" tag.
+     */
     private static float computeRealWidth(Environment env, LineType type, Cascade c) {
         float realWidth = c.get(type.prefix + REAL_WIDTH, 0f, Float.class);
         if (realWidth > 0 && MapPaintSettings.INSTANCE.isUseRealWidth()) {
@@ -480,8 +480,8 @@ public class LineElement extends StyleElement {
                 break;
             case LEFT_CASING:
             case RIGHT_CASING:
-                Float baseWidth = getWidth(c, cDef, WIDTH);
-                if (baseWidth == null || baseWidth < 2f) {
+                Float baseWidth = c.getWidth(WIDTH, 0f);
+                if (baseWidth < 2f) {
                     baseWidth = 2f;
                 }
                 float casingOffset = c.getAdjusted(type.prefix + OFFSET, 0f);

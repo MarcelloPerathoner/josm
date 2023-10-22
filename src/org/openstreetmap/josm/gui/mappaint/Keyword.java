@@ -68,4 +68,12 @@ public class Keyword {
      * Thinnest line width
      */
     public static final Keyword THINNEST = new Keyword("thinnest");
+    /**
+     * The CSS null value
+     */
+    public static final Keyword NONE = new Keyword("none");
+    /**
+     * The CSS icon-rotation: way keyword
+     */
+    public static final Keyword WAY = new Keyword("way");
 }

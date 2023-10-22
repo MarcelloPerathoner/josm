@@ -6,10 +6,7 @@ See: https://www.aci.it/i-servizi/normative/codice-della-strada/titolo-ii-della-
 """
 
 import json
-import re
 import sys
-from typing import List, Dict
-import urllib.parse
 
 NAME = "Traffic Signs in Italy"
 IT_NAME = "Segnaletica stradale in Italia",
@@ -21,20 +18,49 @@ AUTHOR = "Marcello Perathoner"
 
 ICON = "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg"
 
-
 items = json.load(sys.stdin)
 
-print(f"meta {{")
+print( "meta {")
 print(f'  title: "{NAME}";')
 print(f'  description: "{DESCRIPTION}";')
 print(f'  version: "{VERSION}";')
 print(f'  author: "{AUTHOR}";')
 print(f'  icon: "{ICON}";')
-print(f'  link: "https://github.com/FIXME";')
-print(f"  watch-modified: true;")
-print(f"}}\n")
+print( '  link: "https://github.com/FIXME";')
+print( "  watch-modified: true;")
+print( "}\n")
+
+id2url = {}
+id2aspect = {}
+for item in items:
+    if "id" not in item:
+        continue
+    if len(item["urls"]) == 0:
+        continue
+    id_ = item["id"]
+    url = item["urls"][0]
+    filename = item.get("filename")
+    if filename:
+        id2url[id_] = "svgs/" + filename # url
+        id2aspect[id_] = item.get("height", 1.0) / item.get("width", 1.0)
+
+# substitute empty signs for those signs that support custom text
+id2url["II.50"] = "maxspeed-empty.svg"
+id2url["II.71"] = "maxspeed-end-empty.svg"
+id2url["MII.1"] = "distance-empty.svg"
+id2url["MII.2"] = "length-empty.svg"
+id2url["MII.3"] = "distance-empty.svg"
 
 # meta[lang="it"] {}
+
+quoted = ",\n".join([f'"{k}", "{v}"' for k, v in id2url.items()])
+aspects = ",\n".join([f'"{k}", {v:.2}' for k, v in id2aspect.items()])
+print(f"""
+globals {{
+    urls: map_build(\n{quoted}\n);
+    aspects: map_build(\n{aspects}\n)
+}}
+""")
 
 print("""
 setting::icon_size {
@@ -44,42 +70,134 @@ setting::icon_size {
 }
 
 /* turn off maxspeed drawing in elemstyle.mapcss */
-node[prop(maxspeedclass, default)]::* {
+node[prop(maxspeedclass, default)]::core_maxnodebg {
+    symbol-shape: none;
+    icon-image: none;
+}
+node[prop(maxspeedclass, default)]::core_maxnodefg {
     text: none;
     symbol-shape: none;
+    icon-image: none;
 }
 
+/* select nodes to operate on */
+
 node[traffic_sign=~/IT:M?II/] {
-    sign_id: tag(traffic_sign);
     set .sign;
 }
-node[traffic_sign=~/IT:M?II/][direction=forward],
+node[direction=forward].sign {
+    set .sign-forward;
+    traffic-sign-forward: tag("traffic_sign");
+    maxspeed-forward: tag("maxspeed");
+}
+node[direction=backward].sign {
+    set .sign-backward;
+    traffic-sign-backward: tag("traffic_sign");
+    maxspeed-backward: tag("maxspeed");
+}
 node["traffic_sign:forward"=~/IT:M?II/] {
     set .sign;
     set .sign-forward;
+    traffic-sign-forward: tag("traffic_sign:forward");
+    maxspeed-forward: tag("maxspeed:forward");
 }
-node[traffic_sign=~/IT:M?II/][direction=backward],
 node["traffic_sign:backward"=~/IT:M?II/] {
     set .sign;
     set .sign-backward;
+    traffic-sign-backward: tag("traffic_sign:backward");
+    maxspeed-backward: tag("maxspeed:backward");
 }
 
-node[prop(sign, default)][direction=~/[NWSE]+/] {
-    text-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
-    icon-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
+/* set a basic rotation */
+
+node[direction=~/^[NWSE]+$/].sign {
+    set .sign-noward;
+    traffic-sign: tag("traffic_sign");
+    maxspeed: tag("maxspeed");
+    transformprop: transform(rotate(cardinal_to_radians(tag("direction")) + 3.14));
 }
-node[prop(sign, default)][direction=~/[.0-9]+/] {
-    text-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
-    icon-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
+node[direction=~/^[.0-9]+$/].sign {
+    set .sign-noward;
+    traffic-sign: tag("traffic_sign");
+    maxspeed: tag("maxspeed");
+    transformprop: transform(rotate(degree_to_radians(tag("direction")) + 3.14));
 }
-way[highway] > node[prop(sign-forward, default)]::forward {
-    text-transform: transform(rotate(heading()), translate(metric(5), 0));
-    icon-transform: transform(rotate(heading()), translate(metric(5), 0));
+/* we need the highway selector for the heading to work */
+way[highway] > node.sign-forward,
+way[highway] > node.sign-backward {
+    transformprop: transform(rotate(heading()), translate(metric(5), 0));
+    metric: true;
 }
-way[highway] > node[prop(sign-backward, default)]::backward {
-    text-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
-    icon-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
+
+node[prop(traffic-sign)] {
+    codes-noward: split_traffic_sign(prop(traffic-sign), "IT");
+    image-icon: none;
 }
+node[prop(traffic-sign-forward)].sign {
+    codes-forward: split_traffic_sign(prop(traffic-sign-forward), "IT");
+    image-icon: none;
+}
+node[prop(traffic-sign-backward)] {
+    codes-backward: split_traffic_sign(prop(traffic-sign-backward), "IT");
+    image-icon: none;
+}
+
+/* set styles */
+
+node.sign {
+    yoffsetprop: eval(setting("icon_size") * 0.7);
+    ydeltaprop: eval(setting("icon_size") * 0.4);
+
+    text: none
+}
+""")
+
+for layer in ("noward", "forward", "backward"):
+    transform = "prop(transformprop, default)"
+    if layer == "backward":
+        transform = "transform(rotate(0.5turn), prop(transformprop, default))"
+
+    prev_layer = -1
+    for idx in range(3): # how many signs max. on one pole
+        print (f"""
+node[prop(sign-{layer}, default)][map_get(get(prop(codes-{layer}, default), {idx}), "country") = "IT"]::{layer}{idx} {{
+
+    icon-transform: {transform};
+    metric: true;
+
+    codes: get(prop(codes-{layer}, default), {idx});
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    """)
+        if (idx == 0):
+            print("""
+    yoffsetprop: prop(real-height) * 0.5;
+            """)
+        if idx > 0:
+            print(f"""
+    yoffsetprop: prop(yoffsetprop, {layer}{idx - 1}) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            """)
+        print("}\n\n")
+
+print("""
+/* There's a bug in the JOSM mapcss implementation. If you have a ruleset that matches
+multiple layers like:
+
+    node[traffic_sign:forward]::forward,
+    node[traffic_sign:backward]::backward {
+        icon-image: foo;
+    }
+
+then on a node with both of the above mentioned tags, only the "forward" level will get
+an icon-image. */
 
 node[prop(sign, default)]::* {
     major-z-index: 7;
@@ -88,74 +206,10 @@ node[prop(sign, default)]::* {
 
     text-anchor-horizontal: center;
     text-anchor-vertical: center;
-    font-size: eval(setting("icon_size") * 0.3);
     font-weight: bold;
     text-color: black;
 }
-node[prop(sign-forward, default)]::forward,
-node[prop(sign-backward, default)]::backward {
-    major-z-index: 7;
-    icon-width: setting("icon_size");
-    icon-height: setting("icon_size");
 
-    font-size: eval(setting("icon_size") * 0.85);
-    text-offset-y: eval(setting("icon_size") * -0.03);
-    text: none;
-
-    yoffsetprop: eval(setting("icon_size") * 0.7);
-    ydeltaprop: eval(setting("icon_size") * 0.4);
-}
-
-node[prop(sign, default)][distance]::distance {
-    yoffsetprop: prop(yoffsetprop, default);
-
-    icon-image: "distance-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(distance);
-}
-
-node[prop(sign, default)][length]::length {
-    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0));
-
-    icon-image: "length-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(length);
-}
-
-node[prop(sign, default)][period]::period {
-    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0) + (has_tag_key(length) ? prop(ydeltaprop, default) : 0));
-
-    icon-image: "distance-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(period);
-}
-
-""")
-
-for item in items:
-    if "id" not in item:
-        continue
-    if len(item["urls"]) == 0:
-        continue
-    id_ = item["id"]
-    url = item["urls"][0]
-    if (id_ == "II.46"): # save the sign for the speed limit
-        sign_46_url = url
-    print(f"node[traffic_sign=~/IT:{id_}(;|,|\\[|$)/][direction=forward]::forward,")
-    print(f"node[traffic_sign=~/IT:{id_}(;|,|\\[|$)/][direction=backward]::backward,")
-    print(f"node[\"traffic_sign:forward\"=~/IT:{id_}(;|,|\\[|$)/]::forward,")
-    print(f"node[\"traffic_sign:backward\"=~/IT:{id_}(;|,|\\[|$)/]::backward {{")
-    if (id_ == "II.50"): # draw the speed limit number
-        print(f'    icon-image: "{sign_46_url}";')
-        print(f'    text: tag(maxspeed);')
-    else:
-        print(f'    icon-image: "{url}";')
-    print(f"}}\n")
-
-print("""
 node|z-16[prop(sign, default)]::* {
     icon-image: none;
     text: none;

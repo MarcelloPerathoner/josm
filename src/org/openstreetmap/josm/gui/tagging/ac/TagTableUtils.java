@@ -6,8 +6,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.IPrimitive;
@@ -53,10 +53,6 @@ public class TagTableUtils {
         }
     }
 
-    /*
-    FIXME: sort order is not same as autocompletion order
-    */
-
     /**
      * Returns a configured key editor component.
      * @param keyAutoCompListener an autocomplistener or null
@@ -72,6 +68,7 @@ public class TagTableUtils {
         keyEditor.getEditorComponent().addAutoCompListener(keyAutoCompListener);
         keyEditor.addPopupMenuListener(keyAutoCompListener);
         keyEditor.setRenderer(new AutoCompItemCellRenderer(keyEditor, keyEditor.getRenderer(), null));
+        keyEditor.getModel().setComparator(AutoCompletionManager.PRIORITY_COMPARATOR);
         return keyEditor;
     }
 
@@ -90,6 +87,7 @@ public class TagTableUtils {
         valueEditor.getEditorComponent().addAutoCompListener(valueAutoCompListener);
         valueEditor.addPopupMenuListener(valueAutoCompListener);
         valueEditor.setRenderer(new AutoCompItemCellRenderer(valueEditor, valueEditor.getRenderer(), new ValueToCount()));
+        valueEditor.getModel().setComparator(AutoCompletionManager.PRIORITY_COMPARATOR);
         return valueEditor;
     }
 
@@ -150,9 +148,9 @@ public class TagTableUtils {
      * Returns count for the edited key and given value.
      * Used in the suggestion dropdown.
      */
-    public class ValueToCount implements Function<String, Integer> {
+    public class ValueToCount implements ToIntFunction<String> {
         @Override
-        public Integer apply(String value) {
+        public int applyAsInt(String value) {
             return tagTableModel.getValueType(keySupplier.get()).getCount(value);
         }
     }

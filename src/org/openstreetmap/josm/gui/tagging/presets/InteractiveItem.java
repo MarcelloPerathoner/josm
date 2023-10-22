@@ -23,7 +23,7 @@ public abstract class InteractiveItem extends KeyedItem {
     /** The constant value {@code "<different>"}. */
     static final String DIFFERENT = "<different>";
     /** Translation of {@code "<different>"}. */
-    public static final String DIFFERENT_I18N = tr("<different>");  // LEAVE THIS LITERAL or it won't be translatable
+    public static final String DIFFERENT_I18N = tr("<different>");  // NOSONAR Leave this literal or it won't be translatable
 
     /** The length of the text box (number of characters allowed). */
     final int length;

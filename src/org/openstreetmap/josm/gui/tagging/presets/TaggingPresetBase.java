@@ -30,7 +30,8 @@ import org.openstreetmap.josm.tools.ImageResource;
 /**
  * Base class for templates to build preset menus.
  * <p>
- * This class is an immutable template class mainly used to build menues, toolbars and preset lists.
+ * This class is an immutable template class mainly used to build menues, toolbars and
+ * preset lists.
  *
  * @since xxx
  */
@@ -60,6 +61,7 @@ abstract class TaggingPresetBase extends Composite {
     private String iconBase;
 
     final boolean bSortMenu;
+    final boolean bNoMenu;
 
     /** The english full name of this preset, eg. {@code Highways/Streets/Motorway} */
     private String fullName;
@@ -100,6 +102,7 @@ abstract class TaggingPresetBase extends Composite {
         iconBase = attributes.getOrDefault("icon_base", "");
         bSortMenu = TaggingPresetUtils.parseBoolean(
             attributes.getOrDefault("sort_menu", TaggingPresets.SORT_VALUES.get() ? "on" : "off"));
+        bNoMenu = TaggingPresetUtils.parseBoolean(attributes.getOrDefault("no_menu", "off"));
     }
 
     @Override

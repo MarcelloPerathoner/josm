@@ -104,6 +104,7 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.tagging.TagTable;
 import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.tagging.ac.TagTableUtils;
@@ -384,11 +385,13 @@ implements PropertyChangeListener, DataSelectionListener, ActiveLayerChangeListe
     /**
      * Create a TagTableModel to edit the current selection in the current layer.
      * <p>
-     * We cannot use the built-in tagTableModel because of: #23191.
+     * We cannot use the built-in tagTableModel because of:
+     * <a href="https://josm.openstreetmap.de/ticket/23191">#23191</a>
      */
     public TagTableModel createTagTableModel() {
         // return tagTableModel; // no good: see #23191
-        return new TagTableModel(new DataSetHandler().setDataSet(OsmDataManager.getInstance().getActiveDataSet()));
+        TaggedHandler handler = new DataSetHandler().setDataSet(OsmDataManager.getInstance().getActiveDataSet());
+        return new TagTableModel(handler).initFromHandler();
     }
 
     String getContextKey() {

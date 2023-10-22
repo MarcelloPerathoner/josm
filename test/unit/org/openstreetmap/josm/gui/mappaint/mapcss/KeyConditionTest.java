@@ -180,7 +180,8 @@ class KeyConditionTest {
         final Condition condition = keyMatchType != KeyMatchType.REGEX
                 ? new KeyCondition("highway", false, keyMatchType)
                 : new ConditionFactory.KeyRegexpCondition(Pattern.compile("highway"), false);
-        index.add(new MapCSSRule(Collections.singletonList(new Selector.GeneralSelector("*", Range.ZERO_TO_INFINITY,
+        index.add(new MapCSSRule(Collections.singletonList(new Selector.GeneralSelector(
+                Selector.BASE_ANY, Range.ZERO_TO_INFINITY,
                 Collections.singletonList(condition), null)), null));
         index.initIndex();
         final Node testNode = TestUtils.newNode("highway=traffic_calming");

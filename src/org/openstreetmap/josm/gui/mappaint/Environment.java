@@ -14,7 +14,6 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.NavigatableComponent;
-import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Condition.Context;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector.LinkSelector;

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.openstreetmap.josm.gui.mappaint.mapcss.LiteralExpression;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 
 /**
@@ -15,6 +14,12 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
  * StyleSources apply zoom level dependent properties.
  */
 public class MultiCascade implements StyleKeys {
+    /** The default layer of a MultiCascade. */
+    public static final String DEFAULT = "default";
+    /** The template layer of a MultiCascade */
+    public static final String TEMPLATE = "*";
+    /** The subpart id that matches all subparts (but not the default subpart!).  */
+    public static final String WILDCARD = "*";
 
     private final Map<String, Cascade> layers;
     /**
@@ -33,7 +38,7 @@ public class MultiCascade implements StyleKeys {
     /**
      * Return the cascade with the given name. If it doesn't exist, create
      * a new layer with that name and return it. The new layer will be
-     * a clone of the "*" layer, if it exists.
+     * a clone of the TEMPLATE layer, if it exists.
      * @param layer layer
      * @return cascade
      */
@@ -41,14 +46,14 @@ public class MultiCascade implements StyleKeys {
         CheckParameterUtil.ensureParameterNotNull(layer);
         Cascade c = layers.get(layer);
         if (c == null) {
-            if (layers.containsKey("*")) {
-                c = new Cascade(layers.get("*"));
+            if (layers.containsKey(TEMPLATE)) {
+                c = new Cascade(layers.get(TEMPLATE));
             } else {
                 c = new Cascade();
                 // Everything that is not on the default layer is assumed to
                 // be a modifier. Can be overridden in style definition.
-                if (!"default".equals(layer) && !"*".equals(layer)) {
-                    c.put(MODIFIER, new LiteralExpression(Boolean.TRUE));
+                if (!DEFAULT.equals(layer) && !TEMPLATE.equals(layer)) {
+                    c.put(MODIFIER, true);
                 }
             }
             layers.put(layer, c);
@@ -65,13 +70,13 @@ public class MultiCascade implements StyleKeys {
      */
     public Cascade getCascade(String layer) {
         if (layer == null) {
-            layer = "default";
+            layer = DEFAULT;
         }
         Cascade c = layers.get(layer);
         if (c == null) {
             c = new Cascade();
-            if (!"default".equals(layer) && !"*".equals(layer)) {
-                c.put(MODIFIER, new LiteralExpression(Boolean.TRUE));
+            if (!DEFAULT.equals(layer) && !TEMPLATE.equals(layer)) {
+                c.put(MODIFIER, true);
             }
         }
         return c;

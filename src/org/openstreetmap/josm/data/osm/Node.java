@@ -58,6 +58,8 @@ public final class Node extends OsmPrimitive implements INode {
             } finally {
                 writeUnlock(locked);
             }
+            // the way-angles at the adjacent nodes may have changed
+            getParentWays().forEach(Way::clearCachedNodeStyles);
         } else {
             setCoorInternal(coor, eastNorth);
         }

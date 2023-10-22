@@ -49,11 +49,12 @@ public class TagTableModel extends DefaultTableModel {
     private final BooleanProperty propDisplayDiscardableKeys = new BooleanProperty("display.discardable-keys", false);
 
     /**
-     * Class that holds zero or more values with respective frequency count.
+     * Class that holds zero or more values.
+     * <p>
+     * This class holds the values for one and the same key of zero or more tagged
+     * primitives.  It also counts how often each value occured.
      */
     public static class ValueType {
-        /** The string shown to the user instead of the empty string if the value is unset. */
-        public static final String UNSET = tr("<unset>");
         /** our data: value -> count */
         private Map<String, Integer> map = new HashMap<>();
 
@@ -73,7 +74,8 @@ public class TagTableModel extends DefaultTableModel {
         }
 
         /**
-         * Fills with null values to a size of {@code size}.
+         * Sets the {@code <unset>} count so that all counts add up to {@code size}.
+         *
          * @param size the sum of all counts when filled
          * @return this
          */
@@ -108,7 +110,10 @@ public class TagTableModel extends DefaultTableModel {
         }
 
         /**
-         * This is how the ValueType will be represented in the second column of the tag table.
+         * This is how the ValueType will be represented in the second column of the tag
+         * table.
+         * <p>
+         * If more than one value is found {@code <different>} will be displayed.
          */
         @Override
         public String toString() {
@@ -118,7 +123,9 @@ public class TagTableModel extends DefaultTableModel {
                 case 1: s = map.keySet().iterator().next(); break;
                 default: s = DIFFERENT_I18N;
             }
-            return s == null ? "" : s; // by contract toString should never return null
+            // Note: it should not happen here that s == null, but
+            // by contract toString() should never return null
+            return s == null ? "" : s;
         }
 
         /**
@@ -126,7 +133,7 @@ public class TagTableModel extends DefaultTableModel {
          * @param value the value
          * @return the count (0 for unknown values)
          */
-        public Integer getCount(String value) {
+        public int getCount(String value) {
             Integer count = map.get(value);
             return count != null ? count : 0;
         }

@@ -43,8 +43,8 @@
      pagecolor="#ffffff"
      id="base"
      inkscape:zoom="5.4716434"
-     inkscape:cx="101.79757"
-     inkscape:cy="40.207299"
+     inkscape:cx="69.723111"
+     inkscape:cy="37.648652"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:current-layer="svg2"
@@ -306,4 +306,12 @@
      style="display:inline;fill:#000000"
      d="m 176.85634,14.135711 -11.03477,19.627563 c -0.10453,0.185843 -0.16648,0.403256 -0.16648,0.638539 0,0.664153 0.48486,1.203815 1.08379,1.203815 0.10632,0 0.21205,-0.01727 0.31331,-0.03097 l 5.92585,-0.801153 c 0.0462,-0.0063 0.10246,-0.01162 0.151,-0.01162 0.20997,0 0.37943,0.188822 0.37943,0.42202 v 23.625674 h 6.69603 V 35.183905 c 0,-0.233198 0.16947,-0.42202 0.37914,-0.42202 0.0485,0 0.10096,0.0054 0.14712,0.01162 l 5.92585,0.801153 c 0.10156,0.0137 0.21087,0.03097 0.31749,0.03097 0.59893,0 1.07992,-0.539662 1.07992,-1.203815 0,-0.235283 -0.0581,-0.452696 -0.16262,-0.638539 z"
      sodipodi:nodetypes="csssssssccsssssssc" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:125%;font-family:'Transport Heavy';-inkscape-font-specification:'Transport Heavy, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="100.03683"
+     y="52.397892"
+     id="text317"><tspan
+       sodipodi:role="line"
+       id="tspan512">{{text0}}</tspan></text>
 </svg>

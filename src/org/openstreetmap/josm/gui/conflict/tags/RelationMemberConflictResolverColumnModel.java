@@ -16,7 +16,7 @@ import org.openstreetmap.josm.gui.PrimitiveRenderer;
 import org.openstreetmap.josm.gui.conflict.ConflictColors;
 import org.openstreetmap.josm.gui.conflict.pair.relation.RelationMemberTable;
 import org.openstreetmap.josm.gui.history.VersionTable;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletingTextField;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
 
 /**
  * This class defines the columns of a {@link RelationMemberTable}
@@ -73,7 +73,7 @@ public class RelationMemberConflictResolverColumnModel extends DefaultTableColum
 
     protected final void createColumns() {
 
-        AutoCompletingTextField roleEditor = new AutoCompletingTextField(0, false);
+        AutoCompTextField<String> roleEditor = new AutoCompTextField<>(0, false);
 
         // column 0 - Relation
         TableColumn col = new TableColumn(0);

@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.tagging;
 
 import static org.openstreetmap.josm.tools.I18n.trn;
 import static org.openstreetmap.josm.gui.tagging.presets.InteractiveItem.DIFFERENT_I18N;
+import static org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem.UNSET_I18N;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.gui.tagging.TagTableModel.ValueType;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Utils;
@@ -110,8 +110,8 @@ public class DataHandlers {
         /** The selection we are operating on. Immutable. We must cache the original
         selection because the selection may change even if we are in a modal dialog. In
         that case we want to update the original selection, not the new one. See also
-        #23191.*/
-        private Collection<OsmPrimitive> selected;
+        <a href="https://josm.openstreetmap.de/ticket/23191">#23191</a>.*/
+        protected Collection<OsmPrimitive> selected;
 
         /**
          * Sets a {@link DataSet}
@@ -152,7 +152,7 @@ public class DataHandlers {
             value = (value == null) ? "" : Normalizer.normalize(value, Normalizer.Form.NFC);
 
             List<Command> cmds = new ArrayList<>();
-            if (newKey.isEmpty() || value.isEmpty() || ValueType.UNSET.equals(value)) {
+            if (newKey.isEmpty() || value.isEmpty() || UNSET_I18N.equals(value)) {
                 // delete the key
                 Map<String, String> map = new HashMap<>();
                 map.put(oldKey, null);
@@ -236,17 +236,15 @@ public class DataHandlers {
      * Mainly for testing purposes.
      */
     public static class ReadOnlyHandler extends DataSetHandler {
-        Collection<OsmPrimitive> selection;
-
         /**
          * Constructor
          * @param selection the selection in the DataSet
          */
         public ReadOnlyHandler(Collection<OsmPrimitive> selection) {
             setDataSet(new DataSet());
-            this.selection = selection;
-            selection.forEach(p -> getDataSet().addPrimitive(p));
-            getDataSet().addSelected(selection);
+            this.selected = selection;
+            selected.forEach(p -> getDataSet().addPrimitive(p));
+            getDataSet().addSelected(selected);
         }
 
         @Override

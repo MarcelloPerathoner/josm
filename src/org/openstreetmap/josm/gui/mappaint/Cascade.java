@@ -23,7 +23,7 @@ import org.openstreetmap.josm.tools.Logging;
  */
 public final class Cascade {
 
-    private final Map<String, Expression> prop;
+    private final Map<String, Object> prop;
 
     private boolean defaultSelectedHandling = true;
 
@@ -82,6 +82,33 @@ public final class Cascade {
     }
 
     /**
+     * Gets a length-ish value adjusted to the current screen resolution. This function
+     * understands the keywords 'thinnest' and 'default'.
+     *
+     * @param key the key
+     * @param def the default value or null
+     * @return the adjusted length or the adjusted default value
+     */
+    public Float getWidth(String key, Float def){
+        Object v = get(key);
+        Float val = convertTo(v, Float.class);
+        if (val != null) {
+            return MapPaintSettings.INSTANCE.adj(val);
+        }
+        if (v instanceof Keyword) {
+            if (Keyword.THINNEST.equals(v))
+                return 0f;
+            if (Keyword.DEFAULT.equals(v))
+                return MapPaintSettings.INSTANCE.adj((float) MapPaintSettings.INSTANCE.getDefaultSegmentWidth());
+        }
+        return def;
+    }
+
+    public Float getWidth(String key){
+        return getWidth(key, null);
+    }
+
+    /**
      * Get value for the given key
      * @param <T> the expected type
      * @param key the key
@@ -93,17 +120,19 @@ public final class Cascade {
      *      value, def otherwise
      */
     public <T> T get(String key, T def, Class<T> klass, boolean suppressWarnings) {
-        Expression exp = prop.get(key);
-        if (exp == null)
+        Object o = prop.get(key);
+        if (o == null)
             return def;
-        Object o = exp.evaluate();
+        if (klass.isInstance(o))
+            return klass.cast(o);
+        if (o instanceof Expression)
+            o = ((Expression) o).evaluate();
         if (o == null)
             return def; // avoid the warning
         T res = convertTo(o, klass);
         if (res == null) {
             if (!suppressWarnings) {
-                Logging.warn(String.format("Unable to convert property %s to type %s: found %s of type %s!", key, klass, o, o.getClass()));
-                Logging.warn(String.format("... at %s", exp.getSourceLine()));
+                Logging.warn(String.format("Unable to convert property %s to type %s: found '%s' of type %s!", key, klass, o, o.getClass()));
             }
             return def;
         } else
@@ -116,17 +145,17 @@ public final class Cascade {
      * @return The value or <code>null</code> if it is not set. May be of any type
      */
     public Object get(String key) {
-        Expression exp = prop.get(key);
-        return exp == null ? null : exp.evaluate();
+        return prop.get(key);
     }
 
     /**
-     * Gets a property for the given key (like stroke, ...)
+     * Gets an expression given key (like stroke, ...)
      * @param key The key of the property
-     * @return The value or <code>null</code> if it is not set. May be of any type
+     * @return The expression or <code>null</code>
      */
     public Expression getExpression(String key) {
-        return prop.get(key);
+        Object exp = prop.get(key);
+        return exp instanceof Expression ? (Expression) exp : null;
     }
 
     /**
@@ -134,7 +163,7 @@ public final class Cascade {
      * @param key The key
      * @param val The value
      */
-    public void put(String key, Expression val) {
+    public void put(String key, Object val) {
         prop.put(key, val);
     }
 
@@ -143,7 +172,7 @@ public final class Cascade {
      * @param key The key
      * @param val The value, may be <code>null</code>
      */
-    public void putOrClear(String key, Expression val) {
+    public void putOrClear(String key, Object val) {
         if (val != null) {
             prop.put(key, val);
         } else {
@@ -198,6 +227,8 @@ public final class Cascade {
                 Logging.debug("''{0}'' cannot be converted to float", o);
             }
         }
+        if (o instanceof Boolean)
+            return ((boolean) o) ? 1.0f : 0.0f;
         return null;
     }
 
@@ -269,9 +300,9 @@ public final class Cascade {
         // List properties in alphabetical order to be deterministic, without changing "prop" to a TreeMap
         // (no reason too, not sure about the potential memory/performance impact of such a change)
         TreeSet<String> props = new TreeSet<>();
-        for (Entry<String, Expression> entry : prop.entrySet()) {
+        for (Entry<String, Object> entry : prop.entrySet()) {
             StringBuilder sb = new StringBuilder(entry.getKey()).append(':');
-            Object val = entry.getValue().evaluate();
+            Object val = entry.getValue();
             if (val instanceof float[]) {
                 sb.append(Arrays.toString((float[]) val));
             } else if (val instanceof Color) {

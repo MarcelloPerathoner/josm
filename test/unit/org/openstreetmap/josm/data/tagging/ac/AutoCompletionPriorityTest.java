@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
+import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -58,7 +60,7 @@ class AutoCompletionPriorityTest {
      */
     @Test
     void testOrdering() {
-        SortedSet<AutoCompletionPriority> set = new TreeSet<>();
+        SortedSet<AutoCompletionPriority> set = new TreeSet<>(AutoCompletionPriority::compare);
         set.add(AutoCompletionPriority.IS_IN_STANDARD_AND_IN_DATASET);
         set.add(AutoCompletionPriority.IS_IN_DATASET);
         set.add(AutoCompletionPriority.IS_IN_STANDARD);

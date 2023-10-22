@@ -25,6 +25,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.mappaint.DividedScale.RangeViolatedError;
+import org.openstreetmap.josm.gui.mappaint.mapcss.FunctionAutoText;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
 import org.openstreetmap.josm.gui.mappaint.styleelement.AreaElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.AreaIconElement;
@@ -35,7 +36,6 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.RepeatImageElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextElement;
-import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
@@ -173,7 +173,7 @@ public class ElemStyles implements PreferenceChangedListener {
             Pair<StyleElementList, Range> p = getImpl(osm, scale, nc);
             if (osm instanceof INode && isDefaultNodes()) {
                 if (p.a.isEmpty()) {
-                    if (TextLabel.AUTO_LABEL_COMPOSITION_STRATEGY.compose(osm) != null) {
+                    if (FunctionAutoText.getText(osm) != null) {
                         p.a = DefaultStyles.DEFAULT_NODE_STYLELIST_TEXT;
                     } else {
                         p.a = DefaultStyles.DEFAULT_NODE_STYLELIST;
@@ -192,7 +192,7 @@ public class ElemStyles implements PreferenceChangedListener {
                     }
                     if (!hasNonModifier) {
                         p.a = new StyleElementList(p.a, DefaultStyles.SIMPLE_NODE_ELEMSTYLE);
-                        if (!hasText && TextLabel.AUTO_LABEL_COMPOSITION_STRATEGY.compose(osm) != null) {
+                        if (!hasText && FunctionAutoText.getText(osm) != null) {
                             p.a = new StyleElementList(p.a, DefaultStyles.SIMPLE_NODE_TEXT_ELEMSTYLE);
                         }
                     }
@@ -401,7 +401,7 @@ public class ElemStyles implements PreferenceChangedListener {
         }
 
         for (Entry<String, Cascade> e : mc.getLayers()) {
-            if ("*".equals(e.getKey())) {
+            if (MultiCascade.TEMPLATE.equals(e.getKey())) {
                 continue;
             }
             env.layer = e.getKey();

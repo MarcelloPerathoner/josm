@@ -3,7 +3,7 @@ This is my personal edition of JOSM.
 Changes From the Official Version
 =================================
 
-Caveat: this custom version is not binary compatible with following official plugins:
+Caveat: this JOSM custom version is not binary compatible with following official plugins:
 
 - buildings_tools
 - CommandLine
@@ -18,29 +18,42 @@ Caveat: this custom version is not binary compatible with following official plu
 - turnlanes
 - turnrestrictions
 
+The home directory is `JOSM-custom` instead of `JOSM`. A parallel installation is
+possible.
+
 Here are some `fixed plugins <https://github.com/MarcelloPerathoner/josm-plugins/releases>`_.
 
-Tip: If JOSM crashes start it with --skip-plugins.
+Tip: If this version crashes start it with --skip-plugins.
 
+Contents
+--------
 
 .. contents::
     :local:
 
+Editable Properties Dialog
+--------------------------
+
+#. The properties dialog is made editable, with drop-down suggestion comboboxes.
+
+   .. image:: demo/properties-editable.png
+
+
 HiDPI
 -----
 
-Make JOSM more HiDPI-friendly especially when using non-integer scaling factors.  Tested
-themes: GTK, flatlaf.  Metal, Nimbus, and CDE are not designed to scale.  Please test
-Windows and Mac themes and open issues with screenshots attached.
+Make JOSM usable on 4K monitors.  Tested themes: GTK, flatlaf.  (Metal, Nimbus, and CDE
+are not designed to scale.)  Please test Windows and Mac themes and open issues with
+screenshots attached.
 
-#. Table rows are now the correct height.  Added more functions in TableHelper to deal
+#. Table rows are now the correct height.  Added more functions in `TableHelper` to deal
    with row height.
 
 #. Captions of dialogs in the sidebar are now the correct height.
 
    .. figure:: demo/properties-18622.png
 
-      Wrong caption and row height in JOSM 18622.
+      Example of wrong caption and row heights as seen in JOSM 18622 on 4K monitor.
 
    .. figure:: demo/properties.png
 
@@ -52,9 +65,9 @@ Windows and Mac themes and open issues with screenshots attached.
 
 #. Progress dialogs are the correct size.
 
-#. The "linked" column in the relation editor is now better visible.
+#. The graph in the "linked" column of the relation editor is now better visible.
 
-#. Preferences have been fixed re. correct use of L&F.
+#. The preferences dialog follows the L&F.
 
    .. image:: demo/prefs-darcula.png
 
@@ -64,8 +77,9 @@ Windows and Mac themes and open issues with screenshots attached.
 Tagging Presets
 ---------------
 
-#. Conditional tags have been implemented:
-   Show or hide preset fields based on mapcss queries.
+Tagging presets have been completely rewritten.
+
+#. Conditional tags: Show or hide preset fields based on mapcss queries.
 
    Example: language switching according to polygons in `boundaries.osm`.
 
@@ -83,7 +97,8 @@ Tagging Presets
          </case>
       </switch>
 
-   The very same preset applied in 3 different localities:
+   The very same preset applied in 3 different localities.
+   Watch the computed name:
 
    .. image:: demo/name-lld-de-it.png
 
@@ -91,7 +106,7 @@ Tagging Presets
 
    .. image:: demo/name-it-de.png
 
-#. Tabbed panes for preset dialogs have been implemented.
+#. Tabbed panes:
 
    .. image:: demo/tabs.png
 
@@ -105,6 +120,9 @@ Tagging Presets
 
       Example of a traffic sign preset without plugins.
 
+#. `no_menu` attribute for presets that should be searchable but should not have menus,
+   eg. the Name Suggestion Index preset.
+
 #. The validator now highlights invalid fields and puts error messages in the tooltip.
 
    .. image:: demo/validator-highlight.png
@@ -113,18 +131,18 @@ Tagging Presets
 
 #. Calculated fields can be individually or globally enabled/disabled.
 
-#. The XML reader is completely rewritten not to use java introspection any more,
+#. The XML reader has been completely rewritten not to use java introspection any more,
    considerably reducing the number of public fields and methods.
 
 #. All classes comprising tagging Presets have been placed into one package, further
    reducing the number of public fields and methods.
 
-#. TaggingPresets is not a global static class anymore.
+#. `TaggingPresets` is not a global static class anymore.
    All tests that change presets can run in parallel now.
 
 #. The concepts of `preset template` and `preset instance` are cleanly separated. The
    XML file gets parsed into a tree of *immutable* preset templates. The templates are
-   used to create `dialogs` and mutable `instances`.
+   used to create swing `dialogs` and mutable `instances`.
 
 #. Preset patch files have been added as experimental feature to allow further
    customization of existing preset files. A preset patch file's main function is to
@@ -146,18 +164,46 @@ Tagging Presets
    added that provide suggestions. Fixes #21227
 
 
-Property Dialog Made Editable
------------------------------
-
-#. The properties dialog is made editable, with drop-down suggestion comboboxes.
-
-   .. image:: demo/properties-editable.png
-
-
 MapCSS
 ------
 
-#. A new function heading() has been added to rotate symbols in the direction of a way.
+#. A new `globals` sections, for global properties.
+
+   .. code:: css
+
+      globals {
+         my-regexp: "my very big regexp goes here";
+      }
+      node {
+         test: get(regexp_match(prop("my-regexp", globals), tag("test")), 1);
+      }
+      way {
+         test: get(regexp_match(prop("my-regexp", globals), tag("test")), 1);
+      }
+
+#. A new `map` type with `map_build` and `map_get` functions.
+
+   .. code:: css
+
+      globals {
+         colors: map_build("primary", red, "secondary", orange, "tertiary", yellow);
+      }
+      way[highway] {
+         color: map_get(prop(colors, globals), tag(highway), #fff);
+      }
+
+#. Generic CSS transformations to translate, rotate, scale, and skew have been
+   implemented.
+
+   .. code:: css
+
+      way[highway] > node[traffic_sign][direction=forward] {
+          icon-transform: transform(translate(10, 20), rotate(heading()));
+      }
+
+   .. image:: demo/transform.png
+
+#. New function `heading` to rotate symbols in the direction of a way.
    Requested in #10271, #22539.
 
    .. image:: demo/heading.png
@@ -167,18 +213,19 @@ MapCSS
 
    .. image:: demo/rotation.png
 
-#. Generic CSS transformations to translate, rotate, scale, and skew have been
-   implemented.
+#. Patching of SVG files: `icon-image: path/to/maxspeed.svg?maxspeed=70` will search for
+   `{{maxspeed}}` in the SVG and replace it with `70`. Use one icon for all speeds.
+   Multiple replacements are possible.
 
-   .. image:: demo/transform.png
+#. New functions: `split_traffic_sign` and `URL_query_encode`.
 
-#. Caching of expressions has been implemented.  Expressions can specify if they are
-   IMMUTABLE, STABLE or VOLATILE.  Results of evaluating IMMUTABLE expressions can
-   always be cached. Results of STABLE expression can be cached as long as the DataSet
-   does not change.
+#. Experimental: Caching of expressions has been implemented to speed up applying of
+   stylesheets.
 
-   Cacheability does propagate: `max(1, 2)` is IMMUTABLE but `max(1, tag(lanes))` is
-   STABLE.
+   Expressions can specify if they are IMMUTABLE, STABLE or VOLATILE.  Results of
+   evaluating IMMUTABLE expressions can always be cached.  Results of STABLE expression
+   can be cached as long as the DataSet does not change.  Cacheability does propagate:
+   `max(1, 2)` is IMMUTABLE but `max(1, tag(lanes))` is STABLE.
 
 
 ImageViewerDialog Rewritten

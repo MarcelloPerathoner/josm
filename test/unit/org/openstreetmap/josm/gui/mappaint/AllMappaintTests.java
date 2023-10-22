@@ -10,7 +10,6 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.AllMapCSSTests;
  */
 @Suite
 @SelectClasses({
-    LabelCompositionStrategyTest.class,
     MapCSSWithExtendedTextDirectivesTest.class,
     AllMapCSSTests.class
 })

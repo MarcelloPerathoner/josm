@@ -116,7 +116,7 @@ final class MapCSSTagCheckerAsserts {
                     && ("inside".equals(((ExpressionFactory.CacheableExpression) c).getName())))
                 .map(c -> ((ExpressionFactory.CacheableExpression) c).getArgs().get(0))
                 .filter(LiteralExpression.class::isInstance)
-                .map(e -> ((LiteralExpression) e).getLiteral())
+                .map(e -> ((LiteralExpression) e).evaluate())
                 .filter(String.class::isInstance)
                 .map(l -> ((String) l).split(",", -1)[0])
                 .findFirst();

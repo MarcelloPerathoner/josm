@@ -9,6 +9,472 @@ meta {
 }
 
 
+globals {
+    urls: map_build(
+"II.5", "svgs/curva_pericolosa_a_sinistra.svg",
+"II.4", "svgs/curva_pericolosa_a_destra.svg",
+"II.7", "svgs/doppia_curva_sx.svg",
+"II.6", "svgs/doppia_curva_dx.svg",
+"II.15", "svgs/discesa_pericolosa.svg",
+"II.16", "svgs/salita_ripida.svg",
+"II.17", "svgs/strettoia_simmetrica.svg",
+"II.19", "svgs/strettoia_asimmetrica_a_destra.svg",
+"II.18", "svgs/strettoia_asimmetrica_a_sinistra.svg",
+"II.1", "svgs/strada_dissestata.svg",
+"II.2", "svgs/dosso.svg",
+"II.3", "svgs/cunetta.svg",
+"II.22", "svgs/strada_sdrucciolevole.svg",
+"II.26", "svgs/doppio_senso.svg",
+"II.31a", "svgs/semaforo_verticale.svg",
+"II.31b", "svgs/semaforo_orizzontale.svg",
+"II.13", "svgs/attraversamento_pericoloso.svg",
+"II.23", "svgs/bambini.svg",
+"II.24", "svgs/animali_domestici_vaganti.svg",
+"II.25", "svgs/animali_selvatici_vaganti.svg",
+"II.33", "svgs/forte_vento_laterale.svg",
+"II.21", "svgs/banchina_pericolosa.svg",
+"II.34", "svgs/pericolo_di_incendio.svg",
+"II.29", "svgs/materiale_instabile.svg",
+"II.30a", "svgs/caduta_massi_da_sinistra.svg",
+"II.30b", "svgs/caduta_massi_da_destra.svg",
+"II.14", "svgs/attraversamento_ciclabile.svg",
+"II.32", "svgs/aeromobili.svg",
+"II.27", "svgs/circolazione_rotatoria.svg",
+"II.35", "svgs/altri_pericoli.svg",
+"II.12", "svgs/attraversamento_tramviario.svg",
+"II.28", "svgs/sbocco_su_molo.svg",
+"II.8", "svgs/passaggio_a_livello_con_barriere.svg",
+"II.9", "svgs/passaggio_a_livello_senza_barriere.svg",
+"II.10a", "svgs/croce_di_s.andrea.svg",
+"II.10b", "svgs/doppia_croce_di_santandrea.svg",
+"II.11a", "svgs/pannello_distanziometrico_150.svg",
+"II.11b", "svgs/pannello_distanziometrico_100.svg",
+"II.11c", "svgs/pannello_distanziometrico_50.svg",
+"II.20", "svgs/ponte_mobile.svg",
+"II.36", "svgs/dare_precedenza.svg",
+"II.37", "svgs/fermarsi_e_dare_precedenza_-_stop.svg",
+"II.38", "svgs/distanza.svg",
+"II.39", "svgs/preavviso.svg",
+"II.40", "svgs/intersezione_con_precedenza_a_destra.svg",
+"II.41", "svgs/dare_precedenza_nei_sensi_unici_alternati.svg",
+"II.42", "svgs/fine_del_diritto_di_precedenza.svg",
+"II.43a", "svgs/intersezione_con_diritto_di_precedenza.svg",
+"II.43b", "svgs/intersezione_a_t_con_diritto_di_precedenza_dx.svg",
+"II.43c", "svgs/intersezione_a_t_con_diritto_di_precedenza_sx.svg",
+"II.43d", "svgs/confluenza_dx.svg",
+"II.43e", "svgs/confluenza_sx.svg",
+"II.44", "svgs/diritto_di_precedenza.svg",
+"II.45", "svgs/diritto_di_precedenza_nei_sensi_unici_alternati.svg",
+"II.46", "svgs/divieto_di_transito.svg",
+"II.47", "svgs/senso_vietato.svg",
+"II.48", "svgs/divieto_di_sorpasso.svg",
+"II.49", "svgs/distanziamento_minimo_obbligatorio.svg",
+"II.50", "maxspeed-empty.svg",
+"II.51", "svgs/divieto_di_segnalazioni_acustiche.svg",
+"II.52", "svgs/divieto_di_sorpasso_per_veicoli_oltre_35t.svg",
+"II.53", "svgs/divieto_di_transito_alla_trazione_animale.svg",
+"II.54", "svgs/transito_vietato_ai_pedoni.svg",
+"II.55", "svgs/transito_vietato_ai_velocipedi_figura_ii_55.svg",
+"II.56", "svgs/divieto_di_transito_motocicli.svg",
+"II.57", "svgs/divieto_di_transito_a_veicoli_a_braccia.svg",
+"II.58", "svgs/divieto_di_transito_a_tutti_gli_autoveicoli.svg",
+"II.59", "svgs/divieto_di_transito_agli_autobus.svg",
+"II.60a", "svgs/divieto_di_transito_ai_veicoli_da_trasporto.svg",
+"II.60b", "svgs/divieto_di_transito_ai_veicoli_da_trasporto_65t.svg",
+"II.61", "svgs/divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg",
+"II.62", "svgs/divieto_di_transito_alle_macchine_agricole.svg",
+"II.63", "svgs/divieto_di_transito_a_trasporti_pericolosi.svg",
+"II.64a", "svgs/divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg",
+"II.64b", "svgs/divieto_di_transito_agli_inquinanti_idrici.svg",
+"II.65", "svgs/divieto_di_transito_larghezza_230m.svg",
+"II.66", "svgs/divieto_di_transito_altezza_350m.svg",
+"II.67", "svgs/divieto_di_transito_ai_veicoli_lunghi.svg",
+"II.68", "svgs/divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg",
+"II.69", "svgs/divieto_di_transito_a_carico_su_asse_7t.svg",
+"II.70", "svgs/via_libera.svg",
+"II.71", "maxspeed-end-empty.svg",
+"II.72", "svgs/fine_del_divieto_di_sorpasso.svg",
+"II.73", "svgs/fine_del_divieto_di_sorpasso_per_veicoli_oltre_35t.svg",
+"II.74", "svgs/divieto_di_sosta.svg",
+"II.75", "svgs/divieto_di_fermata.svg",
+"II.76", "svgs/parcheggio.svg",
+"II.77", "svgs/preavviso_di_parcheggio.svg",
+"II.78", "svgs/passo_carrabile.svg",
+"II.79", "svgs/parcheggio_riservato_pronto_soccorso.svg",
+"II.80a", "svgs/direzione_obbligatoria_dritto.svg",
+"II.80b", "svgs/direzione_obbligatoria_a_sinistra.svg",
+"II.80c", "svgs/direzione_obbligatoria_a_destra.svg",
+"II.80d", "svgs/preavviso_di_direzione_obbligatoria_a_destra.svg",
+"II.80e", "svgs/preavviso_di_direzione_obbligatoria_a_sinistra.svg",
+"II.81a", "svgs/direzioni_consentite_a_destra_ed_a_sinistra.svg",
+"II.81b", "svgs/direzioni_consentite_a_dritto_ed_a_destra.svg",
+"II.81c", "svgs/direzioni_consentite_a_dritto_ed_a_sinistra.svg",
+"II.82a", "svgs/passaggio_obbligatorio_a_sinistra.svg",
+"II.82b", "svgs/passaggio_obbligatorio_a_destra.svg",
+"II.83", "svgs/passaggi_consentiti.svg",
+"II.84", "svgs/rotatoria.svg",
+"II.85", "svgs/limite_minimo_di_velocità_figura_ii_85.svg",
+"II.86", "svgs/fine_limite_minimo_di_velocità_30.svg",
+"II.87", "svgs/catene_da_neve_obbligatorie.svg",
+"II.88", "svgs/percorso_pedonale.svg",
+"II.89", "svgs/fine_percorso_pedonale.svg",
+"II.90", "svgs/pista_ciclabile.svg",
+"II.91", "svgs/fine_pista_ciclabile.svg",
+"II.92a", "svgs/pista_ciclabile_contigua_al_marciapiede.svg",
+"II.93a", "svgs/fine_pista_ciclabile_contigua_al_marciapiede.svg",
+"II.92b", "svgs/percorso_pedonale_e_ciclabile.svg",
+"II.93b", "svgs/fine_percorso_pedonale_e_ciclabile.svg",
+"II.94", "svgs/percorso_riservato_ai_quadrupedi.svg",
+"II.95", "svgs/fine_percorso_riservato_ai_quadrupedi.svg",
+"II.96", "svgs/dogana.svg",
+"II.97a", "svgs/confine_cee.svg",
+"II.97b", "svgs/confine_francia.svg",
+"II.99", "svgs/stazione.svg",
+"II.272", "svgs/segnale_di_itinerario_extraurbano_figura_ii_272.svg",
+"II.273", "svgs/inizio_centro_abitato_figura_ii_273.svg",
+"II.274", "svgs/fine_centro_abitato_figura_ii_274.svg",
+"II.275", "svgs/inizio_regione.svg",
+"II.276", "svgs/inizio_provincia.svg",
+"II.284", "svgs/localizzazione_polizia_municipale_figura_ii_284.svg",
+"II.285", "svgs/segnale_di_conferma_autostradale_figura_ii_285.svg",
+"II.294", "svgs/inizio_territorio_comunale.svg",
+"II.295", "svgs/fiume.svg",
+"II.302", "svgs/ospedale.svg",
+"II.303", "svgs/attraversamento_pedonale.svg",
+"II.304", "svgs/scuolabus.svg",
+"II.305", "svgs/sos.svg",
+"II.306", "svgs/sottopassaggio_pedonale.svg",
+"II.307", "svgs/sovrappassaggio_pedonale.svg",
+"II.308", "svgs/rampa_pedonale.svg",
+"II.309", "svgs/strada_senza_uscita.svg",
+"II.310", "svgs/preavviso_di_strada_senza_uscita_osx.svg",
+"II.311", "svgs/preavviso_di_strada_senza_uscita_dx.svg",
+"II.312", "svgs/velocità_consigliata_50.svg",
+"II.313", "svgs/fine_velocità_consigliata_50.svg",
+"II.314", "svgs/strada_riservata_ai_veicoli_a_motore.svg",
+"II.315", "svgs/fine_strada_riservata_ai_veicoli_a_motore.svg",
+"II.316", "svgs/galleria_blu.svg",
+"II.317", "svgs/ponte_blu.svg",
+"II.318", "svgs/zona_residenziale.svg",
+"II.319", "svgs/fine_zona_residenziale.svg",
+"II.320", "svgs/area_pedonale.svg",
+"II.321", "svgs/fine_area_pedonale.svg",
+"II.322a", "svgs/zona_traffico_limitato.svg",
+"II.322b", "svgs/fine_zona_traffico_limitato.svg",
+"II.323a", "svgs/zona_a_velocità_limitata_figura_ii_323-a.svg",
+"II.323b", "svgs/fine_zona_a_velocità_limitata_figura_ii_323-b.svg",
+"II.324", "svgs/attraversamento_ciclabile_2.svg",
+"II.325", "svgs/svolta_a_sx_semidiretta.svg",
+"II.326", "svgs/svolta_a_sx_indiretta.svg",
+"II.327", "svgs/inversione_di_marcia.svg",
+"II.328", "svgs/piazzola_su_viabilità_ordinaria.svg",
+"II.329", "svgs/piazzola_autostradale_sos.svg",
+"II.330", "svgs/transitabilità_1.svg",
+"II.337", "svgs/uso_corsie_figura_ii_337.svg",
+"II.338", "svgs/uso_corsie_figura_ii_338.svg",
+"II.339", "svgs/uso_corsie_figura_ii_339.svg",
+"II.340", "svgs/uso_corsie_figura_ii_340.svg",
+"II.341", "svgs/variazione_corsie_disponibili_figura_ii_341.svg",
+"II.342", "svgs/variazione_corsie_disponibili_figura_ii_342.svg",
+"II.345", "svgs/inizio_autostrada_figura_ii_345.svg",
+"II.346", "svgs/segnale_fine_autostrada.svg",
+"II.348", "svgs/senso_unico_a_destra.svg",
+"II.349", "svgs/senso_unico_frontale.svg",
+"II.350", "svgs/preavviso_deviazione_consigliata_autocarri.svg",
+"II.351", "svgs/direzione_autocarri_consigliata.svg",
+"II.352", "svgs/limiti_di_velocità_generali_figura_ii_352.svg",
+"II.353", "svgs/pronto_soccorso.svg",
+"II.354", "svgs/riparazioni.svg",
+"II.355", "svgs/telefono.svg",
+"II.356", "svgs/rifornimento.svg",
+"II.357", "svgs/rifornimento_verde.svg",
+"II.358", "svgs/fermata_autobus.svg",
+"II.359", "svgs/fermata_tram.svg",
+"II.360", "svgs/informazioni_figura_ii_360.svg",
+"II.361", "svgs/ostello_per_la_gioventù.svg",
+"II.362", "svgs/area_pic_nic.svg",
+"II.363", "svgs/campeggio.svg",
+"II.364", "svgs/radio_informazioni_stradali.svg",
+"II.365", "svgs/albergo.svg",
+"II.366", "svgs/bar.svg",
+"II.367", "svgs/ristorante.svg",
+"II.368", "svgs/parcheggio_di_scambio_con_autobus.svg",
+"II.369", "svgs/parcheggio_di_scambio_con_tram.svg",
+"II.370", "svgs/parcheggio_di_scambio_con_metro.svg",
+"II.371", "svgs/parcheggio__escursionismo.svg",
+"II.372", "svgs/auto_su_treno_figura_ii_372.svg",
+"II.373", "svgs/auto_al_seguito_figura_ii_373.svg",
+"II.374", "svgs/auto_su_nave.svg",
+"II.375", "svgs/taxi.svg",
+"II.376", "svgs/area_di_servizio.svg",
+"II.377", "svgs/area_con_scarico_liquami.svg",
+"MII.1", "distance-empty.svg",
+"MII.2", "length-empty.svg",
+"MII.3", "distance-empty.svg",
+"MII.4a", "svgs/limitazione.svg",
+"MII.4b", "svgs/eccezione.svg",
+"MII.5a1", "svgs/inizio_vert.svg",
+"MII.5a2", "svgs/continua_vert.svg",
+"MII.5a3", "svgs/fine_vert.svg",
+"MII.5b1", "svgs/inizio_orizz.svg",
+"MII.5b2", "svgs/continua_orizz.svg",
+"MII.5b3", "svgs/fine_orizz.svg",
+"MII.6a", "svgs/segnaletica_in_rifacimento.svg",
+"MII.6b", "svgs/incidente.svg",
+"MII.6c", "svgs/attraversamento_binari.svg",
+"MII.6d", "svgs/sgombraneve_in_azione.svg",
+"MII.6e", "svgs/zona_soggetta_ad_allagamento.svg",
+"MII.6f", "svgs/coda.svg",
+"MII.6g", "svgs/mezzi_di_lavoro_in_azione.svg",
+"MII.6h", "svgs/strada_sdrucciolevole_per_ghiaccio.svg",
+"MII.6i", "svgs/strada_sdrucciolevole_per_pioggia.svg",
+"MII.6l", "svgs/autocarri_in_rallentamento.svg",
+"MII.6m", "svgs/rimozione_forzata.svg",
+"MII.6n", "svgs/segnale_di_corsia.svg",
+"MII.6p1", "svgs/tornante.svg",
+"MII.6p2", "svgs/numero_del_tornante.svg",
+"MII.6q1", "svgs/pulizia_meccanica_della_strada.svg",
+"MII.6q2", "svgs/pulizia_meccanica_della_strada_1.svg",
+"MII.7", "svgs/andamento_strada_principale.svg",
+"MII.8a", "svgs/divieto_di_sosta_temporaneo.svg",
+"MII.8b", "svgs/itinerario_obbligatorio_merci_pericolose.svg",
+"MII.8c", "svgs/preavviso_deviazione_obbligatoria_autocarri.svg",
+"MII.8d", "svgs/divieto_di_transito_autocarri.svg"
+);
+    aspects: map_build(
+"II.5", 0.88,
+"II.4", 0.88,
+"II.7", 0.88,
+"II.6", 0.88,
+"II.15", 0.88,
+"II.16", 0.88,
+"II.17", 0.88,
+"II.19", 0.88,
+"II.18", 0.88,
+"II.1", 0.88,
+"II.2", 0.88,
+"II.3", 0.88,
+"II.22", 0.88,
+"II.26", 0.88,
+"II.31a", 0.88,
+"II.31b", 0.88,
+"II.13", 0.88,
+"II.23", 0.88,
+"II.24", 0.88,
+"II.25", 0.88,
+"II.33", 0.88,
+"II.21", 0.88,
+"II.34", 0.88,
+"II.29", 0.88,
+"II.30a", 0.88,
+"II.30b", 0.88,
+"II.14", 0.88,
+"II.32", 0.88,
+"II.27", 0.88,
+"II.35", 0.88,
+"II.12", 0.88,
+"II.28", 0.88,
+"II.8", 0.88,
+"II.9", 0.88,
+"II.10a", 0.52,
+"II.10b", 0.73,
+"II.11a", 1.0,
+"II.11b", 1.0,
+"II.11c", 1.0,
+"II.20", 0.88,
+"II.36", 0.88,
+"II.37", 1.0,
+"II.38", 0.38,
+"II.39", 0.34,
+"II.40", 0.88,
+"II.41", 1.0,
+"II.42", 1.0,
+"II.43a", 0.88,
+"II.43b", 0.88,
+"II.43c", 0.88,
+"II.43d", 0.88,
+"II.43e", 0.88,
+"II.44", 1.0,
+"II.45", 1.0,
+"II.46", 1.0,
+"II.47", 1.0,
+"II.48", 1.0,
+"II.49", 1.0,
+"II.50", 1.0,
+"II.51", 1.0,
+"II.52", 1.0,
+"II.53", 1.0,
+"II.54", 1.0,
+"II.55", 1.0,
+"II.56", 1.0,
+"II.57", 1.0,
+"II.58", 1.0,
+"II.59", 1.0,
+"II.60a", 1.0,
+"II.60b", 1.0,
+"II.61", 1.0,
+"II.62", 1.0,
+"II.63", 1.0,
+"II.64a", 1.0,
+"II.64b", 1.0,
+"II.65", 1.0,
+"II.66", 1.0,
+"II.67", 1.0,
+"II.68", 1.0,
+"II.69", 1.0,
+"II.70", 1.0,
+"II.71", 1.0,
+"II.72", 1.0,
+"II.73", 1.0,
+"II.74", 1.0,
+"II.75", 1.0,
+"II.76", 1.0,
+"II.77", 1.8,
+"II.78", 1.5,
+"II.79", 1.5,
+"II.80a", 1.0,
+"II.80b", 1.0,
+"II.80c", 1.0,
+"II.80d", 1.0,
+"II.80e", 1.0,
+"II.81a", 1.0,
+"II.81b", 1.0,
+"II.81c", 1.0,
+"II.82a", 1.0,
+"II.82b", 1.0,
+"II.83", 1.0,
+"II.84", 1.0,
+"II.85", 1.0,
+"II.86", 1.0,
+"II.87", 1.0,
+"II.88", 1.0,
+"II.89", 1.0,
+"II.90", 1.0,
+"II.91", 1.0,
+"II.92a", 1.0,
+"II.93a", 1.0,
+"II.92b", 1.0,
+"II.93b", 1.0,
+"II.94", 1.0,
+"II.95", 1.0,
+"II.96", 1.0,
+"II.97a", 1.0,
+"II.97b", 1.0,
+"II.99", 1.0,
+"II.272", 0.93,
+"II.273", 0.3,
+"II.274", 0.84,
+"II.275", 0.63,
+"II.276", 0.63,
+"II.284", 1.5,
+"II.285", 0.54,
+"II.294", 0.32,
+"II.295", 0.69,
+"II.302", 1.0,
+"II.303", 1.0,
+"II.304", 1.0,
+"II.305", 1.0,
+"II.306", 1.0,
+"II.307", 1.0,
+"II.308", 1.0,
+"II.309", 1.0,
+"II.310", 1.0,
+"II.311", 1.0,
+"II.312", 1.0,
+"II.313", 1.0,
+"II.314", 1.0,
+"II.315", 1.0,
+"II.316", 1.0,
+"II.317", 1.0,
+"II.318", 1.0,
+"II.319", 1.0,
+"II.320", 2.1,
+"II.321", 1.0,
+"II.322a", 2.1,
+"II.322b", 1.0,
+"II.323a", 1.0,
+"II.323b", 1.0,
+"II.324", 1.0,
+"II.325", 0.74,
+"II.326", 0.75,
+"II.327", 1.0,
+"II.328", 1.4,
+"II.329", 1.4,
+"II.330", 1.3,
+"II.337", 1.0,
+"II.338", 0.67,
+"II.339", 1.0,
+"II.340", 0.67,
+"II.341", 1.0,
+"II.342", 1.0,
+"II.345", 1.8,
+"II.346", 1.8,
+"II.348", 0.25,
+"II.349", 1.0,
+"II.350", 1.5,
+"II.351", 1.5,
+"II.352", 1.6,
+"II.353", 1.5,
+"II.354", 1.5,
+"II.355", 1.5,
+"II.356", 1.5,
+"II.357", 1.5,
+"II.358", 1.5,
+"II.359", 1.5,
+"II.360", 1.5,
+"II.361", 1.5,
+"II.362", 1.5,
+"II.363", 1.5,
+"II.364", 1.5,
+"II.365", 1.5,
+"II.366", 1.5,
+"II.367", 1.5,
+"II.368", 1.5,
+"II.369", 1.5,
+"II.370", 1.5,
+"II.371", 1.5,
+"II.372", 1.5,
+"II.373", 1.5,
+"II.374", 1.5,
+"II.375", 0.67,
+"II.376", 0.63,
+"II.377", 1.5,
+"MII.1", 0.38,
+"MII.2", 0.38,
+"MII.3", 0.38,
+"MII.4a", 0.38,
+"MII.4b", 0.38,
+"MII.5a1", 2.6,
+"MII.5a2", 2.6,
+"MII.5a3", 2.6,
+"MII.5b1", 0.39,
+"MII.5b2", 0.39,
+"MII.5b3", 0.39,
+"MII.6a", 1.0,
+"MII.6b", 1.0,
+"MII.6c", 0.38,
+"MII.6d", 0.38,
+"MII.6e", 0.38,
+"MII.6f", 1.0,
+"MII.6g", 0.38,
+"MII.6h", 0.38,
+"MII.6i", 0.38,
+"MII.6l", 1.0,
+"MII.6m", 0.38,
+"MII.6n", 0.38,
+"MII.6p1", 0.79,
+"MII.6p2", 1.0,
+"MII.6q1", 0.38,
+"MII.6q2", 1.0,
+"MII.7", 1.0,
+"MII.8a", 1.5,
+"MII.8b", 1.5,
+"MII.8c", 1.5,
+"MII.8d", 1.5
+)
+}
+
+
 setting::icon_size {
     type: double;
     label: tr("Set the icon size...");
@@ -16,42 +482,308 @@ setting::icon_size {
 }
 
 /* turn off maxspeed drawing in elemstyle.mapcss */
-node[prop(maxspeedclass, default)]::* {
+node[prop(maxspeedclass, default)]::core_maxnodebg {
+    symbol-shape: none;
+    icon-image: none;
+}
+node[prop(maxspeedclass, default)]::core_maxnodefg {
     text: none;
     symbol-shape: none;
+    icon-image: none;
 }
 
+/* select nodes to operate on */
+
 node[traffic_sign=~/IT:M?II/] {
-    sign_id: tag(traffic_sign);
     set .sign;
 }
-node[traffic_sign=~/IT:M?II/][direction=forward],
+node[direction=forward].sign {
+    set .sign-forward;
+    traffic-sign-forward: tag("traffic_sign");
+    maxspeed-forward: tag("maxspeed");
+}
+node[direction=backward].sign {
+    set .sign-backward;
+    traffic-sign-backward: tag("traffic_sign");
+    maxspeed-backward: tag("maxspeed");
+}
 node["traffic_sign:forward"=~/IT:M?II/] {
     set .sign;
     set .sign-forward;
+    traffic-sign-forward: tag("traffic_sign:forward");
+    maxspeed-forward: tag("maxspeed:forward");
 }
-node[traffic_sign=~/IT:M?II/][direction=backward],
 node["traffic_sign:backward"=~/IT:M?II/] {
     set .sign;
     set .sign-backward;
+    traffic-sign-backward: tag("traffic_sign:backward");
+    maxspeed-backward: tag("maxspeed:backward");
 }
 
-node[prop(sign, default)][direction=~/[NWSE]+/] {
-    text-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
-    icon-rotation: eval(cardinal_to_radians(tag("direction")) + 3.14);
+/* set a basic rotation */
+
+node[direction=~/^[NWSE]+$/].sign {
+    set .sign-noward;
+    traffic-sign: tag("traffic_sign");
+    maxspeed: tag("maxspeed");
+    transformprop: transform(rotate(cardinal_to_radians(tag("direction")) + 3.14));
 }
-node[prop(sign, default)][direction=~/[.0-9]+/] {
-    text-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
-    icon-rotation: eval(degree_to_radians(tag("direction")) + 3.14);
+node[direction=~/^[.0-9]+$/].sign {
+    set .sign-noward;
+    traffic-sign: tag("traffic_sign");
+    maxspeed: tag("maxspeed");
+    transformprop: transform(rotate(degree_to_radians(tag("direction")) + 3.14));
 }
-way[highway] > node[prop(sign-forward, default)]::forward {
-    text-transform: transform(rotate(heading()), translate(metric(5), 0));
-    icon-transform: transform(rotate(heading()), translate(metric(5), 0));
+/* we need the highway selector for the heading to work */
+way[highway] > node.sign-forward,
+way[highway] > node.sign-backward {
+    transformprop: transform(rotate(heading()), translate(metric(5), 0));
+    metric: true;
 }
-way[highway] > node[prop(sign-backward, default)]::backward {
-    text-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
-    icon-transform: transform(rotate(heading(0.5turn)), translate(metric(5), 0));
+
+node[prop(traffic-sign)] {
+    codes-noward: split_traffic_sign(prop(traffic-sign), "IT");
+    image-icon: none;
 }
+node[prop(traffic-sign-forward)].sign {
+    codes-forward: split_traffic_sign(prop(traffic-sign-forward), "IT");
+    image-icon: none;
+}
+node[prop(traffic-sign-backward)] {
+    codes-backward: split_traffic_sign(prop(traffic-sign-backward), "IT");
+    image-icon: none;
+}
+
+/* set styles */
+
+node.sign {
+    yoffsetprop: eval(setting("icon_size") * 0.7);
+    ydeltaprop: eval(setting("icon_size") * 0.4);
+
+    text: none
+}
+
+
+node[prop(sign-noward, default)][map_get(get(prop(codes-noward, default), 0), "country") = "IT"]::noward0 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-noward, default), 0);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-noward, default)][map_get(get(prop(codes-noward, default), 1), "country") = "IT"]::noward1 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-noward, default), 1);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, noward0) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-noward, default)][map_get(get(prop(codes-noward, default), 2), "country") = "IT"]::noward2 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-noward, default), 2);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, noward1) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-forward, default)][map_get(get(prop(codes-forward, default), 0), "country") = "IT"]::forward0 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-forward, default), 0);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-forward, default)][map_get(get(prop(codes-forward, default), 1), "country") = "IT"]::forward1 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-forward, default), 1);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, forward0) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-forward, default)][map_get(get(prop(codes-forward, default), 2), "country") = "IT"]::forward2 {
+
+    icon-transform: prop(transformprop, default);
+    metric: true;
+
+    codes: get(prop(codes-forward, default), 2);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, forward1) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-backward, default)][map_get(get(prop(codes-backward, default), 0), "country") = "IT"]::backward0 {
+
+    icon-transform: transform(rotate(0.5turn), prop(transformprop, default));
+    metric: true;
+
+    codes: get(prop(codes-backward, default), 0);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-backward, default)][map_get(get(prop(codes-backward, default), 1), "country") = "IT"]::backward1 {
+
+    icon-transform: transform(rotate(0.5turn), prop(transformprop, default));
+    metric: true;
+
+    codes: get(prop(codes-backward, default), 1);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, backward0) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+node[prop(sign-backward, default)][map_get(get(prop(codes-backward, default), 2), "country") = "IT"]::backward2 {
+
+    icon-transform: transform(rotate(0.5turn), prop(transformprop, default));
+    metric: true;
+
+    codes: get(prop(codes-backward, default), 2);
+    traffic-sign-id:    map_get(prop(codes), "id");
+    traffic-sign-texts: map_get(prop(codes), "text");
+
+    icon-image: concat(map_get(prop(urls, globals), prop(traffic-sign-id), "unknown"),
+                "?", URL_query_encode("text", prop(traffic-sign-texts)));
+    real-height: eval(setting("icon_size") * map_get(prop(aspects, globals), prop(traffic-sign-id), 1.0));
+
+    font-size: eval(prop(real-height) * 0.75);
+    
+
+    yoffsetprop: prop(yoffsetprop, backward1) + prop(real-height);
+
+    icon-offset-y: prop(yoffsetprop) - prop(real-height) * 0.5;
+            
+}
+
+
+
+/* There's a bug in the JOSM mapcss implementation. If you have a ruleset that matches
+multiple layers like:
+
+    node[traffic_sign:forward]::forward,
+    node[traffic_sign:backward]::backward {
+        icon-image: foo;
+    }
+
+then on a node with both of the above mentioned tags, only the "forward" level will get
+an icon-image. */
 
 node[prop(sign, default)]::* {
     major-z-index: 7;
@@ -60,1663 +792,9 @@ node[prop(sign, default)]::* {
 
     text-anchor-horizontal: center;
     text-anchor-vertical: center;
-    font-size: eval(setting("icon_size") * 0.3);
     font-weight: bold;
     text-color: black;
 }
-node[prop(sign-forward, default)]::forward,
-node[prop(sign-backward, default)]::backward {
-    major-z-index: 7;
-    icon-width: setting("icon_size");
-    icon-height: setting("icon_size");
-
-    font-size: eval(setting("icon_size") * 0.85);
-    text-offset-y: eval(setting("icon_size") * -0.03);
-    text: none;
-
-    yoffsetprop: eval(setting("icon_size") * 0.7);
-    ydeltaprop: eval(setting("icon_size") * 0.4);
-}
-
-node[prop(sign, default)][distance]::distance {
-    yoffsetprop: prop(yoffsetprop, default);
-
-    icon-image: "distance-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(distance);
-}
-
-node[prop(sign, default)][length]::length {
-    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0));
-
-    icon-image: "length-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(length);
-}
-
-node[prop(sign, default)][period]::period {
-    yoffsetprop: eval(prop(yoffsetprop, default) + (has_tag_key(distance) ? prop(ydeltaprop, default) : 0) + (has_tag_key(length) ? prop(ydeltaprop, default) : 0));
-
-    icon-image: "distance-empty.svg";
-    icon-offset-y: prop(yoffsetprop);
-    text-offset-y: eval(-prop(yoffsetprop));
-    text: tag(period);
-}
-
-
-node[traffic_sign=~/IT:II.5(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.5(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.5(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.5(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Italian_traffic_signs_-_curva_pericolosa_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.4(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.4(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.4(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.4(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_curva_pericolosa_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.7(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.7(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.7(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.7(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/de/Italian_traffic_signs_-_doppia_curva_sx.svg";
-}
-
-node[traffic_sign=~/IT:II.6(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.6(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.6(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.6(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1b/Italian_traffic_signs_-_doppia_curva_dx.svg";
-}
-
-node[traffic_sign=~/IT:II.15(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.15(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.15(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.15(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_discesa_pericolosa.svg";
-}
-
-node[traffic_sign=~/IT:II.16(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.16(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.16(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.16(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_salita_ripida.svg";
-}
-
-node[traffic_sign=~/IT:II.17(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.17(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.17(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.17(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_strettoia_simmetrica.svg";
-}
-
-node[traffic_sign=~/IT:II.19(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.19(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.19(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.19(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Italian_traffic_signs_-_strettoia_asimmetrica_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.18(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.18(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.18(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.18(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/28/Italian_traffic_signs_-_strettoia_asimmetrica_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_strada_dissestata.svg";
-}
-
-node[traffic_sign=~/IT:II.2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/42/Italian_traffic_signs_-_dosso.svg";
-}
-
-node[traffic_sign=~/IT:II.3(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.3(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.3(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.3(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/83/Italian_traffic_signs_-_cunetta.svg";
-}
-
-node[traffic_sign=~/IT:II.22(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.22(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.22(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.22(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_strada_sdrucciolevole.svg";
-}
-
-node[traffic_sign=~/IT:II.26(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.26(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.26(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.26(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_doppio_senso.svg";
-}
-
-node[traffic_sign=~/IT:II.31a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.31a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.31a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.31a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/62/Italian_traffic_signs_-_semaforo_verticale.svg";
-}
-
-node[traffic_sign=~/IT:II.31b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.31b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.31b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.31b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Italian_traffic_signs_-_semaforo_orizzontale.svg";
-}
-
-node[traffic_sign=~/IT:II.13(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.13(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.13(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.13(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_attraversamento_pericoloso.svg";
-}
-
-node[traffic_sign=~/IT:II.23(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.23(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.23(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.23(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Italian_traffic_signs_-_bambini.svg";
-}
-
-node[traffic_sign=~/IT:II.24(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.24(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.24(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.24(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c2/Italian_traffic_signs_-_animali_domestici_vaganti.svg";
-}
-
-node[traffic_sign=~/IT:II.25(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.25(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.25(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.25(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/99/Italian_traffic_signs_-_animali_selvatici_vaganti.svg";
-}
-
-node[traffic_sign=~/IT:II.33(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.33(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.33(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.33(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_forte_vento_laterale.svg";
-}
-
-node[traffic_sign=~/IT:II.21(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.21(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.21(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.21(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_banchina_pericolosa.svg";
-}
-
-node[traffic_sign=~/IT:II.34(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.34(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.34(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.34(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Italian_traffic_signs_-_pericolo_di_incendio.svg";
-}
-
-node[traffic_sign=~/IT:II.29(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.29(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.29(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.29(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_materiale_instabile.svg";
-}
-
-node[traffic_sign=~/IT:II.30a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.30a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.30a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.30a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_caduta_massi_da_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.30b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.30b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.30b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.30b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/95/Italian_traffic_signs_-_caduta_massi_da_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.14(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.14(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.14(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.14(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/db/Italian_traffic_signs_-_attraversamento_ciclabile.svg";
-}
-
-node[traffic_sign=~/IT:II.32(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.32(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.32(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.32(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_signs_-_aeromobili.svg";
-}
-
-node[traffic_sign=~/IT:II.27(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.27(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.27(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.27(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_circolazione_rotatoria.svg";
-}
-
-node[traffic_sign=~/IT:II.35(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.35(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.35(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.35(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_altri_pericoli.svg";
-}
-
-node[traffic_sign=~/IT:II.12(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.12(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.12(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.12(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/21/Italian_traffic_signs_-_attraversamento_tramviario.svg";
-}
-
-node[traffic_sign=~/IT:II.28(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.28(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.28(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.28(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Italian_traffic_signs_-_sbocco_su_molo.svg";
-}
-
-node[traffic_sign=~/IT:II.8(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.8(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.8(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.8(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/da/Italian_traffic_signs_-_passaggio_a_livello_con_barriere.svg";
-}
-
-node[traffic_sign=~/IT:II.9(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.9(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.9(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.9(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_passaggio_a_livello_senza_barriere.svg";
-}
-
-node[traffic_sign=~/IT:II.10a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.10a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.10a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.10a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_croce_di_S.Andrea.svg";
-}
-
-node[traffic_sign=~/IT:II.10b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.10b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.10b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.10b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Italian_traffic_signs_-_Doppia_croce_di_Sant%27Andrea.svg";
-}
-
-node[traffic_sign=~/IT:II.11a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.11a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.11a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.11a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Italian_traffic_signs_-_pannello_distanziometrico_150.svg";
-}
-
-node[traffic_sign=~/IT:II.11b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.11b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.11b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.11b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_pannello_distanziometrico_100.svg";
-}
-
-node[traffic_sign=~/IT:II.11c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.11c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.11c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.11c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_pannello_distanziometrico_50.svg";
-}
-
-node[traffic_sign=~/IT:II.20(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.20(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.20(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.20(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ponte_mobile.svg";
-}
-
-node[traffic_sign=~/IT:II.36(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.36(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.36(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.36(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/89/Italian_traffic_signs_-_dare_precedenza.svg";
-}
-
-node[traffic_sign=~/IT:II.37(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.37(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.37(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.37(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg";
-}
-
-node[traffic_sign=~/IT:II.38(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.38(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.38(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.38(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg";
-}
-
-node[traffic_sign=~/IT:II.39(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.39(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.39(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.39(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_preavviso.svg";
-}
-
-node[traffic_sign=~/IT:II.40(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.40(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.40(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.40(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_intersezione_con_precedenza_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.41(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.41(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.41(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.41(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_dare_precedenza_nei_sensi_unici_alternati.svg";
-}
-
-node[traffic_sign=~/IT:II.42(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.42(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.42(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.42(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Italian_traffic_signs_-_fine_del_diritto_di_precedenza.svg";
-}
-
-node[traffic_sign=~/IT:II.43a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.43a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.43a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.43a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_intersezione_con_diritto_di_precedenza.svg";
-}
-
-node[traffic_sign=~/IT:II.43b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.43b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.43b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.43b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_dx.svg";
-}
-
-node[traffic_sign=~/IT:II.43c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.43c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.43c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.43c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/96/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_sx.svg";
-}
-
-node[traffic_sign=~/IT:II.43d(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.43d(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.43d(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.43d(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_confluenza_dx.svg";
-}
-
-node[traffic_sign=~/IT:II.43e(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.43e(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.43e(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.43e(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_confluenza_sx.svg";
-}
-
-node[traffic_sign=~/IT:II.44(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.44(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.44(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.44(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_diritto_di_precedenza.svg";
-}
-
-node[traffic_sign=~/IT:II.45(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.45(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.45(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.45(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_diritto_di_precedenza_nei_sensi_unici_alternati.svg";
-}
-
-node[traffic_sign=~/IT:II.46(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.46(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.46(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.46(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito.svg";
-}
-
-node[traffic_sign=~/IT:II.47(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.47(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.47(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.47(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Italian_traffic_signs_-_senso_vietato.svg";
-}
-
-node[traffic_sign=~/IT:II.48(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.48(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.48(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.48(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_divieto_di_sorpasso.svg";
-}
-
-node[traffic_sign=~/IT:II.49(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.49(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.49(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.49(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_distanziamento_minimo_obbligatorio.svg";
-}
-
-node[traffic_sign=~/IT:II.50(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.50(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.50(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.50(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito.svg";
-    text: tag(maxspeed);
-}
-
-node[traffic_sign=~/IT:II.51(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.51(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.51(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.51(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_divieto_di_segnalazioni_acustiche.svg";
-}
-
-node[traffic_sign=~/IT:II.52(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.52(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.52(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.52(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/53/Italian_traffic_signs_-_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg";
-}
-
-node[traffic_sign=~/IT:II.53(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.53(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.53(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.53(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alla_trazione_animale.svg";
-}
-
-node[traffic_sign=~/IT:II.54(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.54(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.54(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.54(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_transito_vietato_ai_pedoni.svg";
-}
-
-node[traffic_sign=~/IT:II.55(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.55(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.55(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.55(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_divieto_di_transito_alle_biciclette.svg";
-}
-
-node[traffic_sign=~/IT:II.56(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.56(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.56(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.56(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/49/Italian_traffic_signs_-_divieto_di_transito_motocicli.svg";
-}
-
-node[traffic_sign=~/IT:II.57(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.57(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.57(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.57(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_a_braccia.svg";
-}
-
-node[traffic_sign=~/IT:II.58(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.58(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.58(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.58(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/33/Italian_traffic_signs_-_divieto_di_transito_a_tutti_gli_autoveicoli.svg";
-}
-
-node[traffic_sign=~/IT:II.59(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.59(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.59(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.59(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_divieto_di_transito_agli_autobus.svg";
-}
-
-node[traffic_sign=~/IT:II.60a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.60a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.60a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.60a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/81/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto.svg";
-}
-
-node[traffic_sign=~/IT:II.60b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.60b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.60b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.60b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/75/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto_6%2C5t.svg";
-}
-
-node[traffic_sign=~/IT:II.61(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.61(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.61(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.61(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg";
-}
-
-node[traffic_sign=~/IT:II.62(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.62(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.62(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.62(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Italian_traffic_signs_-_divieto_di_transito_alle_macchine_agricole.svg";
-}
-
-node[traffic_sign=~/IT:II.63(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.63(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.63(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.63(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Italian_traffic_signs_-_divieto_di_transito_a_trasporti_pericolosi.svg";
-}
-
-node[traffic_sign=~/IT:II.64a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.64a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.64a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.64a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg";
-}
-
-node[traffic_sign=~/IT:II.64b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.64b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.64b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.64b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Italian_traffic_signs_-_divieto_di_transito_agli_inquinanti_idrici.svg";
-}
-
-node[traffic_sign=~/IT:II.65(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.65(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.65(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.65(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c7/Italian_traffic_signs_-_divieto_di_transito_larghezza_2%2C30m.svg";
-}
-
-node[traffic_sign=~/IT:II.66(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.66(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.66(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.66(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_divieto_di_transito_altezza_3%2C50m.svg";
-}
-
-node[traffic_sign=~/IT:II.67(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.67(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.67(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.67(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_lunghi.svg";
-}
-
-node[traffic_sign=~/IT:II.68(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.68(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.68(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.68(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg";
-}
-
-node[traffic_sign=~/IT:II.69(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.69(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.69(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.69(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_divieto_di_transito_a_carico_su_asse_7t.svg";
-}
-
-node[traffic_sign=~/IT:II.70(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.70(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.70(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.70(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_via_libera.svg";
-}
-
-node[traffic_sign=~/IT:II.71(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.71(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.71(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.71(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_fine_limite_di_velocit%C3%A0_50.svg";
-}
-
-node[traffic_sign=~/IT:II.72(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.72(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.72(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.72(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso.svg";
-}
-
-node[traffic_sign=~/IT:II.73(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.73(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.73(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.73(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso_per_veicoli_oltre_3%2C5t.svg";
-}
-
-node[traffic_sign=~/IT:II.74(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.74(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.74(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.74(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/94/Italian_traffic_signs_-_divieto_di_sosta.svg";
-}
-
-node[traffic_sign=~/IT:II.75(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.75(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.75(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.75(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_divieto_di_fermata.svg";
-}
-
-node[traffic_sign=~/IT:II.76(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.76(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.76(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.76(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Italian_traffic_signs_-_parcheggio.svg";
-}
-
-node[traffic_sign=~/IT:II.77(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.77(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.77(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.77(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/04/Italian_traffic_signs_-_preavviso_di_parcheggio.svg";
-}
-
-node[traffic_sign=~/IT:II.78(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.78(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.78(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.78(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Italian_traffic_signs_-_passo_carrabile.svg";
-}
-
-node[traffic_sign=~/IT:II.79(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.79(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.79(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.79(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c4/Italian_traffic_signs_-_parcheggio_riservato_pronto_soccorso.svg";
-}
-
-node[traffic_sign=~/IT:II.80a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.80a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.80a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.80a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/45/Italian_traffic_signs_-_direzione_obbligatoria_dritto.svg";
-}
-
-node[traffic_sign=~/IT:II.80b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.80b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.80b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.80b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Italian_traffic_signs_-_direzione_obbligatoria_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.80c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.80c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.80c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.80c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Italian_traffic_signs_-_direzione_obbligatoria_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.80d(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.80d(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.80d(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.80d(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5a/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.80e(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.80e(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.80e(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.80e(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/92/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.81a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.81a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.81a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.81a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_direzioni_consentite_a_destra_ed_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.81b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.81b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.81b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.81b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.81c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.81c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.81c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.81c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.82a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.82a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.82a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.82a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/73/Italian_traffic_signs_-_passaggio_obbligatorio_a_sinistra.svg";
-}
-
-node[traffic_sign=~/IT:II.82b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.82b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.82b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.82b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_passaggio_obbligatorio_a_destra.svg";
-}
-
-node[traffic_sign=~/IT:II.83(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.83(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.83(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.83(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_passaggi_consentiti.svg";
-}
-
-node[traffic_sign=~/IT:II.84(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.84(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.84(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.84(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Italian_traffic_signs_-_rotatoria.svg";
-}
-
-node[traffic_sign=~/IT:II.85(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.85(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.85(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.85(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/31/Italian_traffic_signs_-_limite_minimo_di_velocit%C3%A0_30.svg";
-}
-
-node[traffic_sign=~/IT:II.86(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.86(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.86(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.86(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Italian_traffic_signs_-_fine_limite_minimo_di_velocit%C3%A0_30.svg";
-}
-
-node[traffic_sign=~/IT:II.87(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.87(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.87(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.87(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e2/Italian_traffic_signs_-_catene_da_neve_obbligatorie.svg";
-}
-
-node[traffic_sign=~/IT:II.88(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.88(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.88(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.88(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_percorso_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.89(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.89(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.89(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.89(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/14/Italian_traffic_signs_-_fine_percorso_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.90(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.90(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.90(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.90(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Italian_traffic_signs_-_pista_ciclabile.svg";
-}
-
-node[traffic_sign=~/IT:II.91(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.91(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.91(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.91(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Italian_traffic_signs_-_fine_pista_ciclabile.svg";
-}
-
-node[traffic_sign=~/IT:II.92a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.92a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.92a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.92a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Italian_traffic_signs_-_pista_ciclabile_contigua_al_marciapiede.svg";
-}
-
-node[traffic_sign=~/IT:II.93a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.93a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.93a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.93a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Italian_traffic_signs_-_fine_pista_ciclabile_contigua_al_marciapiede.svg";
-}
-
-node[traffic_sign=~/IT:II.92b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.92b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.92b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.92b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_percorso_pedonale_e_ciclabile.svg";
-}
-
-node[traffic_sign=~/IT:II.93b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.93b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.93b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.93b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Italian_traffic_signs_-_fine_percorso_pedonale_e_ciclabile.svg";
-}
-
-node[traffic_sign=~/IT:II.94(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.94(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.94(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.94(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Italian_traffic_signs_-_percorso_riservato_ai_quadrupedi.svg";
-}
-
-node[traffic_sign=~/IT:II.95(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.95(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.95(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.95(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Italian_traffic_signs_-_fine_percorso_riservato_ai_quadrupedi.svg";
-}
-
-node[traffic_sign=~/IT:II.96(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.96(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.96(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.96(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_dogana.svg";
-}
-
-node[traffic_sign=~/IT:II.97a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.97a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.97a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.97a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Italian_traffic_signs_-_confine_CEE.svg";
-}
-
-node[traffic_sign=~/IT:II.97b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.97b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.97b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.97b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/05/Italian_traffic_signs_-_confine_francia.svg";
-}
-
-node[traffic_sign=~/IT:II.98(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.98(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.98(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.98(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Italian_traffic_signs_-_old_-_alt_polizia.svg";
-}
-
-node[traffic_sign=~/IT:II.99(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.99(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.99(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.99(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/10/Italian_traffic_signs_-_stazione.svg";
-}
-
-node[traffic_sign=~/IT:II.272(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.272(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.272(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.272(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Italian_traffic_signs_-_segnale_di_itinerario.svg";
-}
-
-node[traffic_sign=~/IT:II.273(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.273(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.273(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.273(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Italian_traffic_signs_-_inizio_centro_abitato.svg";
-}
-
-node[traffic_sign=~/IT:II.274(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.274(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.274(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.274(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Italian_traffic_signs_-_fine_centro_abitato.svg";
-}
-
-node[traffic_sign=~/IT:II.275(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.275(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.275(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.275(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/84/Italian_traffic_signs_-_inizio_regione.svg";
-}
-
-node[traffic_sign=~/IT:II.276(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.276(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.276(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.276(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/46/Italian_traffic_signs_-_inizio_provincia.svg";
-}
-
-node[traffic_sign=~/IT:II.284(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.284(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.284(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.284(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Italian_traffic_signs_-_localizzazione_polizia_municipale.svg";
-}
-
-node[traffic_sign=~/IT:II.285(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.285(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.285(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.285(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/16/Italian_traffic_signs_-_conferma_autostradale.svg";
-}
-
-node[traffic_sign=~/IT:II.294(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.294(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.294(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.294(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Italian_traffic_signs_-_inizio_territorio_comunale.svg";
-}
-
-node[traffic_sign=~/IT:II.295(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.295(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.295(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.295(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/df/Italian_traffic_signs_-_fiume.svg";
-}
-
-node[traffic_sign=~/IT:II.302(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.302(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.302(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.302(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Italian_traffic_signs_-_ospedale.svg";
-}
-
-node[traffic_sign=~/IT:II.303(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.303(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.303(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.303(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/52/Italian_traffic_signs_-_attraversamento_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.304(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.304(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.304(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.304(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/70/Italian_traffic_signs_-_scuolabus.svg";
-}
-
-node[traffic_sign=~/IT:II.305(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.305(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.305(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.305(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7a/Italian_traffic_signs_-_SOS.svg";
-}
-
-node[traffic_sign=~/IT:II.306(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.306(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.306(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.306(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Italian_traffic_signs_-_sottopassaggio_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.307(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.307(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.307(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.307(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_sovrappassaggio_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.308(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.308(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.308(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.308(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_rampa_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.309(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.309(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.309(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.309(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Italian_traffic_signs_-_strada_senza_uscita.svg";
-}
-
-node[traffic_sign=~/IT:II.310(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.310(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.310(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.310(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_OSX.svg";
-}
-
-node[traffic_sign=~/IT:II.311(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.311(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.311(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.311(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/22/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_DX.svg";
-}
-
-node[traffic_sign=~/IT:II.312(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.312(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.312(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.312(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Italian_traffic_signs_-_velocit%C3%A0_consigliata_50.svg";
-}
-
-node[traffic_sign=~/IT:II.313(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.313(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.313(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.313(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/67/Italian_traffic_signs_-_fine_velocit%C3%A0_consigliata_50.svg";
-}
-
-node[traffic_sign=~/IT:II.314(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.314(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.314(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.314(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Italian_traffic_signs_-_strada_riservata_ai_veicoli_a_motore.svg";
-}
-
-node[traffic_sign=~/IT:II.315(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.315(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.315(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.315(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_fine_strada_riservata_ai_veicoli_a_motore.svg";
-}
-
-node[traffic_sign=~/IT:II.316(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.316(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.316(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.316(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Italian_traffic_signs_-_galleria_blu.svg";
-}
-
-node[traffic_sign=~/IT:II.317(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.317(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.317(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.317(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c3/Italian_traffic_signs_-_ponte_blu.svg";
-}
-
-node[traffic_sign=~/IT:II.318(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.318(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.318(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.318(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Italian_traffic_signs_-_zona_residenziale.svg";
-}
-
-node[traffic_sign=~/IT:II.319(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.319(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.319(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.319(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/64/Italian_traffic_signs_-_fine_zona_residenziale.svg";
-}
-
-node[traffic_sign=~/IT:II.320(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.320(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.320(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.320(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Italian_traffic_signs_-_area_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.321(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.321(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.321(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.321(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Italian_traffic_signs_-_fine_area_pedonale.svg";
-}
-
-node[traffic_sign=~/IT:II.322a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.322a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.322a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.322a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_zona_traffico_limitato.svg";
-}
-
-node[traffic_sign=~/IT:II.322b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.322b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.322b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.322b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_fine_zona_traffico_limitato.svg";
-}
-
-node[traffic_sign=~/IT:II.323a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.323a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.323a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.323a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Italian_traffic_signs_-_zona_30_kmh.svg";
-}
-
-node[traffic_sign=~/IT:II.323b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.323b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.323b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.323b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/76/Italian_traffic_signs_-_fine_zona_30.svg";
-}
-
-node[traffic_sign=~/IT:II.324(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.324(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.324(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.324(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6c/Italian_traffic_signs_-_attraversamento_ciclabile_2.svg";
-}
-
-node[traffic_sign=~/IT:II.325(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.325(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.325(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.325(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_svolta_a_sx_semidiretta.svg";
-}
-
-node[traffic_sign=~/IT:II.326(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.326(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.326(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.326(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Italian_traffic_signs_-_svolta_a_sx_indiretta.svg";
-}
-
-node[traffic_sign=~/IT:II.327(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.327(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.327(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.327(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_inversione_di_marcia.svg";
-}
-
-node[traffic_sign=~/IT:II.328(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.328(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.328(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.328(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Italian_traffic_signs_-_piazzola_su_viabilit%C3%A0_ordinaria.svg";
-}
-
-node[traffic_sign=~/IT:II.329(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.329(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.329(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.329(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/37/Italian_traffic_signs_-_piazzola_autostradale_sos.svg";
-}
-
-node[traffic_sign=~/IT:II.330(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.330(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.330(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.330(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_transitabilit%C3%A0_1.svg";
-}
-
-node[traffic_sign=~/IT:II.337(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.337(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.337(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.337(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f4/Italian_traffic_signs_-_uso_corsie.svg";
-}
-
-node[traffic_sign=~/IT:II.338(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.338(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.338(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.338(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4a/Italian_traffic_signs_-_uso_corsie_3.svg";
-}
-
-node[traffic_sign=~/IT:II.339(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.339(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.339(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.339(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Italian_traffic_signs_-_uso_corsie_1.svg";
-}
-
-node[traffic_sign=~/IT:II.340(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.340(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.340(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.340(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Italian_traffic_signs_-_uso_corsie_2.svg";
-}
-
-node[traffic_sign=~/IT:II.341(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.341(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.341(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.341(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Italian_traffic_signs_-_variazione_corsie_disponibili_-_riduzione.svg";
-}
-
-node[traffic_sign=~/IT:II.342(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.342(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.342(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.342(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_signs_-_variazione_corsie_disponibili_-_aumento.svg";
-}
-
-node[traffic_sign=~/IT:II.345(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.345(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.345(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.345(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Italian_traffic_signs_-_inizio_autostrada.svg";
-}
-
-node[traffic_sign=~/IT:II.346(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.346(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.346(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.346(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Italian_traffic_signs_-_segnale_fine_autostrada.svg";
-}
-
-node[traffic_sign=~/IT:II.348(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.348(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.348(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.348(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/f2/Italian_traffic_signs_-_senso_unico_%28a_destra%29.svg";
-}
-
-node[traffic_sign=~/IT:II.349(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.349(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.349(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.349(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/8b/Italian_traffic_signs_-_senso_unico_frontale.svg";
-}
-
-node[traffic_sign=~/IT:II.350(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.350(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.350(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.350(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Italian_traffic_signs_-_preavviso_deviazione_consigliata_autocarri.svg";
-}
-
-node[traffic_sign=~/IT:II.351(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.351(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.351(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.351(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Italian_traffic_signs_-_direzione_autocarri_consigliata.svg";
-}
-
-node[traffic_sign=~/IT:II.352(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.352(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.352(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.352(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/00/Italian_traffic_signs_-_limiti_generali.svg";
-}
-
-node[traffic_sign=~/IT:II.353(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.353(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.353(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.353(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Italian_traffic_signs_-_pronto_soccorso.svg";
-}
-
-node[traffic_sign=~/IT:II.354(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.354(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.354(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.354(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a7/Italian_traffic_signs_-_riparazioni.svg";
-}
-
-node[traffic_sign=~/IT:II.355(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.355(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.355(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.355(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/57/Italian_traffic_signs_-_telefono.svg";
-}
-
-node[traffic_sign=~/IT:II.356(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.356(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.356(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.356(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_rifornimento.svg";
-}
-
-node[traffic_sign=~/IT:II.357(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.357(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.357(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.357(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d7/Italian_traffic_signs_-_rifornimento_verde.svg";
-}
-
-node[traffic_sign=~/IT:II.358(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.358(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.358(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.358(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Italian_traffic_sign_-_fermata_autobus.svg";
-}
-
-node[traffic_sign=~/IT:II.359(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.359(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.359(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.359(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/29/Italian_traffic_signs_-_fermata_tram.svg";
-}
-
-node[traffic_sign=~/IT:II.360(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.360(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.360(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.360(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/36/Italian_traffic_signs_-_informazioni.svg";
-}
-
-node[traffic_sign=~/IT:II.361(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.361(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.361(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.361(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/72/Italian_traffic_signs_-_ostello_per_la_giovent%C3%B9.svg";
-}
-
-node[traffic_sign=~/IT:II.362(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.362(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.362(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.362(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/86/Italian_traffic_signs_-_area_pic_nic.svg";
-}
-
-node[traffic_sign=~/IT:II.363(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.363(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.363(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.363(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_campeggio.svg";
-}
-
-node[traffic_sign=~/IT:II.364(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.364(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.364(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.364(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/51/Italian_traffic_signs_-_radio_informazioni_stradali.svg";
-}
-
-node[traffic_sign=~/IT:II.365(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.365(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.365(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.365(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Italian_traffic_signs_-_albergo.svg";
-}
-
-node[traffic_sign=~/IT:II.366(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.366(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.366(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.366(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Italian_traffic_signs_-_bar.svg";
-}
-
-node[traffic_sign=~/IT:II.367(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.367(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.367(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.367(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/06/Italian_traffic_signs_-_ristorante.svg";
-}
-
-node[traffic_sign=~/IT:II.368(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.368(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.368(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.368(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Italian_traffic_signs_-_parcheggio_di_scambio_con_autobus.svg";
-}
-
-node[traffic_sign=~/IT:II.369(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.369(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.369(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.369(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Italian_traffic_signs_-_parcheggio_di_scambio_con_tram.svg";
-}
-
-node[traffic_sign=~/IT:II.370(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.370(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.370(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.370(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/8c/Italian_traffic_signs_-_parcheggio_di_scambio_con_metro.svg";
-}
-
-node[traffic_sign=~/IT:II.371(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.371(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.371(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.371(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_parcheggio_%2B_escursionismo.svg";
-}
-
-node[traffic_sign=~/IT:II.372(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.372(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.372(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.372(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/9/93/Italian_traffic_signs_-_auto_al_seguito.svg";
-}
-
-node[traffic_sign=~/IT:II.373(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.373(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.373(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.373(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Italian_traffic_signs_-_auto_su_treno.svg";
-}
-
-node[traffic_sign=~/IT:II.374(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.374(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.374(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.374(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Italian_traffic_signs_-_auto_su_nave.svg";
-}
-
-node[traffic_sign=~/IT:II.375(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.375(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.375(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.375(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/17/Italian_traffic_signs_-_taxi.svg";
-}
-
-node[traffic_sign=~/IT:II.376(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.376(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.376(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.376(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/19/Italian_traffic_signs_-_area_di_servizio.svg";
-}
-
-node[traffic_sign=~/IT:II.377(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:II.377(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:II.377(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:II.377(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Italian_traffic_signs_-_area_con_scarico_liquami.svg";
-}
-
-node[traffic_sign=~/IT:MII.1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Italian_traffic_signs_-_distanza.svg";
-}
-
-node[traffic_sign=~/IT:MII.2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Italian_traffic_signs_-_estesa_1.svg";
-}
-
-node[traffic_sign=~/IT:MII.3(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.3(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.3(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.3(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Italian_traffic_signs_-_validit%C3%A0_1.svg";
-}
-
-node[traffic_sign=~/IT:MII.4a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.4a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.4a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.4a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Italian_traffic_signs_-_limitazione.svg";
-}
-
-node[traffic_sign=~/IT:MII.4b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.4b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.4b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.4b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_eccezione.svg";
-}
-
-node[traffic_sign=~/IT:MII.5a1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5a1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5a1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5a1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Italian_traffic_signs_-_inizio_vert.svg";
-}
-
-node[traffic_sign=~/IT:MII.5a2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5a2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5a2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5a2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Italian_traffic_signs_-_continua_vert.svg";
-}
-
-node[traffic_sign=~/IT:MII.5a3(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5a3(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5a3(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5a3(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Italian_traffic_signs_-_fine_vert.svg";
-}
-
-node[traffic_sign=~/IT:MII.5b1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5b1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5b1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5b1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/3/38/Italian_traffic_signs_-_inizio_orizz.svg";
-}
-
-node[traffic_sign=~/IT:MII.5b2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5b2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5b2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5b2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Italian_traffic_signs_-_continua_orizz.svg";
-}
-
-node[traffic_sign=~/IT:MII.5b3(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.5b3(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.5b3(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.5b3(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/26/Italian_traffic_signs_-_fine_orizz.svg";
-}
-
-node[traffic_sign=~/IT:MII.6a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/8/80/Italian_traffic_signs_-_segnaletica_in_rifacimento.svg";
-}
-
-node[traffic_sign=~/IT:MII.6b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Italian_traffic_signs_-_incidente.svg";
-}
-
-node[traffic_sign=~/IT:MII.6c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Italian_traffic_signs_-_attraversamento_binari.svg";
-}
-
-node[traffic_sign=~/IT:MII.6d(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6d(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6d(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6d(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Italian_traffic_signs_-_sgombraneve_in_azione.svg";
-}
-
-node[traffic_sign=~/IT:MII.6e(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6e(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6e(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6e(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/55/Italian_traffic_signs_-_zona_soggetta_ad_allagamento.svg";
-}
-
-node[traffic_sign=~/IT:MII.6f(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6f(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6f(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6f(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Italian_traffic_signs_-_Coda.svg";
-}
-
-node[traffic_sign=~/IT:MII.6g(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6g(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6g(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6g(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Italian_traffic_signs_-_mezzi_di_lavoro_in_azione.svg";
-}
-
-node[traffic_sign=~/IT:MII.6h(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6h(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6h(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6h(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Italian_traffic_signs_-_strada_sdrucciolevole_per_ghiaccio.svg";
-}
-
-node[traffic_sign=~/IT:MII.6i(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6i(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6i(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6i(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Italian_traffic_signs_-_strada_sdrucciolevole_per_pioggia.svg";
-}
-
-node[traffic_sign=~/IT:MII.6l(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6l(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6l(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6l(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Italian_traffic_sign_-_autocarri_in_rallentamento.svg";
-}
-
-node[traffic_sign=~/IT:MII.6m(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6m(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6m(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6m(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/59/Italian_traffic_signs_-_rimozione_forzata.svg";
-}
-
-node[traffic_sign=~/IT:MII.6n(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6n(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6n(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6n(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Italian_traffic_signs_-_segnale_di_corsia.svg";
-}
-
-node[traffic_sign=~/IT:MII.6p1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6p1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6p1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6p1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/2/20/Italian_traffic_signs_-_tornante.svg";
-}
-
-node[traffic_sign=~/IT:MII.6p2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6p2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6p2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6p2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Italian_traffic_signs_-_numero_del_tornante.svg";
-}
-
-node[traffic_sign=~/IT:MII.6q1(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6q1(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6q1(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6q1(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Italian_traffic_signs_-_pulizia_meccanica_della_strada.svg";
-}
-
-node[traffic_sign=~/IT:MII.6q2(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.6q2(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.6q2(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.6q2(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Italian_traffic_signs_-_pulizia_meccanica_della_strada_1.svg";
-}
-
-node[traffic_sign=~/IT:MII.7(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.7(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.7(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.7(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Italian_traffic_signs_-_andamento_strada_principale.svg";
-}
-
-node[traffic_sign=~/IT:MII.8a(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.8a(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.8a(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.8a(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Italian_traffic_signs_-_divieto_di_sosta_temporaneo.svg";
-}
-
-node[traffic_sign=~/IT:MII.8b(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.8b(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.8b(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.8b(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/0/09/Italian_traffic_signs_-_itinerario_obbligatorio_merci_pericolose.svg";
-}
-
-node[traffic_sign=~/IT:MII.8c(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.8c(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.8c(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.8c(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Italian_traffic_signs_-_preavviso_deviazione_obbligatoria_autocarri.svg";
-}
-
-node[traffic_sign=~/IT:MII.8d(;|,|\[|$)/][direction=forward]::forward,
-node[traffic_sign=~/IT:MII.8d(;|,|\[|$)/][direction=backward]::backward,
-node["traffic_sign:forward"=~/IT:MII.8d(;|,|\[|$)/]::forward,
-node["traffic_sign:backward"=~/IT:MII.8d(;|,|\[|$)/]::backward {
-    icon-image: "https://upload.wikimedia.org/wikipedia/commons/1/18/Italian_traffic_signs_-_divieto_di_transito_autocarri.svg";
-}
-
 
 node|z-16[prop(sign, default)]::* {
     icon-image: none;

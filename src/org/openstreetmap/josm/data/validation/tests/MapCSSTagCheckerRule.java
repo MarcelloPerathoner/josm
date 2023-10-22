@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -117,14 +116,20 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
                     continue;
                 }
                 try {
-                    final String val = ai.val instanceof Expression
-                            ? Optional.ofNullable(((Expression) ai.val).evaluate(new Environment()))
-                            .map(Object::toString).map(String::intern).orElse(null)
-                            : ai.val instanceof String
-                            ? (String) ai.val
-                            : ai.val instanceof Keyword
-                            ? ((Keyword) ai.val).val
+                    String val = null;
+                    if (ai.getValue() instanceof Expression) {
+                        Object o = ((Expression) ai.getValue()).evaluate(new Environment());
+                        if (o != null) {
+                            val = o.toString();
+                        }
+                    }
+                    if (val == null) {
+                        val = ai.getValue() instanceof String
+                            ? (String) ai.getValue()
+                            : ai.getValue() instanceof Keyword
+                            ? ((Keyword) ai.getValue()).val
                             : null;
+                    }
                     if ("throwError".equals(ai.key)) {
                         check.errors.put(ai, Severity.ERROR);
                     } else if ("throwWarning".equals(ai.key)) {
@@ -135,11 +140,11 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
                         Logging.log(Logging.LEVEL_WARN,
                                 "Unsupported " + ai.key + " instruction. Allowed instructions are " + POSSIBLE_THROWS + '.', null);
                     } else if ("fixAdd".equals(ai.key)) {
-                        check.fixCommands.add(MapCSSTagCheckerFixCommand.fixAdd(ai.val));
+                        check.fixCommands.add(MapCSSTagCheckerFixCommand.fixAdd(ai.getValue()));
                     } else if ("fixRemove".equals(ai.key)) {
-                        CheckParameterUtil.ensureThat(!(ai.val instanceof String) || !(val != null && val.contains("=")),
+                        CheckParameterUtil.ensureThat(!(ai.getValue() instanceof String) || !(val != null && val.contains("=")),
                                 "Unexpected '='. Please only specify the key to remove in: " + ai);
-                        check.fixCommands.add(MapCSSTagCheckerFixCommand.fixRemove(ai.val));
+                        check.fixCommands.add(MapCSSTagCheckerFixCommand.fixRemove(ai.getValue()));
                     } else if (val != null && "fixChangeKey".equals(ai.key)) {
                         CheckParameterUtil.ensureThat(val.contains("=>"), "Separate old from new key by '=>'!");
                         final String[] x = val.split("=>", 2);
@@ -158,9 +163,9 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
                     } else if (val != null && "group".equals(ai.key)) {
                         check.group = val;
                     } else if (ai.key.startsWith("-")) {
-                        Logging.debug("Ignoring extension instruction: " + ai.key + ": " + ai.val);
+                        Logging.debug("Ignoring extension instruction: " + ai.key + ": " + ai.getValue());
                     } else {
-                        throw new IllegalDataException("Cannot add instruction " + ai.key + ": " + ai.val + '!');
+                        throw new IllegalDataException("Cannot add instruction " + ai.key + ": " + ai.getValue() + '!');
                     }
                 } catch (IllegalArgumentException e) {
                     throw new IllegalDataException(e);
@@ -182,13 +187,18 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
     }
 
     static MapCSSTagChecker.ParseResult readMapCSS(Reader css) throws ParseException {
-        return readMapCSS(css, null);
+        return readMapCSS(css, "-", null);
     }
 
-    static MapCSSTagChecker.ParseResult readMapCSS(Reader css, Consumer<String> assertionConsumer) throws ParseException {
+    static MapCSSTagChecker.ParseResult readMapCSS(Reader css, String url) throws ParseException {
+        return readMapCSS(css, url, null);
+    }
+
+    static MapCSSTagChecker.ParseResult readMapCSS(Reader css, String url, Consumer<String> assertionConsumer) throws ParseException {
         CheckParameterUtil.ensureParameterNotNull(css, "css");
 
         final MapCSSStyleSource source = new MapCSSStyleSource("");
+        source.url = url;
         final MapCSSParser preprocessor = new MapCSSParser(css, MapCSSParser.LexicalState.PREPROCESSOR);
         try (StringReader mapcss = new StringReader(preprocessor.pp_root(source))) {
             new MapCSSParser(mapcss, MapCSSParser.LexicalState.DEFAULT).sheet(source);
@@ -277,7 +287,7 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
             // Return something to avoid NPEs
             return rule.declaration.toString();
         } else {
-            final Object val = errors.keySet().iterator().next().val;
+            final Object val = errors.keySet().iterator().next().getValue();
             selector = selector == null && p != null ? whichSelectorMatchesPrimitive(p) : selector;
             return String.valueOf(
                     val instanceof Expression

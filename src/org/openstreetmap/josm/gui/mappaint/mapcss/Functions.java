@@ -3,10 +3,12 @@ package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import java.awt.Color;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -143,6 +145,21 @@ public final class Functions {
     }
 
     /**
+     * Sums the elements in a list.
+     * @param lst the list
+     * @return the sum of the elements in the list
+     */
+    public static Double sum(List<?> lst) {
+        double acc = 0.0;
+        for (Object item : lst) {
+            Double d = Cascade.convertTo(item, Double.class);
+            if (d != null)
+                acc += d;
+        }
+        return acc;
+    }
+
+    /**
      * Returns the first non-null object.
      * The name originates from <a href="http://wiki.openstreetmap.org/wiki/MapCSS/0.2/eval">MapCSS standard</a>.
      * @param ignored The environment (ignored)
@@ -171,6 +188,25 @@ public final class Functions {
     }
 
     /**
+     * Get an element of a nested list.
+     *
+     * @param lst outer list
+     * @param outerIndex outer list index (starting with 0)
+     * @param innerIndex inner list index (starting with 0)
+     * @return {@code n}th element of the list, or {@code null} if index out of range
+     * @since xxx
+     */
+    public static Object get(List<List<?>> lst, float outerIndex, float innerIndex) {
+        int idx1 = Math.round(outerIndex);
+        int idx2 = Math.round(innerIndex);
+        try {
+            return lst.get(idx1).get(idx2);
+        } catch (IndexOutOfBoundsException | NullPointerException e) {
+            return null;
+        }
+    }
+
+    /**
      * Splits string {@code toSplit} at occurrences of the separator string {@code sep} and returns a list of matches.
      * @param sep separator string
      * @param toSplit string to split
@@ -179,7 +215,8 @@ public final class Functions {
      * @since 5699
      */
     public static List<String> split(String sep, String toSplit) {
-        if (toSplit == null) return null;
+        if (toSplit == null)
+            return Collections.emptyList();
         return Arrays.asList(toSplit.split(Pattern.quote(sep), -1));
     }
 
@@ -338,7 +375,7 @@ public final class Functions {
      * @return the property value
      */
     public static Object prop(final Environment env, String key) {
-        return prop(env, key, null);
+        return env.getCascade(null).get(key);
     }
 
     /**
@@ -349,6 +386,8 @@ public final class Functions {
      * @return the property value
      */
     public static Object prop(final Environment env, String key, String layer) {
+        if ("globals".equals(layer))
+            return env.source.globalsCascade.get(key);
         return env.getCascade(layer).get(key);
     }
 
@@ -381,6 +420,33 @@ public final class Functions {
      */
     public static String tag(final Environment env, String key) {
         return env.osm == null ? null : env.osm.get(key);
+    }
+
+    /**
+     * Gets the key of the Nth condition of the selector that matched.
+     * <p>
+     * Example:
+     * <pre>
+     * <code>
+     *   *[/^max/ =~ /;/] {
+     *     throwWarning: tr("{0} tag with multiple values", get_cond(0));
+     *   }
+     * </code>
+     * </pre>
+     *
+     * @param env the environment
+     * @param index the index of the condition starting with 0
+     * @return the key as string
+     */
+    public static String get_cond(final Environment env, Integer index) {
+        try {
+            Condition c = env.selector().getConditions().get(index);
+            if (c instanceof Condition.TagCondition) {
+                return ((Condition.TagCondition) c).asTag(env.osm).getKey();
+            }
+        } catch (NullPointerException e) {
+        }
+        return null;
     }
 
     /**
@@ -555,18 +621,6 @@ public final class Functions {
             return null;
         }
         return Float.valueOf(env.index + 1f);
-    }
-
-    /**
-     * Sort an array of strings
-     * @param ignored The environment (ignored)
-     * @param sortables The array to sort
-     * @return The sorted list
-     * @since 15279
-     */
-    public static List<String> sort(Environment ignored, String... sortables) {
-        Arrays.parallelSort(sortables);
-        return Arrays.asList(sortables);
     }
 
     /**
@@ -813,6 +867,22 @@ public final class Functions {
      */
     public static String JOSM_pref(Environment env, String key, String def) {
         return MapPaintStyles.getStyles().getPreferenceCached(env != null ? env.source : null, key, def);
+    }
+
+    /**
+     * Compiles a regexp.
+     *
+     * @param pattern The regex expression
+     * @param flags a string that may contain "i" (case insensitive), "m" (multiline) and "s" ("dot all")
+     * @return the a list of capture groups if {@link Matcher#matches()}, or {@code null}.
+     * @see Pattern#CASE_INSENSITIVE
+     * @see Pattern#DOTALL
+     * @see Pattern#MULTILINE
+     * @since 5701
+     */
+    public static Pattern regexp(String pattern, String flags) {
+        int f = parse_regex_flags(flags);
+        return Pattern.compile(pattern, f);
     }
 
     /**
@@ -1068,6 +1138,21 @@ public final class Functions {
     }
 
     /**
+     * Trim whitespaces from the strings {@code strings}.
+     *
+     * @param strings The list of strings to strip
+     * @return The resulting string
+     * @see Utils#strip
+     * @since 15591
+     */
+    public static List<String> filter_list_regex(String regex, List<String> strings) {
+        Pattern compiled = Pattern.compile(regex);
+        return strings.stream()
+                .filter(s -> compiled.matcher(s).find())
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Check if two strings are similar, but not identical, i.e., have a Levenshtein distance of 1 or 2.
      * @param string1 first string to compare
      * @param string2 second string to compare
@@ -1116,6 +1201,49 @@ public final class Functions {
      */
     public static String XML_encode(String s) {
         return s == null ? null : XmlWriter.encode(s);
+    }
+
+    /**
+     * Encode the query part of an URL.
+     * <p>
+     * The result is a string in the form:
+     * <code>param1=value1&param2=value2&param3=value3</code>. The parameters are
+     * URLencoded.
+     * @param map a map of param -> value
+     * @return the query string
+     */
+    public static String URL_query_encode(Map<String, String> map) {
+        if (map == null)
+            return null;
+        List<String> pairs = new ArrayList<>();
+        for (Entry<String, String> e : map.entrySet()) {
+            pairs.add(Utils.encodeUrl(e.getKey()) + "=" + Utils.encodeUrl(e.getValue()));
+        }
+        return String.join("&", pairs);
+    }
+
+    /**
+     * Encode the query part of an URL.
+     * <p>
+     * The result is a string in the form:
+     * <code>namePrefix0=value0&namePrefix1=value1&namePrefix2=value1</code>. The parameters are
+     * URLencoded.  The parameter names are composed of {@code namePrefix} + index in
+     * the list.
+     *
+     * @param namePrefix the prefix for the name of a parameters
+     * @param list the list of parameter values
+     * @return the query string
+     */
+    public static String URL_query_encode(String namePrefix, List<String> list) {
+        if (list == null)
+            return null;
+        List<String> pairs = new ArrayList<>();
+        int n = 0;
+        for (String s : list) {
+            pairs.add(Utils.encodeUrl(namePrefix + n) + "=" + Utils.encodeUrl(s));
+            n++;
+        }
+        return String.join("&", pairs);
     }
 
     /**
@@ -1178,7 +1306,7 @@ public final class Functions {
      */
     @NullableArguments
     public static Object print(Object o) {
-        System.out.print(o == null ? "none" : o.toString());
+        System.out.print(o == null ? "mapcss-print-none" : o.toString());
         return o;
     }
 
@@ -1190,7 +1318,7 @@ public final class Functions {
      */
     @NullableArguments
     public static Object println(Object o) {
-        System.out.println(o == null ? "none" : o.toString());
+        System.out.println(o == null ? "mapcss-println-none" : o.toString());
         return o;
     }
 

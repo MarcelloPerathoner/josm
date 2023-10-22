@@ -81,6 +81,9 @@ public interface Selector {
     /** selector base for style information not specific to nodes, ways or relations. */
     String BASE_CANVAS = "canvas";
 
+    /** selector base for global variables. */
+    String BASE_GLOBALS = "globals";
+
     /** selector base for artificial bases created to use preferences. */
     String BASE_SETTING = "setting";
 
@@ -778,6 +781,7 @@ public interface Selector {
             case "area": return BASE_AREA;
             case "meta": return BASE_META;
             case "canvas": return BASE_CANVAS;
+            case "globals": return BASE_GLOBALS;
             case "setting": return BASE_SETTING;
             case "settings": return BASE_SETTINGS;
             default:

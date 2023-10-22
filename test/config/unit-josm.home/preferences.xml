@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='0'>
-  <tag key='geoimage.docked' value='false'/>
-  <tag key='geoimage.visible' value='true'/>
+  <tag key='cache.motd.html' value='1697926857'/>
+  <tag key='cache.motd.html.java' value='17.0.9'/>
+  <tag key='cache.motd.html.lang' value='En:'/>
+  <tag key='cache.motd.html.version' value='0'/>
   <tag key='josm.version' value='0'/>
+  <tag key='mappaint.renderer-class-name' value='org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer'/>
 </preferences>

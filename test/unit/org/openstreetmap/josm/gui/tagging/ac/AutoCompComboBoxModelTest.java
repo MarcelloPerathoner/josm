@@ -87,8 +87,7 @@ class AutoCompComboBoxModelTest {
     @Test
     void testAutoCompModelFindAutoCompletionItem() {
         AutoCompComboBoxModel<AutoCompletionItem> model = new AutoCompComboBoxModel<>();
-        // AutoCompletionItem implements Comparable. Build a Comparator from Comparable.
-        model.setComparator(Comparator.naturalOrder());
+        model.setComparator(AutoCompletionManager.PRIORITY_COMPARATOR);
         testData.forEach((k, v) -> model.addElement(v.ac));
 
         assertNull(model.findBestCandidate("bb"));

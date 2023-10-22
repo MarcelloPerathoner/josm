@@ -70,7 +70,6 @@ import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
-import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.HorizontalTextAlignment;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.VerticalTextAlignment;
@@ -611,7 +610,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
 
         MapViewPoint p = mapState.getPointFor(n);
         TextLabel text = bs.text;
-        String s = text.labelCompositionStrategy.compose(n);
+        String s = text.getString(n);
         if (Utils.isEmpty(s)) return;
 
         Font defaultFont = g.getFont();
@@ -666,17 +665,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 Math.round(viewPoint.getInViewX()),
                 Math.round(viewPoint.getInViewY()));
 
-        if (text.textRotation != null) {
-            Double angle = text.textRotation.evaluate(Double.class, null);
-            if (angle != null) {
-                affineTransform.rotate(angle);
-            }
-        }
         if (text.textTransform != null) {
-            AffineTransform at = text.textTransform.evaluate(AffineTransform.class, null);
-            if (at != null) {
-                affineTransform.concatenate(at);
-            }
+            affineTransform.concatenate(text.textTransform);
         }
         affineTransform.translate(x, y);
         displayText(n, text, s, affineTransform);
@@ -799,7 +789,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param affineTransform the affine transformation or {@code null}
      */
     public void drawNodeIcon(INode n, MapImage img, boolean disabled, boolean selected, boolean member,
-            double theta, AffineTransform affineTransform) {
+            AffineTransform affineTransform) {
         MapViewPoint p = mapState.getPointFor(n);
 
         int w = img.getWidth();
@@ -808,8 +798,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             drawPointHighlight(p.getInView(), Math.max(w, h));
         }
 
-        drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member,
-                theta, affineTransform, (g, r) -> {
+        drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, 0d,
+                affineTransform, (g, r) -> {
             Color color = getSelectionHintColor(disabled, selected);
             g.setColor(color);
             g.draw(r);

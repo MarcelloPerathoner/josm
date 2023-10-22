@@ -64,7 +64,7 @@ class MapCSSTagCheckerTest {
     static MapCSSTagChecker buildTagChecker(String css) throws ParseException {
         final MapCSSTagChecker test = new MapCSSTagChecker();
         Set<String> errors = new HashSet<>();
-        test.checks.putAll("test", MapCSSTagCheckerRule.readMapCSS(new StringReader(css), errors::add).parseChecks);
+        test.checks.putAll("test", MapCSSTagCheckerRule.readMapCSS(new StringReader(css), "-", errors::add).parseChecks);
         assertTrue(errors.isEmpty(), errors::toString);
         return test;
     }
