@@ -108,7 +108,7 @@ public class MapCSSRendererTest {
                         .setThresholdPixels(0).setThresholdTotalColorDiff(0),
 
                 /** Tests area label drawing/placement */
-                new TestConfig("area-text", AREA_DEFAULT)
+                new TestConfig("area-text", AREA_DEFAULT).usesFont("DejaVu Sans")
                         .setThresholdPixels(0).setThresholdTotalColorDiff(0),
 
                 /** Tests area icon drawing/placement */
@@ -127,7 +127,7 @@ public class MapCSSRendererTest {
                         .setThresholdPixels(0).setThresholdTotalColorDiff(0),
 
                 /** Tests text along a way */
-                new TestConfig("way-text", AREA_DEFAULT)
+                new TestConfig("way-text", AREA_DEFAULT).usesFont("DejaVu Sans")
                         .setThresholdPixels(3400).setThresholdTotalColorDiff(0),
 
                 /** Another test for node shapes */

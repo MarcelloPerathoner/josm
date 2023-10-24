@@ -53,11 +53,6 @@ public class Environment {
     private final Selector selector;
 
     /**
-     * The name of the default layer. It is used if no layer is specified in the MapCSS rule
-     */
-    public static final String DEFAULT_LAYER = "default";
-
-    /**
      * If not null, this is the matching parent object if a condition or an expression
      * is evaluated in a {@link LinkSelector} (within a child selector)
      */

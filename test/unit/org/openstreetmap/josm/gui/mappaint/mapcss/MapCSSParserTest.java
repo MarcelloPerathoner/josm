@@ -406,7 +406,7 @@ class MapCSSParserTest {
 
     @Test
     void testColorNameTicket9191() throws Exception {
-        Environment e = new Environment(null, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(null, new MultiCascade(), MultiCascade.DEFAULT, null);
         getParser("{color: testcolour1#88DD22}").declaration().instructions.get(0).execute(e);
         Color expected = new Color(0x88DD22);
         assertEquals(expected, e.getCascade(null).get("color", null, Color.class));
@@ -414,7 +414,7 @@ class MapCSSParserTest {
 
     @Test
     void testColorNameTicket9191Alpha() throws Exception {
-        Environment e = new Environment(null, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(null, new MultiCascade(), MultiCascade.DEFAULT, null);
         getParser("{color: testcolour2#12345678}").declaration().instructions.get(0).execute(e);
         Color expected = new Color(0x12, 0x34, 0x56, 0x78);
         assertEquals(expected, e.getCascade(null).get("color", null, Color.class));
@@ -479,7 +479,7 @@ class MapCSSParserTest {
         MapCSSStyleSource source = new MapCSSStyleSource("node[foo=bar] {refs: join_list(\";\", parent_tags(\"ref\"));}");
         source.loadStyleSource();
         assertEquals(1, source.rules.size());
-        Environment e = new Environment(n, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(n, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertTrue(source.rules.get(0).matches(e));
         source.rules.get(0).declaration.execute(e);
         assertEquals("x2;x10", e.getCascade(null).get("refs", null, String.class));
@@ -493,14 +493,14 @@ class MapCSSParserTest {
         MapCSSStyleSource source = new MapCSSStyleSource("way[highway] {sorted: join_list(\",\", sort(tag(\"alt_name\"), tag(\"name\")));}");
         source.loadStyleSource();
         assertEquals(1, source.rules.size());
-        Environment e = new Environment(way1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(way1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertTrue(source.rules.get(0).matches(e));
         source.rules.get(0).declaration.execute(e);
         assertEquals(Functions.join(null, ",", "Alpha", "Beta"), e.getCascade(null).get("sorted", null, String.class));
 
         source = new MapCSSStyleSource("way[ref] {sorted: join_list(\",\", sort_list(split(\";\", tag(\"ref\"))));}");
         source.loadStyleSource();
-        e = new Environment(way1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(way1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertTrue(source.rules.get(0).matches(e));
         source.rules.get(0).declaration.execute(e);
         assertEquals(Functions.join(null, ",", "A8", "A9"), e.getCascade(null).get("sorted", null, String.class));
@@ -528,37 +528,37 @@ class MapCSSParserTest {
         ds.addPrimitive(rel1);
 
         /* Check with empty role and one object */
-        Environment e = new Environment(rel1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(rel1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertEquals(1, Functions.count_roles(e, ""));
 
         /* Check with non-empty role and one object */
-        e = new Environment(rel1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(rel1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertEquals(0, Functions.count_roles(e, "from"));
 
         /* Check with empty role and two objects */
         Way way2 = TestUtils.newWay("highway=residential name=2", way1.firstNode(), way1.lastNode());
         ds.addPrimitive(way2);
         rel1.addMember(new RelationMember("", way2));
-        e = new Environment(rel1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(rel1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertEquals(2, Functions.count_roles(e, ""));
 
         /* Check with non-empty role and two objects */
         rel1.setMember(0, new RelationMember("from", way1));
-        e = new Environment(rel1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(rel1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertEquals(1, Functions.count_roles(e, "from"));
 
         /* Check with multiple roles */
         assertEquals(1, Functions.count_roles(e, "from", "to"));
 
         /* Check with non-relation */
-        e = new Environment(way1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(way1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertEquals(0, Functions.count_roles(e, "from", "to"));
 
         /* Check with actual call to mapcss functions */
         MapCSSStyleSource source = new MapCSSStyleSource("relation[type=destination_sign] {roles: count_roles(\"from\");}");
         source.loadStyleSource();
         assertEquals(1, source.rules.size());
-        e = new Environment(rel1, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        e = new Environment(rel1, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertTrue(source.rules.get(0).matches(e));
         source.rules.get(0).declaration.execute(e);
         assertEquals((Integer) 1, e.getCascade(null).get("roles", null, Integer.class));

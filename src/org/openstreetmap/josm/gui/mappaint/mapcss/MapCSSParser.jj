@@ -1054,6 +1054,8 @@ Expression primary() :
         {
             if (lit == null) {
                 return LiteralExpression.create(null, sheet, token);
+            } else if (lit instanceof ExpressionFactory.RelativeFloatExpression) {
+                return (ExpressionFactory.RelativeFloatExpression) lit;
             } else if (lit instanceof String && PlaceholderExpression.PATTERN_PLACEHOLDER.matcher((String) lit).find()) {
                 return new PlaceholderExpression((String) lit);
             }
@@ -1096,7 +1098,7 @@ Object literal() :
                     ColorHelper.html2color(t.image)).get();
         }
     |
-        t=<IDENT> { return new Keyword(t.image); }
+        t=<IDENT> { Keyword kw = Keyword.create(t.image); return kw != null ? kw : t.image; }
     |
         val=string() { return val; }
     |

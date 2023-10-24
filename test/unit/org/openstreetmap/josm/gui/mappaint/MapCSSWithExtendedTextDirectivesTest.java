@@ -23,11 +23,11 @@ class MapCSSWithExtendedTextDirectivesTest {
     @Test
     void testCreateAutoTextElement() {
         MultiCascade mc = new MultiCascade();
-        Cascade c = mc.getOrCreateCascade("default");
-        c.put("text", LiteralExpression.AUTO);
+        Cascade c = mc.getOrCreateCascade(MultiCascade.DEFAULT);
+        c.put("text", Keyword.AUTO);
         Node osm = new Node();
         osm.put("ref", "A456");
-        Environment env = new Environment(osm, mc, "default", null);
+        Environment env = new Environment(osm, mc, MultiCascade.DEFAULT, null);
 
         TextLabel te = TextLabel.create(env, Color.WHITE, false /* no default annotate */);
         assertNotNull(te.text);

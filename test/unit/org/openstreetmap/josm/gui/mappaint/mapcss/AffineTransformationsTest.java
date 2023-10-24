@@ -79,7 +79,7 @@ class AffineTransformationsTest {
         MultiCascade mc1 = new MultiCascade();
 
         for (MapCSSRule r : source.rules) {
-            Environment env = new Environment(n0, mc1, Environment.DEFAULT_LAYER, source);
+            Environment env = new Environment(n0, mc1, MultiCascade.DEFAULT, source);
             if (r.matches(env)) {
                 r.execute(env);
             }
@@ -174,7 +174,7 @@ class AffineTransformationsTest {
             MultiCascade mc1 = new MultiCascade();
 
             for (MapCSSRule r : source.rules) {
-                Environment env = new Environment(n, mc1, Environment.DEFAULT_LAYER, source);
+                Environment env = new Environment(n, mc1, MultiCascade.DEFAULT, source);
                 if (r.matches(env)) {
                     r.execute(env);
                 }

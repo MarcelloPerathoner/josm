@@ -22,50 +22,6 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
 public class BoxTextElement extends StyleElement {
 
     /**
-     * MapCSS text-anchor-horizontal
-     */
-    public enum HorizontalTextAlignment {
-        /**
-         * Align to the left
-         */
-        LEFT,
-        /**
-         * Align in the center
-         */
-        CENTER,
-        /**
-         * Align to the right
-         */
-        RIGHT
-    }
-
-    /**
-     * MapCSS text-anchor-vertical
-     */
-    public enum VerticalTextAlignment {
-        /**
-         * Render above the box
-         */
-        ABOVE,
-        /**
-         * Align to the top of the box
-         */
-        TOP,
-        /**
-         * Render at the center of the box
-         */
-        CENTER,
-        /**
-         * Align to the bottom of the box
-         */
-        BOTTOM,
-        /**
-         * Render below the box
-         */
-        BELOW
-    }
-
-    /**
      * Something that provides us with a {@link BoxProviderResult}
      * @since 10600 (functional interface)
      */
@@ -166,13 +122,14 @@ public class BoxTextElement extends StyleElement {
      */
     public int yOffset;
     /**
-     * The {@link HorizontalTextAlignment} for this text.
+     * The horizontal text alignment for this text.
      */
-    public HorizontalTextAlignment hAlign;
+    public Keyword hAlign;
     /**
-     * The {@link VerticalTextAlignment} for this text.
+     * The vertical text alignment for this text.
      */
-    public VerticalTextAlignment vAlign;
+    public Keyword vAlign;
+
     protected BoxProvider boxProvider;
 
     /**
@@ -182,11 +139,11 @@ public class BoxTextElement extends StyleElement {
      * @param boxProvider The box provider to use
      * @param offsetX x offset, in screen space
      * @param offsetY y offset, in screen space
-     * @param hAlign The {@link HorizontalTextAlignment}
-     * @param vAlign The {@link VerticalTextAlignment}
+     * @param hAlign The horizontal alignment {@link Keyword}
+     * @param vAlign The vertical alignment {@link Keyword}
      */
     public BoxTextElement(Cascade c, TextLabel text, BoxProvider boxProvider,
-            int offsetX, int offsetY, HorizontalTextAlignment hAlign, VerticalTextAlignment vAlign) {
+            int offsetX, int offsetY, Keyword hAlign, Keyword vAlign) {
         super(c, 5f);
         xOffset = offsetX;
         yOffset = offsetY;
@@ -206,7 +163,8 @@ public class BoxTextElement extends StyleElement {
      * @return A new {@link BoxTextElement} or <code>null</code> if the creation failed.
      */
     public static BoxTextElement create(Environment env, BoxProvider boxProvider) {
-        initDefaultParameters();
+        if (defaultTextColorCache == null)
+            initDefaultParameters();
 
         TextLabel text = TextLabel.create(env, defaultTextColorCache, false);
         if (text == null) return null;
@@ -216,37 +174,9 @@ public class BoxTextElement extends StyleElement {
         if (text.text == null) return null;
 
         Cascade c = env.getCascade();
+        Keyword hAlign = c.get(TEXT_ANCHOR_HORIZONTAL, Keyword.RIGHT, Keyword.class);
+        Keyword vAlign = c.get(TEXT_ANCHOR_VERTICAL, Keyword.BOTTOM, Keyword.class);
 
-        HorizontalTextAlignment hAlign;
-        switch (c.get(TEXT_ANCHOR_HORIZONTAL, Keyword.RIGHT, Keyword.class).val) {
-            case "left":
-                hAlign = HorizontalTextAlignment.LEFT;
-                break;
-            case "center":
-                hAlign = HorizontalTextAlignment.CENTER;
-                break;
-            case "right":
-            default:
-                hAlign = HorizontalTextAlignment.RIGHT;
-        }
-        VerticalTextAlignment vAlign;
-        switch (c.get(TEXT_ANCHOR_VERTICAL, Keyword.BOTTOM, Keyword.class).val) {
-            case "above":
-                vAlign = VerticalTextAlignment.ABOVE;
-                break;
-            case "top":
-                vAlign = VerticalTextAlignment.TOP;
-                break;
-            case "center":
-                vAlign = VerticalTextAlignment.CENTER;
-                break;
-            case "below":
-                vAlign = VerticalTextAlignment.BELOW;
-                break;
-            case "bottom":
-            default:
-                vAlign = VerticalTextAlignment.BOTTOM;
-        }
         Point2D offset = TextLabel.getTextOffset(c);
 
         return new BoxTextElement(c, text, boxProvider, (int) offset.getX(), (int) -offset.getY(), hAlign, vAlign);
@@ -261,8 +191,8 @@ public class BoxTextElement extends StyleElement {
     }
 
     private static void initDefaultParameters() {
-        if (defaultTextColorCache != null) return;
-        defaultTextColorCache = PaintColors.TEXT.get();
+        if (defaultTextColorCache == null)
+            defaultTextColorCache = PaintColors.TEXT.get();
     }
 
     @Override

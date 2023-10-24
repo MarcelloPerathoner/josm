@@ -146,8 +146,9 @@ public class NodeElement extends StyleElement {
         Keyword shapeKW = c.get("symbol-shape", null, Keyword.class);
         if (shapeKW == null)
             return null;
-        Optional<SymbolShape> shape = SymbolShape.forName(shapeKW.val);
-        if (!shape.isPresent()) {
+
+        SymbolShape shape = SymbolShape.fromKeyword(shapeKW);
+        if (shape == null) {
             return null;
         }
 
@@ -186,7 +187,7 @@ public class NodeElement extends StyleElement {
             }
         }
 
-        return new Symbol(shape.get(), Math.round(size), stroke, strokeColor, fillColor);
+        return new Symbol(shape, Math.round(size), stroke, strokeColor, fillColor);
     }
 
     @Override

@@ -127,7 +127,7 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
                         val = ai.getValue() instanceof String
                             ? (String) ai.getValue()
                             : ai.getValue() instanceof Keyword
-                            ? ((Keyword) ai.getValue()).val
+                            ? ((Keyword) ai.getValue()).name().toLowerCase()
                             : null;
                     }
                     if ("throwError".equals(ai.key)) {
@@ -224,7 +224,7 @@ final class MapCSSTagCheckerRule implements Predicate<OsmPrimitive> {
     }
 
     Selector whichSelectorMatchesPrimitive(OsmPrimitive primitive) {
-        return whichSelectorMatchesEnvironment(new Environment(primitive, new MultiCascade(), Environment.DEFAULT_LAYER, null));
+        return whichSelectorMatchesEnvironment(new Environment(primitive, new MultiCascade(), MultiCascade.DEFAULT, null));
     }
 
     Selector whichSelectorMatchesEnvironment(Environment env) {

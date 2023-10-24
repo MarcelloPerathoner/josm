@@ -261,7 +261,7 @@ public class MapboxVectorStyleTest {
         assertTrue(mapillaryCssSource.getErrors().isEmpty(), mapillaryCssSource.getErrors().toString());
         final MapCSSRule mapillaryOverview = getRule(mapillaryCssSource, "node", "mapillary-overview");
         assertNotNull(mapillaryOverview, mapillaryCssSource.toString());
-        assertInInstructions(mapillaryOverview.declaration.instructions, "symbol-shape", new Keyword("circle"));
+        assertInInstructions(mapillaryOverview.declaration.instructions, "symbol-shape", Keyword.CIRCLE);
         assertInInstructions(mapillaryOverview.declaration.instructions, "symbol-fill-color", ColorHelper.html2color("#05CB63"));
         assertInInstructions(mapillaryOverview.declaration.instructions, "symbol-fill-opacity", 0.6f);
         // Docs indicate that symbol-size is total width, while we are translating from a radius. So 2 * 4 = 8.

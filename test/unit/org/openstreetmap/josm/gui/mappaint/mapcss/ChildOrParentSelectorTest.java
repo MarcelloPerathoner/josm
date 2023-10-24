@@ -148,13 +148,13 @@ class ChildOrParentSelectorTest {
         r.addMember(new RelationMember("another role", w3));
         r.addMember(new RelationMember("yet another role", w3));
 
-        Environment e = new Environment(r, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        Environment e = new Environment(r, new MultiCascade(), MultiCascade.DEFAULT, null);
         assertTrue(selector.matches(e));
 
         MapCSSStyleSource source = new MapCSSStyleSource(css);
         source.loadStyleSource();
         source.rules.get(0).declaration.execute(e);
-        assertEquals(Float.valueOf(3f), e.getCascade(Environment.DEFAULT_LAYER).get("text", null, Float.class));
+        assertEquals(Float.valueOf(3f), e.getCascade(MultiCascade.DEFAULT).get("text", null, Float.class));
     }
 
     @Test

@@ -33,7 +33,7 @@ public final class DefaultStyles implements StyleKeys {
     static {
         MultiCascade mc = new MultiCascade();
         mc.getOrCreateCascade(MultiCascade.DEFAULT);
-        SIMPLE_NODE_ELEMSTYLE = NodeElement.create(new Environment(null, mc, "default", null), 4.1f, true);
+        SIMPLE_NODE_ELEMSTYLE = NodeElement.create(new Environment(null, mc, MultiCascade.DEFAULT, null), 4.1f, true);
         if (SIMPLE_NODE_ELEMSTYLE == null) throw new AssertionError();
         SIMPLE_NODE_ELEMSTYLE_BOXPROVIDER = SIMPLE_NODE_ELEMSTYLE.getBoxProvider();
     }
@@ -49,7 +49,8 @@ public final class DefaultStyles implements StyleKeys {
         c.put(TEXT, Keyword.AUTO);
         Node n = new Node();
         n.put("name", "dummy");
-        SIMPLE_NODE_TEXT_ELEMSTYLE = BoxTextElement.create(new Environment(n, mc, "default", null), SIMPLE_NODE_ELEMSTYLE.getBoxProvider());
+        SIMPLE_NODE_TEXT_ELEMSTYLE = BoxTextElement.create(
+            new Environment(n, mc, MultiCascade.DEFAULT, null), SIMPLE_NODE_ELEMSTYLE.getBoxProvider());
         if (SIMPLE_NODE_TEXT_ELEMSTYLE == null) throw new AssertionError();
     }
 

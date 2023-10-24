@@ -5,8 +5,8 @@ import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
-import java.util.Optional;
-import java.util.stream.Stream;
+
+import org.openstreetmap.josm.gui.mappaint.Keyword;
 
 /**
  * A list of possible symbol shapes.
@@ -16,47 +16,52 @@ public enum SymbolShape {
     /**
      * A square
      */
-    SQUARE("square", 4, Math.PI / 4),
+    SQUARE(4, Math.PI / 4),
     /**
      * A circle
      */
-    CIRCLE("circle", 1, 0),
+    CIRCLE(1, 0),
     /**
      * A triangle with sides of equal length
      */
-    TRIANGLE("triangle", 3, Math.PI / 2),
+    TRIANGLE(3, Math.PI / 2),
     /**
      * A pentagon
      */
-    PENTAGON("pentagon", 5, Math.PI / 2),
+    PENTAGON(5, Math.PI / 2),
     /**
      * A hexagon
      */
-    HEXAGON("hexagon", 6, 0),
+    HEXAGON(6, 0),
     /**
      * A heptagon
      */
-    HEPTAGON("heptagon", 7, Math.PI / 2),
+    HEPTAGON(7, Math.PI / 2),
     /**
      * An octagon
      */
-    OCTAGON("octagon", 8, Math.PI / 8),
+    OCTAGON(8, Math.PI / 8),
     /**
      * a nonagon
      */
-    NONAGON("nonagon", 9, Math.PI / 2),
+    NONAGON(9, Math.PI / 2),
     /**
      * A decagon
      */
-    DECAGON("decagon", 10, 0);
+    DECAGON(10, 0);
 
-    private final String name;
-    final int sides;
+    private final int sides;
+    private final double rotation;
 
-    final double rotation;
+    public static SymbolShape fromKeyword(Keyword keyword) {
+        try {
+            return valueOf(keyword.name());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 
-    SymbolShape(String name, int sides, double rotation) {
-        this.name = name;
+    SymbolShape(int sides, double rotation) {
         this.sides = sides;
         this.rotation = rotation;
     }
@@ -117,22 +122,5 @@ public enum SymbolShape {
      */
     public double getRotation() {
         return rotation;
-    }
-
-    /**
-     * Get the MapCSS name for this shape
-     * @return The name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Get the shape with the given name
-     * @param val The name to search
-     * @return The shape as optional
-     */
-    public static Optional<SymbolShape> forName(String val) {
-        return Stream.of(values()).filter(shape -> val.equals(shape.name)).findAny();
     }
 }

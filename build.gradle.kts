@@ -187,7 +187,7 @@ testing {
             sources {
                 java {
                     setSrcDirs(listOf("test/integration"))
-                    // takes forever and never succeeds
+                    // takes forever and never succeeds anyway
                     exclude("**/ImageryPreferenceTestIT.java")
                 }
             }
@@ -536,6 +536,10 @@ tasks.withType<Test>().configureEach {
             showStandardStreams = true
         }
     }
+}
+
+tasks.named("compileScriptsJava") {
+    dependsOn("compileIntegrationTestJava");
 }
 
 tasks.named("check") {

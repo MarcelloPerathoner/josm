@@ -161,7 +161,7 @@ public class MapCSSTagChecker extends Test.TagTest {
             indexData = createMapCSSTagCheckerIndex(checks, includeOtherSeverity, ALL_TESTS);
         }
 
-        final Environment env = new Environment(p, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        final Environment env = new Environment(p, new MultiCascade(), MultiCascade.DEFAULT, null);
         env.mpAreaCache = mpAreaCache;
         env.toMatchForSurrounding = toMatchForSurrounding;
 
@@ -219,7 +219,7 @@ public class MapCSSTagChecker extends Test.TagTest {
             OsmPrimitive p, boolean includeOtherSeverity, Collection<Set<MapCSSTagCheckerRule>> checksCol) {
         // this variant is only used by the assertion tests
         final List<TestError> r = new ArrayList<>();
-        final Environment env = new Environment(p, new MultiCascade(), Environment.DEFAULT_LAYER, null);
+        final Environment env = new Environment(p, new MultiCascade(), MultiCascade.DEFAULT, null);
         env.mpAreaCache = mpAreaCache;
         env.toMatchForSurrounding = toMatchForSurrounding;
         for (Set<MapCSSTagCheckerRule> schecks : checksCol) {

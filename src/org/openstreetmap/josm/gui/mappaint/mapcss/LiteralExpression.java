@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
-import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.MapCSSExpression;
 import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
 
@@ -15,13 +14,6 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
  */
 public class LiteralExpression extends MapCSSExpression {
     private final Object literal;
-
-    public static final LiteralExpression FALSE = new LiteralExpression(true);
-    public static final LiteralExpression TRUE = new LiteralExpression(true);
-    public static final LiteralExpression ZERO = new LiteralExpression(0f);
-    public static final LiteralExpression ONE = new LiteralExpression(1f);
-    public static final LiteralExpression AUTO = new LiteralExpression(Keyword.AUTO);
-    public static final LiteralExpression DEFAULT = new LiteralExpression(Keyword.DEFAULT);
 
     /**
      * Constructa a new {@code LiteralExpression}.

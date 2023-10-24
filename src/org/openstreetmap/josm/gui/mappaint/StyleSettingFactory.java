@@ -65,7 +65,7 @@ public final class StyleSettingFactory {
             Logging.warn("property 'label' required for style setting of type " + type);
             return null;
         }
-        T defaultValue = c.get("default", null, type);
+        T defaultValue = c.get(MultiCascade.DEFAULT, null, type);
         if (defaultValue == null) {
             Logging.warn("property 'default' required for style setting of type " + type);
             return null;

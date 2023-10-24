@@ -2,78 +2,63 @@
 package org.openstreetmap.josm.gui.mappaint;
 
 import java.util.Locale;
-import java.util.Objects;
 
 /**
  * A MapCSS keyword.
- *
+ * <p>
  * For example "<code>round</code>" is a keyword in
  * <pre>linecap: round;</pre>
- * Keywords are similar to a Java enum value. In accordance with the CSS
- * specification, they are parsed case insensitive.
  */
-public class Keyword {
-    /**
-     * The string value for this keyword
-     */
-    public final String val;
+public enum Keyword {
+    ABOVE,
+    AUTO,
+    BELOW,
+    BEVEL,
+    BOLD,
+    BOTTOM,
+    CENTER,
+    CIRCLE,
+    DECAGON,
+    DEFAULT,
+    HEPTAGON,
+    HEXAGON,
+    INSIDE,
+    ITALIC,
+    LEFT,
+    LINE,
+    MITER,
+    NONAGON,
+    NONE,
+    NORMAL,
+    OCTAGON,
+    PENTAGON,
+    RIGHT,
+    ROUND,
+    SQUARE,
+    THINNEST,
+    TOP,
+    TRIANGLE,
+    WAY;
 
     /**
-     * Create a new Keyword
-     * @param val The string value that is written in the MapCSS file
+     * Returns the Keyword corresponding to the given string.
+     * <p>
+     * {@code Keyword.create("left")} returns {@code Keyword.LEFT}.
+     * <p>
+     * Used by the MapCSS parser.
+     *
+     * @return the Keyword or null
      */
-    public Keyword(String val) {
-        this.val = val.toLowerCase(Locale.ENGLISH).intern();
+    public static Keyword create(String value) {
+        try {
+            return valueOf(value.toUpperCase(Locale.ENGLISH));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @Override
     public String toString() {
-        return "Keyword{" + val + '}';
+        return "Keyword{" + name().toLowerCase(Locale.ENGLISH) + '}';
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Keyword keyword = (Keyword) obj;
-        return Objects.equals(val, keyword.val);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(val);
-    }
-
-    /**
-     * Automated text positioning
-     */
-    public static final Keyword AUTO = new Keyword("auto");
-    /**
-     * Align text at the bottom
-     */
-    public static final Keyword BOTTOM = new Keyword("bottom");
-    /**
-     * Align text at the center
-     */
-    public static final Keyword CENTER = new Keyword("center");
-    /**
-     * Use default line width
-     */
-    public static final Keyword DEFAULT = new Keyword("default");
-    /**
-     * Align to the right
-     */
-    public static final Keyword RIGHT = new Keyword("right");
-    /**
-     * Thinnest line width
-     */
-    public static final Keyword THINNEST = new Keyword("thinnest");
-    /**
-     * The CSS null value
-     */
-    public static final Keyword NONE = new Keyword("none");
-    /**
-     * The CSS icon-rotation: way keyword
-     */
-    public static final Keyword WAY = new Keyword("way");
 }

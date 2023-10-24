@@ -65,19 +65,15 @@ public interface PositionForAreaStrategy {
      * @since 11722
      */
     static PositionForAreaStrategy forKeyword(Keyword keyword, PositionForAreaStrategy defaultStrategy) {
-        if (keyword == null) {
+        if (keyword == null)
             return defaultStrategy;
-        }
-        switch (keyword.val) {
-        case "center":
+        if (Keyword.CENTER == keyword)
             return PartiallyInsideAreaStrategy.INSTANCE;
-        case "inside":
+        if (Keyword.INSIDE == keyword)
             return CompletelyInsideAreaStrategy.INSTANCE;
-        case "line":
+        if (Keyword.LINE == keyword)
             return OnLineStrategy.INSTANCE;
-        default:
-            return defaultStrategy;
-        }
+        return defaultStrategy;
     }
 
     /**

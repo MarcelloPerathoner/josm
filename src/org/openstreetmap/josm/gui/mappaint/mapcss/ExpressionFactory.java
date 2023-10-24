@@ -30,6 +30,7 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
+import org.openstreetmap.josm.gui.mappaint.MultiCascade;
 import org.openstreetmap.josm.gui.mappaint.StyleSource;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector.GeneralSelector;
 import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.MapCSSParser;
@@ -360,7 +361,7 @@ public final class ExpressionFactory {
      */
     public static Expression createRelativeFloatExpression(Float f, String property, Subpart subPart,
                 MapCSSStyleSource sheet, Token token) {
-        String layer = "default";
+        String layer = MultiCascade.DEFAULT;
 
         // special-case "casing-width" as it refers to the property "width" on the same
         // layer
@@ -753,7 +754,7 @@ public final class ExpressionFactory {
      * @params f the float to add
      * @params property the name of the property
      */
-    static class RelativeFloatExpression extends CacheableExpression {
+    public static class RelativeFloatExpression extends CacheableExpression {
         final float f;
         final String property;
         final String layer;
@@ -768,10 +769,14 @@ public final class ExpressionFactory {
         @Override
         public Object evalImpl(Environment env) {
             Float base = Cascade.convertTo(env.getCascade(layer).get(property), Float.class);
-            if (base == null)
-                // return f;
-                throw mapCSSException(tr(
-                    "Relative float ''+{0}'': there is no ''{1}'' on the ''{2}'' layer.", f, property, layer));
+            if (base == null) {
+                Logging.warn(tr(
+                    "{3}: ''{1}: +{0}'': there is no ''{1}'' on the ''{2}'' layer.",
+                    f, property, layer, getSourceLine()));
+                // throw mapCSSException(tr(
+                //     "Relative float ''+{0}'': there is no ''{1}'' on the ''{2}'' layer.", f, property, layer));
+                return f;
+            }
             return base + f;
         }
     }

@@ -401,7 +401,7 @@ public class ElemStyles implements PreferenceChangedListener {
         }
 
         for (Entry<String, Cascade> e : mc.getLayers()) {
-            if (MultiCascade.TEMPLATE.equals(e.getKey())) {
+            if (MultiCascade.WILDCARD.equals(e.getKey())) {
                 continue;
             }
             env.layer = e.getKey();
@@ -489,7 +489,7 @@ public class ElemStyles implements PreferenceChangedListener {
                 s.apply(mc, r, 1, null, false);
             }
         }
-        return mc.getCascade("default").get(key, def, c);
+        return mc.getCascade(MultiCascade.DEFAULT).get(key, def, c);
     }
 
     /**

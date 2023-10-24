@@ -116,9 +116,9 @@ public class RepeatImageElement extends StyleElement {
 
         LineImageAlignment align = LineImageAlignment.CENTER;
         Keyword alignKW = c.get(REPEAT_IMAGE_ALIGN, Keyword.CENTER, Keyword.class);
-        if ("top".equals(alignKW.val)) {
+        if (Keyword.TOP == alignKW) {
             align = LineImageAlignment.TOP;
-        } else if ("bottom".equals(alignKW.val)) {
+        } else if (Keyword.BOTTOM == alignKW) {
             align = LineImageAlignment.BOTTOM;
         }
 

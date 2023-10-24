@@ -94,7 +94,7 @@ public class TaggingPresetValidator implements ChangeListener {
         Collection<TestError> errors = new HashSet<>(); // we want no duplicate messages
         allTests.forEach(t -> {
             t.clear();
-            cloneHandler.get().forEach(p -> t.check(p));
+            cloneHandler.get().forEach(t::check);
             errors.addAll(t.getErrors());
         });
         f.accept(errors);

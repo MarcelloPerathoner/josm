@@ -412,12 +412,12 @@ public class TagInfoExtract {
                     if (r.matches(env)) {
                         // ignore selector range
                         if (env.layer == null) {
-                            env.layer = "default";
+                            env.layer = MultiCascade.DEFAULT;
                         }
                         r.execute(env);
                     }
                 }
-                env.layer = "default";
+                env.layer = MultiCascade.DEFAULT;
                 return env;
             }
 
@@ -478,7 +478,7 @@ public class TagInfoExtract {
             Optional<String> findUrl(boolean generateImage) {
                 this.osm = new Node(LatLon.ZERO);
                 Environment env = applyStylesheet(osm);
-                Cascade c = env.getCascade("default");
+                Cascade c = env.getCascade(MultiCascade.DEFAULT);
                 Object image = c.get("icon-image");
                 if (image instanceof MapPaintStyles.IconReference && !((MapPaintStyles.IconReference) image).isDeprecatedIcon()) {
                     return Optional.of(options.findImageUrl(((MapPaintStyles.IconReference) image).iconName));

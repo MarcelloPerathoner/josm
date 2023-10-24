@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.mappaint.mapcss;
 
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
+import org.openstreetmap.josm.gui.mappaint.MultiCascade;
 
 /**
  * A subpart identifies different rendering layers (<code>::subpart</code> syntax).
@@ -21,7 +22,7 @@ public interface Subpart {
     /**
      * The default subpart for normal rules
      */
-    Subpart DEFAULT_SUBPART = new StringSubpart("default");
+    Subpart DEFAULT_SUBPART = new StringSubpart(MultiCascade.DEFAULT);
 
     /**
      * Simple static subpart identifier.

@@ -338,7 +338,7 @@ public class MapCSSStyleSource extends StyleSource {
         String code = LanguageInfo.getJOSMLocaleCode();
         n.put("lang", code);
         // create a fake environment to read the meta data block
-        Environment env = new Environment(n, mc, "default", this);
+        Environment env = new Environment(n, mc, MultiCascade.DEFAULT, this);
 
         for (MapCSSRule r : rules) {
             final boolean matches = r.selectors.stream().anyMatch(gs -> gs instanceof GeneralSelector
@@ -348,7 +348,7 @@ public class MapCSSStyleSource extends StyleSource {
                 r.execute(env);
             }
         }
-        return mc.getCascade("default");
+        return mc.getCascade(MultiCascade.DEFAULT);
     }
 
     @Override
@@ -357,10 +357,10 @@ public class MapCSSStyleSource extends StyleSource {
     }
 
     /**
-     * This is a hack to restrict cascades to one zoom level only.
-     * Use it on styles that must be redone after every zooming, like those depending on
-     * real-world length.  As an experimental convention, those styles must be marked
-     * with the class .metric.
+     * This is a hack to restrict cascades to one zoom level only.  Use it on styles
+     * that must be redone after every zooming, like those depending on real-world
+     * dimensions.  As an experimental convention, those styles must be marked with the
+     * class .metric.
      */
     private boolean isSingleZoomLevel(Environment env) {
         return env.mc.getCascade(env.layer).get("metric", false, Boolean.class);
@@ -385,7 +385,8 @@ public class MapCSSStyleSource extends StyleSource {
                 env.clearSelectorMatchingInformation();
                 env.layer = subpart;
                 env.nc = nc;
-                if (!s.matches(env)) { // as side effect env.parent will be set (if s is a child selector)
+                if (!s.matches(env)) {
+                    // as side effect env.parent will be set (if s is a child selector)
                     continue;
                 }
                 if (!s.getRange().contains(scale)) {
@@ -397,23 +398,23 @@ public class MapCSSStyleSource extends StyleSource {
                 if (r.declaration.idx == lastDeclarationIndex.getOrDefault(env.layer, -1))
                     continue;
 
-                // Caveat: confusing software design ahead
-                // the WILDCARD "*" subpart matches all subparts,
-                // the TEMPLATE "*" layer is the template layer in a MultiCascade
                 if (MultiCascade.WILDCARD.equals(subpart)) {
                     for (Entry<String, Cascade> entry : mc.getLayers()) {
                         env.layer = entry.getKey();
-                        if (!(MultiCascade.TEMPLATE.equals(env.layer))) {
-                            r.execute(env);
-                            lastDeclarationIndex.put(env.layer, r.declaration.idx);
-                            if (isSingleZoomLevel(env))
-                                singleZoomLevel = true;
+                        if (MultiCascade.WILDCARD.equals(env.layer)) {
+                            continue;
                         }
+                        r.execute(env);
+                        lastDeclarationIndex.put(env.layer, r.declaration.idx);
+                        if (isSingleZoomLevel(env))
+                            singleZoomLevel = true;
                     }
-                } else {
-                    r.execute(env);
-                    lastDeclarationIndex.put(env.layer, r.declaration.idx);
                 }
+                // this also updates the WILDCARD layer in the mc
+                env.layer = subpart;
+                r.execute(env);
+                lastDeclarationIndex.put(env.layer, r.declaration.idx);
+
                 if (singleZoomLevel || isSingleZoomLevel(env)) {
                     // mc.range = new Range(scale - EPSILON, scale + EPSILON);
                     mc.range = Range.cut(mc.range, new Range(scale - epsilon, scale + epsilon));

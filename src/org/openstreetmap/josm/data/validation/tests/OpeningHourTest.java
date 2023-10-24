@@ -65,7 +65,8 @@ public class OpeningHourTest extends TagTest {
     private TestError createTestError(Severity severity, String message, String key, String value, String prettifiedValue, OsmPrimitive p) {
         final TestError.Builder error = TestError.builder(this, severity, 2901)
                 .message(tr("Opening hours syntax"), message) // todo obtain English message for ignore functionality
-                .primitives(p != null ? new OsmPrimitive[] {p} : new OsmPrimitive[] {});
+                .primitives(p != null ? new OsmPrimitive[] {p} : new OsmPrimitive[] {})
+                .keys(Collections.singletonList(key));
         if (p == null || prettifiedValue == null || prettifiedValue.equals(value)) {
             return error.build();
         } else {

@@ -376,11 +376,11 @@ public class LineElement extends StyleElement {
         Integer cap = null;
         Keyword capKW = c.get(type.prefix + LINECAP, null, Keyword.class);
         if (capKW != null) {
-            if ("none".equals(capKW.val)) {
+            if (Keyword.NONE == capKW) {
                 cap = BasicStroke.CAP_BUTT;
-            } else if ("round".equals(capKW.val)) {
+            } else if (Keyword.ROUND == capKW) {
                 cap = BasicStroke.CAP_ROUND;
-            } else if ("square".equals(capKW.val)) {
+            } else if (Keyword.SQUARE == capKW) {
                 cap = BasicStroke.CAP_SQUARE;
             }
         }
@@ -391,11 +391,11 @@ public class LineElement extends StyleElement {
         Integer join = null;
         Keyword joinKW = c.get(type.prefix + LINEJOIN, null, Keyword.class);
         if (joinKW != null) {
-            if ("round".equals(joinKW.val)) {
+            if (Keyword.ROUND == joinKW) {
                 join = BasicStroke.JOIN_ROUND;
-            } else if ("miter".equals(joinKW.val)) {
+            } else if (Keyword.MITER == joinKW) {
                 join = BasicStroke.JOIN_MITER;
-            } else if ("bevel".equals(joinKW.val)) {
+            } else if (Keyword.BEVEL == joinKW) {
                 join = BasicStroke.JOIN_BEVEL;
             }
         }

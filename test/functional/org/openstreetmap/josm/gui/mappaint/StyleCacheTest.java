@@ -163,6 +163,6 @@ class StyleCacheTest {
         assertEquals(EXPECTED_NO_PRIMITIVES, noPrimitives,
                 "The number of rendered primitives should be " + EXPECTED_NO_PRIMITIVES);
         assertTrue(counter.size() < 100,
-                "Too many StyleElementList instances, they should be shared using the StyleCache");
+                "Too many StyleElementList instances (" + counter.size() + "/100), they should be shared using the StyleCache");
     }
 }

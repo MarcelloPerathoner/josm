@@ -125,10 +125,11 @@ public final class Cascade {
             return def;
         if (klass.isInstance(o))
             return klass.cast(o);
-        if (o instanceof Expression)
+        if (o instanceof Expression) {
             o = ((Expression) o).evaluate();
-        if (o == null)
-            return def; // avoid the warning
+            if (o == null)
+                return def; // avoid the warning
+        }
         T res = convertTo(o, klass);
         if (res == null) {
             if (!suppressWarnings) {
@@ -210,7 +211,7 @@ public final class Cascade {
 
     private static String toString(Object o) {
         if (o instanceof Keyword)
-            return ((Keyword) o).val;
+            return ((Keyword) o).name();
         if (o instanceof Color) {
             return ColorHelper.color2html((Color) o);
         }
@@ -242,7 +243,7 @@ public final class Cascade {
             return (Boolean) o;
         String s = null;
         if (o instanceof Keyword) {
-            s = ((Keyword) o).val;
+            s = ((Keyword) o).name();
         } else if (o instanceof String) {
             s = (String) o;
         }
@@ -283,7 +284,7 @@ public final class Cascade {
         if (o instanceof Color)
             return (Color) o;
         if (o instanceof Keyword)
-            return CSSColors.get(((Keyword) o).val);
+            return CSSColors.get(((Keyword) o).name());
         if (o instanceof String) {
             Color c = CSSColors.get((String) o);
             if (c != null)

@@ -21,8 +21,6 @@ import org.openstreetmap.josm.tools.ColorHelper;
  * @since 3880
  */
 public class TextLabel implements StyleKeys {
-    private static final AffineTransform identity = new AffineTransform();
-
     /**
      * The text.
      */
@@ -44,22 +42,21 @@ public class TextLabel implements StyleKeys {
      */
     public final Color haloColor;
 
-    /** {@code icon-rotation} * {@code icon-transform} or {@code nul}. */
+    /** {@code icon-rotation} * {@code icon-transform} or {@code null}. */
     public final AffineTransform textTransform;
 
     /**
      * Creates a new text element
      *
-     * @param strategy the strategy indicating how the text is composed for a specific {@link OsmPrimitive} to be rendered.
-     * If null, no label is rendered.
+     * @param text the text to be rendered
      * @param font the font to be used. Must not be null.
-     * @param env the environment
      * @param color the color to be used. Must not be null
      * @param haloRadius halo radius
      * @param haloColor halo color
+     * @param textTransform the affine transformation to apply to the text
      */
-    protected TextLabel(String text, Font font, Environment env,
-                        Color color, Float haloRadius, Color haloColor,
+    protected TextLabel(String text, Font font, Color color,
+                        Float haloRadius, Color haloColor,
                         AffineTransform textTransform) {
         this.text = text;
         this.font = Objects.requireNonNull(font, "font");
@@ -124,12 +121,12 @@ public class TextLabel implements StyleKeys {
             haloColor = ColorHelper.alphaMultiply(haloColor, haloAlphaFactor);
         }
 
+        AffineTransform textTransform = c.get(TEXT_TRANSFORM, new AffineTransform(), AffineTransform.class);
         Float textRotation = c.get(TEXT_ROTATION, null, Float.class);
-        AffineTransform textTransform = c.get(TEXT_TRANSFORM, identity, AffineTransform.class);
         if (textRotation != null) {
             textTransform.rotate(textRotation);
         }
-        return new TextLabel(text, font, env, color, haloRadius, haloColor, textTransform);
+        return new TextLabel(text, font, color, haloRadius, haloColor, textTransform);
     }
 
     /**

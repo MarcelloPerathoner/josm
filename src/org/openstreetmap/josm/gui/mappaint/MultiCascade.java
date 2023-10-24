@@ -16,9 +16,7 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
 public class MultiCascade implements StyleKeys {
     /** The default layer of a MultiCascade. */
     public static final String DEFAULT = "default";
-    /** The template layer of a MultiCascade */
-    public static final String TEMPLATE = "*";
-    /** The subpart id that matches all subparts (but not the default subpart!).  */
+    /** The subpart id that matches all subparts */
     public static final String WILDCARD = "*";
 
     private final Map<String, Cascade> layers;
@@ -46,13 +44,15 @@ public class MultiCascade implements StyleKeys {
         CheckParameterUtil.ensureParameterNotNull(layer);
         Cascade c = layers.get(layer);
         if (c == null) {
-            if (layers.containsKey(TEMPLATE)) {
-                c = new Cascade(layers.get(TEMPLATE));
+            // the WILDCARD cascade also applies to layers that where unknown yet at the
+            // moment of its definition
+            if (layers.containsKey(WILDCARD)) {
+                c = new Cascade(layers.get(WILDCARD));
             } else {
                 c = new Cascade();
                 // Everything that is not on the default layer is assumed to
                 // be a modifier. Can be overridden in style definition.
-                if (!DEFAULT.equals(layer) && !TEMPLATE.equals(layer)) {
+                if (!DEFAULT.equals(layer) && !WILDCARD.equals(layer)) {
                     c.put(MODIFIER, true);
                 }
             }
@@ -75,7 +75,7 @@ public class MultiCascade implements StyleKeys {
         Cascade c = layers.get(layer);
         if (c == null) {
             c = new Cascade();
-            if (!DEFAULT.equals(layer) && !TEMPLATE.equals(layer)) {
+            if (!DEFAULT.equals(layer) && !WILDCARD.equals(layer)) {
                 c.put(MODIFIER, true);
             }
         }

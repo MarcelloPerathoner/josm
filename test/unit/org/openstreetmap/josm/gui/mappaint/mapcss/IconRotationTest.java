@@ -142,7 +142,7 @@ class IconRotationTest {
     private Environment createStyleEnv(IPrimitive osm, String css) {
         MapCSSStyleSource source = new MapCSSStyleSource(css);
         source.loadStyleSource();
-        Environment env = new Environment(osm, new MultiCascade(), Environment.DEFAULT_LAYER, source);
+        Environment env = new Environment(osm, new MultiCascade(), MultiCascade.DEFAULT, source);
 
         for (MapCSSRule r : source.rules) {
             r.execute(env);

@@ -81,8 +81,8 @@ class MapPaintPreferenceTestIT extends AbstractExtendedSourceEntryTestCase {
                         if (StyleKeys.ICON_IMAGE.equals(ai.key)
                          || StyleKeys.FILL_IMAGE.equals(ai.key)
                          || StyleKeys.REPEAT_IMAGE.equals(ai.key)) {
-                            if (ai.object instanceof String) {
-                                MapPaintStyles.getIconProvider(new IconReference((String) ai.object, style), true);
+                            if (ai.getValue() instanceof String) {
+                                MapPaintStyles.getIconProvider(new IconReference((String) ai.getValue(), style), true);
                             }
                         }
                     }

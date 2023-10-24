@@ -41,9 +41,8 @@ public interface Instruction extends StyleKeys {
 
             // Logging.info("{0}: {1}", key, expression.toString());
 
-            // Note: The mapcss parser parses +1 as literal and we get a
-            // RelativeFloatExpression inside a LiteralExpression, which doesn't make
-            // much sense. Also Keywords are returned inside LiteralExpressions.
+            // Note: The mapcss parser always returns an Expression. Keywords and Strings
+            // are returned inside LiteralExpressions.
             if (val instanceof LiteralExpression) {
                 val = ((LiteralExpression) val).evaluate();
                 if (Keyword.NONE.equals(val)) {
@@ -63,6 +62,7 @@ public interface Instruction extends StyleKeys {
                  *     eval("a static text")           a static text
                  *     parent_tag(a_tag_name)          value of a tag of a parent relation
                  */
+
                 if (Keyword.AUTO.equals(val)) {
                     val = ExpressionFactory.createFunctionExpression("auto_text",
                         Arrays.asList(), sheet, token
@@ -88,8 +88,7 @@ public interface Instruction extends StyleKeys {
                     ), sheet, token
                 );
             }
-
-            // Logging.info("{0}: {1}", key, expression.toString());
+            // Logging.info("{2} -> {0}: {1}", key, val.toString(), literal.toString());
         }
 
         @Override

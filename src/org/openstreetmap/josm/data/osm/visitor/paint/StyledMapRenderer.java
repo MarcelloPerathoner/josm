@@ -69,10 +69,9 @@ import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
+import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.HorizontalTextAlignment;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.VerticalTextAlignment;
 import org.openstreetmap.josm.gui.mappaint.styleelement.DefaultStyles;
 import org.openstreetmap.josm.gui.mappaint.styleelement.MapImage;
 import org.openstreetmap.josm.gui.mappaint.styleelement.RepeatImageElement.LineImageAlignment;
@@ -633,28 +632,28 @@ public class StyledMapRenderer extends AbstractMapRenderer {
          *
          */
         Rectangle box = bs.getBox();
-        if (bs.hAlign == HorizontalTextAlignment.RIGHT) {
+        if (bs.hAlign == Keyword.RIGHT) {
             x += box.x + box.width + 2;
         } else {
             int textWidth = (int) bounds.getWidth();
-            if (bs.hAlign == HorizontalTextAlignment.CENTER) {
+            if (bs.hAlign == Keyword.CENTER) {
                 x -= textWidth / 2d;
-            } else if (bs.hAlign == HorizontalTextAlignment.LEFT) {
+            } else if (bs.hAlign == Keyword.LEFT) {
                 x -= -box.x + 4 + textWidth;
             } else throw new AssertionError();
         }
 
-        if (bs.vAlign == VerticalTextAlignment.BOTTOM) {
+        if (bs.vAlign == Keyword.BOTTOM) {
             y += box.y + box.height;
         } else {
             LineMetrics metrics = text.font.getLineMetrics(s, frc);
-            if (bs.vAlign == VerticalTextAlignment.ABOVE) {
+            if (bs.vAlign == Keyword.ABOVE) {
                 y -= -box.y + (int) metrics.getDescent();
-            } else if (bs.vAlign == VerticalTextAlignment.TOP) {
+            } else if (bs.vAlign == Keyword.TOP) {
                 y -= -box.y - (int) metrics.getAscent();
-            } else if (bs.vAlign == VerticalTextAlignment.CENTER) {
+            } else if (bs.vAlign == Keyword.CENTER) {
                 y += (int) ((metrics.getAscent() - metrics.getDescent()) / 2);
-            } else if (bs.vAlign == VerticalTextAlignment.BELOW) {
+            } else if (bs.vAlign == Keyword.BELOW) {
                 y += box.y + box.height + (int) metrics.getAscent() + 2;
             } else throw new AssertionError();
         }
