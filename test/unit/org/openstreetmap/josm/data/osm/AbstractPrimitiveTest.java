@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.openstreetmap.josm.TestUtils;
 
 /**
  * Unit tests of the {@code AbstractPrimitive} class.
@@ -74,35 +75,56 @@ class AbstractPrimitiveTest {
      * Unit test of {@link AbstractPrimitive#putAll}
      */
     @Test
-    void testPutAll() {
+    void testPutAllInsert() {
         AbstractPrimitive p = new Node();
         Map<String, String> tags = new HashMap<>();
 
-        // insert tags
         tags.put("a", "va1");
         tags.put("b", "vb1");
         p.putAll(tags);
         assertEquals("va1", p.get("a"));
         assertEquals("vb1", p.get("b"));
 
-        // change tags
-        tags.clear();
+    }
+
+    /**
+     * Unit test of {@link AbstractPrimitive#putAll}
+     */
+    @Test
+    void testPutAllChange() {
+        AbstractPrimitive p = TestUtils.newNode("a=va1 b=vb1");
+        Map<String, String> tags = new HashMap<>();
+
         tags.put("a", "va2");
         p.putAll(tags);
         assertEquals("va2", p.get("a"));
         assertEquals("vb1", p.get("b"));
+    }
 
-        // change and insert tags
-        tags.clear();
+    /**
+     * Unit test of {@link AbstractPrimitive#putAll}
+     */
+    @Test
+    void testPutAllChangeAndInsert() {
+        AbstractPrimitive p = TestUtils.newNode("a=va2 b=vb1");
+        Map<String, String> tags = new HashMap<>();
+
         tags.put("b", "vb3");
         tags.put("c", "vc3");
         p.putAll(tags);
         assertEquals("va2", p.get("a"));
         assertEquals("vb3", p.get("b"));
         assertEquals("vc3", p.get("c"));
+    }
 
-        // change and remove tags
-        tags.clear();
+    /**
+     * Unit test of {@link AbstractPrimitive#putAll}
+     */
+    @Test
+    void testPutAllChangeAndRemove() {
+        AbstractPrimitive p = TestUtils.newNode("a=va2 b=vb3 c=vc3");
+        Map<String, String> tags = new HashMap<>();
+
         tags.put("a", "va4");
         tags.put("b", null);
         tags.put(null, null);
