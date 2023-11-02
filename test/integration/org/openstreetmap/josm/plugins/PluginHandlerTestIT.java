@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.Preferences;
@@ -38,8 +37,9 @@ import org.openstreetmap.josm.gui.MainApplicationTest;
 import org.openstreetmap.josm.gui.layer.GpxLayer;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
+import org.openstreetmap.josm.gui.preferences.plugin.PluginPreferenceModel;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
+import org.openstreetmap.josm.testutils.annotations.HTTPS;
 import org.openstreetmap.josm.testutils.annotations.Main;
 import org.openstreetmap.josm.testutils.annotations.Projection;
 import org.openstreetmap.josm.testutils.annotations.Territories;
@@ -47,12 +47,11 @@ import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Utils;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Integration tests of {@link PluginHandler} class.
  */
 @BasicPreferences
+@HTTPS
 @Main
 @Projection
 @Territories
@@ -60,12 +59,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class PluginHandlerTestIT {
 
     private static final List<String> errorsToIgnore = new ArrayList<>();
-    /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public static JOSMTestRules test = new JOSMTestRules().https();
 
     /**
      * Setup test
@@ -168,13 +161,13 @@ public class PluginHandlerTestIT {
         };
         Logging.getLogger().addHandler(tempHandler);
         try {
-            List<PluginInformation> restartable = loadedPlugins.parallelStream()
+            List<PluginInformation> restartable = loadedPlugins.stream()
                     .filter(info -> PluginHandler.getPlugin(info.getName()) instanceof Destroyable)
                     .collect(Collectors.toList());
             // ensure good plugin behavior with regards to Destroyable (i.e., they can be
             // removed and readded)
             for (int i = 0; i < 2; i++) {
-                assertFalse(PluginHandler.removePlugins(restartable), () -> Logging.getLastErrorAndWarnings().toString());
+                assertFalse(PluginHandler.removePlugins(PluginPreferenceModel.getNames(restartable)), () -> Logging.getLastErrorAndWarnings().toString());
                 List<PluginInformation> notRemovedPlugins = restartable.stream()
                         .filter(info -> PluginHandler.getLoadedPlugins().contains(info)).collect(Collectors.toList());
                 assertTrue(notRemovedPlugins.isEmpty(), notRemovedPlugins::toString);
@@ -182,7 +175,7 @@ public class PluginHandlerTestIT {
             }
 
             //assertTrue(PluginHandler.removePlugins(loadedPlugins), () -> Logging.getLastErrorAndWarnings().toString());
-            assertTrue(restartable.parallelStream().noneMatch(info -> PluginHandler.getLoadedPlugins().contains(info)));
+            assertTrue(restartable.stream().noneMatch(info -> PluginHandler.getLoadedPlugins().contains(info)));
         } catch (Exception | LinkageError t) {
             Throwable root = Utils.getRootCause(t);
             root.printStackTrace();

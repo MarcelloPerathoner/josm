@@ -124,9 +124,9 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
 
         private boolean matchesInstallationStatus(PluginPreferenceModel.TableEntry e, PluginInstallation status) {
             switch(status) {
-                case LOADED : return getNames(PluginHandler.getLoadedPlugins()).contains(e.getName());
+                case LOADED : return PluginPreferenceModel.getNames(PluginHandler.getLoadedPlugins()).contains(e.getName());
                 case CONFIGURED : return model.getSelectedPluginNames().contains(e.getName());
-                case INSTALLED : return getNames(model.getInstalledPlugins()).contains(e.getName());
+                case INSTALLED : return PluginPreferenceModel.getNames(model.getInstalledPlugins()).contains(e.getName());
                 case AVAILABLE : return !model.getSelectedPluginNames().contains(e.getName());
                 case UPDATEABLE : return e.isSelected() && e.hasUpdate();
                 default: return true;
@@ -187,10 +187,6 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
             }
             setColumnWidths();
         }
-    }
-
-    static List<String> getNames(List<PluginInformation> plugins) {
-        return plugins.stream().map(PluginInformation::getName).toList();
     }
 
     private ExpertTable table;
@@ -684,7 +680,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     GuiHelper.runInEDT(() -> {
                         // get the list of installed plugins because
                         // only local plugins know their classes
-                        Set<String> names = new HashSet<>(getNames(toUpdate));
+                        Set<String> names = new HashSet<>(PluginPreferenceModel.getNames(toUpdate));
                         List<PluginInformation> toLoad = PluginHandler.getInstalledPlugins().stream()
                             .filter(pi -> names.contains(pi.getName())).toList();
 

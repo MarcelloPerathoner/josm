@@ -71,7 +71,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     /** The table rows in the model */
     private final List<TableEntry> entries = new ArrayList<>();
 
-    static List<String> getNames(Collection<PluginInformation> plugins) {
+    public static List<String> getNames(Collection<PluginInformation> plugins) {
         return plugins.stream().map(PluginInformation::getName).toList();
     }
 
