@@ -39,16 +39,21 @@ plugins {
 }
 
 fun getRevisionGit(): String {
-    val revision: String = ByteArrayOutputStream().use { outputStream ->
+    var revision = "unknown"
+    val gitLog: String = ByteArrayOutputStream().use { outputStream ->
         project.exec {
-            commandLine(listOf("git", "log", "-1"))
+            commandLine(listOf("git", "log"))
             standardOutput = outputStream
         }
         outputStream.toString()
     }
     val regex = """git-svn-id:.*?trunk@([0-9]+)""".toRegex()
-    val matchResult = regex.find(revision)!!
-    return matchResult.groups[1]?.value ?: "unknown"
+    val matchResult = regex.find(gitLog)
+    if (matchResult != null && matchResult.groupValues.size > 0) {
+        revision = matchResult.groupValues.get(1)
+    }
+    logger.lifecycle("revision = {}", revision)
+    return revision
 }
 
 repositories {
