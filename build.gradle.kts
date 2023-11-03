@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.JavaVersion
 
 val java_lang_version = 17
 
@@ -591,9 +592,8 @@ java {
 // Set up ErrorProne
 tasks.withType(JavaCompile::class).configureEach {
     options.compilerArgs.addAll(listOf(
-        "-XDcompilePolicy=simple", // recommemded by ErrorProne
+        "-XDcompilePolicy=simple", // recommended by ErrorProne
         "-Xlint:all",
-        "-Xlint:-this-escape",  // just floods the console
         "-Xlint:-serial",
         "-Xlint:cast",
         "-Xlint:deprecation",
@@ -608,6 +608,11 @@ tasks.withType(JavaCompile::class).configureEach {
         "-Xlint:unchecked",
         "-Xmaxwarns", "1000",
     ))
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
+        options.compilerArgs.addAll(listOf(
+            "-Xlint:-this-escape",  // just floods the console
+        ))
+    }
 
     // "-Xplugin:semanticdb -sourceroot:@{srcdir} -targetroot:${build.dir}/semanticdb" if:set="lsif" ,
     // "-Xplugin:ErrorProne -XepExcludedPaths:.*/parsergen/.* -Xep:ReferenceEquality:OFF -Xep:FutureReturnValueIgnored:OFF -Xep:JdkObsolete:OFF -Xep:EqualsGetClass:OFF -Xep:UndefinedEquals:OFF -Xep:BadImport:OFF -Xep:AnnotateFormatMethod:OFF -Xep:JavaUtilDate:OFF -Xep:DoNotCallSuggester:OFF -Xep:BanSerializableRead:OFF -Xep:RestrictedApiChecker:OFF -Xep:InlineMeSuggester:OFF" unless:set="noErrorProne",
