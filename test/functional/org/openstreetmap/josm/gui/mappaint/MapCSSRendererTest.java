@@ -136,7 +136,7 @@ public class MapCSSRendererTest {
                 new TestConfig("way-dashes2")
                         .setThresholdPixels(0).setThresholdTotalColorDiff(0),
                 /** Tests node text placement */
-                new TestConfig("node-text2")
+                new TestConfig("node-text2").usesFont("DejaVu Sans")
                         .setThresholdPixels(1020).setThresholdTotalColorDiff(0),
                 /** Tests relation link selector */
                 new TestConfig("relation-linkselector")
@@ -146,7 +146,7 @@ public class MapCSSRendererTest {
                         .setThresholdPixels(0).setThresholdTotalColorDiff(0),
 
                 /** Tests evaluation of expressions */
-                new TestConfig("eval").setImageWidth(600)
+                new TestConfig("eval").setImageWidth(600).usesFont("DejaVu Sans")
                         .setThresholdPixels(6610).setThresholdTotalColorDiff(0)
 
                 ).map(e -> new Object[] {e, e.testDirectory})

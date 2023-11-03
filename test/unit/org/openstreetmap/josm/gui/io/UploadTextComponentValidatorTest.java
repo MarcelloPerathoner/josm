@@ -67,10 +67,10 @@ class UploadTextComponentValidatorTest {
     @MethodSource
     void testUploadWithMandatoryTerm(String confPref, String expectedText,
             BiFunction<JTextField, JLabel, ? extends UploadTextComponentValidator> validatorSupplier) {
-        Config.getPref().putList(confPref, Arrays.asList("myrequired", "xyz"));
         JTextField textField = new JTextField("");
         JLabel feedback = new JLabel();
 
+        Config.getPref().putList(confPref, Arrays.asList("myrequired", "xyz"));
         validatorSupplier.apply(textField, feedback);
 
         // A too-short string should fail validation
@@ -84,5 +84,7 @@ class UploadTextComponentValidatorTest {
         // A valid string should pass
         textField.setText("a string long enough with the mandatory term #myrequired #xyz");
         assertThat(feedback.getText(), containsString(expectedText));
+
+        Config.getPref().put(confPref, null);
     }
 }

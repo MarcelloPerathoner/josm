@@ -89,8 +89,6 @@ class FunctionSplitTrafficSignTest {
             LiteralExpression.create("DE")
         ));
 
-        List<String> result = (List<String>) f.evaluate(new Environment(), List.class, null);
-
-        assertEquals(expected, result);
+        assertEquals(expected, f.evaluate(new Environment(), List.class, null));
     }
 }

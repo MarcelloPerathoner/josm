@@ -9,25 +9,19 @@ import java.awt.Color;
 import javax.swing.JPanel;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.osm.OsmUtils;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.openstreetmap.josm.testutils.annotations.I18n;
+import org.openstreetmap.josm.testutils.annotations.Main;
+import org.openstreetmap.josm.testutils.annotations.TaggingPresets;
 
 /**
  * Unit tests of {@link Combo} class.
  */
+@Main
+@TaggingPresets
+@I18n("de")
 class ComboTest {
-
-    /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules().main().i18n("de");
-
     /**
      * Unit test for {@link Combo#addToPanel}.
      */
@@ -124,13 +118,13 @@ class ComboTest {
 
         assertEquals(5, comboInstance.combobox.getItemCount());
 
-        PresetListEntry.Instance i = comboInstance.find("red");
+        PresetListEntry.Instance i = comboInstance.findValue("red");
         comboInstance.combobox.setSelectedItem(i);
         assertEquals("red", comboInstance.getSelectedItem().getValue());
         assertEquals("Rot", comboInstance.getSelectedItem().toString());
         assertEquals(new Color(0xFF0000), comboInstance.getColor());
 
-        i = comboInstance.find("green");
+        i = comboInstance.findValue("green");
         comboInstance.combobox.setSelectedItem(i);
         assertEquals("green", i.getValue());
         assertEquals("Grün", i.toString());

@@ -19,7 +19,7 @@
 .gradle/
 .vscode/
 *.jar
-**/cache/
+test/config/*/cache/
 archive/
 bin/
 bintest/

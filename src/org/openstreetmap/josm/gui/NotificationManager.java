@@ -28,6 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -124,30 +125,31 @@ class NotificationManager {
 
         currentNotification = queue.poll();
         if (currentNotification == null) return;
+        if (MainApplication.getMainFrame() == null) return;
 
         GuiHelper.runInEDTAndWait(() -> {
             currentNotificationPanel = new NotificationPanel(currentNotification, new FreezeMouseListener(), e -> this.stopHideTimer());
             currentNotificationPanel.validate();
 
-            int margin = 5;
-            JFrame parentWindow = MainApplication.getMainFrame();
             Dimension size = currentNotificationPanel.getPreferredSize();
+            int margin = 5;
+            JComponent parentWindow = MainApplication.getMainFrame().getLayeredPane();
             if (parentWindow != null) {
-                int x;
-                int y;
+                Point pos;
                 MapFrame map = MainApplication.getMap();
                 if (MainApplication.isDisplayingMapView() && map.mapView.getHeight() > 0) {
                     MapView mv = map.mapView;
-                    Point mapViewPos = SwingUtilities.convertPoint(mv.getParent(), mv.getX(), mv.getY(), MainApplication.getMainFrame());
-                    x = mapViewPos.x + margin;
-                    y = mapViewPos.y + mv.getHeight() - map.statusLine.getHeight() - size.height - margin;
+                    // offset it from the bottom left of the mapview
+                    pos = new Point(margin, mv.getHeight() - margin - size.height);
+                    pos = SwingUtilities.convertPoint(mv, pos, parentWindow);
                 } else {
-                    x = margin;
-                    y = parentWindow.getHeight() - MainApplication.getToolbar().toolbar.getSize().height - size.height - margin;
+                    // offset it from the bottom left of the main frame
+                    pos = new Point(margin, parentWindow.getHeight() - margin - size.height
+                        - MainApplication.getToolbar().toolbar.getHeight());
                 }
-                parentWindow.getLayeredPane().add(currentNotificationPanel, JLayeredPane.POPUP_LAYER, 0);
+                parentWindow.add(currentNotificationPanel, JLayeredPane.POPUP_LAYER, 0);
 
-                currentNotificationPanel.setLocation(x, y);
+                currentNotificationPanel.setLocation(pos);
             }
             currentNotificationPanel.setSize(size);
             currentNotificationPanel.setVisible(true);

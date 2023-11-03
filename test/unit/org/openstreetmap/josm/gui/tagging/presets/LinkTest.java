@@ -9,25 +9,15 @@ import static org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest.buil
 import javax.swing.JPanel;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.spi.preferences.Config;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.openstreetmap.josm.testutils.annotations.TaggingPresets;
 
 /**
  * Unit tests of {@link Link} class.
  */
+@TaggingPresets
 class LinkTest {
-
-    /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules();
-
     /**
      * Unit test for {@link Link#addToPanel}.
      */

@@ -7,9 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.swing.JPanel;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
+import org.openstreetmap.josm.testutils.annotations.TaggingPresets;
 
 /**
  * Unit tests of {@link PresetLink} class.

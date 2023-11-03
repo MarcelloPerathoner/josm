@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.CheckForNull;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -40,12 +39,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 
 import org.openstreetmap.josm.data.preferences.NamedColorProperty;
+import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.help.HelpBrowser;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.ToolbarPreferences;
-import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.WindowGeometry;
@@ -80,31 +79,43 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
     private static final ImageProvider.ImageSizes ICONSIZE = ImageProvider.ImageSizes.LARGEICON;
 
     /** The user's answer */
-    public int answer = DIALOG_ANSWER_CANCEL;
+    private int answer = DIALOG_ANSWER_CANCEL;
 
+    /** Show the "Apply" button */
+    boolean showApplyButton;
     /** Show the "New Relation" button */
     boolean showNewRelationButton;
-    /** Disables the apply button */
-    boolean disableApplyButton;
 
     /** The instance we are attached to. */
     final transient TaggingPreset.Instance presetInstance;
 
     private final Map<Integer, JButton> buttons = new HashMap<>();
     final FontMetrics fontMetrics;
-    @CheckForNull private transient TaggingPresetValidator validator;
-    @CheckForNull TaggingPresetValidator.EnableValidatorAction enableValidatorAction;
+    private transient TaggingPresetValidator taggingPresetValidator;
+    TaggingPresetValidator.EnableValidatorAction enableValidatorAction;
 
     /**
      * Constructs a new {@code PresetDialog}.
      * @param preset the tagging preset
      */
-    TaggingPresetDialog(TaggingPreset.Instance presetInstance) {
+    TaggingPresetDialog(TaggingPreset.Instance presetInstance, boolean showApplyButton, boolean showNewRelation) {
         super(MainApplication.getMainFrame(), presetInstance.getPreset().getBaseName(), true);
 
         this.presetInstance = presetInstance;
-        this.showNewRelationButton = false;
-        this.disableApplyButton = false;
+        this.showApplyButton = showApplyButton;
+        this.showNewRelationButton = showNewRelation;
+
+        TaggedHandler handler = presetInstance.getHandler();
+        if (handler == null || handler.isReadOnly()) {
+            showApplyButton = false;
+            showNewRelationButton = false;
+        } else if (handler.get().isEmpty()) {
+            showApplyButton = false;
+        }
+        // don't use the validator in case of "new relation", because the relation
+        // doesn't exist yet
+        boolean useValidator = TaggingPresets.USE_VALIDATOR.get() && showApplyButton;
+
         presetInstance.dialog = this;
         Font font = getFont();
         if (font == null)
@@ -115,12 +126,9 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         setTitle(presetInstance);
 
         // add a validator
-        // the validator crashes if a primitive is not in a dataset
-        if (presetInstance.getHandler() instanceof DataSetHandler) {
-            validator = buildValidator();
-            validator.setEnabled(TaggingPresets.USE_VALIDATOR.get());
-            enableValidatorAction = new TaggingPresetValidator.EnableValidatorAction(this, false);
-        }
+        taggingPresetValidator = buildValidator();
+        taggingPresetValidator.setEnabled(useValidator);
+        enableValidatorAction = new TaggingPresetValidator.EnableValidatorAction(this, false);
 
         Dimension border = new Dimension(fontMetrics.charWidth('m'), fontMetrics.getAscent() / 2);
         GBC gbc = GBC.eol().fill(GridBagConstraints.HORIZONTAL).insets(border.width, border.height, border.width, 0);
@@ -185,6 +193,10 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         });
     }
 
+    public int getAnswer() {
+        return answer;
+    }
+
     private void closeWithAnswer(int answer) {
         this.answer = answer;
         setVisible(false);
@@ -194,7 +206,7 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
     public void setVisible(boolean visible) {
         String positionPref = getClass().getName() + "." + presetInstance.getPreset().getRawName() + ".geometry";
         if (visible) {
-            if (!disableApplyButton)
+            if (showApplyButton)
                 getRootPane().setDefaultButton(buttons.get(DIALOG_ANSWER_APPLY));
             // trigger initial updates once
             presetInstance.setFireDataChanged(true);
@@ -218,17 +230,16 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
     public void setTitle(TaggingPreset.Instance instance) {
         TaggingPreset preset = instance.getPreset();
         TaggedHandler handler = instance.getHandler();
-        int size;
-        if (handler == null) {
-            setTitle(preset.getName());
-        } else if ((size = handler.get().size()) > 0) {
+
+        if (showApplyButton) {
+            int size = handler.get().size();
             setTitle(trn("Change {0} object", "Change {0} objects", size, size));
-            disableApplyButton = handler.isReadOnly();
-        } else {
+        } else if (showNewRelationButton) {
             setTitle(tr("New Relation"));
-            showNewRelationButton = true;
-            disableApplyButton = true;
+        } else {
+            setTitle(preset.getName());
         }
+
         if (preset.showPresetName) {
             ImageResource imageResource = preset.getIconResource();
             if (imageResource != null) {
@@ -258,8 +269,7 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         if (!keys.isEmpty()) {
             label = new JLabel(ImageProvider.get("pastetags", ICONSIZE));
             label.setToolTipText("<html>" + tr("This preset also sets: {0}",
-                keys.stream().map(k -> {
-                    return k.getKey() + "=" + k.getValue(); }).collect(StreamUtils.toHtmlList())));
+                keys.stream().map(k -> k.getKey() + "=" + k.getValue()).collect(StreamUtils.toHtmlList())));
             iconsPanel.add(label, gbc.grid(x++, 0));
         }
         // add horizontal glue
@@ -307,37 +317,55 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         JButton cancel = new JButton(new ButtonAction(tr("Cancel"),       "cancel",        DIALOG_ANSWER_CANCEL,       null));
         JButton help   = new JButton(new HelpAction(helpTopic));
         // CHECKSTYLE.ON: SingleSpaceSeparator
-        ok.setEnabled(!disableApplyButton);
+
+        ok.setEnabled(showApplyButton);
+        newRel.setEnabled(showNewRelationButton);
+        help.setEnabled(helpTopic != null);
+
         GBC gbc = GBC.std().insets(2, 2, 2, 2);
+
         panel.add(ok, gbc);
         buttons.put(DIALOG_ANSWER_APPLY, ok);
-        if (showNewRelationButton) {
-            buttons.put(DIALOG_ANSWER_NEW_RELATION, newRel);
-            panel.add(newRel, gbc);
-        }
+
+        panel.add(newRel, gbc);
+        buttons.put(DIALOG_ANSWER_NEW_RELATION, newRel);
+
         panel.add(cancel, gbc);
         buttons.put(DIALOG_ANSWER_CANCEL, cancel);
-        if (helpTopic != null) {
-            buttons.put(DIALOG_ANSWER_HELP, help);
-            panel.add(help, gbc);
-            HelpUtil.setHelpContext(getRootPane(), helpTopic);
-        }
+
+        panel.add(help, gbc);
+        buttons.put(DIALOG_ANSWER_HELP, help);
+        HelpUtil.setHelpContext(getRootPane(), helpTopic);
+
         return panel;
     }
 
     TaggingPresetValidator buildValidator() {
         final Color errorBackground = new NamedColorProperty(
             marktr("Input validation: error"), Color.RED).get();
-        return new TaggingPresetValidator(presetInstance, (DataSetHandler) presetInstance.getHandler(), (errors) -> {
-            presetInstance.highlight(null, null, null);
-            Map<String, String> key2msg = new HashMap<>();
-            for (TestError e : errors) {
-                String message = e.getDescription() == null ? e.getMessage() :
-                        tr("<html>{0}<br>{1}", e.getMessage(), e.getDescription());
-                e.getKeys().forEach(k -> key2msg.put(k, message));
+
+        // List<Test> tests = new ArrayList<>();
+        // tests.add(OsmValidator.getTest(MapCSSTagChecker.class));
+        // tests.add(OsmValidator.getTest(OpeningHourTest.class));
+
+        TaggingPresetValidator validator = new TaggingPresetValidator(
+            OsmValidator.getEnabledTests(false),
+            presetInstance.getChildHandler(),
+            errors -> {
+                presetInstance.highlight(null, null, null);
+                Map<String, String> key2msg = new HashMap<>();
+                for (TestError e : errors) {
+                    String message = e.getDescription() == null ? e.getMessage() :
+                            tr("<html>{0}<br>{1}", e.getMessage(), e.getDescription());
+                    e.getKeys().forEach(k -> key2msg.put(k, message));
+                }
+                key2msg.forEach((k, msg) -> presetInstance.highlight(k, errorBackground, msg));
+                if (enableValidatorAction != null)
+                    enableValidatorAction.setOk(key2msg.isEmpty());
             }
-            key2msg.forEach((k, msg) -> presetInstance.highlight(k, errorBackground, msg));
-        });
+        );
+        presetInstance.addListener(validator.getListener());
+        return validator;
     }
 
     /**
@@ -393,9 +421,9 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         if ("orientationAction".equals(evt.getPropertyName())) {
             applyComponentOrientation((ComponentOrientation) evt.getNewValue());
         }
-        if (validator != null && "enableValidator".equals(evt.getPropertyName())) {
+        if (taggingPresetValidator != null && "enableValidator".equals(evt.getPropertyName())) {
             boolean validatorEnabled = (Boolean) evt.getNewValue();
-            validator.setEnabled(validatorEnabled);
+            taggingPresetValidator.setEnabled(validatorEnabled);
             if (validatorEnabled) {
                 presetInstance.fireChangeEvent(presetInstance);
             } else {

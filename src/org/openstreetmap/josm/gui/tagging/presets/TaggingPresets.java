@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
  * "poof" at random moments, and when TaggingPresets later attempts to unregister them
  * it gets the infamous: "Attempted to remove listener that was not in list" message
  * followed by a stack trace. Many tests load defaultpresets.xml, with ~873 items in it,
- * so we get 873 stack traces in the output, which takes JUint forever to process.
+ * so we get 873 stack traces in the output, which takes JUnit forever to process.
  * <p>
  * Plugin authors should use {@link MainApplication#getTaggingPresets} instead of
  * {@code TaggingPresets}.

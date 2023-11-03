@@ -18,12 +18,8 @@ import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Tagged;
-import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Utils;
@@ -100,7 +96,10 @@ public class DataHandlers {
     }
 
     /**
-     * A TaggedHandler that operates on a live DataSet.
+     * A handler of primitives that are in a {@code DataSet}.
+     * <p>
+     * This handler guarantees that the primitives it operates on are in a dataset. For
+     * instance you can safely pass this handler to the MapCCS validator.
      */
     public static class DataSetHandler implements TaggedHandler {
         protected List<Command> commands = new ArrayList<>();
@@ -111,7 +110,7 @@ public class DataHandlers {
         selection because the selection may change even if we are in a modal dialog. In
         that case we want to update the original selection, not the new one. See also
         <a href="https://josm.openstreetmap.de/ticket/23191">#23191</a>.*/
-        protected Collection<OsmPrimitive> selected;
+        private Collection<OsmPrimitive> selected;
 
         /**
          * Sets a {@link DataSet}
@@ -238,13 +237,17 @@ public class DataHandlers {
     public static class ReadOnlyHandler extends DataSetHandler {
         /**
          * Constructor
-         * @param selection the selection in the DataSet
+         * @param selected the selection in the DataSet
          */
-        public ReadOnlyHandler(Collection<OsmPrimitive> selection) {
-            setDataSet(new DataSet());
-            this.selected = selection;
-            selected.forEach(p -> getDataSet().addPrimitive(p));
-            getDataSet().addSelected(selected);
+        public ReadOnlyHandler(Collection<OsmPrimitive> selected) {
+            DataSet ds = new DataSet();
+            selected.forEach(ds::addPrimitive);
+            ds.addSelected(selected);
+            setDataSet(ds);
+        }
+
+        public ReadOnlyHandler(DataSet ds) {
+            setDataSet(ds);
         }
 
         @Override
@@ -261,7 +264,9 @@ public class DataHandlers {
     /**
      * A handler that creates a new DataSet and clones the given selection into it.
      * <p>
-     * Use this to apply temporary edits, eg. for the validator.
+     * A CloneDataSetHandler can be used when primitives are expected to be in a
+     * dataset, or to apply temporary edits, eg. to pass changed data to the validator
+     * before committing the data definitely.
      * <p>
      * Caveat emptor: Update semantics are tricky: If you clone an existing DataSet and
      * apply some changes and then pass it to another preset dialog, that dialog will
@@ -271,9 +276,8 @@ public class DataHandlers {
      * applied.
      */
     public static class CloneDataSetHandler extends DataSetHandler {
-        protected final DataSet clonedDataSet = new DataSet();
-        protected final DataSetHandler parentHandler;
-        final Map<OsmPrimitive, OsmPrimitive> clonedMap = new HashMap<>();
+        private final DataSet clonedDataSet = new DataSet();
+        private final DataSetHandler parentHandler;
 
         /**
          * Constructor
@@ -284,59 +288,18 @@ public class DataHandlers {
          */
         public CloneDataSetHandler(DataSetHandler parentHandler) {
             this.parentHandler = parentHandler;
-
-            Collection<OsmPrimitive> parentSelection = parentHandler.get();
-            parentSelection.forEach(this::clonePrimitive);
-            parentSelection.forEach(p -> clonedDataSet.addSelected(clonedMap.get(p)));
-
             clonedDataSet.setName("Cloned by CloneDataSetHandler");
+        }
+
+        @Override
+        public Collection<OsmPrimitive> get() {
+            clonedDataSet.clear();
+            new CloneDataSet(clonedDataSet, parentHandler.get()); // clone it
+
             Logging.info("Cloned by CloneDataSetHandler {0} objects {1} selected",
                 clonedDataSet.getPrimitives(p -> true).size(), clonedDataSet.getSelected().size());
-        }
 
-        /**
-         * Add a primitive to the cloned dataset if not already there.
-         */
-        private void add(OsmPrimitive p, OsmPrimitive newP) {
-            if (!clonedMap.containsKey(p)) {
-                clonedDataSet.addPrimitive(newP);
-                clonedMap.put(p, newP);
-            }
-        }
-
-        /**
-         * Clone a primitive with all dependent primitives into the cloned dataset.
-         * @param p the primitive to clone
-         */
-        private void clonePrimitive(OsmPrimitive p) {
-            if (p instanceof Node) {
-                Node newNode = new Node((Node) p);
-                add(p, newNode);
-                return;
-            }
-            if (p instanceof Way) {
-                Way w = (Way) p;
-                w.getNodes().forEach(this::clonePrimitive);
-
-                Way newWay = new Way(w, false, false);
-                newWay.setNodes(w.getNodes().stream()
-                        .map(n -> (Node) clonedMap.get(n))
-                        .collect(Collectors.toList()));
-                add(w, newWay);
-                return;
-            }
-            if (p instanceof Relation) {
-                Relation r = (Relation) p;
-                r.getMembers().forEach(m -> clonePrimitive(m.getMember()));
-
-                Relation newRelation = new Relation(r, false, false);
-                newRelation.setMembers(r.getMembers().stream()
-                        .map(m -> new RelationMember(m.getRole(), clonedMap.get(m.getMember())))
-                        .collect(Collectors.toList()));
-                add(r, newRelation);
-                return;
-            }
-            assert false : "Can't happen";
+            return clonedDataSet.getSelected();
         }
 
         @Override
@@ -368,11 +331,6 @@ public class DataHandlers {
         @Override
         public DataSet getDataSet() {
             return clonedDataSet;
-        }
-
-        @Override
-        public Collection<OsmPrimitive> get() {
-            return getDataSet().getSelected();
         }
     }
 }

@@ -89,7 +89,7 @@ public final class Cascade {
      * @param def the default value or null
      * @return the adjusted length or the adjusted default value
      */
-    public Float getWidth(String key, Float def){
+    public Float getWidth(String key, Float def) {
         Object v = get(key);
         Float val = convertTo(v, Float.class);
         if (val != null) {
@@ -104,7 +104,7 @@ public final class Cascade {
         return def;
     }
 
-    public Float getWidth(String key){
+    public Float getWidth(String key) {
         return getWidth(key, null);
     }
 

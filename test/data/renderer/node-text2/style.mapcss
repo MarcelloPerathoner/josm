@@ -3,6 +3,7 @@
  * Text placement test
  */
 node[test=text-placement]::* {
+	font-family: "DejaVu Sans";
     font-size: 10;
     text: auto;
     symbol-shape: square;

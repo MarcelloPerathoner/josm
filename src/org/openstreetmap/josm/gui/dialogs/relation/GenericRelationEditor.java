@@ -6,6 +6,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -21,10 +22,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -51,6 +55,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelListener;
 
 import org.openstreetmap.josm.actions.JosmAction;
@@ -58,17 +65,17 @@ import org.openstreetmap.josm.command.ChangeMembersCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.UndoRedoHandler.CommandQueueListener;
-import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.DefaultNameFormatter;
 import org.openstreetmap.josm.data.osm.IRelation;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompItemCellRenderer;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionPriority;
+import org.openstreetmap.josm.data.validation.OsmValidator;
+import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.tests.RelationChecker;
 import org.openstreetmap.josm.gui.ConditionalOptionPaneUtil;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -104,13 +111,15 @@ import org.openstreetmap.josm.gui.dialogs.relation.actions.SelectedMembersForSel
 import org.openstreetmap.josm.gui.dialogs.relation.actions.SetRoleAction;
 import org.openstreetmap.josm.gui.dialogs.relation.actions.SortAction;
 import org.openstreetmap.josm.gui.dialogs.relation.actions.SortBelowAction;
+import org.openstreetmap.josm.gui.dialogs.validator.ValidatorListPanel;
 import org.openstreetmap.josm.gui.help.ContextSensitiveHelpAction;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
-import org.openstreetmap.josm.gui.tagging.TagTableModel;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.CloneDataSetHandler;
+import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
 import org.openstreetmap.josm.gui.tagging.TagEditorPanel;
 import org.openstreetmap.josm.gui.tagging.TagTable;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
@@ -119,12 +128,16 @@ import org.openstreetmap.josm.gui.tagging.ac.TagTableUtils;
 import org.openstreetmap.josm.gui.tagging.presets.PresetListPanel;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetValidator;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetValidator.EnableValidatorAction;
+import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.gui.util.WindowGeometry;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.InputMapUtils;
+import org.openstreetmap.josm.tools.ListenerList;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
 import org.openstreetmap.josm.tools.Utils;
@@ -133,7 +146,7 @@ import org.openstreetmap.josm.tools.Utils;
  * This dialog is for editing relations.
  * @since 343
  */
-public class GenericRelationEditor extends RelationEditor implements CommandQueueListener {
+public class GenericRelationEditor extends RelationEditor implements CommandQueueListener, PropertyChangeListener {
     private static final String PREF_LASTROLE = "relation.editor.generic.lastrole";
     private static final String PREF_USE_ROLE_FILTER = "relation.editor.use_role_filter";
 
@@ -156,7 +169,13 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
     private final AutoCompComboBox<AutoCompletionItem> cbRole;
     private final RelationEditorActionAccess actionAccess;
 
-    private final TaggedHandler taggedHandler;
+    // private final ValidatorTreePanel validatorPanel;
+    private final ValidatorListPanel validatorListPanel;
+    private final CloneDataSetHandler presetLinkHandler;
+    private TaggingPresetValidator validator;
+    private EnableValidatorAction enableValidatorAction;
+    /** Data change listeners */
+    private final ListenerList<ChangeListener> listeners = ListenerList.create();
 
     /**
      * the menu item in the windows menu. Required to properly hide on dialog close.
@@ -200,6 +219,46 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
     private JCheckBox btnFilter = new JCheckBox(tr("Filter"));
 
     /**
+     * The data handler we pass to a preset dialog opened from here.
+     * <p>
+     * This handler sets the tags and members of the relation according to the current
+     * values in the tag and member tables.
+     * <p>
+     * Updates go only to the tag table. It is not possible to change the members
+     * through this handler.
+     */
+    static class PresetLinkHandler extends DataSetHandler {
+        final Relation relation;
+        final TagEditorPanel tagEditorPanel;
+        final MemberTableModel memberTableModel;
+
+        PresetLinkHandler(Relation relation, TagEditorPanel tagEditorPanel, MemberTableModel memberTableModel) {
+            this.relation = relation;
+            this.tagEditorPanel = tagEditorPanel;
+            this.memberTableModel = memberTableModel;
+        }
+
+        @Override
+        public void update(String oldKey, String newKey, String value) {
+            tagEditorPanel.getModel().put(oldKey, value);
+        }
+
+        @Override
+        public Collection<OsmPrimitive> get() {
+            // make a copy and set tags / members
+            Relation r = new Relation(relation);
+            memberTableModel.applyToRelation(r);
+            r.setKeys(tagEditorPanel.getModel().getTags());
+            return Collections.singletonList(r);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return false;
+        }
+    }
+
+    /**
      * Creates a new relation editor for the given relation. The relation will be saved if the user
      * selects "ok" in the editor.
      *
@@ -215,48 +274,23 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         setRememberWindowGeometry(getClass().getName() + ".geometry",
                 WindowGeometry.centerInWindow(MainApplication.getMainFrame(), new Dimension(700, 650)));
 
-        /**
-         * The data handler we pass to any preset dialog opened from here.
-         * <p>
-         * This handler creates a new relation and a new dataset because the validator (that may run
-         * in the preset dialog) assumes that the primitive to validate has a dataset. On read it
-         * copies the current state of the tag editor to the relation. On write the data goes to the
-         * tag table.
-         */
-        taggedHandler = new TaggedHandler() {
-            Relation relation = new Relation();
-            DataSet ds = new DataSet();
-
-            /* anon constructor */ {
-                ds.addPrimitive(relation);
-            }
-
-            @Override
-            public void update(String oldKey, String newKey, String value) {
-                tagEditorPanel.getModel().put(oldKey, value);
-            }
-
-            @Override
-            public Collection<? extends Tagged> get() {
-                relation.setKeys(tagEditorPanel.getModel().getTags());
-                return Collections.<OsmPrimitive>singletonList(relation);
-            }
-        };
-
         if (relation == null)
             relation = new Relation();
 
         // init the various models
         //
-        memberTableModel = new MemberTableModel(relation, getLayer(), taggedHandler);
+        tagEditorPanel = new TagEditorPanel(null, 0);
+        memberTableModel = new MemberTableModel(relation, getLayer(), tagEditorPanel.getModel());
         memberTableModel.register();
         selectionTableModel = new SelectionTableModel(getLayer());
         selectionTableModel.register();
         referrerModel = new ReferringRelationsBrowserModel(relation);
 
-        manager = AutoCompletionManager.of(this.getLayer().data);
+        validatorListPanel = new ValidatorListPanel();
 
-        tagEditorPanel = new TagEditorPanel(null, 0);
+        manager = AutoCompletionManager.of(this.getLayer().data);
+        presetLinkHandler = new CloneDataSetHandler(new PresetLinkHandler(relation, tagEditorPanel, memberTableModel));
+
         populateModels(relation);
 
         presetListPanel = Config.getPref().getBoolean("relation.editor.presets.visible", true) ?
@@ -317,14 +351,15 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
                 buildMemberEditorPanel(leftButtonToolbar),
                 this);
 
-        int w = ImageProvider.adj(3);
-        tagsAndMembersPane.setBorder(BorderFactory.createEmptyBorder(w, w, w, w));
+        // int w = ImageProvider.adj(3);
+        tagsAndMembersPane.setBorder(BorderFactory.createEmptyBorder());
         getContentPane().setLayout(new BorderLayout());
         tabbedPane = new JTabbedPane();
         tabbedPane.add(tr("Tags and Members"), tagsAndMembersPane);
         referrerBrowser = new ReferringRelationsBrowser(getLayer(), referrerModel);
         tabbedPane.add(tr("Parent Relations"), referrerBrowser);
         tabbedPane.add(tr("Child Relations"), new ChildRelationBrowser(getLayer(), relation));
+        tabbedPane.add(tr("Errors"), validatorListPanel);
         selectedTabPane = tabbedPane.getSelectedComponent();
         tabbedPane.addChangeListener(e -> {
             JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
@@ -343,6 +378,10 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             selectedTabPane = sourceTabbedPane.getSelectedComponent();
         });
 
+        buildValidator();
+        tagEditorPanel.getModel().addTableModelListener(validator.getListener());
+        memberTableModel.addTableModelListener(validator.getListener());
+
         actionAccess = new RelationEditorActionAccess();
 
         refreshAction = new RefreshAction(actionAccess);
@@ -359,7 +398,11 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         okAction = new OKAction(actionAccess);
         cancelAction = new CancelAction(actionAccess);
 
-        getContentPane().add(buildToolBar(refreshAction, applyAction, selectAction, duplicateAction, deleteAction), BorderLayout.NORTH);
+        JToolBar tb = buildToolBar(refreshAction, applyAction, selectAction, duplicateAction, deleteAction);
+        tb.add(Box.createHorizontalGlue());
+        tb.add(enableValidatorAction);
+
+        getContentPane().add(tb, BorderLayout.NORTH);
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
         getContentPane().add(buildOkCancelButtonPanel(okAction, deleteAction, cancelAction), BorderLayout.SOUTH);
 
@@ -456,7 +499,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         presetListPanel.updatePresets(
             EnumSet.of(TaggingPresetType.RELATION),
             tagEditorPanel.getModel().getTags(),
-            taggedHandler,
+            presetLinkHandler,
             manager
         );
         validate();
@@ -485,6 +528,68 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
      */
     public void cancel() {
         cancelAction.actionPerformed(null);
+    }
+
+    /**
+     * Adds a new change listener
+     * @param listener the listener to add
+     */
+    public void addListener(ChangeListener listener) {
+        listeners.addListener(listener);
+    }
+
+    /**
+     * Adds a new change listener
+     * @param listener the listener to add
+     */
+    public void removeListener(ChangeListener listener) {
+        listeners.removeListener(listener);
+    }
+
+    /**
+     * Notifies all listeners that a preset item input has changed.
+     * @param source the source of this event
+     */
+    public void fireChangeEvent(JComponent source) {
+        listeners.fireEvent(e -> e.stateChanged(new ChangeEvent(source)));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("orientationAction".equals(evt.getPropertyName())) {
+            applyComponentOrientation((ComponentOrientation) evt.getNewValue());
+        }
+        if (validator != null && "enableValidator".equals(evt.getPropertyName())) {
+            boolean validatorEnabled = (Boolean) evt.getNewValue();
+            validator.setEnabled(validatorEnabled);
+            firePropertyChange("enableValidator", null, validatorEnabled);
+        }
+    }
+
+    void buildValidator() {
+        // final Color errorBackground = new NamedColorProperty(
+        //    marktr("Input validation: error"), Color.RED).get();
+        validator = new TaggingPresetValidator(
+            OsmValidator.getEnabledTests(false),
+            presetLinkHandler,
+            errors -> {
+                // validatorPanel.setErrors(errors);
+                // validatorPanel.expandAll();
+                validatorListPanel.setErrors(errors);
+
+                Severity maxSeverity = errors.stream().map(e -> e.getSeverity())
+                    .min(Comparator.comparing(Severity::getLevel)).orElse(null);
+                int index = tabbedPane.indexOfComponent(validatorListPanel);
+                if (maxSeverity != null) {
+                    tabbedPane.setIconAt(index, ImageProvider.get("data", maxSeverity.getIcon()));
+                } else {
+                    tabbedPane.setIconAt(index, ImageProvider.get("preferences/validator"));
+                }
+            }
+        );
+        enableValidatorAction = new TaggingPresetValidator.EnableValidatorAction(this, false);
+        validator.setEnabled(TaggingPresets.USE_VALIDATOR.get());
+        validator.validate();
     }
 
     /**
@@ -740,7 +845,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
          * @param editorAccess relation editor
          */
         LeftButtonToolbar(IRelationEditorActionAccess editorAccess) {
-            setOrientation(JToolBar.VERTICAL);
+            setOrientation(SwingConstants.VERTICAL);
             setFloatable(false);
 
             List<IRelationEditorActionGroup> groups = new ArrayList<>();
@@ -773,15 +878,15 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             IRelationEditorActionGroup.fillToolbar(this, groups, editorAccess);
 
 
-            InputMap inputMap = editorAccess.getMemberTable().getInputMap(MemberTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            InputMap inputMap = editorAccess.getMemberTable().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             inputMap.put((KeyStroke) new RemoveAction(editorAccess, "removeSelected")
-                    .getValue(AbstractAction.ACCELERATOR_KEY), "removeSelected");
+                    .getValue(Action.ACCELERATOR_KEY), "removeSelected");
             inputMap.put((KeyStroke) new MoveUpAction(editorAccess, "moveUp")
-                    .getValue(AbstractAction.ACCELERATOR_KEY), "moveUp");
+                    .getValue(Action.ACCELERATOR_KEY), "moveUp");
             inputMap.put((KeyStroke) new MoveDownAction(editorAccess, "moveDown")
-                    .getValue(AbstractAction.ACCELERATOR_KEY), "moveDown");
+                    .getValue(Action.ACCELERATOR_KEY), "moveDown");
             inputMap.put((KeyStroke) new DownloadIncompleteMembersAction(
-                    editorAccess, "downloadIncomplete").getValue(AbstractAction.ACCELERATOR_KEY), "downloadIncomplete");
+                    editorAccess, "downloadIncomplete").getValue(Action.ACCELERATOR_KEY), "downloadIncomplete");
         }
     }
 
@@ -792,7 +897,7 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
      * @return control buttons panel for selection/members
      */
     protected static JToolBar buildSelectionControlButtonToolbar(IRelationEditorActionAccess editorAccess) {
-        JToolBar tb = new JToolBar(JToolBar.VERTICAL);
+        JToolBar tb = new JToolBar(SwingConstants.VERTICAL);
         tb.setFloatable(false);
 
         List<IRelationEditorActionGroup> groups = new ArrayList<>();
@@ -1188,22 +1293,6 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
         }
     }
 
-    /**
-     * Returns the roles currently edited in the members table.
-     * @param types the preset types to include, (node / way / relation ...) or null to include all types
-     * @return the roles currently edited in the members table.
-     */
-    private Set<String> getCurrentRoles(Collection<TaggingPresetType> types) {
-        Set<String> set = new HashSet<>();
-        for (int i = 0; i < memberTableModel.getRowCount(); ++i) {
-            RelationMember member = memberTableModel.getValue(i);
-            if (types == null || types.contains(TaggingPresetType.forPrimitiveType(member.getDisplayType()))) {
-                set.add(member.getRole());
-            }
-        }
-        return set;
-    }
-
     private class RoleAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
         @Override
         protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
@@ -1225,6 +1314,22 @@ public class GenericRelationEditor extends RelationEditor implements CommandQueu
             model.replaceAllElements(map.entrySet().stream()
                 .map(e -> new AutoCompletionItem(e.getKey(), e.getValue()))
                 .sorted(AutoCompletionManager.ALPHABETIC_COMPARATOR).collect(Collectors.toList()));
+        }
+
+        /**
+         * Returns the roles currently edited in the members table.
+         * @param types the preset types to include, (node / way / relation ...) or null to include all types
+         * @return the roles currently edited in the members table.
+         */
+        private Set<String> getCurrentRoles(Collection<TaggingPresetType> types) {
+            Set<String> set = new HashSet<>();
+            for (int i = 0; i < memberTableModel.getRowCount(); ++i) {
+                RelationMember member = memberTableModel.getValue(i);
+                if (types == null || types.contains(TaggingPresetType.forPrimitiveType(member.getDisplayType()))) {
+                    set.add(member.getRole());
+                }
+            }
+            return set;
         }
     }
 }

@@ -1,10 +1,14 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.data.osm;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -64,5 +68,47 @@ class AbstractPrimitiveTest {
         assertTrue(p.hasTagDifferent("foo", "bar"));
         assertTrue(p.hasTagDifferent("foo", "bar", "baz"));
         assertTrue(p.hasTagDifferent("foo", Collections.singleton("bar")));
+    }
+
+    /**
+     * Unit test of {@link AbstractPrimitive#putAll}
+     */
+    @Test
+    void testPutAll() {
+        AbstractPrimitive p = new Node();
+        Map<String, String> tags = new HashMap<>();
+
+        // insert tags
+        tags.put("a", "va1");
+        tags.put("b", "vb1");
+        p.putAll(tags);
+        assertEquals("va1", p.get("a"));
+        assertEquals("vb1", p.get("b"));
+
+        // change tags
+        tags.clear();
+        tags.put("a", "va2");
+        p.putAll(tags);
+        assertEquals("va2", p.get("a"));
+        assertEquals("vb1", p.get("b"));
+
+        // change and insert tags
+        tags.clear();
+        tags.put("b", "vb3");
+        tags.put("c", "vc3");
+        p.putAll(tags);
+        assertEquals("va2", p.get("a"));
+        assertEquals("vb3", p.get("b"));
+        assertEquals("vc3", p.get("c"));
+
+        // change and remove tags
+        tags.clear();
+        tags.put("a", "va4");
+        tags.put("b", null);
+        tags.put(null, null);
+        p.putAll(tags);
+        assertEquals("va4", p.get("a"));
+        assertNull(p.get("b"));
+        assertEquals("vc3", p.get("c"));
     }
 }

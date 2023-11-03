@@ -20,6 +20,7 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Tagged;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 
@@ -34,7 +35,7 @@ class MemberTableModelTest {
     @Test
     void testTicket12443() {
         final Node n = new Node(1);
-        assertNotNull(new MemberTableModel(null, null, new TaggedHandler() {
+        assertNotNull(new MemberTableModel(null, null, new TagTableModel(new TaggedHandler() {
             @Override
             public void update(String oldKey, String newKey, String value) {
                 // Do nothing
@@ -44,7 +45,7 @@ class MemberTableModelTest {
             public Collection<Tagged> get() {
                 return Collections.<Tagged>singleton(n);
             }
-        }).getRelationMemberForPrimitive(n));
+        })).getRelationMemberForPrimitive(n));
     }
 
     /**
@@ -63,7 +64,7 @@ class MemberTableModelTest {
                 .toArray(RelationMember[]::new));
         final OsmDataLayer osmDataLayer = new OsmDataLayer(new DataSet(), "testTicket12617", null);
         osmDataLayer.getDataSet().addPrimitiveRecursive(relation);
-        final MemberTableModel model = new MemberTableModel(relation, osmDataLayer, new TaggedHandler() {
+        final MemberTableModel model = new MemberTableModel(relation, osmDataLayer, new TagTableModel(new TaggedHandler() {
             @Override
             public Collection<OsmPrimitive> get() {
                 return Collections.singleton(relation);
@@ -73,7 +74,7 @@ class MemberTableModelTest {
             public void update(String oldKey, String newKey, String value) {
                 // Do nothing
             }
-        });
+        }));
 
         model.populate(relation);
         // Select the members to move

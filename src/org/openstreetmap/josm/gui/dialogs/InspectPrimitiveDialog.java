@@ -142,7 +142,7 @@ public class InspectPrimitiveDialog extends ExtendedDialog {
                         for (Entry<String, Cascade> e : mc.getLayers()) {
                             txtMappaint.println(tr("Layer {0}", e.getKey()));
                             txtMappaint.print(" * ");
-                            txtMappaint.println(e.getValue());
+                            txtMappaint.println(e.getValue().toString().replace("; ", ";\n  ").replace("{ ", "{\n  "));
                         }
                     }
                 }

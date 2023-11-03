@@ -6,12 +6,6 @@
 			<attribute name="gradle_used_by_scope" value="main,test,epsg,functionalTest,integrationTest,performanceTest,scripts"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/main" path="build/generated/javacc">
-		<attributes>
-			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,epsg,functionalTest,integrationTest,performanceTest,scripts"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" output="bin/scripts" path="resources">
 		<attributes>
 			<attribute name="gradle_scope" value="scripts"/>
@@ -45,7 +39,7 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="**/ImageryPreferenceTestIT.java" kind="src" output="bin/integrationTest" path="test/integration">
+	<classpathentry kind="src" output="bin/integrationTest" path="test/integration">
 		<attributes>
 			<attribute name="gradle_scope" value="integrationTest"/>
 			<attribute name="gradle_used_by_scope" value="integrationTest,scripts"/>
@@ -57,6 +51,12 @@
 			<attribute name="gradle_scope" value="performanceTest"/>
 			<attribute name="gradle_used_by_scope" value="performanceTest"/>
 			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="bin/main" path="build/generated/javacc">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test,epsg,functionalTest,integrationTest,performanceTest,scripts"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17/"/>

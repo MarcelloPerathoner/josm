@@ -68,7 +68,12 @@ public class DefaultNameFormatter implements NameFormatter, HistoryNameFormatter
     /** If not null use these TaggingPresets else use global TaggingPresets. For unit testing. */
     private TaggingPresets taggingPresets;
 
-    DefaultNameFormatter(TaggingPresets taggingPresets) {
+    /**
+     * Constructor
+     *
+     * Should be package-private but for the livegps plugin. Don't use.
+     */
+    public DefaultNameFormatter(TaggingPresets taggingPresets) {
         this.taggingPresets = taggingPresets;
     }
 

@@ -6,24 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.swing.JPanel;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.openstreetmap.josm.testutils.annotations.TaggingPresets;
 
 /**
  * Unit tests of {@link Label} class.
  */
-class LabelTest {
-
-    /**
-     * Setup test.
-     */
-    @RegisterExtension
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public JOSMTestRules test = new JOSMTestRules();
-
+@TaggingPresets
+ class LabelTest {
     /**
      * Unit test for {@link Label#addToPanel}.
      */

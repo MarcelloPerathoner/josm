@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -563,6 +564,16 @@ public class AutoCompletionManager implements DataSetListener {
     }
 
     /**
+     * Returns all keys used in the dataset.
+     * @return the keys
+     */
+    public Collection<String> getDataSetKeys() {
+        Set<String> result = new HashSet<>();
+        getPresetTagCache().values().forEach(mm -> result.addAll(mm.keySet()));
+        return result;
+    }
+
+    /**
      * Returns all keys common to all given {@link #classifyPrimitive(Map) primitive categories}.
      * <p>
      * For each given preset type:
@@ -579,6 +590,17 @@ public class AutoCompletionManager implements DataSetListener {
         return categories.stream().map(t -> getCategoryTagCache(t).keySet())
             // intersect all key sets
             .reduce((a, b) -> intersection(a, b)).orElse(Collections.emptySet());
+    }
+
+    /**
+     * Returns all values used in the dataset for the given key.
+     * @param key the key
+     * @return the values
+     */
+    public Collection<String> getDataSetValues(String key) {
+        Set<String> result = new HashSet<>();
+        getPresetTagCache().values().forEach(mm -> result.addAll(mm.getValues(key)));
+        return result;
     }
 
     /**
@@ -601,16 +623,6 @@ public class AutoCompletionManager implements DataSetListener {
      * Fills a combobox dropdown with all known keys.
      */
     public class NaiveKeyAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
-        /**
-         * Returns all keys used in the dataset.
-         * @return the keys
-         */
-        private Collection<String> getDataSetKeys() {
-            Set<String> result = new HashSet<>();
-            getPresetTagCache().values().forEach(mm -> result.addAll(mm.keySet()));
-            return result;
-        }
-
         @Override
         protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
             Map<String, AutoCompletionPriority> map = merge(
@@ -624,18 +636,27 @@ public class AutoCompletionManager implements DataSetListener {
     }
 
     /**
-     * Fills a combobox dropdown with all known values for a given key or given keys.
+     * Autocompletes with all known values for a given key or given keys.
+     * <p>
+     * A supplier function may be used to dynamically provide the key.
+     * <pre>
+     * AutoCompletionManager am = AutoCompletionManager.of(dataSet);
+     * AutoCompTextField<String> textField = new AutoCompTextField<>();
+     * textField.addAutoCompListener(am.new NaiveValueAutoCompManager("addr:street"));
+     * </pre>
      */
     public class NaiveValueAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
-        Set<String> keys;
+        Supplier<Collection<String>> keysSupplier;
 
         /**
          * Constructor
          * @param key The given key
          */
         public NaiveValueAutoCompManager(String key) {
-            this.keys = new HashSet<>();
-            this.keys.add(key);
+            Set<String> keySet;
+            keySet = new HashSet<>();
+            keySet.add(key);
+            this.keysSupplier = () -> keySet;
         }
 
         /**
@@ -643,25 +664,24 @@ public class AutoCompletionManager implements DataSetListener {
          * @param keys The given keys
          */
         public NaiveValueAutoCompManager(Collection<String> keys) {
-            this.keys = new HashSet<>(keys);
+            Set<String> keySet;
+            keySet = new HashSet<>(keys);
+            this.keysSupplier = () -> keySet;
         }
 
         /**
-         * Returns all values used in the dataset for the given key.
-         * @param key the key
-         * @return the values
+         * Constructor
+         * @param keys A supplier of a key that gets called before autocompletion.
          */
-        private Collection<String> getDataSetValues(String key) {
-            Set<String> result = new HashSet<>();
-            getPresetTagCache().values().forEach(mm -> result.addAll(mm.getValues(key)));
-            return result;
+        public NaiveValueAutoCompManager(Supplier<String> keySupplier) {
+            this.keysSupplier = () -> Collections.singletonList(keySupplier.get());
         }
 
         @Override
         protected void updateAutoCompModel(AutoCompComboBoxModel<AutoCompletionItem> model) {
             Map<String, AutoCompletionPriority> map = new HashMap<>();
 
-            for (String key : keys) {
+            for (String key : keysSupplier.get()) {
                 map = merge(
                     map,
                     toMap(MainApplication.getTaggingPresets().getPresetValues(key), AutoCompletionPriority.IS_IN_STANDARD),

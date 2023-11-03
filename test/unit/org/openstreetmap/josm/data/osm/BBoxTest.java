@@ -174,7 +174,7 @@ class BBoxTest {
     }
 
     /**
-     * Unit test of {@link BBox#height} and {@link BBox#width} and {@link BBox#area} methods.
+     * Unit test of {@link BBox#height} and {@link BBox#layoutWidth} and {@link BBox#area} methods.
      */
     @Test
     void testHeightWidthArea() {

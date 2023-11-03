@@ -166,11 +166,12 @@ public class PluginDownloadTask extends PleaseWaitRunnable {
         for (PluginInformation d : toUpdate) {
             if (canceled)
                 return;
-            String message = tr("Downloading Plugin {0}...", d.name);
+            String message = tr("Downloading Plugin {0} from {1} ...", d.name, d.downloadlink);
             Logging.info(message);
             progressMonitor.subTask(message);
             progressMonitor.worked(1);
             File pluginFile = new File(pluginDir, d.name + ".jar.new");
+            Logging.info("... to {0}", pluginFile);
             try {
                 download(d, pluginFile);
             } catch (PluginDownloadException e) {

@@ -35,6 +35,7 @@ import org.openstreetmap.josm.tools.Utils;
  * </ul>
  * @since  3987 (creation)
  * @since 10599 (functional interface)
+ * @deprecated replaced by {@link org.openstreetmap.josm.gui.mappaint.mapcss.FunctionAutoText}
  */
 @Deprecated
 @FunctionalInterface

@@ -20,12 +20,8 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.tagging.TagTableModel;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBox;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompEvent;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompListener;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.Main;
 
@@ -94,7 +90,7 @@ public abstract class AbstractRelationEditorActionTest {
         final Relation orig = new Relation(1);
         ds.addPrimitive(orig);
         layer = new OsmDataLayer(ds, "test", null);
-        memberTableModel = new MemberTableModel(orig, layer, new TaggedHandler() {
+        memberTableModel = new MemberTableModel(orig, layer, new TagTableModel(new TaggedHandler() {
             @Override
             public void update(String key, String newKey, String newValue) {
             }
@@ -103,20 +99,12 @@ public abstract class AbstractRelationEditorActionTest {
             public Collection<Tagged> get() {
                 return Collections.<Tagged>singleton(orig);
             }
-        });
+        }));
         selectionTableModel = new SelectionTableModel(layer);
         selectionTable = new SelectionTable(selectionTableModel, memberTableModel);
         editor = GenericRelationEditorTest.newRelationEditor(orig, layer);
         tfRole = new AutoCompTextField<>();
         tagModel = new TagTableModel(null);
         memberTable = new MemberTable(layer, new AutoCompComboBox<String>(), memberTableModel);
-    }
-
-    @Override
-    public void autoCompBefore(AutoCompEvent e) {
-    }
-
-    @Override
-    public void autoCompPerformed(AutoCompEvent e) {
     }
 }

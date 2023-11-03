@@ -1226,7 +1226,7 @@ public class ImageProvider {
      * @return the requested image or null if the request failed
      */
     private static ImageResource getIfAvailableHttp(String url, ImageType type, String query) {
-        try (CachedFile cf = new CachedFile(url).setDestDir(
+        try (CachedFile cf = new CachedFile(url + "?" + query).setDestDir(
                 new File(Config.getDirs().getCacheDirectory(true), "images").getPath());
                 InputStream is = cf.getInputStream()) {
             switch (type) {

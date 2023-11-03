@@ -42,7 +42,7 @@
      pagecolor="#ffffff"
      id="base"
      inkscape:zoom="5.4716434"
-     inkscape:cx="90.192281"
+     inkscape:cx="55.102275"
      inkscape:cy="40.207299"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -297,10 +297,12 @@
      ry="10.609208" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:125%;font-family:'Transport Heavy';-inkscape-font-specification:'Transport Heavy, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="100.03683"
-     y="52.397892"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:125%;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="100"
+     y="46.570312"
      id="text317"><tspan
        sodipodi:role="line"
-       id="tspan474">{{text0}}</tspan></text>
+       id="tspan321"
+       x="100"
+       y="46.570312">{{text0}}</tspan></text>
 </svg>

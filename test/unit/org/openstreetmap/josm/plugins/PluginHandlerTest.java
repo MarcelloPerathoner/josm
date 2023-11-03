@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.preferences.plugin.PluginPreferenceTest;
@@ -27,7 +29,6 @@ import org.openstreetmap.josm.testutils.mockers.HelpAwareOptionPaneMocker;
 import org.openstreetmap.josm.testutils.mockers.JOptionPaneSimpleMocker;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests of {@link PluginHandler} class.
@@ -47,6 +48,7 @@ class PluginHandlerTest {
      * Unit test of {@link PluginHandler#buildListOfPluginsToLoad}.
      */
     @Test
+    @Disabled("this assumes we have downloaded all those unmaintained plugins")
     void testBuildListOfPluginsToLoad() {
         TestUtils.assumeWorkingJMockit();
         final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker(
@@ -114,6 +116,7 @@ class PluginHandlerTest {
     /**
      * Unit test of {@link PluginHandler#filterUnmaintainedPlugins}.
      */
+    @Disabled("assumes we have downloaded (info about) gpsbabelgui")
     @Test
     void testFilterUnmaintainedPlugins() {
         TestUtils.assumeWorkingJMockit();

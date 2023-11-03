@@ -11,6 +11,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
+import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.spi.preferences.Config;
 
@@ -177,11 +178,11 @@ public abstract class StyleElement implements StyleKeys {
         String name = c.get(FONT_FAMILY, getDefaultFontName(), String.class);
         float size = c.get(FONT_SIZE, getDefaultFontSize(), Float.class);
         int weight = Font.PLAIN;
-        if ("bold".equalsIgnoreCase(c.get(FONT_WEIGHT, null, String.class))) {
+        if (Keyword.BOLD == c.get(FONT_WEIGHT, null, Keyword.class)) {
             weight = Font.BOLD;
         }
         int style = Font.PLAIN;
-        if ("italic".equalsIgnoreCase(c.get(FONT_STYLE, null, String.class))) {
+        if (Keyword.ITALIC == c.get(FONT_STYLE, null, Keyword.class)) {
             style = Font.ITALIC;
         }
         Font f = getCachedFont(name, style | weight, Math.round(size));

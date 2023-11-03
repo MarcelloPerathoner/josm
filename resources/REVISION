@@ -1,3 +1,4 @@
 Revision: <%= revision %>
 Build-Date: <%= date %>
+Build-Name: <%= name %>
 Is-Local-Build: <%= local %>

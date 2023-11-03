@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui.dialogs;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.openstreetmap.josm.TestUtils.assertEqualsNewline;
+import static org.openstreetmap.josm.TestUtils.assertEqualsCollapseWhitespace;
 
 import java.util.ArrayList;
 
@@ -136,7 +137,7 @@ class InspectPrimitiveDialogTest {
                 "------------------------------------\n" +
                 "Display range: |z119.4329-Infinity\n" +
                 "Layer default\n" +
-                " * Cascade{ font-size:8.0; major-z-index:4.95; symbol-fill-color:#FF0000; symbol-shape:Keyword{square}; symbol-size:6.0; symbol-stroke-color:#FF0000; }\n" +
+                " * Cascade{ font-size:8.0; major-z-index:4.95; symbol-fill-color:#FF0000; symbol-shape:square; symbol-size:6.0; symbol-stroke-color:#FF0000; }\n" +
                 "\n" +
                 "List of generated Styles:\n" +
                 "-------------------------\n" +
@@ -153,12 +154,12 @@ class InspectPrimitiveDialogTest {
             ds.addPrimitive(n);
             ds.addSelected(n);
             String text = InspectPrimitiveDialog.buildMapPaintText().replaceAll("@(\\p{XDigit})+", "");
-            assertEqualsNewline(baseText, text);
+            assertEqualsCollapseWhitespace(baseText, text);
             n = new Node(LatLon.ZERO);
             n.setUser(User.getAnonymous());
             ds.addPrimitive(n);
             ds.addSelected(n);
-            assertEqualsNewline(baseText + baseText + "The 2 selected objects have identical style caches.\n",
+            assertEqualsCollapseWhitespace(baseText + baseText + "The 2 selected objects have identical style caches.\n",
                     InspectPrimitiveDialog.buildMapPaintText().replaceAll("@(\\p{XDigit})+", ""));
         } finally {
             MainApplication.getLayerManager().removeLayer(layer);

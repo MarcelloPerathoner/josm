@@ -74,8 +74,7 @@ public interface Instruction extends StyleKeys {
                         sheet, token
                     );
                 }
-            }
-            else if (ICON_ROTATION.equals(key) && Keyword.WAY.equals(val)) {
+            } else if (ICON_ROTATION.equals(key) && Keyword.WAY.equals(val)) {
                 // special case icon-rotation: way
                 val = ExpressionFactory.createFunctionExpression("heading",
                     Arrays.asList(), sheet, token

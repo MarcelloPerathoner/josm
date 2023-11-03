@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
@@ -15,17 +15,16 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeEvent;
 import org.openstreetmap.josm.data.preferences.AbstractProperty.ValueChangeListener;
 import org.openstreetmap.josm.data.validation.OsmValidator;
+import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
-import org.openstreetmap.josm.data.validation.Test.TagTest;
-import org.openstreetmap.josm.data.validation.tests.MapCSSTagChecker;
-import org.openstreetmap.josm.data.validation.tests.OpeningHourTest;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset.DebouncedChangeListener;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.ImageResource;
 import org.openstreetmap.josm.tools.Logging;
 
 /**
@@ -42,11 +41,10 @@ import org.openstreetmap.josm.tools.Logging;
  */
 
 public class TaggingPresetValidator implements ChangeListener {
-    final TaggingPreset.Instance presetInstance;
+    final Collection<Test> tests;
     final DataSetHandler handler;
-    final Consumer<Collection<TestError>> f;
-    final Collection<TagTest> allTests;
-    private final DebouncedChangeListener listener;
+    final Consumer<List<TestError>> f;
+    private final TaggingPreset.DebouncedChangeListener listener;
     private boolean enabled;
 
     /**
@@ -56,19 +54,18 @@ public class TaggingPresetValidator implements ChangeListener {
      * @param handler the data handler
      * @param f the consumer
      */
-    public TaggingPresetValidator(TaggingPreset.Instance presetInstance,
-            DataSetHandler handler, Consumer<Collection<TestError>> f) {
-        this.presetInstance = presetInstance;
+    public TaggingPresetValidator(Collection<Test> tests, DataSetHandler handler, Consumer<List<TestError>> f) {
+        this.tests = tests;
         this.handler = handler;
         this.f = f;
 
         listener = new TaggingPreset.DebouncedChangeListener(this, 500);
-        presetInstance.addListener(listener);
 
-        allTests = new ArrayList<>();
-        allTests.add(OsmValidator.getTest(MapCSSTagChecker.class));
-        allTests.add(OsmValidator.getTest(OpeningHourTest.class));
-        OsmValidator.initializeTests(allTests);
+        OsmValidator.initializeTests(tests);
+    }
+
+    public TaggingPreset.DebouncedChangeListener getListener() {
+        return listener;
     }
 
     public void setEnabled(boolean enabled) {
@@ -85,36 +82,45 @@ public class TaggingPresetValidator implements ChangeListener {
     /**
      * Validates the user input for the selected primitives.
      */
-    void validate() {
-        Logging.debug("Validating ...");
-        TaggingPreset.PresetLinkHandler cloneHandler =
-            new TaggingPreset.PresetLinkHandler(handler, presetInstance);
+    public void validate() {
+        Collection<OsmPrimitive> selection = handler.get();
+        Logging.info("Validating {0} primitives by {1} tests.", selection.size(), tests.size());
 
         // run all tests and collect all errors
-        Collection<TestError> errors = new HashSet<>(); // we want no duplicate messages
-        allTests.forEach(t -> {
-            t.clear();
-            cloneHandler.get().forEach(t::check);
-            errors.addAll(t.getErrors());
+        List<TestError> errors = new ArrayList<>();
+        tests.forEach(test -> {
+            test.clear();
+            test.setBeforeUpload(false);
+            test.setPartialSelection(true);
+            test.startTest(null);
+            test.visit(selection);
+            test.endTest();
+            errors.addAll(test.getErrors());
+            test.clear();
         });
+        errors.forEach(error -> Logging.info(error.toString()));
+        Logging.info("Done validating with {0} errors.", errors.size());
         f.accept(errors);
     }
 
-    static class EnableValidatorAction extends AbstractAction implements ValueChangeListener<Boolean> {
+    public static class EnableValidatorAction extends AbstractAction implements ValueChangeListener<Boolean> {
         private static final String NEW_STATE = "newState";
         /** Use text in menu, or none in togglebutton */
         private boolean useText;
+        private ImageResource okIcon;
+        private ImageResource errorIcon;
+        private boolean ok;
 
-        EnableValidatorAction(PropertyChangeListener listener, boolean useText) {
+        public EnableValidatorAction(PropertyChangeListener listener, boolean useText) {
             super(null);
             this.addPropertyChangeListener(listener);
             TaggingPresets.USE_VALIDATOR.addListener(this);
             this.useText = useText;
-            putValue(Action.SHORT_DESCRIPTION, tr("Enable or disable the validator for all presets."));
             if (Config.getPref().getBoolean("text.popupmenu.useicons", true)) {
-                new ImageProvider("preferences/validator").getResource().attachImageIcon(this);
+                okIcon = new ImageProvider("preferences/validator").getResource();
+                errorIcon = new ImageProvider("data/error").getResource();
             }
-            updateState();
+            setOk(true);
         }
         // "data/error" "layer/validator_small" "misc/error" "misc/check_large" "misc/green_check" "misc/grey_x"
         // preferences/validator
@@ -126,13 +132,20 @@ public class TaggingPresetValidator implements ChangeListener {
             if (TaggingPresets.USE_VALIDATOR.get()) {
                 if (useText)
                     putValue(Action.NAME, tr("Disable validator"));
+                putValue(Action.SHORT_DESCRIPTION, tr("Click to globally disable the validator."));
                 putValue(SELECTED_KEY, true);
                 putValue(NEW_STATE, false);
             } else {
                 if (useText)
                     putValue(Action.NAME, tr("Enable validator"));
+                putValue(Action.SHORT_DESCRIPTION, tr("Click to globally enable the validator."));
                 putValue(SELECTED_KEY, false);
                 putValue(NEW_STATE, true);
+            }
+            if (ok) {
+                okIcon.attachImageIcon(this);
+            } else {
+                errorIcon.attachImageIcon(this);
             }
         }
 
@@ -144,6 +157,11 @@ public class TaggingPresetValidator implements ChangeListener {
 
         @Override
         public void valueChanged(ValueChangeEvent<? extends Boolean> e) {
+            updateState();
+        }
+
+        public void setOk(boolean ok) {
+            this.ok = ok;
             updateState();
         }
     }

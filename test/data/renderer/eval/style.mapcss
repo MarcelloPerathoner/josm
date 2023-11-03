@@ -1,4 +1,5 @@
 * {
+	font-family: "DejaVu Sans";
     font-size: 20;
 }
 
@@ -22,7 +23,7 @@ node[test=2] {
 
 node[test=3] {
     lst: 12, 3, 6;
-    tmp: list(get(prop("lst"), 1), get(prop("lst"), 0), get(prop("lst"), 2), length(prop("lst")));
+    tmp: list(get(prop("lst"), 1), get(prop("lst"), 0), get(prop("lst"), 2), count(prop("lst")));
     value: concat("", prop("tmp"));
     result: "[3.0, 12.0, 6.0, 3]";
 }
@@ -35,4 +36,3 @@ node[test=4] {
 node[test] {
     text: concat("Test ", tag("test"), ": ", prop(result), " == ", prop(value));
 }
-

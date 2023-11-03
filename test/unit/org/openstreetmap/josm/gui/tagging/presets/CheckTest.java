@@ -7,7 +7,6 @@ import javax.swing.JPanel;
 
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
-
 import org.openstreetmap.josm.testutils.annotations.Main;
 
 /**

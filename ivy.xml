@@ -81,8 +81,5 @@
         <dependency conf="test->default" org="nl.jqno.equalsverifier" name="equalsverifier" rev="3.15.1"/>
         <dependency conf="test->default" org="org.apache.commons" name="commons-lang3" rev="3.13.0"/>
         <dependency conf="test->default" org="org.awaitility" name="awaitility" rev="4.2.0"/>
-
-        <dependency conf="test->default" org="com.puppycrawl.tools" name="checkstyle" rev="10.5.0"/>
-        <dependency conf="test->default" org="net.bytebuddy" name="byte-buddy" rev="1.12.19"/>
     </dependencies>
 </ivy-module>

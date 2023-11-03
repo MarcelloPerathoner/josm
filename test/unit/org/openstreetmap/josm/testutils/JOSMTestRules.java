@@ -54,13 +54,7 @@ import org.openstreetmap.josm.data.preferences.JosmUrls;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MainApplicationTest;
-import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.oauth.OAuthAuthorizationWizard;
-// import org.openstreetmap.josm.gui.preferences.imagery.ImageryPreferenceTestIT;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
-import org.openstreetmap.josm.gui.oauth.OAuthAuthorizationWizard;
-import org.openstreetmap.josm.gui.preferences.imagery.ImageryPreferenceTestIT;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.io.CertificateAmendment;
 import org.openstreetmap.josm.io.OsmApi;
@@ -86,7 +80,6 @@ import org.openstreetmap.josm.tools.PlatformManager;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.bugreport.ReportedException;
 import org.openstreetmap.josm.tools.date.DateUtils;
-import org.xml.sax.SAXException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mockit.internal.state.SavePoint;
@@ -270,11 +263,12 @@ public class JOSMTestRules implements TestRule, AfterEachCallback, BeforeEachCal
     }
 
     /**
-     * Load defaultpresets.xml in this test.
+     * Use presets in this test.
      * @return this instance, for easy chaining
      * @since 12568
      */
     public JOSMTestRules presets() {
+        preferences();
         usePresets = true;
         return this;
     }
@@ -399,7 +393,9 @@ public class JOSMTestRules implements TestRule, AfterEachCallback, BeforeEachCal
      * @return this instance, for easy chaining
      */
     /*
-    It looks like Gradle doesn't need this
+    It looks like Gradle doesn't need this anyway, and since it pulls in a completely
+    unrelated class we simpy dike it out.
+
     public JOSMTestRules parameters() {
         try {
             apply(new Statement() {
@@ -544,7 +540,7 @@ public class JOSMTestRules implements TestRule, AfterEachCallback, BeforeEachCal
         HttpClient.setFactory(Http1Client::new);
 
         // Set up i18n
-        I18n.set(i18n != null ? i18n : "en");
+        if (i18n != null) I18n.set(i18n);
 
         // Add preferences
         if (usePreferences) {
@@ -601,13 +597,8 @@ public class JOSMTestRules implements TestRule, AfterEachCallback, BeforeEachCal
             MapPaintStyles.MapPaintStylesExtension.setup();
         }
 
-        if (usePresets || main) {
+        if (usePresets) {
             // Reset the presets.
-            try {
-                MainApplicationTest.setTaggingPresets(TaggingPresetsTest.initFromDefaultPresets());
-            } catch (SAXException | IOException e) {
-                MainApplicationTest.setTaggingPresets(null);
-            }
             TaggingPresets.TaggingPresetsExtension.setup();
         }
 

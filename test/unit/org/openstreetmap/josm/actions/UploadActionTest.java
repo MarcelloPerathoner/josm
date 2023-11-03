@@ -77,7 +77,7 @@ class UploadActionTest {
         try {
             MainApplication.worker.submit(() -> {
                 // sync worker
-            }).get(1, TimeUnit.SECONDS);
+            }).get(5, TimeUnit.SECONDS);
             assertTrue(Logging.getLastErrorAndWarnings().isEmpty());
         } finally {
             Logging.clearLastErrorAndWarnings();

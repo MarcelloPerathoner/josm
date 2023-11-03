@@ -59,6 +59,6 @@ public enum Keyword {
 
     @Override
     public String toString() {
-        return "Keyword{" + name().toLowerCase(Locale.ENGLISH) + '}';
+        return name().toLowerCase(Locale.ENGLISH);
     }
 }

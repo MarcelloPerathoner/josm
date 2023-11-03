@@ -10,8 +10,9 @@ import java.util.Collections;
 
 import javax.swing.JLabel;
 
+import org.openstreetmap.josm.gui.dialogs.properties.PropertiesDialog;
+import org.openstreetmap.josm.gui.dialogs.relation.GenericRelationEditor;
 import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
-import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 
 /**
@@ -30,37 +31,19 @@ import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
  */
 public class TaggingPresetLabel extends JLabel {
     private final TaggingPreset preset;
-    private final TaggingPreset.Instance presetInstance;
-    private final TaggedHandler handler;
+    private final DataSetHandler handler;
     private final AutoCompletionManager manager;
 
     /**
      * Constructor
      *
-     * @param handler the data handler to pass to the new dialog
      * @param preset the tagging preset to open in the new dialog when clicked
-     * @param presetInstance the preset instance of the old dialog
-     */
-    public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, TaggingPreset.Instance presetInstance) {
-        super(preset.getName() + " …", preset.getSmallIcon(), LEADING);
-        this.preset = preset;
-        this.presetInstance = presetInstance;
-        this.handler = handler;
-        this.manager = presetInstance.getAutoCompletionManager();
-        addMouseListener(new TaggingPresetMouseListener(this));
-    }
-
-    /**
-     * Constructor
-     *
      * @param handler the data handler to pass to the new dialog
-     * @param preset the tagging preset to open in the new dialog when clicked
      * @param manager the autocompletion manager to pass to the new dialog
      */
-    public TaggingPresetLabel(TaggedHandler handler, TaggingPreset preset, AutoCompletionManager manager) {
+    TaggingPresetLabel(TaggingPreset preset, DataSetHandler handler, AutoCompletionManager manager) {
         super(preset.getName() + " …", preset.getSmallIcon(), LEADING);
         this.preset = preset;
-        this.presetInstance = null;
         this.handler = handler;
         this.manager = manager;
         addMouseListener(new TaggingPresetMouseListener(this));
@@ -87,8 +70,7 @@ public class TaggingPresetLabel extends JLabel {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            preset.showDialog(presetInstance != null ?
-                new TaggingPreset.PresetLinkHandler((DataSetHandler) handler, presetInstance) : handler, manager);
+            preset.showDialog(handler, manager, false);
         }
 
         @Override

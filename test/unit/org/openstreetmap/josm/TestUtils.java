@@ -615,6 +615,18 @@ public final class TestUtils {
     }
 
     /**
+     * Replaces {@linkplain System#lineSeparator() system dependent line separators} with {@code \n}
+     * and calls {@link Assertions#assertEquals(java.lang.Object, java.lang.Object)}.
+     * @param expected expected value
+     * @param actual the value to check against <code>expected</code>
+     */
+    public static void assertEqualsCollapseWhitespace(String expected, String actual) {
+        String expectedWs = expected.replaceAll("\\s+", " ");
+        String actualWs = actual.replaceAll("\\s+", " ");
+        assertEquals(expectedWs, actualWs);
+    }
+
+    /**
      * Waits until any asynchronous operations launched by the test on the EDT or worker threads have
      * (almost certainly) completed.
      */

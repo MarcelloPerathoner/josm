@@ -4,6 +4,7 @@ package org.openstreetmap.josm.plugins;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -13,6 +14,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -98,6 +101,23 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
     @Override
     protected void finish() {
         // Do nothing
+    }
+
+    /**
+     * Test if {@code url} is a {@code file://} url and points to a directory
+     *
+     * @param url the url to test
+     * @return a {@code File} pointing to a directory or null
+     */
+    private File isUrlLocalDirectory(String url) {
+        try {
+            URI uri = new URI(url);
+            File dir = new File(uri);
+            return dir.isDirectory() ? dir : null;
+        } catch (URISyntaxException | IllegalArgumentException | NullPointerException e) {
+            // url is not a local directory
+            return null;
+        }
     }
 
     /**
@@ -216,6 +236,10 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
 
     private static void displayErrorMessage(final ProgressMonitor monitor, final String msg, final String details, final String title,
             final String firstMessage) {
+        if (GraphicsEnvironment.isHeadless()) {
+            Logging.error("{0}\n{1}", msg, details);
+            return;
+        }
         GuiHelper.runInEDTAndWait(() -> {
             JPanel panel = new JPanel(new GridBagLayout());
             panel.add(new JLabel(firstMessage), GBC.eol().insets(0, 0, 0, 10));
@@ -324,6 +348,23 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
 
         File pluginDir = Preferences.main().getPluginsDirectory();
         for (String site: sites) {
+
+            // if site is a local directory
+            //   scan that directory and add all jars to availablePlugins
+            File dir = isUrlLocalDirectory(site);
+            if (dir != null) {
+                for (File file : dir.listFiles((d, name) -> name.toLowerCase().endsWith(".jar"))) {
+                    try {
+                        PluginInformation pi = new PluginInformation(file);
+                        pi.downloadlink = "file://" + file.toString();
+                        availablePlugins.add(pi);
+                        Logging.info("Found plugin {0}", pi.downloadlink);
+                    } catch (PluginException e) {
+                        // nothing to do here
+                    }
+                }
+                continue;
+            }
             String printsite = site.replaceAll("%<(.*)>", "");
             getProgressMonitor().subTask(tr("Processing plugin list from site ''{0}''", printsite));
             String list = downloadPluginList(site, getProgressMonitor().createSubTaskMonitor(0, false));

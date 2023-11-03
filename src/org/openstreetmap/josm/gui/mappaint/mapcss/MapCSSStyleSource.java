@@ -366,7 +366,7 @@ public class MapCSSStyleSource extends StyleSource {
         return env.mc.getCascade(env.layer).get("metric", false, Boolean.class);
     }
 
-    static double epsilon = 0.001;
+    static double epsilon = 1.1;
 
     @Override
     public void apply(MultiCascade mc, IPrimitive osm, double scale, NavigatableComponent nc, boolean pretendWayIsClosed) {
@@ -417,7 +417,7 @@ public class MapCSSStyleSource extends StyleSource {
 
                 if (singleZoomLevel || isSingleZoomLevel(env)) {
                     // mc.range = new Range(scale - EPSILON, scale + EPSILON);
-                    mc.range = Range.cut(mc.range, new Range(scale - epsilon, scale + epsilon));
+                    mc.range = Range.cut(mc.range, new Range(scale / epsilon, scale * epsilon));
                 } else {
                     mc.range = Range.cut(mc.range, s.getRange());
                 }

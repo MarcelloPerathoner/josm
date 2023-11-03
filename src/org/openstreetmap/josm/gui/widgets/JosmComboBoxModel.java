@@ -183,7 +183,7 @@ public class JosmComboBoxModel<E> extends AbstractListModel<E> implements Mutabl
      */
     public void addAllElements(Collection<E> elems) {
         int index0 = elements.size();
-        elems.forEach(e -> doAddElement(e));
+        elems.forEach(this::doAddElement);
         int index1 = elements.size() - 1;
         if (index0 <= index1)
             fireIntervalAdded(this, index0, index1);
@@ -217,7 +217,7 @@ public class JosmComboBoxModel<E> extends AbstractListModel<E> implements Mutabl
         Object oldSelected = selected;
         int index0 = elements.size();
         elements.clear();
-        newElements.forEach(e -> doAddElement(e));
+        newElements.forEach(this::doAddElement);
         int index1 = elements.size();
         int index2 = Math.min(index0, index1);
         if (0 < index2) {
@@ -276,7 +276,11 @@ public class JosmComboBoxModel<E> extends AbstractListModel<E> implements Mutabl
      * @return The item or null
      */
     public E find(String s) {
-        return elements.stream().filter(o -> o.toString().equals(s)).findAny().orElse(null);
+        for (E e : elements) {
+            if (s.equals(e.toString()))
+                return e;
+        }
+        return null;
     }
 
     /**

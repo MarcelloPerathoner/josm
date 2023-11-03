@@ -131,15 +131,15 @@ way[highway] > node.sign-backward {
 
 node[prop(traffic-sign)] {
     codes-noward: split_traffic_sign(prop(traffic-sign), "IT");
-    image-icon: none;
+    icon-image: none;
 }
 node[prop(traffic-sign-forward)].sign {
     codes-forward: split_traffic_sign(prop(traffic-sign-forward), "IT");
-    image-icon: none;
+    icon-image: none;
 }
 node[prop(traffic-sign-backward)] {
     codes-backward: split_traffic_sign(prop(traffic-sign-backward), "IT");
-    image-icon: none;
+    icon-image: none;
 }
 
 /* set styles */

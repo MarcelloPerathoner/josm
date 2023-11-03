@@ -339,8 +339,8 @@ public class ToolbarPreferences implements PreferenceSettingFactory, TaggingPres
                     skip('=');
                     String paramValue = readTillChar(',', '}');
                     if ("icon".equals(paramName) && !paramValue.isEmpty()) {
-                        result.setIconName(paramValue);
-                        actionDefinition.setIcon(paramValue);
+                        actionDefinition.setIconName(paramValue);
+                        // FIXME: ? actionDefinition.setIcon(paramValue);
                     } else if ("name".equals(paramName) && !paramValue.isEmpty()) {
                         actionDefinition.setName(paramValue);
                     }

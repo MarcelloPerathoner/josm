@@ -15,10 +15,10 @@ import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.validation.tests.MapCSSTagChecker;
 import org.openstreetmap.josm.data.validation.tests.TagChecker;
 import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.ParseException;
-import org.openstreetmap.josm.testutils.JOSMTestRules;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresets;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
+import org.openstreetmap.josm.testutils.annotations.TaggingPresets;
 import org.openstreetmap.josm.tools.HttpClient;
+import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -29,16 +29,17 @@ import jakarta.json.JsonValue;
  * Various integration tests with Taginfo.
  */
 @BasicPreferences
+@TaggingPresets
 @Timeout(20)
 class TaginfoTestIT {
     /**
      * Checks that popular tags are known (i.e included in internal presets, or deprecated, or explicitely ignored)
      * @throws IOException if any I/O error occurs
      * @throws ParseException if any MapCSS parsing error occurs
+     * @throws SAXException
      */
     @Test
-    void testCheckPopularTags() throws IOException, ParseException {
-        TaggingPresets.readFromPreferences();
+    void testCheckPopularTags() throws IOException, ParseException, SAXException {
         new TagChecker().initialize();
         MapCSSTagChecker mapCssTagChecker = new MapCSSTagChecker();
         mapCssTagChecker.addMapCSS("resource://data/validator/deprecated.mapcss");

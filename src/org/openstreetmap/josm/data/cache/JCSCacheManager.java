@@ -8,6 +8,8 @@ import java.nio.channels.FileLock;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -50,7 +52,12 @@ public final class JCSCacheManager {
     public static final BooleanProperty USE_BLOCK_CACHE = new BooleanProperty(PREFERENCE_PREFIX + ".use_block_cache", true);
 
     private static final AuxiliaryCacheFactory DISK_CACHE_FACTORY = getDiskCacheFactory();
-    private static FileLock cacheDirLock;
+    /**
+     * These locks prevent multiple running JOSM instances from thrashing each other's
+     * caches. A single lock is not appropriate because it prevents Gradle from running
+     * JUnit tests in parallel on multiple VMs.
+     */
+    private static Map<String, FileLock> cacheDirLock = new HashMap<>();
 
     /**
      * default objects to be held in memory by JCS caches (per region)
@@ -106,30 +113,6 @@ public final class JCSCacheManager {
     }
 
     static {
-        File cacheDir = new File(Config.getDirs().getCacheDirectory(true), "jcs");
-
-        try {
-            if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-                Logging.warn("Cache directory " + cacheDir.toString() + " does not exists and could not create it");
-            } else {
-                File cacheDirLockPath = new File(cacheDir, ".lock");
-                try {
-                    if (!cacheDirLockPath.exists() && !cacheDirLockPath.createNewFile()) {
-                        Logging.warn("Cannot create cache dir lock file");
-                    }
-                    cacheDirLock = FileChannel.open(cacheDirLockPath.toPath(), StandardOpenOption.WRITE).tryLock();
-
-                    if (cacheDirLock == null)
-                        Logging.warn("Cannot lock cache directory. Will not use disk cache");
-                } catch (IOException e) {
-                    Logging.log(Logging.LEVEL_WARN, "Cannot create cache dir \"" + cacheDirLockPath + "\" lock file:", e);
-                    Logging.warn("Will not use disk cache");
-                }
-            }
-        } catch (Exception e) {
-            Logging.log(Logging.LEVEL_WARN, "Unable to configure disk cache. Will not use it", e);
-        }
-
         // this could be moved to external file
         Properties props = new Properties();
         // these are default common to all cache regions
@@ -150,6 +133,39 @@ public final class JCSCacheManager {
         } catch (Exception e) {
             Logging.log(Logging.LEVEL_WARN, "Unable to initialize JCS", e);
         }
+    }
+
+    /**
+     * Try to acquire a lock for a cache directory.
+     */
+    static FileLock tryLock(String cachePath) {
+        if (cacheDirLock.get(cachePath) != null)
+            return cacheDirLock.get(cachePath);
+
+        File cacheDir = new File(Config.getDirs().getCacheDirectory(true), cachePath);
+        try {
+            if (!cacheDir.exists() && !cacheDir.mkdirs()) {
+                Logging.warn("Cache directory " + cacheDir.toString() + " does not exists and could not create it");
+            } else {
+                File cacheDirLockPath = new File(cacheDir, ".lock");
+                try {
+                    if (!cacheDirLockPath.exists() && !cacheDirLockPath.createNewFile()) {
+                        Logging.warn("Cannot create cache dir lock file");
+                    }
+                    FileLock lock = FileChannel.open(cacheDirLockPath.toPath(), StandardOpenOption.WRITE).tryLock();
+
+                    if (lock == null)
+                        Logging.warn("Cannot lock cache directory. Will not use disk cache");
+                    cacheDirLock.put(cachePath, lock);
+                } catch (IOException e) {
+                    Logging.log(Logging.LEVEL_WARN, "Cannot create cache dir \"" + cacheDirLockPath + "\" lock file:", e);
+                    Logging.warn("Will not use disk cache");
+                }
+            }
+        } catch (Exception e) {
+            Logging.log(Logging.LEVEL_WARN, "Unable to configure disk cache. Will not use it", e);
+        }
+        return cacheDirLock.get(cachePath);
     }
 
     private static AuxiliaryCacheFactory getDiskCacheFactory() {
@@ -189,7 +205,7 @@ public final class JCSCacheManager {
     public static <K, V> CacheAccess<K, V> getCache(String cacheName, int maxMemoryObjects, int maxDiskObjects, String cachePath) {
         CacheAccess<K, V> cacheAccess = getCacheAccess(cacheName, getCacheAttributes(maxMemoryObjects));
 
-        if (cachePath != null && cacheDirLock != null && cacheAccess != null && DISK_CACHE_FACTORY != null) {
+        if (cachePath != null && tryLock(cachePath) != null && cacheAccess != null && DISK_CACHE_FACTORY != null) {
             CompositeCache<K, V> cc = cacheAccess.getCacheControl();
             try {
                 IDiskCacheAttributes diskAttributes = getDiskCacheAttributes(maxDiskObjects, cachePath, cacheName);

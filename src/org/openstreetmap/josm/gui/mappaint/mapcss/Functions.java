@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +23,9 @@ import org.openstreetmap.josm.data.gpx.GpxDistance;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.PrimitiveId;
 import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.SimplePrimitiveId;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler;
 import org.openstreetmap.josm.data.osm.search.SearchCompiler.Match;
@@ -39,14 +42,14 @@ import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.RightAndLefthandTraffic;
+import org.openstreetmap.josm.tools.RotationAngle.WayDirectionRotationAngle;
 import org.openstreetmap.josm.tools.StreamUtils;
 import org.openstreetmap.josm.tools.Territories;
 import org.openstreetmap.josm.tools.Utils;
-import org.openstreetmap.josm.tools.RotationAngle.WayDirectionRotationAngle;
 
 /**
  * List of functions that can be used in MapCSS expressions.
- *
+ * <p>
  * First parameter can be of type {@link Environment} (if needed). This is
  * automatically filled in by JOSM and the user only sees the remaining arguments.
  * When one of the user supplied arguments cannot be converted the
@@ -384,10 +387,11 @@ public final class Functions {
      * @param layer layer
      * @return the property value
      */
-    public static Object prop(final Environment env, String key, String layer) {
-        if ("globals".equals(layer))
+    public static Object prop(final Environment env, String key, Object layer) {
+        // Logging.info("prop({0}, {1})", key, layer.toString());
+        if ("globals".equals(layer.toString()))
             return env.source.globalsCascade.get(key);
-        return env.getCascade(layer).get(key);
+        return env.getCascade(layer.toString()).get(key);
     }
 
     /**
@@ -438,6 +442,9 @@ public final class Functions {
      * @return the key as string
      */
     public static String get_cond(final Environment env, Integer index) {
+        if (env.osm == null) {
+            return null;
+        }
         try {
             Condition c = env.selector().getConditions().get(index);
             if (c instanceof Condition.TagCondition) {
@@ -526,7 +533,7 @@ public final class Functions {
 
     /**
      * Gets a list of all non-null values of the key {@code key} from the object's parent(s).
-     *
+     * <p>
      * The values are sorted according to {@link AlphanumComparator}.
      * @param env the environment
      * @param key the OSM key
@@ -585,6 +592,86 @@ public final class Functions {
      */
     public static Long parent_osm_id(final Environment env) {
         return env.parent == null ? null : env.parent.getUniqueId();
+    }
+
+    /**
+     * Gets a list of all OSM id's of the object's parent(s) with a specified key.
+     *
+     * @param env      the environment
+     * @param key      the OSM key
+     * @param keyValue the regex value of the OSM key
+     * @return a list of non-null values of the OSM id's from the object's parent(s)
+     * @since 18829
+     */
+    @NullableArguments
+    public static List<IPrimitive> parent_osm_primitives(final Environment env, String key, String keyValue) {
+         if (env.parent == null) {
+             if (env.osm != null) {
+                final ArrayList<IPrimitive> parents = new ArrayList<>();
+                for (IPrimitive parent : env.osm.getReferrers()) {
+                    if ((key == null || parent.get(key) != null)
+                            && (keyValue == null || regexp_test(keyValue, parent.get(key)))) {
+                        parents.add(parent);
+                    }
+                }
+                return Collections.unmodifiableList(parents);
+            }
+            return Collections.emptyList();
+         }
+         return Collections.singletonList(env.parent);
+     }
+
+     /**
+      * Gets a list of all OSM id's of the object's parent(s) with a specified key.
+      *
+      * @param env the environment
+      * @param key the OSM key
+      * @return a list of non-null values of the OSM id's from the object's parent(s)
+      * @since 18829
+      */
+     @NullableArguments
+     public static List<IPrimitive> parent_osm_primitives(final Environment env, String key) {
+         return parent_osm_primitives(env, key, null);
+     }
+
+    /**
+     * Gets a list of all OSM id's of the object's parent(s).
+     *
+     * @param env the environment
+     * @return a list of non-null values of the OSM id's from the object's parent(s)
+     * @since 18829
+     */
+    public static List<IPrimitive> parent_osm_primitives(final Environment env) {
+        return parent_osm_primitives(env, null, null);
+    }
+
+    /**
+     * Convert Primitives to a string
+     *
+     * @param primitives The primitives to convert
+     * @return A list of strings in the format type + id (in the list order)
+     * @see SimplePrimitiveId#toSimpleId
+     * @since 18829
+     */
+    public static List<String> convert_primitives_to_string(Iterable<PrimitiveId> primitives) {
+        final List<String> primitiveStrings = new ArrayList<>(primitives instanceof Collection ?
+                ((Collection<?>) primitives).size() : 0);
+        for (PrimitiveId primitive : primitives) {
+            primitiveStrings.add(convert_primitive_to_string(primitive));
+        }
+        return primitiveStrings;
+    }
+
+    /**
+     * Convert a primitive to a string
+     *
+     * @param primitive The primitive to convert
+     * @return A string in the format type + id
+     * @see SimplePrimitiveId#toSimpleId
+     * @since 18829
+     */
+    public static String convert_primitive_to_string(PrimitiveId primitive) {
+        return SimplePrimitiveId.toSimpleId(primitive);
     }
 
     /**
@@ -861,7 +948,7 @@ public final class Functions {
     /**
      * Obtains the JOSM key {@link org.openstreetmap.josm.data.Preferences} string for key {@code key},
      * and defaults to {@code def} if that is null.
-     *
+     * <p>
      * If the default value can be {@linkplain Cascade#convertTo converted} to a {@link Color},
      * the {@link NamedColorProperty} is retrieved as string.
      *
@@ -899,6 +986,8 @@ public final class Functions {
      * @since 5699
      */
     public static boolean regexp_test(String pattern, String target) {
+        if (target == null)
+            return false;
         return Pattern.matches(pattern, target);
     }
 
@@ -1090,7 +1179,7 @@ public final class Functions {
 
     /**
      * Returns a title-cased version of the string where words start with an uppercase character and the remaining characters are lowercase
-     *
+     * <p>
      * Also known as "capitalize".
      * @param str The source string
      * @return The resulting string
@@ -1169,7 +1258,9 @@ public final class Functions {
     }
 
     /**
-     * Percent-decode a string. (See https://en.wikipedia.org/wiki/Percent-encoding)
+     * Percent-decode a string. (See
+     * <a href="https://en.wikipedia.org/wiki/Percent-encoding">https://en.wikipedia.org/wiki/Percent-encoding</a>)
+     * <p>
      * This is especially useful for wikipedia titles
      * @param s url-encoded string
      * @return the decoded string, or original in case of an error
@@ -1186,7 +1277,9 @@ public final class Functions {
     }
 
     /**
-     * Percent-encode a string. (See https://en.wikipedia.org/wiki/Percent-encoding)
+     * Percent-encode a string.
+     * (See <a href="https://en.wikipedia.org/wiki/Percent-encoding">https://en.wikipedia.org/wiki/Percent-encoding</a>)
+     * <p>
      * This is especially useful for data urls, e.g.
      * <code>concat("data:image/svg+xml,", URL_encode("&lt;svg&gt;...&lt;/svg&gt;"));</code>
      * @param s arbitrary string
@@ -1198,7 +1291,7 @@ public final class Functions {
 
     /**
      * XML-encode a string.
-     *
+     * <p>
      * Escapes special characters in xml. Alternative to using &lt;![CDATA[ ... ]]&gt; blocks.
      * @param s arbitrary string
      * @return the encoded string

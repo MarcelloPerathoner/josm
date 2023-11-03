@@ -4,6 +4,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,19 @@ plugins {
   jacoco
   java
   pmd
+}
+
+fun getRevisionGit(): String {
+    val revision: String = ByteArrayOutputStream().use { outputStream ->
+        project.exec {
+            commandLine(listOf("git", "log", "-1"))
+            standardOutput = outputStream
+        }
+        outputStream.toString()
+    }
+    val regex = """git-svn-id:.*?trunk@([0-9]+)""".toRegex()
+    val matchResult = regex.find(revision)!!
+    return matchResult.groups[1]?.value ?: "unknown"
 }
 
 repositories {
@@ -97,7 +111,7 @@ val performanceTestImplementation by configurations.creating {
 val versions = mapOf(
   "awaitility" to "4.2.0",
   // Errorprone 2.11 requires Java 11+
-  "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.15.0" else "2.10.0",
+  "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.22.0" else "2.10.0",
   "jdatepicker" to "1.3.4",
   "junit" to "5.10.0",
   "pmd" to "6.54.0",
@@ -187,8 +201,6 @@ testing {
             sources {
                 java {
                     setSrcDirs(listOf("test/integration"))
-                    // takes forever and never succeeds anyway
-                    exclude("**/ImageryPreferenceTestIT.java")
                 }
             }
             targets {
@@ -250,6 +262,7 @@ dependencies {
     implementation("com.adobe.xmp:xmpcore:6.1.11")
     implementation("com.drewnoakes:metadata-extractor:2.18.0") // { transitive = false }
     implementation("com.formdev:svgSalamander:1.1.4")
+    implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     implementation("jakarta.json:jakarta.json-api:2.1.2")
     implementation("oauth.signpost:signpost-core:2.1.1")
     implementation("org.apache.commons:commons-compress:1.23.0")
@@ -341,11 +354,13 @@ tasks {
             include("README")
             include("LICENSE")
         }
-        val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        // val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        val revision = getRevisionGit();
         val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         val local = true
+        val buildName = "Unofficial"
         filesMatching("**/REVISION", {
-            expand("date" to buildDate, "revision" to revision, "local" to local)
+            expand("date" to buildDate, "revision" to revision, "local" to local, "name" to buildName)
         })
     }
     clean {
@@ -360,6 +375,9 @@ tasks {
         delete(fileTree("test/config").matching {
             include("**/preferences.xml.bak")
         })
+        delete("bin/")      // vscode
+        delete("bintest/")  // vscode
+        delete("foobar/")
     }
     jar {
         archiveBaseName.set("josm") // always "josm" even if the dir we are in is "core"
@@ -500,6 +518,9 @@ tasks.register<JavaExec>("runClasses") {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    this.testLogging {
+        // this.showStandardStreams = true
+    }
     jvmArgs = listOf(
         "-Xmx2048m",
         "-javaagent:test/lib/jmockit.jar",
@@ -565,8 +586,9 @@ java {
 // Set up ErrorProne
 tasks.withType(JavaCompile::class).configureEach {
     options.compilerArgs.addAll(listOf(
-        "-XDcompilePolicy=simple",
+        "-XDcompilePolicy=simple", // recommemded by ErrorProne
         "-Xlint:all",
+        "-Xlint:-this-escape",  // just floods the console
         "-Xlint:-serial",
         "-Xlint:cast",
         "-Xlint:deprecation",

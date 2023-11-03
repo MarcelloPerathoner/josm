@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='0'>
-  <tag key='cache.motd.html' value='1698177212'/>
-  <tag key='cache.motd.html.java' value='17.0.9'/>
-  <tag key='cache.motd.html.lang' value='En:'/>
-  <tag key='cache.motd.html.version' value='0'/>
-  <tag key='josm.version' value='0'/>
-  <tag key='mappaint.renderer-class-name' value='org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer'/>
+<preferences xmlns='http://josm.openstreetmap.de/preferences-1.0' version='18877'>
+  <tag key='iso.dates' value='true'/>
+  <tag key='josm.version' value='18877'/>
 </preferences>

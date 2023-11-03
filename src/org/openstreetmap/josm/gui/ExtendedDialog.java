@@ -97,6 +97,9 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
     private final boolean modal;
     private boolean focusOnDefaultButton;
 
+    /** if set, the dialog does not show but returns immediately with the given answer */
+    Integer testResult = null;
+
     /** true, if the dialog should include a help button */
     private boolean showHelpButton;
     /** the help topic */
@@ -239,6 +242,9 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
 
     @Override
     public ExtendedDialog showDialog() {
+        if (testResult != null) {
+            return this;
+        }
         // Check if the user has set the dialog to not be shown again
         if (toggleCheckState()) {
             result = toggleValue;
@@ -263,7 +269,7 @@ public class ExtendedDialog extends JDialog implements IExtendedDialog {
 
     @Override
     public int getValue() {
-        return result;
+        return testResult != null ? testResult : result;
     }
 
     private boolean setupDone;

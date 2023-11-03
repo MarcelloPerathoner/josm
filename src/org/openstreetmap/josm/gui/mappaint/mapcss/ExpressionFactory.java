@@ -9,7 +9,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -187,7 +186,7 @@ public final class ExpressionFactory {
         add("print",             () -> new FunctionExpression<>(Functions::print, Object.class));
         add("println",           () -> new FunctionExpression<>(Functions::println, Object.class));
         add("prop$1",            () -> new EnvFunctionExpression<>(Functions::prop, String.class));
-        add("prop$2",            () -> new EnvBiFunctionExpression<>(Functions::prop, String.class, String.class));
+        add("prop$2",            () -> new EnvBiFunctionExpression<>(Functions::prop, String.class, Object.class));
         add("regexp_match$2",    () -> new BiFunctionExpression<>(Functions::regexp_match, String.class, String.class));
         add("regexp_match$3",    () -> new TriFunctionExpression<>(Functions::regexp_match, String.class, String.class, String.class));
         add("regexp_test$2",     () -> new BiFunctionExpression<>(Functions::regexp_test, String.class, String.class));

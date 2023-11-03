@@ -29,10 +29,12 @@ import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxEditor;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompComboBoxModel;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompTextField;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
+import org.openstreetmap.josm.gui.util.DocumentAdapter;
 import org.openstreetmap.josm.gui.widgets.JosmComboBox;
 import org.openstreetmap.josm.gui.widgets.OrientationAction;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.GBC;
+import org.openstreetmap.josm.tools.Logging;
 
 /**
  * Combobox type.
@@ -179,8 +181,11 @@ final class Combo extends ComboMultiSelect {
 
         instance.setValue(instance.getInitialValue());
 
-        combobox.addActionListener(l -> presetInstance.fireChangeEvent(instance));
         combobox.addComponentListener(new ComponentListener(combobox));
+        combobox.addActionListener(l -> presetInstance.fireChangeEvent(instance));
+        combobox.getEditorComponent().getDocument().addDocumentListener(
+            DocumentAdapter.create(ignore -> presetInstance.fireChangeEvent(instance))
+        );
 
         label.setLabelFor(combobox);
         combobox.setToolTipText(getKeyTooltipText());
@@ -204,31 +209,32 @@ final class Combo extends ComboMultiSelect {
         }
 
         /**
-         * Returns the value selected in the combobox or a synthetic value if a multiselect.
+         * Returns the item selected in the combobox.
+         * <p>
+         * Return the item selected or a synthetic value if a free edited text was
+         * entered.
          *
-         * @return the value
+         * @return an item
          */
         @Override
         PresetListEntry.Instance getSelectedItem() {
-            Object sel = combobox.getSelectedItem();
-            if (sel instanceof PresetListEntry.Instance)
-                // selected from the dropdown
-                return (PresetListEntry.Instance) sel;
-            if (sel instanceof String) {
-                // free edit.  If the free edit corresponds to a known entry, use that entry.  This is
-                // to avoid that we write a display_value to the tag's value, eg. if the user did an
-                // undo.
-                PresetListEntry.Instance selItem = find((String) sel);
-                if (selItem != null)
-                    return selItem;
-                return new PresetListEntry((String) sel).newInstance(this);
-            }
-            return PresetListEntry.ENTRY_EMPTY.newInstance(this);
+            String text = combobox.getText();
+            Logging.info("combo getText returns: {0}", text);
+            // May be a free edit.  If the free edit corresponds to a known entry, use
+            // that entry.  This is to avoid that we write a display_value to the tag's
+            // value, eg. if the user did an undo.
+            PresetListEntry.Instance selItem = find(text); // user entered localized text
+            if (selItem != null)
+                return selItem;
+            selItem = findValue(text); // user entered english text
+            if (selItem != null)
+                return selItem;
+            return new PresetListEntry(text).newInstance(this);
         }
 
         @Override
         void setValue(String newValue) {
-            PresetListEntry.Instance selItem = find(newValue);
+            PresetListEntry.Instance selItem = findValue(newValue);
             if (selItem != null) {
                 combobox.setSelectedItem(selItem);
             } else {
@@ -239,13 +245,31 @@ final class Combo extends ComboMultiSelect {
         /**
          * Finds the PresetListEntry that matches value.
          * <p>
-         * Looks in the model of the combobox for an element whose {@code value} matches {@code value}.
+         * Looks in the model of the combobox for an element whose {@code getValue()}
+         * matches {@code value}.
+         *
+         * @param value The value to match.
+         * @return The entry or null
+         */
+        PresetListEntry.Instance findValue(String value) {
+            for (PresetListEntry.Instance e : combobox.getModel().asCollection()) {
+                if (value.equals(e.getValue()))
+                    return e;
+            }
+            return null;
+        }
+
+        /**
+         * Finds the PresetListEntry that matches value.
+         * <p>
+         * Looks in the model of the combobox for an element whose {@code toString()}
+         * matches {@code value}.
          *
          * @param value The value to match.
          * @return The entry or null
          */
         PresetListEntry.Instance find(String value) {
-            return combobox.getModel().asCollection().stream().filter(o -> o.getValue().equals(value)).findAny().orElse(null);
+            return combobox.getModel().find(value);
         }
 
         void setColor(Color color) {

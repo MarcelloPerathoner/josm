@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.JLayeredPane;
@@ -31,6 +30,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import org.openstreetmap.josm.actions.CreateMultipolygonAction;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -54,7 +55,6 @@ import org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.widgets.JosmMenuItem;
 import org.openstreetmap.josm.tools.ListenerList;
-import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.template_engine.TemplateEngineDataProvider;
@@ -135,56 +135,13 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     }
 
     /**
-     * The data handler we pass to any preset dialog opened from here.
-     * <p>
-     * This handler clones the selected primitives into a new dataset and then changes
-     * their tags according to the current values in the dialog.
-     * <p>
-     * Writes go through to the next handler and at the same time update the dialog
-     * elements.
-     */
-    static class PresetLinkHandler extends CloneDataSetHandler {
-        final TaggingPreset.Instance presetInstance;
-
-        PresetLinkHandler(DataSetHandler parentHandler, TaggingPreset.Instance presetInstance) {
-            super(parentHandler); // clones
-            this.presetInstance = presetInstance;
-
-            // change tags
-            getDataSet().beginUpdate();
-            Map<String, String> changedTags = presetInstance.getChangedTags();
-            // why not putAll? see #22580
-            get().forEach(p -> changedTags.forEach((k, v) -> {
-                if (Utils.isEmpty(v)) {
-                    p.remove(k);
-                } else {
-                    p.put(k, v);
-                }
-            }));
-            getDataSet().endUpdate();
-        }
-
-        @Override
-        public void update(String oldKey, String newKey, String value) {
-            Logging.info("Update through PresetLinkHandler");
-            Item.Instance instance = presetInstance.getInstance(newKey);
-            if (instance != null)
-                instance.setValue(value);
-            // FIXME: if we open a child dialog and the user changes a value in the
-            // child and saves, and then the user resets the same value in the parent
-            // dialog, the dialog won't save the now "original" value
-            super.update(oldKey, newKey, value);
-        }
-    }
-
-    /**
      * A debounced ChangeListener.
      * <p>
      * Once triggered, this listener fires after the trigger has been inactive for a
      * given amount of time.  Can be used to reduce the frequency of costly operations,
      * eg. for running the validator only after the user paused typing.
      */
-    static class DebouncedChangeListener implements ChangeListener, ActionListener {
+    static class DebouncedChangeListener implements ChangeListener, ActionListener, TableModelListener {
         ChangeListener listener;
         final Timer timer;
         Object source;
@@ -195,6 +152,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             timer.setRepeats(false);
         }
 
+        // called when the timer expires
         @Override
         public void actionPerformed(ActionEvent e) {
             listener.stateChanged(new ChangeEvent(source));
@@ -203,10 +161,18 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         @Override
         public void stateChanged(ChangeEvent e) {
             if (source != null && source != e.getSource()) {
+                // if there is an event with a different source still pending,
+                // fire it now
                 listener.stateChanged(new ChangeEvent(source));
             }
             this.source = e.getSource();
             timer.restart();
+        }
+
+        // relay this event
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            stateChanged(new ChangeEvent(e.getSource()));
         }
     }
 
@@ -222,7 +188,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         /** The preset template that created this instance. */
         private final TaggingPreset preset;
         /** The current TaggedHandler */
-        private final TaggedHandler handler;
+        private final DataSetHandler handler;
         /** The AutoCompletionManager to use or null */
         private final AutoCompletionManager autoCompletionManager;
         /** The map from items to their Instance. */
@@ -245,7 +211,57 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         /** The swing dialog */
         TaggingPresetDialog dialog;
 
-        Instance(TaggingPreset item, TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
+        /**
+         * The data handler we pass to any preset dialog opened from here.
+         * <p>
+         * On read this handler changes the tags on all selected primitives to the current
+         * values in the dialog.  The parent handler should be a CloneDataSetHandler, so the
+         * change occurs on a copy of the dataset.
+         * <p>
+         * Writes go through to the next handler and at the same time update the dialog
+         * elements.
+         */
+        static class PresetLinkHandler extends DataSetHandler {
+            final TaggingPreset.Instance presetInstance;
+            final DataSetHandler parentHandler;
+
+            PresetLinkHandler(CloneDataSetHandler parentHandler, TaggingPreset.Instance presetInstance) {
+                this.parentHandler = parentHandler;
+                this.presetInstance = presetInstance;
+            }
+
+            @Override
+            public Collection<OsmPrimitive> get() {
+                Map<String, String> changedTags = presetInstance.getChangedTags();
+                Collection<OsmPrimitive> selection = parentHandler.get();
+                DataSet ds = getDataSet();
+                ds.beginUpdate();
+                try {
+                    selection.forEach(p -> p.putAll(changedTags));
+                } finally {
+                    ds.endUpdate();
+                }
+                return selection;
+            }
+
+            @Override
+            public void update(String oldKey, String newKey, String value) {
+                Item.Instance instance = presetInstance.getInstance(newKey);
+                if (instance != null)
+                    instance.setValue(value);
+                // FIXME: if we open a child dialog and the user changes a value in the
+                // child and saves, and then the user resets the same value in the parent
+                // dialog, the dialog won't save the now "original" value
+                parentHandler.update(oldKey, newKey, value);
+            }
+
+            @Override
+            public DataSet getDataSet() {
+                return parentHandler.getDataSet();
+            }
+        }
+
+        Instance(TaggingPreset item, DataSetHandler handler, AutoCompletionManager autoCompletionManager) {
             super(item, null);
             this.preset = item;
             this.handler = handler;
@@ -253,7 +269,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             this.presetInitiallyMatches = handler != null
                 && !handler.get().isEmpty()
                 && handler instanceof DataSetHandler
-                && ((DataSetHandler) handler).get().stream().allMatch(preset);
+                && handler.get().stream().allMatch(preset);
         }
 
         @Override
@@ -305,8 +321,22 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
          * Returns the handler
          * @return the handler
          */
-        public TaggedHandler getHandler() {
+        public DataSetHandler getHandler() {
             return handler;
+        }
+
+        /**
+         * Returns a handler for child dialogs or for the validator
+         * <p>
+         * This handler clones the selected primitives into a new dataset and then
+         * updates them from the values in the dialog.
+         * See {@link PresetLinkHandler}.
+         */
+        public DataSetHandler getChildHandler() {
+            return new PresetLinkHandler(
+                new CloneDataSetHandler(getHandler()),
+                this
+            );
         }
 
         /**
@@ -321,7 +351,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
          * Return the selected primitives.
          * @return the selected primitives
          */
-        public Collection<? extends Tagged> getSelected() {
+        public Collection<OsmPrimitive> getSelected() {
             return handler != null ? handler.get() : Collections.emptyList();
         }
 
@@ -564,10 +594,12 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
      *
      * @param handler the tagging preset handler
      * @param autoCompletionManager the autocompletion manager (or null)
+     * @param showNewRelationButton allow showing of a New Relation button
      * @return one of {@code TaggingPresetDialog.DIALOG_ANSWER_*}
      */
-    public int showDialog(TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
-        TaggingPresetDialog dialog = prepareDialog(handler, autoCompletionManager);
+    public int showDialog(DataSetHandler handler,
+            AutoCompletionManager autoCompletionManager, boolean showNewRelationButton) {
+        TaggingPresetDialog dialog = prepareDialog(handler, autoCompletionManager, showNewRelationButton);
         if (dialog != null)
             dialog.setVisible(true);
         return processAnswer(dialog);
@@ -577,38 +609,50 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
      * Prepares the dialog for showing.
      * @param handler a handler or null
      * @param autoCompletionManager an ac manager or null
+     * @param showNewRelationButton allow showing of a New Relation button
      * @return the dialog ready for showing or null if it cannot be shown
      */
-    public TaggingPresetDialog prepareDialog(TaggedHandler handler, AutoCompletionManager autoCompletionManager) {
+    public TaggingPresetDialog prepareDialog(DataSetHandler handler,
+            AutoCompletionManager autoCompletionManager, boolean showNewRelationButton) {
         if (!isShowable())
             return null;
 
+        boolean showApplyButton = true;
+
         Instance instance = new Instance(this, handler, autoCompletionManager);
         Collection<? extends Tagged> selected = instance.getSelected();
+        showNewRelationButton &= types.contains(TaggingPresetType.RELATION);
 
-        // sanity checks
-        boolean showNewRelation = types.contains(TaggingPresetType.RELATION);
-        if (handler != null && selected.isEmpty() && !showNewRelation) {
+        if (handler != null && selected.isEmpty() && !showNewRelationButton) {
+            // nothing to do here
             new Notification(
                 tr("The preset <i>{0}</i> cannot be applied since nothing has been selected!", getLocaleName()))
                 .setIcon(JOptionPane.WARNING_MESSAGE)
                 .show();
             return null;
         }
+
         if (handler instanceof DataSetHandler) {
-            Collection<OsmPrimitive> filtered = ((DataSetHandler) handler).get();
-            filtered = filtered.stream()
-                .filter(TaggingPreset.this::typeMatches).collect(Collectors.toList());
-            if (filtered.isEmpty() && !showNewRelation) {
-                new Notification(
-                    tr("The preset <i>{0}</i> cannot be applied since the selection is unsuitable!", getLocaleName()))
-                    .setIcon(JOptionPane.WARNING_MESSAGE)
-                    .show();
-                return null;
+            if (handler.isReadOnly()) {
+                showApplyButton = false;
+            } else {
+                // see if this preset can be applied to all of the selected elements
+                boolean isSelectionSuitable = handler.get().stream()
+                    .allMatch(TaggingPreset.this::typeMatches);
+                if (!isSelectionSuitable)
+                    showApplyButton = false;
             }
         }
 
-        return new TaggingPresetDialog(instance);
+        if (!showApplyButton && !showNewRelationButton) {
+            new Notification(
+                tr("The preset <i>{0}</i> cannot be applied since the selection is unsuitable!", getLocaleName()))
+                .setIcon(JOptionPane.WARNING_MESSAGE)
+                .show();
+            return null;
+        }
+
+        return new TaggingPresetDialog(instance, showApplyButton, showNewRelationButton);
     }
 
     /**
@@ -620,7 +664,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
     public int processAnswer(TaggingPresetDialog dialog) {
         if (dialog == null)
             return TaggingPresetDialog.DIALOG_ANSWER_CANCEL;
-        int answer = dialog.answer;
+        int answer = dialog.getAnswer();
         if (answer == TaggingPresetDialog.DIALOG_ANSWER_CANCEL)
             return answer;
 
@@ -817,7 +861,8 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
                 // appears in the focused editor control
                 SwingUtilities.invokeLater(() -> showDialog(
                     new DataSetHandler().setDataSet(dataSet),
-                    AutoCompletionManager.of(dataSet)
+                    AutoCompletionManager.of(dataSet),
+                    true
                 ));
             }
         }

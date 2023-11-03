@@ -289,6 +289,8 @@ class FunctionsTest {
                     args[i] = new String[] {"{0}", ""}; // join and tr require at least 2 arguments
                 } else if (Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type)) {
                     args[i] = 0d;
+                } else if (Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type)) {
+                    args[i] = 0;
                 } else if (Object.class.isAssignableFrom(type)) {
                     args[i] = new Object[0];
                 } else {

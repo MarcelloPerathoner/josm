@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,16 +24,10 @@ import org.openstreetmap.josm.data.imagery.TileJobOptions;
  * Test class for {@link MVTTile}
  */
 class MVTTileTest {
-    private MapboxVectorTileSource tileSource;
-    private MapboxVectorCachedTileLoader loader;
-    @BeforeEach
-    void setup() {
-        tileSource = new MapboxVectorTileSource(new ImageryInfo("Test Mapillary", "file:/" + TestUtils.getTestDataRoot()
-          + "pbf/mapillary/{z}/{x}/{y}.mvt"));
-        loader = new MapboxVectorCachedTileLoader(null,
-          JCSCacheManager.getCache("testMapillaryCache"), new TileJobOptions(1, 1, Collections
-          .emptyMap(), 3600));
-    }
+    private MapboxVectorCachedTileLoader loader = new MapboxVectorCachedTileLoader(
+            null, JCSCacheManager.getCache("testMapillaryCache"), new TileJobOptions(1, 1, Collections.emptyMap(), 3600));
+    private MapboxVectorTileSource tileSource = new MapboxVectorTileSource(
+            new ImageryInfo("Test Mapillary", "file:/" + TestUtils.getTestDataRoot() + "pbf/mapillary/{z}/{x}/{y}.mvt"));
 
     /**
      * Provide arguments for {@link #testMVTTile(BufferedImage, Boolean)}
@@ -42,10 +35,10 @@ class MVTTileTest {
      */
     private static Stream<Arguments> testMVTTile() {
         return Stream.of(
-          Arguments.of(null, Boolean.TRUE),
-          Arguments.of(Tile.LOADING_IMAGE, Boolean.TRUE),
-          Arguments.of(Tile.ERROR_IMAGE, Boolean.TRUE),
-          Arguments.of(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), Boolean.FALSE)
+            Arguments.of(null, Boolean.TRUE),
+            Arguments.of(Tile.LOADING_IMAGE, Boolean.TRUE),
+            Arguments.of(Tile.ERROR_IMAGE, Boolean.TRUE),
+            Arguments.of(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), Boolean.FALSE)
         );
     }
 
@@ -57,10 +50,11 @@ class MVTTileTest {
         assertEquals(image, tile.getImage());
 
         TileJob job = loader.createTileLoaderJob(tile);
-        job.submit();
+        // we can't use the cache, because we request the same tile many times over
+        job.submit(true);
         Awaitility.await().atMost(Durations.ONE_SECOND).until(tile::isLoaded);
         if (isLoaded) {
-            Awaitility.await().atMost(Durations.ONE_SECOND).until(() -> tile.getLayers() != null && tile.getLayers().size() > 1);
+            Awaitility.await().atMost(Durations.ONE_SECOND).until(() -> tile.getImage() == MVTTile.CLEAR_LOADED);
             assertEquals(2, tile.getLayers().size());
             assertEquals(4096, tile.getExtent());
             // Ensure that we have the clear image set, such that the tile doesn't add to the dataset again

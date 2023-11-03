@@ -19,7 +19,6 @@ import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.tools.LanguageInfo;
 
-
 /**
  * Function that searches a list of configurable keys for the text to display.
  * <p>
@@ -77,7 +76,7 @@ public class FunctionAutoText extends CacheableExpression {
         /**
          * Hold the keysts name tags from the preferences.
          */
-        public Listener() {
+        Listener() {
             Config.getPref().addPreferenceChangeListener(this);
             initNameTagsFromPreferences();
         }

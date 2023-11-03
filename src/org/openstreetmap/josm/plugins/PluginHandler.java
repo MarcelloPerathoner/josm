@@ -8,6 +8,7 @@ import static org.openstreetmap.josm.tools.I18n.trn;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -1267,6 +1268,9 @@ public final class PluginHandler {
      * @return true, if the plugin shall be disabled; false, otherwise
      */
     public static boolean confirmDisablePlugin(Component parent, String reason, String name) {
+        if (GraphicsEnvironment.isHeadless())
+            return false;
+
         ButtonSpec[] options = {
                 new ButtonSpec(
                         tr("Disable plugin"),
@@ -1480,6 +1484,8 @@ public final class PluginHandler {
     }
 
     private static int askUpdateDisableKeepPluginAfterException(PluginProxy plugin) {
+        if (GraphicsEnvironment.isHeadless())
+            return -1;
         final ButtonSpec[] options = {
                 new ButtonSpec(
                         tr("Update plugin"),
