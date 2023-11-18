@@ -271,8 +271,10 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     implementation("jakarta.json:jakarta.json-api:2.1.2")
     implementation("oauth.signpost:signpost-core:2.1.1")
+    implementation("commons-io:commons-io:2.15.0")
     implementation("org.apache.commons:commons-compress:1.23.0")
     implementation("org.apache.commons:commons-jcs3-core:3.1")
+    implementation("org.apache.maven:maven-artifact:3.9.5")
     implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
     implementation("org.tukaani:xz:1.9")
 
@@ -518,7 +520,7 @@ tasks.register<JavaExec>("runClasses") {
     description = "Run JOSM from classes"
     classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
     main = "org.openstreetmap.josm.gui.MainApplication"
-    args = listOf("sess.joz")
+    // args = listOf("sess.joz")
     jvmArgs = jvmOpens
 }
 
@@ -591,6 +593,8 @@ java {
 
 // Set up ErrorProne
 tasks.withType(JavaCompile::class).configureEach {
+    options.setIncremental(true)
+
     options.compilerArgs.addAll(listOf(
         "-XDcompilePolicy=simple", // recommended by ErrorProne
         "-Xlint:all",

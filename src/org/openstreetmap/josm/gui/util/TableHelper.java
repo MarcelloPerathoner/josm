@@ -267,12 +267,54 @@ public final class TableHelper {
     }
 
     /**
-     * Sets the exact column width for a given table column from data.
+     * Sets a fixed column width from existing table data.
+     * <p>
+     * The minimun and maximum column widths will be set to the preferred width of the
+     * widest cell. The table will use exactly this column width.
      *
      * @param table the table with data already loaded
      * @param column the column index
      */
-    public static void setColumnWidth(JTable table, int column) {
+    public static void setFixedColumnWidth(JTable table, int column, int row) {
+        int preferredWidth = table.prepareRenderer(
+                    table.getCellRenderer(row, column), row, column).getPreferredSize().width;
+        TableColumn col = table.getColumnModel().getColumn(column);
+        col.setMinWidth(preferredWidth);
+        col.setMaxWidth(preferredWidth);
+    }
+
+    /**
+     * Sets a fixed column width from existing table data.
+     * <p>
+     * The minimun and maximum column widths will be set to the preferred width of the
+     * widest cell. The table will use exactly this column width.
+     *
+     * @param table the table with data already loaded
+     * @param column the column index
+     */
+    public static void setFixedColumnWidth(JTable table, int column) {
+        int preferredWidth = 1;
+        int rows = table.getRowCount();
+        for (int row = 0; row < rows; row++) {
+            preferredWidth = Math.max(preferredWidth, table.prepareRenderer(
+                table.getCellRenderer(row, column), row, column).getPreferredSize().width);
+        }
+        TableColumn col = table.getColumnModel().getColumn(column);
+        col.setMinWidth(preferredWidth);
+        col.setMaxWidth(preferredWidth);
+    }
+
+    /**
+     * Sets the preferred column width for a given table column from data.
+     * <p>
+     * The preferred column width will be set to the preferred width of the widest cell.
+     * The table may still use a different width to accomodate constraints from other
+     * columns.
+     *
+     * @param table the table with data already loaded
+     * @param column the column index
+     */
+    public static void setPreferredColumnWidth(JTable table, int column) {
         int preferredWidth = 1;
         int rows = table.getRowCount();
         for (int row = 0; row < rows; row++) {
@@ -283,13 +325,13 @@ public final class TableHelper {
     }
 
     /**
-     * Sets the exact column width for each table column from data.
+     * Sets the preferred column width for each table column from data.
      *
      * @param table the table with data already loaded
      */
-    public static void setColumnWidths(JTable table) {
+    public static void setPreferredColumnWidths(JTable table) {
         for (int col = 0; col < table.getColumnCount(); col++) {
-            setColumnWidth(table, col);
+            setPreferredColumnWidth(table, col);
         }
     }
 }

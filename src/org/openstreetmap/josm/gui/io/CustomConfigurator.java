@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -42,9 +41,9 @@ import org.openstreetmap.josm.data.PreferencesUtils;
 import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainFrame;
-import org.openstreetmap.josm.plugins.PluginDownloadTask;
+import org.openstreetmap.josm.plugins.JarDownloadTask;
 import org.openstreetmap.josm.plugins.PluginInformation;
-import org.openstreetmap.josm.plugins.ReadLocalPluginInformationTask;
+import org.openstreetmap.josm.plugins.ScanPluginsTask;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.spi.preferences.Setting;
 import org.openstreetmap.josm.tools.LanguageInfo;
@@ -312,53 +311,48 @@ public final class CustomConfigurator {
         if (!deleteList.isEmpty()) {
             PreferencesUtils.log("Plugins delete: "+deleteList);
         }
+        List<PluginInformation> availablePlugins = new ArrayList<>();
+        ScanPluginsTask.join(ScanPluginsTask.supplyAsync())
+            .forEach(task -> availablePlugins.addAll(task.getPluginInformations()));
 
-        final ReadLocalPluginInformationTask task = new ReadLocalPluginInformationTask();
-        Runnable r = () -> {
-            if (task.isCanceled()) return;
-            synchronized (CustomConfigurator.class) {
-                try { // proceed only after all other tasks were finished
-                    while (busy) CustomConfigurator.class.wait();
-                } catch (InterruptedException ex) {
-                    Logging.log(Logging.LEVEL_WARN, "InterruptedException while reading local plugin information", ex);
-                    Thread.currentThread().interrupt();
-                }
-
-                SwingUtilities.invokeLater(() -> {
-                    List<PluginInformation> availablePlugins = task.getAvailablePlugins();
-                    List<PluginInformation> toInstallPlugins = new ArrayList<>();
-                    List<PluginInformation> toRemovePlugins = new ArrayList<>();
-                    List<PluginInformation> toDeletePlugins = new ArrayList<>();
-                    for (PluginInformation pi1: availablePlugins) {
-                        String name = pi1.name.toLowerCase(Locale.ENGLISH);
-                        if (installList.contains(name)) toInstallPlugins.add(pi1);
-                        if (removeList.contains(name)) toRemovePlugins.add(pi1);
-                        if (deleteList.contains(name)) toDeletePlugins.add(pi1);
-                    }
-                    if (!installList.isEmpty()) {
-                        PluginDownloadTask pluginDownloadTask =
-                                new PluginDownloadTask(MainApplication.getMainFrame(), toInstallPlugins, tr("Installing plugins"));
-                        MainApplication.worker.submit(pluginDownloadTask);
-                    }
-                    List<String> pls = new ArrayList<>(Config.getPref().getList("plugins"));
-                    for (PluginInformation pi2: toInstallPlugins) {
-                        if (!pls.contains(pi2.name)) {
-                            pls.add(pi2.name);
-                        }
-                    }
-                    for (PluginInformation pi3: toRemovePlugins) {
-                        pls.remove(pi3.name);
-                    }
-                    for (PluginInformation pi4: toDeletePlugins) {
-                        pls.remove(pi4.name);
-                        Utils.deleteFile(new File(Preferences.main().getPluginsDirectory(), pi4.name+".jar"));
-                    }
-                    Config.getPref().putList("plugins", pls);
-                });
+        synchronized (CustomConfigurator.class) {
+            try { // proceed only after all other tasks were finished
+                while (busy) CustomConfigurator.class.wait();
+            } catch (InterruptedException ex) {
+                Logging.log(Logging.LEVEL_WARN, "InterruptedException while reading local plugin information", ex);
+                Thread.currentThread().interrupt();
             }
-        };
-        MainApplication.worker.submit(task);
-        MainApplication.worker.submit(r);
+
+            List<PluginInformation> toInstallPlugins = new ArrayList<>();
+            List<PluginInformation> toRemovePlugins = new ArrayList<>();
+            List<PluginInformation> toDeletePlugins = new ArrayList<>();
+            for (PluginInformation pi1: availablePlugins) {
+                String name = pi1.getName().toLowerCase(Locale.ENGLISH);
+                if (installList.contains(name)) toInstallPlugins.add(pi1);
+                if (removeList.contains(name)) toRemovePlugins.add(pi1);
+                if (deleteList.contains(name)) toDeletePlugins.add(pi1);
+            }
+            if (!installList.isEmpty()) {
+                // start tasks & join immediately
+                List<JarDownloadTask> taskList = JarDownloadTask.join(JarDownloadTask.supplyAsync(toInstallPlugins));
+                taskList = JarDownloadTask.successfulTasks(taskList);
+                toInstallPlugins = taskList.stream().map(JarDownloadTask::getPluginInformation).toList();
+            }
+            List<String> pls = new ArrayList<>(Config.getPref().getList("plugins"));
+            for (PluginInformation pi2: toInstallPlugins) {
+                if (!pls.contains(pi2.getName())) {
+                    pls.add(pi2.getName());
+                }
+            }
+            for (PluginInformation pi3: toRemovePlugins) {
+                pls.remove(pi3.getName());
+            }
+            for (PluginInformation pi4: toDeletePlugins) {
+                pls.remove(pi4.getName());
+                Utils.deleteFile(new File(Preferences.main().getPluginsDirectory(), pi4.getName() + ".jar"));
+            }
+            Config.getPref().putList("plugins", pls);
+        }
     }
 
     private static String getDirectoryByAbbr(String base) {

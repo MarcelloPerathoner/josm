@@ -12,12 +12,13 @@ import java.nio.file.Files;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
@@ -63,10 +64,12 @@ class PluginHandlerJOSMTooOldTest {
 
         this.referenceDummyJarOld = new File(TestUtils.getTestDataRoot(), "__files/plugin/dummy_plugin.v31701.jar");
         this.referenceDummyJarNew = new File(TestUtils.getTestDataRoot(), "__files/plugin/dummy_plugin.v31772.jar");
-        this.referenceBazJarOld = new File(TestUtils.getTestDataRoot(), "__files/plugin/baz_plugin.v6.jar");
-        this.referenceBazJarNew = new File(TestUtils.getTestDataRoot(), "__files/plugin/baz_plugin.v7.jar");
-        this.referenceQuxJarOld = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJarOld);
-        this.referenceQuxJarNewer = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJarNewer);
+        this.referenceBazJarOld   = new File(TestUtils.getTestDataRoot(), "__files/plugin/baz_plugin.v6.jar");
+        this.referenceBazJarNew   = new File(TestUtils.getTestDataRoot(), "__files/plugin/baz_plugin.v7.jar");
+        this.referenceQuxJar345   = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v345.jar"); // 6999
+        this.referenceQuxJar346   = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v346.jar"); // 7499
+        this.referenceQuxJar432   = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v432.jar"); // 7500
+        this.referenceQuxJar435   = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v435.jar"); // 8111
         this.pluginDir = Preferences.main().getPluginsDirectory();
         this.targetDummyJar = new File(this.pluginDir, "dummy_plugin.jar");
         this.targetDummyJarNew = new File(this.pluginDir, "dummy_plugin.jar.new");
@@ -77,16 +80,15 @@ class PluginHandlerJOSMTooOldTest {
         this.pluginDir.mkdirs();
     }
 
-    private static final String referencePathQuxJarOld = "plugin/qux_plugin.v345.jar";
-    private static final String referencePathQuxJarNewer = "plugin/qux_plugin.v432.jar";
-
     private File pluginDir;
     private File referenceDummyJarOld;
     private File referenceDummyJarNew;
     private File referenceBazJarOld;
     private File referenceBazJarNew;
-    private File referenceQuxJarOld;
-    private File referenceQuxJarNewer;
+    private File referenceQuxJar345;
+    private File referenceQuxJar346;
+    private File referenceQuxJar432;
+    private File referenceQuxJar435;
     private File targetDummyJar;
     private File targetDummyJarNew;
     private File targetBazJar;
@@ -102,6 +104,10 @@ class PluginHandlerJOSMTooOldTest {
     private static String u202f(String s) {
         return s.replace('\u202F', DecimalFormatSymbols.getInstance().getGroupingSeparator());
     }
+    private String getConfiguredPlugins() throws IOException {
+        List<PluginInformation> l = PluginHandlerTest.getConfiguredPlugins();
+        return String.join(" ", l.stream().map(p -> p.getName() + ":" + p.getVersion()).sorted().toList());
+    }
 
     /**
      * test update of plugins when those plugins turn out to require a higher JOSM version, but the
@@ -109,6 +115,7 @@ class PluginHandlerJOSMTooOldTest {
      * @throws IOException never
      */
     @Test
+    @Disabled("Should never even consider installing an incompatible plugin")
     void testUpdatePluginsDownloadBoth(WireMockRuntimeInfo wireMockRuntimeInfo) throws IOException {
         TestUtils.assumeWorkingJMockit();
         final PluginServer pluginServer = new PluginServer(
@@ -125,12 +132,14 @@ class PluginHandlerJOSMTooOldTest {
         Files.copy(this.referenceDummyJarOld.toPath(), this.targetDummyJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final List<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
+        assertEquals("baz_plugin:6 dummy_plugin:31701", getConfiguredPlugins());
+        final Collection<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
-        ).stream().sorted(Comparator.comparing(a -> a.name)).collect(Collectors.toList());
+        );
+        assertEquals("baz_plugin:7 dummy_plugin:31772", getConfiguredPlugins());
 
         assertEquals(
                 Arrays.asList(
@@ -144,12 +153,6 @@ class PluginHandlerJOSMTooOldTest {
 
         assertEquals(2, updatedPlugins.size());
 
-        assertEquals(updatedPlugins.get(0).name, "baz_plugin");
-        assertEquals("7", updatedPlugins.get(0).localversion);
-
-        assertEquals(updatedPlugins.get(1).name, "dummy_plugin");
-        assertEquals("31772", updatedPlugins.get(1).localversion);
-
         assertFalse(targetDummyJarNew.exists());
         assertFalse(targetBazJarNew.exists());
 
@@ -160,9 +163,9 @@ class PluginHandlerJOSMTooOldTest {
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugin/dummy_plugin.v31772.jar")));
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugin/baz_plugin.v7.jar")));
 
-        assertEquals(Config.getPref().getInt("pluginmanager.version", 111), 6000);
+        assertEquals(6000, Config.getPref().getInt("pluginmanager.version", 111));
         // not mocking the time so just check it's not its original value
-        assertNotEquals(Config.getPref().get("pluginmanager.lastupdate", "999"), "999");
+        assertNotEquals("999", Config.getPref().get("pluginmanager.lastupdate", "999"));
     }
 
     /**
@@ -171,6 +174,7 @@ class PluginHandlerJOSMTooOldTest {
      * @throws IOException never
      */
     @Test
+    @Disabled("Should never even consider installing an incompatible plugin")
     void testUpdatePluginsSkipOne(WireMockRuntimeInfo wireMockRuntimeInfo) throws IOException {
         TestUtils.assumeWorkingJMockit();
         final PluginServer pluginServer = new PluginServer(
@@ -189,17 +193,17 @@ class PluginHandlerJOSMTooOldTest {
         Files.copy(this.referenceDummyJarOld.toPath(), this.targetDummyJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final List<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
+        final Collection<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
-        ).stream().sorted(Comparator.comparing(a -> a.name)).collect(Collectors.toList());
+        );
 
         assertEquals(
                 Arrays.asList(
-                        this.dummyPluginVersionReqString,
-                        this.bazPluginVersionReqString
+                        dummyPluginVersionReqString,
+                        bazPluginVersionReqString
                 ),
             edMocker.getInvocationLog().stream().map(
                 invocationEntry -> invocationEntry[1]
@@ -214,11 +218,7 @@ class PluginHandlerJOSMTooOldTest {
 
         assertEquals(2, updatedPlugins.size());
 
-        assertEquals(updatedPlugins.get(0).name, "baz_plugin");
-        assertEquals("7", updatedPlugins.get(0).localversion);
-
-        assertEquals(updatedPlugins.get(1).name, "dummy_plugin");
-        assertEquals("31701", updatedPlugins.get(1).localversion);
+        assertEquals("baz_plugin:7 dummy_plugin:31701", getConfiguredPlugins());
 
         assertFalse(targetDummyJarNew.exists());
         assertFalse(targetBazJarNew.exists());
@@ -231,15 +231,14 @@ class PluginHandlerJOSMTooOldTest {
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugin/baz_plugin.v7.jar")));
 
         // shouldn't have been updated
-        assertEquals(Config.getPref().getInt("pluginmanager.version", 111), 999);
-        assertEquals(Config.getPref().get("pluginmanager.lastupdate", "999"), "999");
+        assertEquals(999, Config.getPref().getInt("pluginmanager.version", 111));
+        assertEquals("999", Config.getPref().get("pluginmanager.lastupdate", "999"));
     }
 
     /**
      * When the plugin list suggests that the jar file at the provided URL *doesn't* require a newer JOSM
-     * but in fact the plugin served *does*, it is installed anyway.
+     * but in fact the plugin served *does*, it should not be installed.
      *
-     * This is probably NOT desirable and should be fixed, however this test documents the behaviour.
      * @throws IOException never
      */
     @Test
@@ -258,42 +257,33 @@ class PluginHandlerJOSMTooOldTest {
 
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
+        assertEquals("baz_plugin:6", getConfiguredPlugins());
         final List<PluginInformation> updatedPlugins = new ArrayList<>(PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
         ));
+        assertEquals("baz_plugin:6", getConfiguredPlugins());
 
-        // questionably correct
-        assertEquals(1, updatedPlugins.size());
-
-        // questionably correct
-        assertEquals(updatedPlugins.get(0).name, "baz_plugin");
-        assertEquals("7", updatedPlugins.get(0).localversion);
+        assertEquals(1, updatedPlugins.size()); // we have downloaded it, even if it doesn't install
 
         assertFalse(targetBazJarNew.exists());
 
-        // questionably correct
-        TestUtils.assertFileContentsEqual(this.referenceBazJarNew, this.targetBazJar);
+        TestUtils.assertFileContentsEqual(this.referenceBazJarOld, this.targetBazJar);
 
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        // questionably correct
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugin/baz_plugin.v7.jar")));
 
         // should have been updated
-        assertEquals(Config.getPref().getInt("pluginmanager.version", 111), 6000);
-        assertNotEquals(Config.getPref().get("pluginmanager.lastupdate", "999"), "999");
+        assertEquals(6000, Config.getPref().getInt("pluginmanager.version", 111));
+        assertNotEquals("999", Config.getPref().get("pluginmanager.lastupdate", "999"));
     }
 
     /**
-     * When a plugin advertises several versions for compatibility with older JOSMs, but even the
-     * oldest of those is newer than our JOSM version, the user is prompted to upgrade to the newest
-     * version anyway.
+     * When a plugin advertises several versions for compatibility with older JOSMs, but
+     * even the oldest of those is newer than our JOSM version, nothing can be safely
+     * installed. If a compatible version is already installed, keep that one.
      *
-     * While this behaviour is not incorrect, it's probably less helpful than it could be - the
-     * version that's most likely to work best in this case will be the "oldest" still-available
-     * version, however this test documents the behaviour.
      * @throws IOException never
      */
     @Test
@@ -303,7 +293,7 @@ class PluginHandlerJOSMTooOldTest {
 
         final PluginServer pluginServer = new PluginServer(
             new PluginServer.RemotePlugin(this.referenceBazJarOld),
-            new PluginServer.RemotePlugin(this.referenceQuxJarNewer, Collections.singletonMap(
+            new PluginServer.RemotePlugin(this.referenceQuxJar432, Collections.singletonMap(
                 "7499_Plugin-Url", "346;" + pluginServerRule.url("/dont/bother.jar")
             ))
         );
@@ -312,35 +302,25 @@ class PluginHandlerJOSMTooOldTest {
 
         new ExtendedDialogMocker(Collections.singletonMap(u202f("JOSM version 7\u202F500 required for plugin qux_plugin."), "Download Plugin"));
 
-        Files.copy(this.referenceQuxJarOld.toPath(), this.targetQuxJar.toPath());
+        Files.copy(this.referenceQuxJar345.toPath(), this.targetQuxJar.toPath()); // mainversion 6999
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final List<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
+        assertEquals("baz_plugin:6 qux_plugin:345", getConfiguredPlugins());
+        final Collection<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
-        ).stream().sorted(Comparator.comparing(a -> a.name)).collect(Collectors.toList());
-
+        );
+        assertEquals("baz_plugin:6 qux_plugin:345", getConfiguredPlugins());
         assertEquals(2, updatedPlugins.size());
 
-        assertEquals("baz_plugin", updatedPlugins.get(0).name);
-        assertEquals("6", updatedPlugins.get(0).localversion);
-
-        assertEquals("qux_plugin", updatedPlugins.get(1).name);
-        // questionably correct
-        assertEquals("432", updatedPlugins.get(1).localversion);
-
         assertFalse(targetQuxJarNew.exists());
-
         TestUtils.assertFileContentsEqual(this.referenceBazJarOld, this.targetBazJar);
-        // questionably correct
-        TestUtils.assertFileContentsEqual(this.referenceQuxJarNewer, this.targetQuxJar);
+        TestUtils.assertFileContentsEqual(this.referenceQuxJar345, this.targetQuxJar);
 
-        assertEquals(2, pluginServerRule.getAllServeEvents().size());
+        assertEquals(1, pluginServerRule.getAllServeEvents().size());
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        // questionably correct
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugin/qux_plugin.v432.jar")));
 
         assertEquals(7200, Config.getPref().getInt("pluginmanager.version", 111));
         // not mocking the time so just check it's not its original value

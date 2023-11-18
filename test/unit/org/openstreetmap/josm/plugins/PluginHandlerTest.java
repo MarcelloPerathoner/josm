@@ -6,8 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +37,16 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  * Unit tests of {@link PluginHandler} class.
  */
 @BasicPreferences
-class PluginHandlerTest {
+public class PluginHandlerTest {
+
+    /**
+     * Returns the configured plugins sorted by name + version
+     */
+    public static List<PluginInformation> getConfiguredPlugins() throws IOException {
+        return PluginHandler.getConfigPlugins().stream()
+            .sorted(PluginInformation.nameVersion).toList();
+    }
+
     /**
      * Unit test of methods {@link DeprecatedPlugin#equals} and {@link DeprecatedPlugin#hashCode}.
      */
@@ -66,7 +78,7 @@ class PluginHandlerTest {
                     PluginHandler.UNMAINTAINED_PLUGINS.stream()
             ).collect(Collectors.joining(","));
             System.setProperty("josm.plugins", plugins);
-            List<PluginInformation> list = PluginHandler.buildListOfPluginsToLoad(null, null);
+            Collection<PluginInformation> list = PluginHandler.buildListOfPluginsToLoad(null, null);
             assertNotNull(list);
             assertTrue(list.isEmpty());
         } finally {
@@ -145,14 +157,14 @@ class PluginHandlerTest {
      * @throws PluginException if an error occurs
      */
     @Test
-    void testPluginInformationAction() throws PluginException {
+    void testPluginInformationAction() throws PluginException, MalformedURLException {
         TestUtils.assumeWorkingJMockit();
         final String expectedText = "Ant-Version: Apache Ant 1.9.6\n" +
                 "Author: Don-vip\n" +
                 "Created-By: 1.7.0_91-b02 (Oracle Corporation)\n" +
                 "Manifest-Version: 1.0\n" +
                 "Plugin-Canloadatruntime: true\n" +
-                "Plugin-Class: org.openstreetmap.josm.plugins.fr.epci.EpciPlugin\n" +
+                "Plugin-Class: org.openstreetmap.josm.plugins.baz.BazPlugin\n" +
                 "Plugin-Date: 2015-11-19T08:21:07.645033Z\n" +
                 "Plugin-Description: Handling of French EPCIs (boundary=local_authority)\n" +
                 "Plugin-Early: true\n" +

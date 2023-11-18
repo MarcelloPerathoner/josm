@@ -39,7 +39,8 @@ import org.xml.sax.SAXException;
  *
  */
 public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
-    private final Map<String, PluginInformation> availablePlugins;
+    private final Map<String, PluginInformation> localPlugins;
+    private final Map<String, PluginInformation> upstreamPlugins;
     private boolean canceled;
 
     /**
@@ -47,7 +48,8 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
      */
     public ReadLocalPluginInformationTask() {
         super(tr("Reading local plugin information.."), false);
-        availablePlugins = new HashMap<>();
+        localPlugins = new HashMap<>();
+        upstreamPlugins = new HashMap<>();
     }
 
     /**
@@ -56,7 +58,8 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
      */
     public ReadLocalPluginInformationTask(ProgressMonitor monitor) {
         super(tr("Reading local plugin information.."), monitor, false);
-        availablePlugins = new HashMap<>();
+        localPlugins = new HashMap<>();
+        upstreamPlugins = new HashMap<>();
     }
 
     @Override
@@ -67,20 +70,6 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
     @Override
     protected void finish() {
         // Do nothing
-    }
-
-    protected void processJarFile(File f, String pluginName) throws PluginException {
-        PluginInformation info = new PluginInformation(
-                f,
-                pluginName
-        );
-        if (!availablePlugins.containsKey(info.getName())) {
-            info.updateLocalInfo(info);
-            availablePlugins.put(info.getName(), info);
-        } else {
-            PluginInformation current = availablePlugins.get(info.getName());
-            current.updateFromJar(info);
-        }
     }
 
     private static File[] listFiles(File pluginsDirectory, final String regex) {
@@ -119,12 +108,15 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
             String fname = f.getName();
             monitor.setCustomText(tr("Processing file ''{0}''", fname));
             try {
+                String pluginName = null;
                 if (fname.endsWith(".jar")) {
-                    String pluginName = fname.substring(0, fname.length() - 4);
-                    processJarFile(f, pluginName);
+                    pluginName = fname.substring(0, fname.length() - 4);
                 } else if (fname.endsWith(".jar.new")) {
-                    String pluginName = fname.substring(0, fname.length() - 8);
-                    processJarFile(f, pluginName);
+                    pluginName = fname.substring(0, fname.length() - 8);
+                }
+                if (pluginName != null) {
+                    PluginInformation info = new PluginInformation(f, pluginName, f.toURI());
+                    localPlugins.computeIfAbsent(pluginName, k -> info);
                 }
             } catch (PluginException e) {
                 Logging.log(Logging.LEVEL_WARN, "PluginException: ", e);
@@ -158,13 +150,13 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
 
     protected void processLocalPluginInformationFile(File file) throws PluginListParseException {
         try (InputStream fin = Files.newInputStream(file.toPath())) {
-            List<PluginInformation> pis = new PluginListParser().parse(fin);
+            List<PluginInformation> pis = new PluginListParser().parse(fin, null);
             for (PluginInformation pi : pis) {
                 // we always keep plugin information from a plugin site because it
                 // includes information not available in the plugin jars Manifest, i.e.
                 // the download link or localized descriptions
                 //
-                availablePlugins.put(pi.name, pi);
+                upstreamPlugins.put(pi.getName(), pi);
             }
         } catch (IOException | InvalidPathException e) {
             throw new PluginListParseException(e);
@@ -174,24 +166,22 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
     protected void analyseInProcessPlugins() {
         for (PluginProxy proxy : PluginHandler.pluginList) {
             PluginInformation info = proxy.getPluginInformation();
-            if (canceled) return;
-            if (!availablePlugins.containsKey(info.name)) {
-                availablePlugins.put(info.name, info);
-            } else {
-                availablePlugins.get(info.name).localversion = info.localversion;
+            if (!localPlugins.containsKey(info.getName())) {
+                localPlugins.put(info.getName(), info);
             }
+            if (canceled) return;
         }
     }
 
     protected void filterOldPlugins() {
         for (PluginHandler.DeprecatedPlugin p : PluginHandler.DEPRECATED_PLUGINS) {
             if (canceled) return;
-            availablePlugins.remove(p.name);
+            upstreamPlugins.remove(p.name);
         }
     }
 
     protected void filterIrrelevantPlugins() {
-        availablePlugins.entrySet().removeIf(e -> !e.getValue().isForCurrentPlatform());
+        upstreamPlugins.entrySet().removeIf(e -> !e.getValue().isForCurrentPlatform());
     }
 
     @Override
@@ -217,8 +207,17 @@ public class ReadLocalPluginInformationTask extends PleaseWaitRunnable {
      *
      * @return information about available plugins detected by this task.
      */
-    public List<PluginInformation> getAvailablePlugins() {
-        return new ArrayList<>(availablePlugins.values());
+    public List<PluginInformation> getUpstreamPlugins() {
+        return new ArrayList<>(upstreamPlugins.values());
+    }
+
+    /**
+     * Replies information about available plugins detected by this task.
+     *
+     * @return information about available plugins detected by this task.
+     */
+    public List<PluginInformation> getLocalPlugins() {
+        return new ArrayList<>(localPlugins.values());
     }
 
     /**

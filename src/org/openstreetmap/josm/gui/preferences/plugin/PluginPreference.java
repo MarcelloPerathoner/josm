@@ -1,31 +1,38 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.preferences.plugin;
 
+import static java.awt.GridBagConstraints.BOTH;
 import static java.awt.GridBagConstraints.HORIZONTAL;
+import static org.openstreetmap.josm.gui.preferences.PreferenceUtils.SMALLGAP;
 import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trc;
 import static org.openstreetmap.josm.tools.I18n.trn;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -37,28 +44,36 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
+import javax.swing.RowFilter;
 import javax.swing.UIManager;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.data.Preferences;
-import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane.ButtonSpec;
 import org.openstreetmap.josm.gui.MainApplication;
+import org.openstreetmap.josm.gui.Notification;
+import org.openstreetmap.josm.gui.datatransfer.ClipboardUtils;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.ExtensibleTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
+import org.openstreetmap.josm.gui.progress.swing.ProgMon.IProgMonDisplay;
+import org.openstreetmap.josm.gui.progress.swing.ProgMon.ProgMonNotification;
 import org.openstreetmap.josm.gui.util.GuiHelper;
+import org.openstreetmap.josm.gui.util.TableHelper;
 import org.openstreetmap.josm.gui.widgets.FilterField;
-import org.openstreetmap.josm.plugins.PluginDownloadTask;
+import org.openstreetmap.josm.gui.widgets.HtmlPanel;
+import org.openstreetmap.josm.plugins.JarDownloadTask;
 import org.openstreetmap.josm.plugins.PluginHandler;
 import org.openstreetmap.josm.plugins.PluginInformation;
-import org.openstreetmap.josm.plugins.ReadLocalPluginInformationTask;
-import org.openstreetmap.josm.plugins.ReadRemotePluginInformationTask;
+import org.openstreetmap.josm.plugins.ScanPluginsTask;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -69,7 +84,74 @@ import org.openstreetmap.josm.tools.Utils;
  * Preference settings for plugins.
  * @since 168
  */
+@SuppressWarnings("java:S1192")
 public final class PluginPreference extends ExtensibleTabPreferenceSetting {
+    /**
+     * Plugin installation status, used to filter plugin preferences model.
+     * @since 13799
+     */
+    public enum PluginInstallation {
+        /** Plugins installed and loaded **/
+        INSTALLED,
+        /** Plugins not loaded **/
+        AVAILABLE,
+        /** All plugins **/
+        ALL,
+        /** Plugins with updates **/
+        UPDATEABLE
+    }
+
+    /**
+     * A row filter for name and installation status.
+     */
+    class PluginRowFilter extends RowFilter<PluginPreferenceModel, Integer> {
+        String filter = "";
+        PluginInstallation status = PluginInstallation.AVAILABLE;
+
+        void setFilter(String filter) {
+            this.filter = filter;
+            rowSorter.sort();
+        }
+
+        void setStatus(PluginInstallation status) {
+            this.status = status;
+            rowSorter.sort();
+        }
+
+        private boolean matchesInstallationStatus(PluginPreferenceModel.TableEntry e, PluginInstallation status) {
+            switch(status) {
+                case INSTALLED : return model.getSelectedPluginNames().contains(e.getName());
+                case AVAILABLE : return !model.getSelectedPluginNames().contains(e.getName());
+                case UPDATEABLE : return e.isSelected() && e.hasUpdate();
+                default: return true;
+            }
+        }
+
+        /**
+         * Replies true if either the name, the description, or the version match (case insensitive)
+         * one of the words in filter. Replies true if filter is null.
+         *
+         * @param filter the filter expression
+         * @return true if this plugin info matches with the filter
+         */
+        private boolean matchesExpression(PluginPreferenceModel.TableEntry e, String filterExpression) {
+            String[] words = filterExpression.split("\\s+", -1);
+            for (String word: words) {
+                if (e.matches(word))
+                    return true;
+            }
+            return false;
+        }
+
+        /* called by the rowFilter */
+        @Override
+        public boolean include(Entry<? extends PluginPreferenceModel, ? extends Integer> entry) {
+            PluginPreferenceModel.TableEntry e = model.getTableEntryAt(entry.getIdentifier());
+            boolean compatible = (e.local != null)  || (e.update != null && e.update.isCompatible()) ||
+                (e.latest != null && e.latest.isCompatible());
+            return compatible && matchesExpression(e, filter) && matchesInstallationStatus(e, status);
+        }
+    }
 
     /**
      * Factory used to create a new {@code PluginPreference}.
@@ -81,9 +163,12 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         }
     }
 
-    private PluginListPanel pnlPluginPreferences;
-    private PluginPreferencesModel model;
-    private JScrollPane spPluginPreferences;
+    private JTable table;
+    private PluginRowFilter rowFilter;
+    private TableRowSorter<PluginPreferenceModel> rowSorter;
+    private JScrollPane infoScrollPane;
+    private HtmlPanel infoPanel;
+    private final PluginPreferenceModel model = new PluginPreferenceModel();
     private PluginUpdatePolicyPanel pnlPluginUpdatePolicy;
 
     /**
@@ -93,6 +178,53 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
 
     private PluginPreference() {
         super(/* ICON(preferences/) */ "plugin", tr("Plugins"), tr("Configure available plugins."), false);
+
+        /*
+         * Initialize the model
+         */
+        List<CompletableFuture<ScanPluginsTask>> taskList = ScanPluginsTask.supplyAsync();
+        for (CompletableFuture<ScanPluginsTask> f : taskList) {
+            // when done, stuff the results directly into the model
+            f.thenAccept(task -> {
+                Logging.info("... got {0} plugins from {1}",
+                    task.getPluginInformations().size(), task.getUri().toString());
+                model.addUpstreamPlugins(task.getPluginInformations());
+                GuiHelper.runInEDT(model::fireTableDataChanged);
+            });
+        }
+        var t = ScanPluginsTask.create(Preferences.main().getPluginsDirectory().toURI());
+        var f = CompletableFuture.supplyAsync(t);
+        f.thenAccept(task -> {
+            Logging.info("... got {0} plugins from {1}",
+                task.getPluginInformations().size(), task.getUri().toString());
+            model.addLocalPlugins(task.getPluginInformations());
+            GuiHelper.runInEDT(model::fireTableDataChanged);
+        });
+
+        Logging.info("Started {0} threads to scan plugin repositories", taskList.size() + 1);
+    }
+
+    /**
+     * Replies the list of plugins which have been added by the user to
+     * the set of activated plugins.
+     *
+     * @return the list of newly activated plugins
+     */
+    public static List<PluginInformation> getActivatedPlugins(Collection<PluginInformation> oldList, Collection<PluginInformation> newList) {
+        List<PluginInformation> activatedPlugins = new ArrayList<>(newList);
+        activatedPlugins.removeAll(oldList);
+        return activatedPlugins;
+    }
+
+    /**
+     * Replies the list of plugins which have been removed by the user from
+     * the set of activated plugins.
+     *
+     * @return the list of newly deactivated plugins
+     */
+    @SuppressWarnings("java:S2234")
+    public static List<PluginInformation> getDeactivatedPlugins(Collection<PluginInformation> oldList, Collection<PluginInformation> newList) {
+        return getActivatedPlugins(newList, oldList);
     }
 
     /**
@@ -100,10 +232,10 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * @param task The plugin download task that has completed
      * @return the download summary string to be shown. Contains summary of success/failed plugins.
      */
-    public static String buildDownloadSummary(PluginDownloadTask task) {
-        Collection<PluginInformation> downloaded = task.getDownloadedPlugins();
-        Collection<PluginInformation> failed = task.getFailedPlugins();
-        Exception exception = task.getLastException();
+    public static String buildDownloadSummary(Collection<JarDownloadTask> taskList) {
+        List<JarDownloadTask> downloaded = JarDownloadTask.successfulTasks(taskList);
+        List<JarDownloadTask> failed = JarDownloadTask.failedTasks(taskList);
+
         StringBuilder sb = new StringBuilder();
         if (!downloaded.isEmpty()) {
             sb.append(trn(
@@ -113,8 +245,11 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     downloaded.size()
                     ));
             sb.append("<ul>");
-            for (PluginInformation pi: downloaded) {
-                sb.append("<li>").append(pi.name).append(" (").append(pi.version).append(")</li>");
+            for (JarDownloadTask task: downloaded) {
+                sb.append("<li>")
+                    .append(task.getPluginInformation().getName())
+                    .append(" (").append(task.getPluginInformation().getVersion())
+                    .append(")</li>");
             }
             sb.append("</ul>");
         }
@@ -126,14 +261,15 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     failed.size()
                     ));
             sb.append("<ul>");
-            for (PluginInformation pi: failed) {
-                sb.append("<li>").append(pi.name).append("</li>");
+            for (JarDownloadTask task: failed) {
+                sb.append("<li>").append(task.getPluginInformation().getName());
+                if (task.getException() != null) {
+                    // Same i18n string in ExceptionUtil.explainBadRequest()
+                    sb.append(tr("<br>Error message(untranslated): {0}", task.getException().getMessage()));
+                }
+                sb.append("</li>");
             }
             sb.append("</ul>");
-        }
-        if (exception != null) {
-            // Same i18n string in ExceptionUtil.explainBadRequest()
-            sb.append(tr("<br>Error message(untranslated): {0}", exception.getMessage()));
         }
         return sb.toString();
     }
@@ -145,24 +281,28 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * @param restartRequired true if a restart is required
      * @since 6797
      */
-    public static void notifyDownloadResults(final Component parent, PluginDownloadTask task, boolean restartRequired) {
-        final Collection<PluginInformation> failed = task.getFailedPlugins();
+    public static void notifyDownloadResults(final Component parent, Collection<JarDownloadTask> taskList, boolean restartRequired) {
+        List<JarDownloadTask> failed = taskList.stream()
+            .filter(task -> task.getStatus() != 200)
+            .toList();
+
         final StringBuilder sb = new StringBuilder();
         sb.append("<html>")
-          .append(buildDownloadSummary(task));
+          .append(buildDownloadSummary(taskList));
         if (restartRequired) {
             sb.append(tr("Please restart JOSM to activate the downloaded plugins."));
         }
         sb.append("</html>");
-        GuiHelper.runInEDTAndWait(() -> HelpAwareOptionPane.showOptionDialog(
-                parent,
-                sb.toString(),
-                tr("Update plugins"),
-                !failed.isEmpty() ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
-                        HelpUtil.ht("/Preferences/Plugins")
-                ));
+        HelpAwareOptionPane.showOptionDialog(
+            parent,
+            sb.toString(),
+            tr("Update plugins"),
+            !failed.isEmpty() ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
+                    HelpUtil.ht("/Preferences/Plugins")
+        );
     }
 
+    @SuppressWarnings("java:S1192") // we need the string "plugins" as context for the translators
     private JPanel buildSearchFieldPanel() {
         JPanel pnl = new JPanel(new GridBagLayout());
         pnl.add(GBC.glue(0, 0));
@@ -172,63 +312,142 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         addRadioButton(bg, radios, new JRadioButton(trc("plugins", "All"), true), PluginInstallation.ALL);
         addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Installed")), PluginInstallation.INSTALLED);
         addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Available")), PluginInstallation.AVAILABLE);
+        addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Updates")), PluginInstallation.UPDATEABLE);
         pnl.add(radios, GBC.eol().fill(HORIZONTAL));
 
-        pnl.add(new FilterField().filter(expr -> {
-            model.filterDisplayedPlugins(expr);
-            pnlPluginPreferences.refreshView();
-        }), GBC.eol().insets(0, 0, 0, 5).fill(HORIZONTAL));
+        pnl.add(new FilterField().filter(expr ->
+            rowFilter.setFilter(expr)
+        ), GBC.eol().insets(0, 0, 0, 5).fill(HORIZONTAL));
         return pnl;
     }
 
     private void addRadioButton(ButtonGroup bg, JPanel pnl, JRadioButton rb, PluginInstallation value) {
         bg.add(rb);
         pnl.add(rb, GBC.std());
-        rb.addActionListener(e -> {
-            model.filterDisplayedPlugins(value);
-            pnlPluginPreferences.refreshView();
-        });
+        rb.addActionListener(e -> rowFilter.setStatus(value));
     }
 
     private static Component addButton(JPanel pnl, JButton button, String buttonName) {
         button.setName(buttonName);
-        return pnl.add(button);
+        pnl.add(button, GBC.std().fill(HORIZONTAL));
+        return button;
     }
 
-    private JPanel buildActionPanel() {
-        JPanel pnl = new JPanel(new GridLayout(1, 4));
+    private void setColumnWidths() {
+        int width = (int) Math.ceil(new JCheckBox().getPreferredSize().getWidth() + 2 * SMALLGAP);
+        TableColumn col = table.getColumnModel().getColumn(0);
+        col.setMinWidth(width);
+        col.setMaxWidth(width);
 
-        // assign some component names to these as we go to aid testing
-        addButton(pnl, new JButton(new DownloadAvailablePluginsAction()), "downloadListButton");
-        addButton(pnl, new JButton(new UpdateSelectedPluginsAction()), "updatePluginsButton");
-        ExpertToggleAction.addVisibilitySwitcher(addButton(pnl, new JButton(new SelectByListAction()), "loadFromListButton"));
-        ExpertToggleAction.addVisibilitySwitcher(addButton(pnl, new JButton(new ConfigureSitesAction()), "configureSitesButton"));
-        return pnl;
+        width = ImageProvider.ImageSizes.LARGEICON.getWidth() + 2 * SMALLGAP;
+        col = table.getColumnModel().getColumn(1);
+        col.setMinWidth(width);
+        col.setMaxWidth(width);
+
+        TableHelper.setRowHeight(table, ImageProvider.ImageSizes.LARGEICON);
+
+        // if (table.getRowCount() > 0) {
+        //     TableHelper.setFixedColumnWidth(table, 0, 0);
+        //     TableHelper.setFixedColumnWidth(table, 1, 0);
+        // }
+        // TableHelper.setPreferredColumnWidth(table, 2);
+        // TableHelper.setPreferredColumnWidth(table, 3);
+        // TableHelper.setPreferredColumnWidth(table, 4);
     }
 
     private JPanel buildPluginListPanel() {
-        JPanel pnl = new JPanel(new BorderLayout());
-        pnl.add(buildSearchFieldPanel(), BorderLayout.NORTH);
-        model = new PluginPreferencesModel();
-        pnlPluginPreferences = new PluginListPanel(model);
-        spPluginPreferences = GuiHelper.embedInVerticalScrollPane(pnlPluginPreferences);
-        spPluginPreferences.getVerticalScrollBar().addComponentListener(
-                new ComponentAdapter() {
-                    @Override
-                    public void componentShown(ComponentEvent e) {
-                        spPluginPreferences.setBorder(UIManager.getBorder("ScrollPane.border"));
-                    }
+        GBC gbc = GBC.eop().fill(HORIZONTAL);
 
-                    @Override
-                    public void componentHidden(ComponentEvent e) {
-                        spPluginPreferences.setBorder(null);
-                    }
-                }
-                );
+        JPanel pnl = new JPanel(new GridBagLayout());
+        pnl.setBorder(BorderFactory.createEmptyBorder(SMALLGAP, SMALLGAP, SMALLGAP, SMALLGAP));
+        pnl.add(buildSearchFieldPanel(), gbc);
 
-        pnl.add(spPluginPreferences, BorderLayout.CENTER);
-        pnl.add(buildActionPanel(), BorderLayout.SOUTH);
+        table = new JTable();
+        // Problem: listeners are called last to first. We want to be called *after* the
+        // rowSorter does its job, so we must register on the model before the table.
+        // (The rowSorter does not register its own listener but uses the table's
+        // listener.)
+        model.addTableModelListener(e -> setColumnWidths());
+        table.setModel(model);
+        setColumnWidths();
+
+        TableColumnModel cm = table.getColumnModel();
+        cm.getColumn(0).setHeaderValue("");
+        cm.getColumn(1).setHeaderValue("");
+        cm.getColumn(2).setHeaderValue(tr("Plugin Name"));
+        cm.getColumn(3).setHeaderValue(tr("Local"));
+        cm.getColumn(4).setHeaderValue(tr("Compatible"));
+        cm.getColumn(5).setHeaderValue(tr("Latest"));
+        cm.getColumn(1).setHeaderValue("");
+
+        rowSorter = new TableRowSorter<>(model);
+        rowFilter = new PluginRowFilter();
+        rowFilter.setStatus(PluginInstallation.ALL);
+        rowSorter.setSortable(0, false);
+        rowSorter.setSortable(1, false);
+        /*
+        rowSorter.setComparator(2, Comparator.<PluginInformation, String>comparing(
+            pi -> pi.getName() == null ? "" : pi.getName().toLowerCase(Locale.ENGLISH))
+        );
+        */
+        rowSorter.setSortable(3, false);
+        rowSorter.setSortable(4, false);
+        rowSorter.toggleSortOrder(2);
+        rowSorter.setRowFilter(rowFilter);
+        table.setRowSorter(rowSorter);
+
+        // table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.getSelectionModel().addListSelectionListener(event -> updateInfoPanelText());
+
+        pnl.addComponentListener(this.new ComponentListener());
+
+        pnl.add(new JScrollPane(table), GBC.eop().fill(BOTH).weight(1.0, 5.0));
+
+        infoPanel = new HtmlPanel();
+        infoPanel.enableClickableHyperlinks();
+        infoScrollPane = new JScrollPane(infoPanel);
+        pnl.add(infoScrollPane, GBC.eop().fill(BOTH).weight(1.0, 1.0));
+
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
+        // assign some component names to these as we go to aid testing
+        addButton(buttons, new JButton(new UpdateSelectedPluginsAction()), "updatePluginsButton");
+        ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new SelectByListAction()), "loadFromListButton"));
+        ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new CopyToClipboardAction()), "copyToClipboardButton"));
+        ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new PurgeAction()), "purgeButton"));
+        ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new ConfigureSitesAction()), "configureSitesButton"));
+
+        pnl.add(buttons, GBC.std().fill(HORIZONTAL));
         return pnl;
+    }
+
+    /**
+     * Updates the info panel when the user selects a different row.
+     */
+    private void updateInfoPanelText() {
+        int scrollPaneWidth = infoScrollPane.getWidth();
+        int scrollBarWidth = UIManager.getInt("ScrollBar.width");
+        int row = table.getSelectedRow();
+        Insets insets = infoScrollPane.getInsets();
+        Insets insets2 = infoPanel.getInsets();
+        int width = scrollPaneWidth - insets.left - insets.right - insets2.left - insets2.right - scrollBarWidth - SMALLGAP;
+        if (row > -1) {
+            // the only way to set the width of the panel when you don't know the height
+            infoPanel.setText(
+                String.format("<html><body><div style=\"width: %d\">", width)
+                + model.getTableEntryAt(table.convertRowIndexToModel(row)).getDescriptionAsHtml()
+                + "</div></body></html>");
+        } else {
+            infoPanel.setText(null);
+        }
+    }
+
+    class ComponentListener extends ComponentAdapter {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            // reformat the panel text
+            updateInfoPanelText();
+        }
     }
 
     @Override
@@ -238,143 +457,92 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         pane.addTab(tr("Plugins"), buildPluginListPanel());
         pane.addTab(tr("Plugin update policy"), pnlPluginUpdatePolicy);
         super.addGui(gui);
-        readLocalPluginInformation();
+
         pluginPreferencesActivated = true;
-    }
-
-    private void configureSites() {
-        ButtonSpec[] options = {
-                new ButtonSpec(
-                        tr("OK"),
-                        new ImageProvider("ok"),
-                        tr("Accept the new plugin sites and close the dialog"),
-                        null /* no special help topic */
-                        ),
-                        new ButtonSpec(
-                                tr("Cancel"),
-                                new ImageProvider("cancel"),
-                                tr("Close the dialog"),
-                                null /* no special help topic */
-                                )
-        };
-        PluginConfigurationSitesPanel pnl = new PluginConfigurationSitesPanel();
-
-        int answer = HelpAwareOptionPane.showOptionDialog(
-                pnlPluginPreferences,
-                pnl,
-                tr("Configure Plugin Sites"),
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0],
-                null /* no help topic */
-                );
-        if (answer != 0 /* OK */)
-            return;
-        Preferences.main().setPluginSites(pnl.getUpdateSites());
     }
 
     /**
      * Returns the model
      * @return the model
      */
-    public PluginPreferencesModel getModel() {
+    public PluginPreferenceModel getModel() {
         return model;
     }
 
-    /**
-     * Replies the set of plugins waiting for update or download
-     *
-     * @return the set of plugins waiting for update or download
-     */
-    public Set<PluginInformation> getPluginsScheduledForUpdateOrDownload() {
-        return model != null ? model.getPluginsScheduledForUpdateOrDownload() : null;
-    }
-
-    /**
-     * Replies the list of plugins which have been added by the user to the set of activated plugins
-     *
-     * @return the list of newly activated plugins
-     */
-    public List<PluginInformation> getNewlyActivatedPlugins() {
-        return model != null ? model.getNewlyActivatedPlugins() : null;
-    }
-
     @Override
-    public boolean ok() {
+    public boolean ok(StringBuilder sb) {
         if (!pluginPreferencesActivated)
             return false;
+
+        Collection<PluginInformation> installedPlugins = PluginHandler.getConfigPlugins();
+
+        // save the user's new choices
         pnlPluginUpdatePolicy.rememberInPreferences();
-        if (model.isActivePluginsChanged()) {
-            List<String> l = new LinkedList<>(model.getSelectedPluginNames());
-            Collections.sort(l);
-            Config.getPref().putList("plugins", l);
-            List<PluginInformation> deactivatedPlugins = model.getNewlyDeactivatedPlugins();
-            if (!deactivatedPlugins.isEmpty()) {
-                boolean requiresRestart = PluginHandler.removePlugins(deactivatedPlugins);
-                if (requiresRestart)
-                    return true;
-            }
-            return model.getNewlyActivatedPlugins().stream().anyMatch(pi -> !pi.canloadatruntime);
+        List<String> l = getModel().getSelectedPluginNames();
+        Collections.sort(l);
+        Config.getPref().putList("plugins", l);
+
+        // Create a task for downloading plugins if the user has activated, yet not downloaded, new plugins
+        final Collection<PluginInformation> toDownload = getModel().getPluginsScheduledForDownload();
+
+        if (!Utils.isEmpty(toDownload)) {
+            List<JarDownloadTask> taskList = toDownload.stream()
+                .map(JarDownloadTask::new)
+                .map(task -> task.withProgressMonitor(new ProgMonNotification(new Notification())))
+                .map(CompletableFuture::supplyAsync)
+                .map(task -> task.join())
+                .toList();
+
+            PluginHandler.installDownloadedPlugins(true);
+            sb.append(PluginPreference.buildDownloadSummary(taskList));
         }
-        return false;
+
+        //
+        // If any plugins were deactivated or updated, we have to restart.  Note: this
+        // works for updates too because getDeactivatedPlugins will report the
+        // deactivated old version of an updated plugin.
+        //
+        List<PluginInformation> deactivatedPlugins = getDeactivatedPlugins(installedPlugins, PluginHandler.getConfigPlugins());
+        boolean needRestart = PluginHandler.removePlugins(deactivatedPlugins);
+
+        //
+        // Load all new plugins that can be loaded at runtime
+        // (The user may want to do some more work before restarting.)
+        //
+        PluginHandler.pluginListNotLoaded.clear();
+        List<PluginInformation> activatedPlugins = getActivatedPlugins(installedPlugins, PluginHandler.getConfigPlugins());
+        Logging.debug("PluginPreference.ok: activated {0} deactivated {1} installed {2}",
+            activatedPlugins.size(), deactivatedPlugins.size(), installedPlugins.size());
+
+        needRestart |= !PluginHandler.loadPlugins(getTabPane(), activatedPlugins, null, true).isEmpty();
+
+        Logging.debug("PluginPreference.ok: {0} needRestart={1}", sb.toString(), needRestart);
+
+        return needRestart;
     }
 
     /**
-     * Reads locally available information about plugins from the local file system.
-     * Scans cached plugin lists from plugin download sites and locally available
-     * plugin jar files.
-     *
+     * Scans the plugin jar files in the configured plugins directory.
      */
-    public void readLocalPluginInformation() {
-        final ReadLocalPluginInformationTask task = new ReadLocalPluginInformationTask();
-        Runnable r = () -> {
-            if (!task.isCanceled()) {
-                SwingUtilities.invokeLater(() -> {
-                    model.setAvailablePlugins(task.getAvailablePlugins());
-                    pnlPluginPreferences.resetDisplayedComponents();
-                    pnlPluginPreferences.refreshView();
-                });
-            }
-        };
-        MainApplication.worker.submit(task);
-        MainApplication.worker.submit(r);
+    public Collection<PluginInformation> scanLocalPlugins() {
+        try {
+            File pluginDir = Preferences.main().getPluginsDirectory();
+            Collection<PluginInformation> l = PluginHandler.getPluginJarsInDirectory(pluginDir);
+            Logging.debug("PluginPreference.scanLocalPlugins -> addLocalPlugins: {0} plugins", l.size());
+            return l;
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
     }
 
     /**
-     * The action for downloading the list of available plugins
+     * Scans all locally available plugin jar files.
      */
-    class DownloadAvailablePluginsAction extends AbstractAction {
-
-        /**
-         * Constructs a new {@code DownloadAvailablePluginsAction}.
-         */
-        DownloadAvailablePluginsAction() {
-            putValue(NAME, tr("Download list"));
-            putValue(SHORT_DESCRIPTION, tr("Download the list of available plugins"));
-            new ImageProvider("download").getResource().attachImageIcon(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Collection<String> pluginSites = Preferences.main().getOnlinePluginSites();
-            if (pluginSites.isEmpty()) {
-                return;
-            }
-            final ReadRemotePluginInformationTask task = new ReadRemotePluginInformationTask(pluginSites);
-            Runnable continuation = () -> {
-                if (!task.isCanceled()) {
-                    SwingUtilities.invokeLater(() -> {
-                        model.updateAvailablePlugins(task.getAvailablePlugins());
-                        pnlPluginPreferences.resetDisplayedComponents();
-                        pnlPluginPreferences.refreshView();
-                        Config.getPref().putInt("pluginmanager.version", Version.getInstance().getVersion()); // fix #7030
-                    });
-                }
-            };
-            MainApplication.worker.submit(task);
-            MainApplication.worker.submit(continuation);
-        }
+    public Collection<PluginInformation> scanLocallyCachedSiteManifestFiles() {
+        File pluginDir = Preferences.main().getPluginsDirectory();
+        Collection<PluginInformation> l = PluginHandler.scanCachedSiteManifestFiles(pluginDir);
+        Logging.debug("PluginPreference.scanLocallyCachedSiteManifestFiles -> addUpstreamPlugins: {0} plugins", l.size());
+        return l;
     }
 
     /**
@@ -387,92 +555,44 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
             new ImageProvider("dialogs", "refresh").getResource().attachImageIcon(this);
         }
 
-        protected void alertNothingToUpdate() {
-            try {
-                SwingUtilities.invokeAndWait(() -> HelpAwareOptionPane.showOptionDialog(
-                        pnlPluginPreferences,
-                        tr("All installed plugins are up to date. JOSM does not have to download newer versions."),
-                        tr("Plugins up to date"),
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null // FIXME: provide help context
-                        ));
-            } catch (InterruptedException | InvocationTargetException e) {
-                Logging.error(e);
-            }
+        void alertNothingToUpdate() {
+            HelpAwareOptionPane.showOptionDialog(
+                table,
+                tr("All installed plugins are up to date. JOSM does not have to download newer versions."),
+                tr("Plugins up to date"),
+                JOptionPane.INFORMATION_MESSAGE,
+                null // FIXME: provide help context
+            );
         }
 
+        /**
+         * Update plugins
+         */
         @Override
         public void actionPerformed(ActionEvent e) {
-            final List<PluginInformation> toUpdate = model.getSelectedPlugins();
-            // the async task for downloading plugins
-            final PluginDownloadTask pluginDownloadTask = new PluginDownloadTask(
-                    pnlPluginPreferences,
-                    toUpdate,
-                    tr("Update plugins")
-                    );
-            // the async task for downloading plugin information
-            final ReadRemotePluginInformationTask pluginInfoDownloadTask = new ReadRemotePluginInformationTask(
-                    Preferences.main().getOnlinePluginSites());
-
-            // to be run asynchronously after the plugin download
-            //
-            final Runnable pluginDownloadContinuation = () -> {
-                if (pluginDownloadTask.isCanceled())
-                    return;
-                boolean restartRequired = pluginDownloadTask.getDownloadedPlugins().stream()
-                        .anyMatch(pi -> !(model.getNewlyActivatedPlugins().contains(pi) && pi.canloadatruntime));
-                notifyDownloadResults(pnlPluginPreferences, pluginDownloadTask, restartRequired);
-                model.refreshLocalPluginVersion(pluginDownloadTask.getDownloadedPlugins());
-                model.clearPendingPlugins(pluginDownloadTask.getDownloadedPlugins());
-                GuiHelper.runInEDT(pnlPluginPreferences::refreshView);
-            };
-
-            // to be run asynchronously after the plugin list download
-            //
-            final Runnable pluginInfoDownloadContinuation = () -> {
-                if (pluginInfoDownloadTask.isCanceled())
-                    return;
-                model.updateAvailablePlugins(pluginInfoDownloadTask.getAvailablePlugins());
-                // select plugins which actually have to be updated
-                //
-                toUpdate.removeIf(pi -> !pi.isUpdateRequired());
+            try {
+                final List<PluginInformation> toUpdate = model.getPluginsScheduledForUpdate();
                 if (toUpdate.isEmpty()) {
                     alertNothingToUpdate();
                     return;
                 }
-                int toUpdateSize;
-                boolean refreshRequired = false;
-                do {
-                    toUpdateSize = toUpdate.size();
-                    Set<PluginInformation> enabledPlugins = new HashSet<>(PluginHandler.getPlugins());
-                    enabledPlugins.addAll(toUpdate);
-                    Set<PluginInformation> toAdd = new HashSet<>();
-                    for (PluginInformation pi : toUpdate) {
-                        if (!PluginHandler.checkRequiredPluginsPreconditions(null, enabledPlugins, pi, false)) {
-                            // Time to find the missing plugins...
-                            toAdd.addAll(pi.getRequiredPlugins().stream().filter(plugin -> PluginHandler.getPlugin(plugin) == null)
-                                    .map(plugin -> model.getPluginInformation(plugin))
-                                    .collect(Collectors.toSet()));
-                        }
-                    }
-                    toAdd.forEach(plugin -> model.setPluginSelected(plugin.name, true));
-                    refreshRequired |= !toAdd.isEmpty(); // We need to force refresh the checkboxes if we are adding new plugins
-                    toAdd.removeIf(plugin -> !plugin.isUpdateRequired()); // Avoid downloading plugins that already exist
-                    toUpdate.addAll(toAdd);
-                } while (toUpdateSize != toUpdate.size());
+                List<JarDownloadTask> taskList = JarDownloadTask.join(JarDownloadTask.supplyAsync(toUpdate));
 
-                pluginDownloadTask.setPluginsToDownload(toUpdate);
-                MainApplication.worker.submit(pluginDownloadTask);
-                MainApplication.worker.submit(pluginDownloadContinuation);
-                if (refreshRequired) {
-                    // Needed since we need to recreate the checkboxes to show the enabled dependent plugins that were not previously enabled
-                    pnlPluginPreferences.resetDisplayedComponents();
-                }
-                GuiHelper.runInEDT(pnlPluginPreferences::refreshView);
-            };
+                boolean restartRequired = toUpdate.stream().anyMatch(Predicate.not(PluginInformation::canLoadAtRuntime));
+                model.clearLocalPlugins();
+                model.addLocalPlugins(scanLocalPlugins());
+                model.fireTableDataChanged();
+                notifyDownloadResults(table, taskList, restartRequired);
+            } catch (IllegalArgumentException ex) {
+                HelpAwareOptionPane.showOptionDialog(
+                    table,
+                    ex.getMessage(),
+                    tr("Error"),
+                    JOptionPane.ERROR_MESSAGE,
+                    null // FIXME: provide help context
+                );
 
-            MainApplication.worker.submit(pluginInfoDownloadTask);
-            MainApplication.worker.submit(pluginInfoDownloadContinuation);
+            }
         }
     }
 
@@ -490,6 +610,38 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         @Override
         public void actionPerformed(ActionEvent e) {
             configureSites();
+        }
+
+        private void configureSites() {
+            ButtonSpec[] options = {
+                    new ButtonSpec(
+                            tr("OK"),
+                            new ImageProvider("ok"),
+                            tr("Accept the new plugin sites and close the dialog"),
+                            null /* no special help topic */
+                            ),
+                            new ButtonSpec(
+                                    tr("Cancel"),
+                                    new ImageProvider("cancel"),
+                                    tr("Close the dialog"),
+                                    null /* no special help topic */
+                                    )
+            };
+            PluginConfigurationSitesPanel pnl = new PluginConfigurationSitesPanel();
+
+            int answer = HelpAwareOptionPane.showOptionDialog(
+                    table,
+                    pnl,
+                    tr("Configure Plugin Sites"),
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0],
+                    null /* no help topic */
+                    );
+            if (answer != 0 /* OK */)
+                return;
+            Preferences.main().setPluginSites(pnl.getUpdateSites());
         }
     }
 
@@ -534,8 +686,8 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                 if (name.isEmpty()) {
                     continue;
                 }
-                PluginInformation plugin = model.getPluginInformation(name);
-                if (plugin == null) {
+                boolean found = model.getUpstreamPlugins().stream().anyMatch(pi -> name.equals(pi.getName()));
+                if (!found) {
                     notFound.add(name);
                 } else {
                     toActivate.add(name);
@@ -551,14 +703,14 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
             if (deleteNotInList) {
                 for (String name : model.getSelectedPluginNames()) {
                     if (!toActivate.contains(name)) {
-                        model.setPluginSelected(name, false);
+                        model.select(name, false);
                     }
                 }
             }
             for (String name : toActivate) {
-                model.setPluginSelected(name, true);
+                model.select(name, true);
             }
-            pnlPluginPreferences.refreshView();
+            model.fireTableDataChanged();
         }
 
         private boolean confirmIgnoreNotFound(List<String> notFound) {
@@ -566,6 +718,66 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
             String message = "<html>" + tr("The following plugins were not found. Continue anyway?") + list + "</html>";
             return JOptionPane.showConfirmDialog(GuiHelper.getFrameForComponent(getTabPane()),
                     message) == JOptionPane.OK_OPTION;
+        }
+    }
+
+    /**
+     * The action for selecting the plugins given by a text file compatible to JOSM bug report.
+     * @author Michael Zangl
+     */
+    class CopyToClipboardAction extends AbstractAction {
+        CopyToClipboardAction() {
+            putValue(NAME, tr("Copy to clipboard"));
+            putValue(SHORT_DESCRIPTION, tr("Copies a list of selected plugins to the clipboard"));
+            new ImageProvider("copy").getResource().attachImageIcon(this);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ClipboardUtils.copyString(String.join("\n", model.getSelectedPluginNames()));
+            Notification note = new Notification("Plugin list copied to clipboard!");
+            note.setIcon(JOptionPane.INFORMATION_MESSAGE);
+            note.show();
+        }
+    }
+
+    /**
+     * The action for selecting the plugins given by a text file compatible to JOSM bug report.
+     * @author Michael Zangl
+     */
+    class PurgeAction extends AbstractAction {
+        PurgeAction() {
+            putValue(NAME, tr("Purge old jars"));
+            putValue(SHORT_DESCRIPTION, tr("Removes all not currently configured plugin files."));
+            new ImageProvider("dialogs/delete").getResource().attachImageIcon(this);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List<String> configured = PluginHandler.getConfigPluginNames();
+            List<PluginInformation> notConfigured = scanLocalPlugins().stream()
+                .filter(pi -> !configured.contains(pi.getName())).toList();
+            for (var pi : notConfigured) {
+                try {
+                    Path path = Path.of(pi.getUri());
+                    Files.delete(path);
+                    Path dir = Path.of(path.getParent().toString(), pi.getName());
+                    try (Stream<Path> walk = Files.walk(dir)) {
+                        walk.sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
+                    } catch (IOException ex) {
+                        // this plugin has no directory
+                    }
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(
+                        getTabPane(),
+                        tr("Could not delete file: {0}.", ex.getMessage()),
+                        tr("Warning"),
+                        JOptionPane.WARNING_MESSAGE
+                    );
+                }
+            }
         }
     }
 
@@ -637,7 +849,40 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     model.removeElement(list.getSelectedValue());
                 }
             }), GBC.eol().fill(HORIZONTAL));
+            buttons.add(new JButton(new AbstractAction(tr("Move Up")) {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    int index = list.getSelectedIndex();
+                    if (index > 0) {
+                        model.add(index - 1, model.remove(index));
+                        list.setSelectedIndex(index - 1);
+                    }
+                }
+            }), GBC.eol().fill(HORIZONTAL));
+            buttons.add(new JButton(new AbstractAction(tr("Move Down")) {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    int index = list.getSelectedIndex();
+                    if (index < model.size() - 1) {
+                        model.add(index + 1, model.remove(index));
+                        list.setSelectedIndex(index + 1);
+                    }
+                }
+            }), GBC.eol().fill(HORIZONTAL));
+            buttons.add(new JButton(new AbstractAction(tr("Add Default Site")) {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    model.add(0, Preferences.getDefaultPluginSite());
+                }
+            }), GBC.eol().fill(HORIZONTAL));
             add(buttons, GBC.eol());
+
+            add(new JLabel(tr("<html>Use:<ul>" +
+                "<li>https:// to install plugins from the web" +
+                "<li>file:///path/to/file to install a single jar" +
+                "<li>file:///path/to/directory/ to install plugins from a local directory" +
+                "<li>github://owner/repo to install plugins from a github repository")),
+            GBC.eol());
         }
 
         protected List<String> getUpdateSites() {

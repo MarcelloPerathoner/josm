@@ -16,6 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -148,7 +150,7 @@ public class MainApplicationTest {
         assertEquals(plugins.size(), pluginDownloadTask.getDownloadedPlugins().size());
 
         // Update Plugin info for downloaded plugins
-        PluginHandler.refreshLocalUpdatedPluginInfo(pluginDownloadTask.getDownloadedPlugins());
+        // PluginHandler.refreshLocalUpdatedPluginInfo(pluginDownloadTask.getDownloadedPlugins());
     }
 
     /**
@@ -215,7 +217,7 @@ public class MainApplicationTest {
      * @throws PluginListParseException if an error occurs
      */
     @Test
-    void testUpdateAndLoadPlugins() throws PluginListParseException {
+    void testUpdateAndLoadPlugins() throws PluginListParseException, URISyntaxException {
         final String old = System.getProperty("josm.plugins");
         try {
             System.setProperty("josm.plugins", "buildings_tools,log4j");
@@ -281,9 +283,12 @@ public class MainApplicationTest {
         }
     }
 
-    private static PluginInformation newPluginInformation(String plugin) throws PluginListParseException {
-        return PluginListParser.createInfo(plugin+".jar", "https://josm.openstreetmap.de/osmsvn/applications/editors/josm/dist/"+plugin+".jar",
-                new Attributes());
+    private static PluginInformation newPluginInformation(String plugin) throws PluginListParseException, URISyntaxException {
+        return PluginListParser.createInfo(
+            plugin+".jar",
+            new URI("https://josm.openstreetmap.de/osmsvn/applications/editors/josm/dist/"+plugin+".jar"),
+            new Attributes()
+        );
     }
 
     /**

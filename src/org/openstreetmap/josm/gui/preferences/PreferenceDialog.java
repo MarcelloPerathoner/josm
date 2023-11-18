@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -75,7 +76,7 @@ public class PreferenceDialog extends JDialog {
         btns.add(new JButton(new CancelAction()));
         btns.add(new JButton(helpAction));
         pnl.add(expert, GBC.std().insets(5, 0, 0, 0));
-        pnl.add(btns, GBC.std().fill(GBC.HORIZONTAL));
+        pnl.add(btns, GBC.std().fill(GridBagConstraints.HORIZONTAL));
         InputMapUtils.addCtrlEnterAction(pnl, okAction);
         return pnl;
     }

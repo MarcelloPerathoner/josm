@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -25,7 +26,7 @@ import org.openstreetmap.josm.gui.preferences.plugin.PluginPreference;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.widgets.JMultilineLabel;
 import org.openstreetmap.josm.gui.widgets.UrlLabel;
-import org.openstreetmap.josm.plugins.PluginDownloadTask;
+import org.openstreetmap.josm.plugins.JarDownloadTask;
 import org.openstreetmap.josm.plugins.PluginHandler;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
@@ -229,12 +230,15 @@ public class BugReportDialog extends JDialog {
                     );
             return SuppressionMode.NONE;
         } else {
-            PluginDownloadTask downloadTask = PluginHandler.updateOrdisablePluginAfterException(e);
+            JarDownloadTask downloadTask = PluginHandler.updateOrdisablePluginAfterException(e);
             return GuiHelper.runInEDTAndWaitAndReturn(() -> {
                 if (downloadTask != null) {
                     // Ask for restart to install new plugin
                     PluginPreference.notifyDownloadResults(
-                            MainApplication.getMainFrame(), downloadTask, !downloadTask.getDownloadedPlugins().isEmpty());
+                        MainApplication.getMainFrame(),
+                        Collections.singletonList(downloadTask),
+                        !downloadTask.getPluginInformation().canLoadAtRuntime()
+                    );
                     return SuppressionMode.NONE;
                 }
 

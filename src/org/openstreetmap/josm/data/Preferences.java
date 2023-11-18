@@ -782,12 +782,23 @@ public class Preferences extends AbstractPreferences {
     }
 
     /**
+     * Returns the default plugin site.
+     * @return the URL of the default plugin site
+     */
+    @SuppressWarnings("java:S3400") // do not replace with const
+    // because we may want to read this from a file or from a branding plugin
+    public static String getDefaultPluginSite() {
+        return "github://MarcelloPerathoner/josm-plugins";
+        // return Config.getUrls().getJOSMWebsite()+"/pluginicons%<?plugins=>";
+    }
+
+    /**
      * Replies the collection of plugin site URLs from where plugin lists can be downloaded.
      * @return the collection of plugin site URLs
      * @see #getOnlinePluginSites
      */
     public Collection<String> getPluginSites() {
-        return getList("pluginmanager.sites", Collections.singletonList(Config.getUrls().getJOSMWebsite()+"/pluginicons%<?plugins=>"));
+        return getList("pluginmanager.sites", Collections.singletonList(getDefaultPluginSite()));
     }
 
     /**

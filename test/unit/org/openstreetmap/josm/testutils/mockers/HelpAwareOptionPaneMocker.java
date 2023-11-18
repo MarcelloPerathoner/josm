@@ -70,11 +70,15 @@ public class HelpAwareOptionPaneMocker extends BaseDialogMockUp<HelpAwareOptionP
     }
 
     protected Object getMockResultForMessage(final Object message) {
-        final String messageString = this.getStringFromMessage(message);
-        if (!this.getMockResultMap().containsKey(messageString)) {
+        final String messageString = getStringFromMessage(message);
+        for (String key : getMockResultMap().keySet()) {
+            if (messageString.startsWith("regex:") && messageString.substring(6).matches(key))
+                return getMockResultMap().get(key);
+        }
+        if (!getMockResultMap().containsKey(messageString)) {
             fail("Unexpected HelpAwareOptionPane message string: " + messageString);
         }
-        return this.getMockResultMap().get(messageString);
+        return getMockResultMap().get(messageString);
     }
 
     /**

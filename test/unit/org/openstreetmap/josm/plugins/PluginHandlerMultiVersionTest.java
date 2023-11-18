@@ -7,14 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,9 +57,9 @@ class PluginHandlerMultiVersionTest {
         );
 
         this.referenceBazJarOld = new File(TestUtils.getTestDataRoot(), "__files/plugin/baz_plugin.v6.jar");
-        this.referenceQuxJarOld = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJarOld);
-        this.referenceQuxJarNewer = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJarNewer);
-        this.referenceQuxJarNewest = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJarNewest);
+        this.referenceQuxJar345 = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v345.jar");
+        this.referenceQuxJar432 = new File(TestUtils.getTestDataRoot(), "__files/" + referencePathQuxJar432);
+        this.referenceQuxJar435 = new File(TestUtils.getTestDataRoot(), "__files/plugin/qux_plugin.v435.jar");
         this.pluginDir = Preferences.main().getPluginsDirectory();
         this.targetBazJar = new File(this.pluginDir, "baz_plugin.jar");
         this.targetBazJarNew = new File(this.pluginDir, "baz_plugin.jar.new");
@@ -69,19 +68,25 @@ class PluginHandlerMultiVersionTest {
         this.pluginDir.mkdirs();
     }
 
-    private static final String referencePathQuxJarOld = "plugin/qux_plugin.v345.jar";
-    private static final String referencePathQuxJarNewer = "plugin/qux_plugin.v432.jar";
-    private static final String referencePathQuxJarNewest = "plugin/qux_plugin.v435.jar";
+    private static final String referencePathQuxJar432 = "plugin/qux_plugin.v432.jar";
 
     private File pluginDir;
     private File referenceBazJarOld;
-    private File referenceQuxJarOld;
-    private File referenceQuxJarNewer;
-    private File referenceQuxJarNewest;
+    private File referenceQuxJar345;
+    private File referenceQuxJar432;
+    private File referenceQuxJar435;
     private File targetBazJar;
     private File targetBazJarNew;
     private File targetQuxJar;
     private File targetQuxJarNew;
+
+    private String getPlugins(Collection<PluginInformation> plugins) {
+        return String.join(" ", plugins.stream().map(p -> p.getName() + ":" + p.getVersion()).sorted().toList());
+    }
+
+    private String getConfiguredPlugins() throws IOException {
+        return getPlugins(PluginHandlerTest.getConfiguredPlugins());
+    }
 
     /**
      * test update of plugins when our current JOSM version prevents us from using the latest version,
@@ -101,14 +106,14 @@ class PluginHandlerMultiVersionTest {
         }};
         final PluginServer pluginServer = new PluginServer(
             new PluginServer.RemotePlugin(this.referenceBazJarOld),
-            new PluginServer.RemotePlugin(this.referenceQuxJarNewest, attrOverrides)
+            new PluginServer.RemotePlugin(this.referenceQuxJar435, attrOverrides)
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
         // need to actually serve this older jar from somewhere
         wireMockRuntimeInfo.getWireMock().register(
             WireMock.get(WireMock.urlEqualTo(quxNewerServePath)).willReturn(
                 WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/java-archive").withBodyFile(
-                    referencePathQuxJarNewer
+                    referencePathQuxJar432
                 )
             )
         );
@@ -117,29 +122,27 @@ class PluginHandlerMultiVersionTest {
         // catch any (unexpected) attempts to show us an ExtendedDialog
         new ExtendedDialogMocker();
 
-        Files.copy(this.referenceQuxJarOld.toPath(), this.targetQuxJar.toPath());
+        Files.copy(this.referenceQuxJar345.toPath(), this.targetQuxJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final List<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
+        assertEquals("baz_plugin:6 qux_plugin:345", getConfiguredPlugins());
+
+        final Collection<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
-        ).stream().sorted(Comparator.comparing(a -> a.name)).collect(Collectors.toList());
+        );
+        assertEquals("baz_plugin:6 qux_plugin:432", getConfiguredPlugins());
 
         assertEquals(2, updatedPlugins.size());
 
-        assertEquals("baz_plugin", updatedPlugins.get(0).name);
-        assertEquals("6", updatedPlugins.get(0).localversion);
-
-        assertEquals("qux_plugin", updatedPlugins.get(1).name);
-        assertEquals("432", updatedPlugins.get(1).localversion);
 
         assertFalse(targetBazJarNew.exists());
         assertFalse(targetQuxJarNew.exists());
 
         TestUtils.assertFileContentsEqual(this.referenceBazJarOld, this.targetBazJar);
-        TestUtils.assertFileContentsEqual(this.referenceQuxJarNewer, this.targetQuxJar);
+        TestUtils.assertFileContentsEqual(this.referenceQuxJar432, this.targetQuxJar);
 
         assertEquals(2, pluginServerRule.getAllServeEvents().size());
         pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
@@ -167,7 +170,7 @@ class PluginHandlerMultiVersionTest {
         }};
         final PluginServer pluginServer = new PluginServer(
             new PluginServer.RemotePlugin(this.referenceBazJarOld),
-            new PluginServer.RemotePlugin(this.referenceQuxJarNewest, attrOverrides)
+            new PluginServer.RemotePlugin(this.referenceQuxJar435, attrOverrides)
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
         Config.getPref().putList("plugins", Arrays.asList("qux_plugin", "baz_plugin"));
@@ -175,30 +178,26 @@ class PluginHandlerMultiVersionTest {
         // catch any (unexpected) attempts to show us an ExtendedDialog
         new ExtendedDialogMocker();
 
-        Files.copy(this.referenceQuxJarOld.toPath(), this.targetQuxJar.toPath());
+        Files.copy(this.referenceQuxJar345.toPath(), this.targetQuxJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final List<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
+        final Collection<PluginInformation> updatedPlugins = PluginHandler.updatePlugins(
             MainApplication.getMainFrame(),
             null,
             null,
             false
-        ).stream().sorted(Comparator.comparing(a -> a.name)).collect(Collectors.toList());
+        );
 
         assertEquals(2, updatedPlugins.size());
 
-        assertEquals("baz_plugin", updatedPlugins.get(0).name);
-        assertEquals("6", updatedPlugins.get(0).localversion);
-
-        assertEquals("qux_plugin", updatedPlugins.get(1).name);
-        assertEquals("345", updatedPlugins.get(1).localversion);
+        assertEquals("baz_plugin:6 qux_plugin:345", getPlugins(updatedPlugins));
 
         assertFalse(targetBazJarNew.exists());
         assertFalse(targetQuxJarNew.exists());
 
         // should be as before
         TestUtils.assertFileContentsEqual(this.referenceBazJarOld, this.targetBazJar);
-        TestUtils.assertFileContentsEqual(this.referenceQuxJarOld, this.targetQuxJar);
+        TestUtils.assertFileContentsEqual(this.referenceQuxJar345, this.targetQuxJar);
 
         // only the plugins list should have been downloaded
         assertEquals(1, pluginServerRule.getAllServeEvents().size());

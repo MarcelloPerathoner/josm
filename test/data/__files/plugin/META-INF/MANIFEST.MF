@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.6
+Created-By: 1.7.0_91-b02 (Oracle Corporation)
+Plugin-Mainversion: 7001
+Plugin-Version: 31772
+Plugin-Class: org.openstreetmap.josm.plugins.baz.BazPlugin
+Plugin-Description: Handling of French EPCIs (boundary=local_authority
+ )
+Plugin-Date: 2015-11-19T08:21:07.645033Z
+Author: Don-vip
+Plugin-Link: http://wiki.openstreetmap.org/wiki/FR:JOSM/Fr:Plugin/EPCI
+ -fr
+Plugin-Early: true
+Plugin-Canloadatruntime: true
+

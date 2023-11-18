@@ -210,7 +210,7 @@ public class Notification {
      * Display the notification.
      */
     public void show() {
-        NotificationManager.getInstance().showNotification(this);
+        NotificationManager.getInstance().addNotification(this);
     }
 
     /**
@@ -219,7 +219,7 @@ public class Notification {
      * @since 17628
      */
     public void replaceExisting(Notification oldNotification) {
-        NotificationManager.getInstance().replaceExistingNotification(oldNotification, this);
+        NotificationManager.getInstance().replaceNotification(oldNotification, this);
     }
 
     private Object getContentTextOrComponent() {

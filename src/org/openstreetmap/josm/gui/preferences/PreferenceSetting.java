@@ -15,10 +15,24 @@ public interface PreferenceSetting {
 
     /**
      * Called when OK is pressed to save the setting in the preferences file.
-     * Return true when restart is required.
+     * Returns true when restart is required.
      * @return {@code true} if restart is required
      */
-    boolean ok();
+    default boolean ok() { return false; }
+
+    /**
+     * Called when OK is pressed to save the setting in the preferences file.
+     * <p>
+     * If you return {@code true}, you may also append a HTML message to the
+     * {@code StringBuilder}, that will be displayed in the "Restart" dialog. The
+     * message should give a reason for the restart.  The message must not contain
+     * {@code <html>} as outermost tag, as that is already provided for.
+     *
+     * @return {@code true} if restart is required
+     */
+    default boolean ok(StringBuilder sb) {
+        return ok();
+    }
 
     /**
      * Called to know if the preferences tab has only to be displayed in expert mode.

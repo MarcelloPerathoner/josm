@@ -1274,7 +1274,7 @@ public class MainApplication {
 
         monitor.indeterminateSubTask(tr("Installing updated plugins"));
         try {
-            PluginHandler.installDownloadedPlugins(pluginsToLoad, true);
+            PluginHandler.installDownloadedPlugins(true);
         } catch (SecurityException e) {
             Logging.log(Logging.LEVEL_ERROR, "Unable to install plugins", e);
         }

@@ -155,7 +155,7 @@ public abstract class SourceEditor extends JPanel {
         this.availableSourcesModel = new AvailableSourcesModel();
         this.tblAvailableSources = new JTable();
         availableSourcesModel.addTableModelListener(e ->
-            TableHelper.setColumnWidth(tblAvailableSources, 0)
+            TableHelper.setFixedColumnWidth(tblAvailableSources, 0)
         );
         // Note: The model must be set after the setColumnWidth listener. See #20849
         this.tblAvailableSources.setModel(availableSourcesModel);
@@ -198,7 +198,7 @@ public abstract class SourceEditor extends JPanel {
 
         activeSourcesModel.addTableModelListener(e -> {
             availableSourcesEntryRenderer.updateSources(activeSourcesModel.getSources());
-            TableHelper.setColumnWidth(tblActiveSources, canEnable ? 1 : 0);
+            TableHelper.setFixedColumnWidth(tblActiveSources, canEnable ? 1 : 0);
             tblAvailableSources.repaint();
         });
         tblActiveSources.addPropertyChangeListener(evt -> {

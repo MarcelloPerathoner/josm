@@ -56,8 +56,8 @@ public class PluginProxy extends Plugin {
     }
 
     private void handlePluginException(Throwable e) {
-        PluginHandler.pluginLoadingExceptions.put(getPluginInformation().name, e);
-        BugReportExceptionHandler.handleException(new PluginException(this, getPluginInformation().name, e));
+        PluginHandler.pluginLoadingExceptions.put(getPluginInformation().getName(), e);
+        BugReportExceptionHandler.handleException(new PluginException(this, getPluginInformation().getName(), e));
     }
 
     @Override

@@ -63,7 +63,7 @@ public abstract class Plugin implements MapFrameListener {
         public File getPreferencesDirectory(boolean createIfMissing) {
             if (preferencesDir == null) {
                 preferencesDir = Config.getDirs().getPreferencesDirectory(createIfMissing).toPath()
-                        .resolve("plugins").resolve(info.name).toFile();
+                        .resolve("plugins").resolve(info.getName()).toFile();
             }
             if (createIfMissing && !preferencesDir.exists() && !preferencesDir.mkdirs()) {
                 Logging.error(tr("Failed to create missing plugin preferences directory: {0}", preferencesDir.getAbsoluteFile()));
@@ -75,7 +75,7 @@ public abstract class Plugin implements MapFrameListener {
         public File getUserDataDirectory(boolean createIfMissing) {
             if (userdataDir == null) {
                 userdataDir = Config.getDirs().getUserDataDirectory(createIfMissing).toPath()
-                        .resolve("plugins").resolve(info.name).toFile();
+                        .resolve("plugins").resolve(info.getName()).toFile();
             }
             if (createIfMissing && !userdataDir.exists() && !userdataDir.mkdirs()) {
                 Logging.error(tr("Failed to create missing plugin user data directory: {0}", userdataDir.getAbsoluteFile()));
@@ -87,7 +87,7 @@ public abstract class Plugin implements MapFrameListener {
         public File getCacheDirectory(boolean createIfMissing) {
             if (cacheDir == null) {
                 cacheDir = Config.getDirs().getCacheDirectory(createIfMissing).toPath()
-                        .resolve("plugins").resolve(info.name).toFile();
+                        .resolve("plugins").resolve(info.getName()).toFile();
             }
             if (createIfMissing && !cacheDir.exists() && !cacheDir.mkdirs()) {
                 Logging.error(tr("Failed to create missing plugin cache directory: {0}", cacheDir.getAbsoluteFile()));
@@ -167,7 +167,7 @@ public abstract class Plugin implements MapFrameListener {
      */
     public ClassLoader getPluginResourceClassLoader() {
         File pluginDir = Preferences.main().getPluginsDirectory();
-        File pluginJar = new File(pluginDir, info.name + ".jar");
+        File pluginJar = new File(pluginDir, info.getName() + ".jar");
         final URL pluginJarUrl = Utils.fileToURL(pluginJar);
         return AccessController.doPrivileged((PrivilegedAction<ClassLoader>)
                 () -> new URLClassLoader(new URL[] {pluginJarUrl}, Plugin.class.getClassLoader()));

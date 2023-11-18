@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.openstreetmap.josm.TestUtils;
+import org.openstreetmap.josm.data.Preferences;
 import org.openstreetmap.josm.data.gpx.GpxData;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -87,9 +88,10 @@ public class PluginHandlerTestIT {
                 .filter(e -> !(Utils.getRootCause(e.getValue()) instanceof HeadlessException))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Utils.getRootCause(e.getValue())));
 
-        List<PluginInformation> loadedPlugins = PluginHandler.getPlugins();
-        Map<String, List<String>> invalidManifestEntries = loadedPlugins.stream().filter(pi -> !pi.invalidManifestEntries.isEmpty())
-                .collect(Collectors.toMap(pi -> pi.name, pi -> pi.invalidManifestEntries));
+        List<PluginInformation> loadedPlugins = PluginHandler.getLoadedPlugins();
+        Map<String, List<String>> invalidManifestEntries = loadedPlugins.stream()
+                .filter(pi -> !pi.getInvalidManifestEntries().isEmpty())
+                .collect(Collectors.toMap(PluginInformation::getName, PluginInformation::getInvalidManifestEntries));
 
         // Add/remove layers twice to test basic plugin good behaviour
         Map<String, Throwable> layerExceptions = new HashMap<>();
@@ -167,20 +169,20 @@ public class PluginHandlerTestIT {
         Logging.getLogger().addHandler(tempHandler);
         try {
             List<PluginInformation> restartable = loadedPlugins.parallelStream()
-                    .filter(info -> PluginHandler.getPlugin(info.name) instanceof Destroyable)
+                    .filter(info -> PluginHandler.getPlugin(info.getName()) instanceof Destroyable)
                     .collect(Collectors.toList());
             // ensure good plugin behavior with regards to Destroyable (i.e., they can be
             // removed and readded)
             for (int i = 0; i < 2; i++) {
                 assertFalse(PluginHandler.removePlugins(restartable), () -> Logging.getLastErrorAndWarnings().toString());
                 List<PluginInformation> notRemovedPlugins = restartable.stream()
-                        .filter(info -> PluginHandler.getPlugins().contains(info)).collect(Collectors.toList());
+                        .filter(info -> PluginHandler.getLoadedPlugins().contains(info)).collect(Collectors.toList());
                 assertTrue(notRemovedPlugins.isEmpty(), notRemovedPlugins::toString);
                 loadPlugins(restartable);
             }
 
             //assertTrue(PluginHandler.removePlugins(loadedPlugins), () -> Logging.getLastErrorAndWarnings().toString());
-            assertTrue(restartable.parallelStream().noneMatch(info -> PluginHandler.getPlugins().contains(info)));
+            assertTrue(restartable.parallelStream().noneMatch(info -> PluginHandler.getLoadedPlugins().contains(info)));
         } catch (Exception | LinkageError t) {
             Throwable root = Utils.getRootCause(t);
             root.printStackTrace();
@@ -241,21 +243,14 @@ public class PluginHandlerTestIT {
      * Downloads and loads all JOSM plugins.
      */
     public static void loadAllPlugins() {
-        // Download complete list of plugins
-        Collection<String> onlinePluginSites = Arrays.asList(
-            "file:///home/highlander/prj/josm-plugins-mapillary/build/dist/",
-            "file:///home/highlander/prj/josm-plugins-mapwithai/build/dist/"
-        );
-
         ReadRemotePluginInformationTask pluginInfoDownloadTask = new ReadRemotePluginInformationTask(
-                onlinePluginSites);
-                // Preferences.main().getOnlinePluginSites());
+                Preferences.main().getOnlinePluginSites());
 
         pluginInfoDownloadTask.run();
-        List<PluginInformation> plugins = pluginInfoDownloadTask.getAvailablePlugins();
+        Collection<PluginInformation> plugins = pluginInfoDownloadTask.getAvailablePlugins();
         System.out.println("Original plugin list contains " + plugins.size() + " plugins");
         assertFalse(plugins.isEmpty(), plugins::toString);
-        PluginInformation info = plugins.get(0);
+        PluginInformation info = plugins.iterator().next();
         assertFalse(info.getName().isEmpty(), info::toString);
         assertFalse(info.getClass().getName().isEmpty(), info::toString);
 
@@ -268,8 +263,8 @@ public class PluginHandlerTestIT {
         Set<String> deprecatedPlugins = PluginHandler.getDeprecatedAndUnmaintainedPlugins();
         for (Iterator<PluginInformation> it = plugins.iterator(); it.hasNext();) {
             PluginInformation pi = it.next();
-            if (deprecatedPlugins.contains(pi.name) || uncooperatingPlugins.contains(pi.name)) {
-                System.out.println("Ignoring " + pi.name + " (deprecated, unmaintained, or uncooperative)");
+            if (deprecatedPlugins.contains(pi.getName()) || uncooperatingPlugins.contains(pi.getName())) {
+                System.out.println("Ignoring " + pi.getName() + " (deprecated, unmaintained, or uncooperative)");
                 it.remove();
             }
         }
@@ -280,7 +275,7 @@ public class PluginHandlerTestIT {
             for (Iterator<PluginInformation> it = plugins.iterator(); it.hasNext();) {
                 PluginInformation pi = it.next();
                 if (pi.getRequiredPlugins().contains("javafx")) {
-                    System.out.println("Ignoring " + pi.name + " (requiring JavaFX and we're using Java < 11 in headless mode)");
+                    System.out.println("Ignoring " + pi.getName() + " (requiring JavaFX and we're using Java < 11 in headless mode)");
                     it.remove();
                 }
             }
@@ -307,7 +302,7 @@ public class PluginHandlerTestIT {
         loadPlugins(plugins);
     }
 
-    static void loadPlugins(List<PluginInformation> plugins) {
+    static void loadPlugins(Collection<PluginInformation> plugins) {
         // Load early plugins
         PluginHandler.loadEarlyPlugins(null, plugins, null);
 
@@ -331,12 +326,12 @@ public class PluginHandlerTestIT {
             try {
                 ClassLoader cl = PluginHandler.getPluginClassLoader(p.getName());
                 assertNotNull(cl);
-                String pluginPackage = cl.loadClass(p.className).getPackage().getName();
+                String pluginPackage = cl.loadClass(p.getClassName()).getPackage().getName();
                 for (StackTraceElement e : root.getStackTrace()) {
                     try {
                         String stackPackage = cl.loadClass(e.getClassName()).getPackage().getName();
                         if (stackPackage.startsWith(pluginPackage)) {
-                            return p.name;
+                            return p.getName();
                         }
                     } catch (ClassNotFoundException ex) {
                         System.err.println(ex.getMessage());

@@ -315,8 +315,7 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
     public void drawHint(Graphics g) {
         int x;
         try {
-            // FIXME: Java9 replace with modelToView2D
-            x = modelToView(0).x;
+            x = (int) Math.round(modelToView2D(0).getX());
         } catch (BadLocationException exc) {
             return; // can't happen
         }
@@ -377,14 +376,17 @@ public class JosmTextField extends JTextField implements Destroyable, ComponentL
 
     @Override
     public void componentMoved(ComponentEvent e) {
+        // nothing to do here
     }
 
     @Override
     public void componentShown(ComponentEvent e) {
+        // nothing to do here
     }
 
     @Override
     public void componentHidden(ComponentEvent e) {
+        // nothing to do here
     }
 
     @Override

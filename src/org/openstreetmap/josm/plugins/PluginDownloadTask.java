@@ -15,8 +15,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.openstreetmap.josm.data.Preferences;
-import org.openstreetmap.josm.data.Version;
-import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.progress.NullProgressMonitor;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
@@ -26,10 +24,15 @@ import org.openstreetmap.josm.tools.Logging;
 import org.xml.sax.SAXException;
 
 /**
- * Asynchronous task for downloading a collection of plugins.
+ * Asynchronous task for downloading and installing plugin jars.
+ * <p>
+ * This task takes a list of plugins and tries to download them. Following that it
+ * installs the downloaded plugin jars.
+ * <p>
+ * When the task is finished {@link #getDownloadedPlugins()} replies the list of
+ * downloaded plugins and {@link #getFailedPlugins()} replies the list of plugins
+ * that failed to download plugins.
  *
- * When the task is finished {@link #getDownloadedPlugins()} replies the list of downloaded plugins
- * and {@link #getFailedPlugins()} replies the list of failed plugins.
  * @since 2817
  */
 public class PluginDownloadTask extends PleaseWaitRunnable {
@@ -103,25 +106,14 @@ public class PluginDownloadTask extends PleaseWaitRunnable {
     }
 
     protected void download(PluginInformation pi, File file) throws PluginDownloadException {
-        if (pi.mainversion > Version.getInstance().getVersion()) {
-            ExtendedDialog dialog = new ExtendedDialog(
-                    progressMonitor.getWindowParent(),
-                    tr("Skip Download"),
-                    tr("Download Plugin"), tr("Skip Download")
-            );
-            dialog.setContent(tr("JOSM version {0} required for plugin {1}.", pi.mainversion, pi.name));
-            dialog.setButtonIcons("download", "cancel");
-            if (dialog.showDialog().getValue() != 1)
-                throw new PluginDownloadException(tr("Download skipped"));
-        }
         try {
-            if (pi.downloadlink == null) {
-                String msg = tr("Cannot download plugin ''{0}''. Its download link is not known. Skipping download.", pi.name);
+            if (pi.getDownloadLink() == null) {
+                String msg = tr("Cannot download plugin ''{0}''. Its download link is not known. Skipping download.", pi.getName());
                 Logging.warn(msg);
                 throw new PluginDownloadException(msg);
             }
-            URL url = new URL(pi.downloadlink);
-            Logging.debug("Download plugin {0} from {1}...", pi.name, url);
+            URL url = pi.getUri().toURL();
+            Logging.debug("Download plugin {0} from {1}...", pi.getName(), url);
             if ("https".equals(url.getProtocol()) || "http".equals(url.getProtocol())) {
                 synchronized (this) {
                     downloadConnection = HttpClient.create(url).setAccept(PLUGIN_MIME_TYPES);
@@ -138,7 +130,7 @@ public class PluginDownloadTask extends PleaseWaitRunnable {
             }
         } catch (MalformedURLException e) {
             String msg = tr("Cannot download plugin ''{0}''. Its download link ''{1}'' is not a valid URL. Skipping download.",
-                    pi.name, pi.downloadlink);
+                    pi.getName(), pi.getDownloadLink());
             Logging.warn(msg);
             throw new PluginDownloadException(msg, e);
         } catch (IOException e) {
@@ -166,11 +158,11 @@ public class PluginDownloadTask extends PleaseWaitRunnable {
         for (PluginInformation d : toUpdate) {
             if (canceled)
                 return;
-            String message = tr("Downloading Plugin {0} from {1} ...", d.name, d.downloadlink);
+            String message = tr("Downloading Plugin {0} from {1} ...", d.getName(), d.getDownloadLink());
             Logging.info(message);
             progressMonitor.subTask(message);
             progressMonitor.worked(1);
-            File pluginFile = new File(pluginDir, d.name + ".jar.new");
+            File pluginFile = new File(pluginDir, d.getName() + ".jar.new");
             Logging.info("... to {0}", pluginFile);
             try {
                 download(d, pluginFile);
@@ -182,7 +174,7 @@ public class PluginDownloadTask extends PleaseWaitRunnable {
             }
             downloaded.add(d);
         }
-        PluginHandler.installDownloadedPlugins(toUpdate, false);
+        PluginHandler.installDownloadedPlugins(false);
     }
 
     /**

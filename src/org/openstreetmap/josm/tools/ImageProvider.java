@@ -1423,7 +1423,7 @@ public class ImageProvider {
                     }
                     if (betterUrl != null) {
                         try (InputStream is = betterUrl.openStream()) {
-                            return svgFromInputStream(is, betterUrl.toString(), query);
+                            return svgFromInputStream(is, url.toString(), query);
                         } catch (IOException e) {
                             ex = e;
                         }

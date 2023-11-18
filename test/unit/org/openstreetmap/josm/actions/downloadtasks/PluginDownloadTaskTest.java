@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -77,9 +79,8 @@ class PluginDownloadTaskTest extends AbstractDownloadTaskTestParent {
         }
 
         // get PluginInformation from jar file
-        final PluginInformation pluginInformation = new PluginInformation(srcPluginFile, "dummy_plugin");
-        // ...and grafting on the downloadlink
-        pluginInformation.downloadlink = this.getRemoteFileUrl();
+        PluginInformation pluginInformation = new PluginInformation(
+            srcPluginFile, "dummy_plugin", new URI(getRemoteFileUrl()));
 
         final PluginDownloadTask pluginDownloadTask = new PluginDownloadTask(
             NullProgressMonitor.INSTANCE,
@@ -123,7 +124,7 @@ class PluginDownloadTaskTest extends AbstractDownloadTaskTestParent {
             final PluginInformation pluginInformation = new PluginInformation(
                 manifestInputStream,
                 "corrupted_plugin",
-                this.getRemoteFileUrl()
+                new URI(getRemoteFileUrl())
             );
             final PluginDownloadTask pluginDownloadTask = new PluginDownloadTask(
                 NullProgressMonitor.INSTANCE,

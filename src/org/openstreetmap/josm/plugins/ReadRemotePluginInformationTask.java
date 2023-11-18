@@ -299,7 +299,7 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
             deprecatedPluginNames.add(p.name);
         }
         for (PluginInformation plugin: plugins) {
-            if (deprecatedPluginNames.contains(plugin.name)) {
+            if (deprecatedPluginNames.contains(plugin.getName())) {
                 continue;
             }
             ret.add(plugin);
@@ -321,7 +321,7 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
         try {
             getProgressMonitor().subTask(tr("Parsing plugin list from site ''{0}''", site));
             InputStream in = new ByteArrayInputStream(doc.getBytes(StandardCharsets.UTF_8));
-            List<PluginInformation> pis = new PluginListParser().parse(in);
+            List<PluginInformation> pis = new PluginListParser().parse(in, null);
             availablePlugins.addAll(filterIrrelevantPlugins(filterDeprecatedPlugins(pis)));
         } catch (PluginListParseException e) {
             Logging.error(tr("Failed to parse plugin list document from site ''{0}''. Skipping site. Exception was: {1}", site, e.toString()));
@@ -338,8 +338,8 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
         List<File> siteCacheFiles = new LinkedList<>();
         for (String location : PluginInformation.getPluginLocations()) {
             File[] f = new File(location).listFiles(
-                    (FilenameFilter) (dir, name) -> name.matches("^([0-9]+-)?site.*\\.txt$") ||
-                                                    name.matches("^([0-9]+-)?site.*-icons\\.zip$")
+                    (FilenameFilter) (dir, name) -> name.matches("^(\\d+-)?site.*\\.txt$") ||
+                                                    name.matches("^(\\d+-)?site.*-icons\\.zip$")
             );
             if (f != null && f.length > 0) {
                 siteCacheFiles.addAll(Arrays.asList(f));
@@ -355,11 +355,14 @@ public class ReadRemotePluginInformationTask extends PleaseWaitRunnable {
             if (dir != null) {
                 for (File file : dir.listFiles((d, name) -> name.toLowerCase().endsWith(".jar"))) {
                     try {
-                        PluginInformation pi = new PluginInformation(file);
-                        pi.downloadlink = "file://" + file.toString();
+                        URI uri = new URI("file://" + file.toString());
+                        String name = file.getName();
+                        if (name.endsWith(".jar"))
+                            name = name.substring(0, name.length() - 4);
+                        PluginInformation pi = new PluginInformation(file, name, uri);
                         availablePlugins.add(pi);
-                        Logging.info("Found plugin {0}", pi.downloadlink);
-                    } catch (PluginException e) {
+                        Logging.info("Found plugin {0}", pi.getDownloadLink());
+                    } catch (PluginException | URISyntaxException e) {
                         // nothing to do here
                     }
                 }

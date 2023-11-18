@@ -101,7 +101,7 @@ public final class Geometry {
     public static Set<Node> addIntersections(List<Way> ways, boolean test, List<Command> cmds) {
 
         int n = ways.size();
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         List<Node>[] newNodes = new ArrayList[n];
         BBox[] wayBounds = new BBox[n];
         boolean[] changedWays = new boolean[n];
