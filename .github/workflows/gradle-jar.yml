@@ -28,6 +28,7 @@ jobs:
       - name: Checkout
         run: |
           git clone --branch develop --depth=1 https://github.com/MarcelloPerathoner/josm.git core
+          cd core
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
