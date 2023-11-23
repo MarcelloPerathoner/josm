@@ -50,14 +50,8 @@ public class ScanPluginsOnGithubTask extends ScanPluginsTask {
                     URI bdUrl = new URI(o.getString(BDURL));
                     if ("MANIFEST".equals(name)) {
                         result.addAll(scanRepositoryManifest(bdUrl));
-                    }
-                }
-                // then look for "<pluginname>-updatesite" assets
-                for (JsonObject o : assets.getValuesAs(JsonObject.class)) {
-                    String name = o.getString("name");
-                    URI bdUrl = new URI(o.getString(BDURL));
-                    if (name.endsWith(".MANIFEST")) {
-                        result.addAll(scanRepositoryManifest(bdUrl));
+                        // a MANIFEST is supposed to hold information about *ALL* plugins
+                        return;
                     }
                 }
                 // as last resort scan the available jar files

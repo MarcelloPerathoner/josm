@@ -22,27 +22,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -53,18 +52,19 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.openstreetmap.josm.actions.ExpertToggleAction;
+import org.openstreetmap.josm.actions.ExpertToggleAction.ExpertModeChangeListener;
 import org.openstreetmap.josm.data.Preferences;
+import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane.ButtonSpec;
-import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.Notification;
+import org.openstreetmap.josm.gui.NotificationManager;
 import org.openstreetmap.josm.gui.datatransfer.ClipboardUtils;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.ExtensibleTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
-import org.openstreetmap.josm.gui.progress.swing.ProgMon.IProgMonDisplay;
 import org.openstreetmap.josm.gui.progress.swing.ProgMon.ProgMonNotification;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.TableHelper;
@@ -78,7 +78,6 @@ import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Logging;
-import org.openstreetmap.josm.tools.Utils;
 
 /**
  * Preference settings for plugins.
@@ -86,18 +85,24 @@ import org.openstreetmap.josm.tools.Utils;
  */
 @SuppressWarnings("java:S1192")
 public final class PluginPreference extends ExtensibleTabPreferenceSetting {
+    Icon downloadIcon = ImageProvider.get("dialogs/refresh", ImageProvider.ImageSizes.XLARGEICON);
+
     /**
      * Plugin installation status, used to filter plugin preferences model.
      * @since 13799
      */
     public enum PluginInstallation {
-        /** Plugins installed and loaded **/
+        /** Plugins loaded into memory */
+        LOADED,
+        /** Plugins installed and selected */
+        CONFIGURED,
+        /** Installed plugins */
         INSTALLED,
-        /** Plugins not loaded **/
+        /** Not installed plugins */
         AVAILABLE,
-        /** All plugins **/
+        /** All plugins */
         ALL,
-        /** Plugins with updates **/
+        /** Plugins with updates */
         UPDATEABLE
     }
 
@@ -120,7 +125,9 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
 
         private boolean matchesInstallationStatus(PluginPreferenceModel.TableEntry e, PluginInstallation status) {
             switch(status) {
-                case INSTALLED : return model.getSelectedPluginNames().contains(e.getName());
+                case LOADED : return getNames(PluginHandler.getLoadedPlugins()).contains(e.getName());
+                case CONFIGURED : return model.getSelectedPluginNames().contains(e.getName());
+                case INSTALLED : return getNames(model.getInstalledPlugins()).contains(e.getName());
                 case AVAILABLE : return !model.getSelectedPluginNames().contains(e.getName());
                 case UPDATEABLE : return e.isSelected() && e.hasUpdate();
                 default: return true;
@@ -147,7 +154,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         @Override
         public boolean include(Entry<? extends PluginPreferenceModel, ? extends Integer> entry) {
             PluginPreferenceModel.TableEntry e = model.getTableEntryAt(entry.getIdentifier());
-            boolean compatible = (e.local != null)  || (e.update != null && e.update.isCompatible()) ||
+            boolean compatible = (e.installed != null)  || (e.update != null && e.update.isCompatible()) ||
                 (e.latest != null && e.latest.isCompatible());
             return compatible && matchesExpression(e, filter) && matchesInstallationStatus(e, status);
         }
@@ -163,13 +170,39 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         }
     }
 
-    private JTable table;
+    class ExpertTable extends JTable implements ExpertModeChangeListener {
+        @Override
+        public void expertChanged(boolean isExpert) {
+            createDefaultColumnsFromModel();
+            TableColumnModel cm = getColumnModel();
+            cm.getColumn(0).setHeaderValue("");
+            cm.getColumn(1).setHeaderValue("");
+            cm.getColumn(2).setHeaderValue(tr("Plugin Name"));
+            cm.getColumn(3).setHeaderValue(tr("Loaded"));
+            cm.getColumn(4).setHeaderValue(tr("Installed"));
+            cm.getColumn(5).setHeaderValue(tr("Compatible"));
+            cm.getColumn(6).setHeaderValue(tr("Latest"));
+            if (!isExpert) {
+                cm.removeColumn(cm.getColumn(3));
+            }
+            setColumnWidths();
+        }
+    }
+
+    static List<String> getNames (List<PluginInformation> plugins) {
+        return plugins.stream().map(PluginInformation::getName).toList();
+    }
+
+    private ExpertTable table;
     private PluginRowFilter rowFilter;
     private TableRowSorter<PluginPreferenceModel> rowSorter;
     private JScrollPane infoScrollPane;
     private HtmlPanel infoPanel;
+    private JSplitPane splitPane;
     private final PluginPreferenceModel model = new PluginPreferenceModel();
     private PluginUpdatePolicyPanel pnlPluginUpdatePolicy;
+    /** For easier testing. True while background tasks are still active. */
+    boolean working;
 
     /**
      * is set to true if this preference pane has been selected by the user
@@ -197,7 +230,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         f.thenAccept(task -> {
             Logging.info("... got {0} plugins from {1}",
                 task.getPluginInformations().size(), task.getUri().toString());
-            model.addLocalPlugins(task.getPluginInformations());
+            model.addInstalledPlugins(task.getPluginInformations());
             GuiHelper.runInEDT(model::fireTableDataChanged);
         });
 
@@ -228,11 +261,13 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     }
 
     /**
-     * Returns the download summary string to be shown.
-     * @param task The plugin download task that has completed
+     * Returns a summary of the downloaded plugins
+     *
+     * @param taskList The plugin download tasks
+     * @param restartRequired if true adds a message about restarting JOSM
      * @return the download summary string to be shown. Contains summary of success/failed plugins.
      */
-    public static String buildDownloadSummary(Collection<JarDownloadTask> taskList) {
+    public static String buildDownloadSummary(Collection<JarDownloadTask> taskList, boolean restartRequired) {
         List<JarDownloadTask> downloaded = JarDownloadTask.successfulTasks(taskList);
         List<JarDownloadTask> failed = JarDownloadTask.failedTasks(taskList);
 
@@ -271,31 +306,25 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
             }
             sb.append("</ul>");
         }
+        if (restartRequired) {
+            sb.append(tr("Please restart JOSM to activate the downloaded plugins."));
+        }
         return sb.toString();
     }
 
     /**
      * Notifies user about result of a finished plugin download task.
      * @param parent The parent component
-     * @param task The finished plugin download task
+     * @param taskList The plugin download tasks
      * @param restartRequired true if a restart is required
      * @since 6797
      */
     public static void notifyDownloadResults(final Component parent, Collection<JarDownloadTask> taskList, boolean restartRequired) {
-        List<JarDownloadTask> failed = taskList.stream()
-            .filter(task -> task.getStatus() != 200)
-            .toList();
+        List<JarDownloadTask> failed = JarDownloadTask.failedTasks(taskList);
 
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<html>")
-          .append(buildDownloadSummary(taskList));
-        if (restartRequired) {
-            sb.append(tr("Please restart JOSM to activate the downloaded plugins."));
-        }
-        sb.append("</html>");
         HelpAwareOptionPane.showOptionDialog(
             parent,
-            sb.toString(),
+            "<html>" + buildDownloadSummary(taskList, restartRequired) + "</html>",
             tr("Update plugins"),
             !failed.isEmpty() ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
                     HelpUtil.ht("/Preferences/Plugins")
@@ -310,9 +339,12 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         ButtonGroup bg = new ButtonGroup();
         JPanel radios = new JPanel();
         addRadioButton(bg, radios, new JRadioButton(trc("plugins", "All"), true), PluginInstallation.ALL);
+        ExpertToggleAction.addVisibilitySwitcher(
+            addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Loaded")), PluginInstallation.LOADED));
+        // addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Configured")), PluginInstallation.CONFIGURED);
         addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Installed")), PluginInstallation.INSTALLED);
-        addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Available")), PluginInstallation.AVAILABLE);
-        addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Updates")), PluginInstallation.UPDATEABLE);
+        // addRadioButton(bg, radios, new JRadioButton(trc("plugins", "Available")), PluginInstallation.AVAILABLE);
+        addRadioButton(bg, radios, new JRadioButton(trc("plugins", "With Updates")), PluginInstallation.UPDATEABLE);
         pnl.add(radios, GBC.eol().fill(HORIZONTAL));
 
         pnl.add(new FilterField().filter(expr ->
@@ -321,10 +353,11 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         return pnl;
     }
 
-    private void addRadioButton(ButtonGroup bg, JPanel pnl, JRadioButton rb, PluginInstallation value) {
+    private JRadioButton addRadioButton(ButtonGroup bg, JPanel pnl, JRadioButton rb, PluginInstallation value) {
         bg.add(rb);
         pnl.add(rb, GBC.std());
         rb.addActionListener(e -> rowFilter.setStatus(value));
+        return rb;
     }
 
     private static Component addButton(JPanel pnl, JButton button, String buttonName) {
@@ -344,15 +377,9 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         col.setMinWidth(width);
         col.setMaxWidth(width);
 
-        TableHelper.setRowHeight(table, ImageProvider.ImageSizes.LARGEICON);
+        TableHelper.setPreferredColumnWidth(table, 2);
 
-        // if (table.getRowCount() > 0) {
-        //     TableHelper.setFixedColumnWidth(table, 0, 0);
-        //     TableHelper.setFixedColumnWidth(table, 1, 0);
-        // }
-        // TableHelper.setPreferredColumnWidth(table, 2);
-        // TableHelper.setPreferredColumnWidth(table, 3);
-        // TableHelper.setPreferredColumnWidth(table, 4);
+        TableHelper.setRowHeight(table, ImageProvider.ImageSizes.LARGEICON);
     }
 
     private JPanel buildPluginListPanel() {
@@ -362,56 +389,48 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         pnl.setBorder(BorderFactory.createEmptyBorder(SMALLGAP, SMALLGAP, SMALLGAP, SMALLGAP));
         pnl.add(buildSearchFieldPanel(), gbc);
 
-        table = new JTable();
+        table = new ExpertTable();
+
         // Problem: listeners are called last to first. We want to be called *after* the
         // rowSorter does its job, so we must register on the model before the table.
         // (The rowSorter does not register its own listener but uses the table's
         // listener.)
         model.addTableModelListener(e -> setColumnWidths());
         table.setModel(model);
-        setColumnWidths();
-
-        TableColumnModel cm = table.getColumnModel();
-        cm.getColumn(0).setHeaderValue("");
-        cm.getColumn(1).setHeaderValue("");
-        cm.getColumn(2).setHeaderValue(tr("Plugin Name"));
-        cm.getColumn(3).setHeaderValue(tr("Local"));
-        cm.getColumn(4).setHeaderValue(tr("Compatible"));
-        cm.getColumn(5).setHeaderValue(tr("Latest"));
-        cm.getColumn(1).setHeaderValue("");
+        ExpertToggleAction.addExpertModeChangeListener(table, true);
 
         rowSorter = new TableRowSorter<>(model);
         rowFilter = new PluginRowFilter();
         rowFilter.setStatus(PluginInstallation.ALL);
         rowSorter.setSortable(0, false);
         rowSorter.setSortable(1, false);
-        /*
-        rowSorter.setComparator(2, Comparator.<PluginInformation, String>comparing(
-            pi -> pi.getName() == null ? "" : pi.getName().toLowerCase(Locale.ENGLISH))
-        );
-        */
+        rowSorter.toggleSortOrder(2); // sort on plugin name
         rowSorter.setSortable(3, false);
         rowSorter.setSortable(4, false);
-        rowSorter.toggleSortOrder(2);
+        rowSorter.setSortable(5, false);
+        rowSorter.setSortable(6, false);
         rowSorter.setRowFilter(rowFilter);
         table.setRowSorter(rowSorter);
 
-        // table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.getSelectionModel().addListSelectionListener(event -> updateInfoPanelText());
 
         pnl.addComponentListener(this.new ComponentListener());
 
-        pnl.add(new JScrollPane(table), GBC.eop().fill(BOTH).weight(1.0, 5.0));
-
         infoPanel = new HtmlPanel();
         infoPanel.enableClickableHyperlinks();
         infoScrollPane = new JScrollPane(infoPanel);
-        pnl.add(infoScrollPane, GBC.eop().fill(BOTH).weight(1.0, 1.0));
+
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+            new JScrollPane(table),
+            infoScrollPane
+        );
+        splitPane.setDividerLocation(-1);
+        pnl.add(splitPane, GBC.eop().fill(BOTH));
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
         // assign some component names to these as we go to aid testing
-        addButton(buttons, new JButton(new UpdateSelectedPluginsAction()), "updatePluginsButton");
+        addButton(buttons, new JButton(new UpdateAction()), "updatePluginsButton");
         ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new SelectByListAction()), "loadFromListButton"));
         ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new CopyToClipboardAction()), "copyToClipboardButton"));
         ExpertToggleAction.addVisibilitySwitcher(addButton(buttons, new JButton(new PurgeAction()), "purgeButton"));
@@ -425,13 +444,14 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * Updates the info panel when the user selects a different row.
      */
     private void updateInfoPanelText() {
-        int scrollPaneWidth = infoScrollPane.getWidth();
-        int scrollBarWidth = UIManager.getInt("ScrollBar.width");
         int row = table.getSelectedRow();
-        Insets insets = infoScrollPane.getInsets();
-        Insets insets2 = infoPanel.getInsets();
-        int width = scrollPaneWidth - insets.left - insets.right - insets2.left - insets2.right - scrollBarWidth - SMALLGAP;
         if (row > -1) {
+            int scrollPaneWidth = infoScrollPane.getWidth();
+            int scrollBarWidth = UIManager.getInt("ScrollBar.width");
+            Insets insets = infoScrollPane.getInsets();
+            Insets insets2 = infoPanel.getInsets();
+            int width = scrollPaneWidth - insets.left - insets.right - insets2.left - insets2.right
+                - scrollBarWidth - 2 * SMALLGAP;
             // the only way to set the width of the panel when you don't know the height
             infoPanel.setText(
                 String.format("<html><body><div style=\"width: %d\">", width)
@@ -447,6 +467,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         public void componentResized(ComponentEvent e) {
             // reformat the panel text
             updateInfoPanelText();
+            splitPane.setDividerLocation(splitPane.getSize().height * 2 / 3);
         }
     }
 
@@ -457,7 +478,6 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         pane.addTab(tr("Plugins"), buildPluginListPanel());
         pane.addTab(tr("Plugin update policy"), pnlPluginUpdatePolicy);
         super.addGui(gui);
-
         pluginPreferencesActivated = true;
     }
 
@@ -469,56 +489,141 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         return model;
     }
 
+    JarDownloadTask withMonitors(JarDownloadTask task) {
+        task.withProgressMonitor(
+            new ProgMonNotification(
+                new Notification(tr("Downloading plugin: {0}", task.getPluginInformation().getName()))
+                    .setIcon(downloadIcon)
+                    .withProgressBar()
+            ).setVisible(true)
+        );
+        return task;
+    }
+
     @Override
     public boolean ok(StringBuilder sb) {
         if (!pluginPreferencesActivated)
             return false;
 
-        Collection<PluginInformation> installedPlugins = PluginHandler.getConfigPlugins();
+        // Create a task for downloading plugins if the user has activated, yet not downloaded, new plugins
+        final Collection<PluginInformation> toDownload = getModel().getPluginsToDownload();
+        Logging.info("Starting tasks for download of plugins: {0}",
+            String.join(", ", PluginPreferenceModel.getNames(toDownload)));
+        final List<CompletableFuture<JarDownloadTask>> futureList = toDownload.stream()
+            .map(JarDownloadTask::new)
+            .map(this::withMonitors)
+            .map(CompletableFuture::supplyAsync)
+            .toList();
+        working = !futureList.isEmpty();
+
+        // Try to unload and load the plugins after the downloads complete
+        JarDownloadTask.allOf(futureList).thenRun(() ->
+            GuiHelper.runInEDT(() -> {
+                model.clearInstalledPlugins();
+                model.addInstalledPlugins(scanLocalPlugins());
+                model.fireTableDataChanged();
+                tryUnloadPlugins(getModel().getPluginsToDeactivate());
+                tryLoadPlugins(getModel().getPluginsToActivate());
+                working = false;
+            })
+        );
 
         // save the user's new choices
+        List<String> selectedPluginNames = getModel().getSelectedPluginNames();
+        Collections.sort(selectedPluginNames);
+        Config.getPref().putList("plugins", selectedPluginNames);
         pnlPluginUpdatePolicy.rememberInPreferences();
-        List<String> l = getModel().getSelectedPluginNames();
-        Collections.sort(l);
-        Config.getPref().putList("plugins", l);
 
-        // Create a task for downloading plugins if the user has activated, yet not downloaded, new plugins
-        final Collection<PluginInformation> toDownload = getModel().getPluginsScheduledForDownload();
+        Config.getPref().putInt("pluginmanager.version", Version.getInstance().getVersion());
+        // Config.getPref().put("pluginmanager.lastupdate", Long.toString(System.currentTimeMillis()));
 
-        if (!Utils.isEmpty(toDownload)) {
-            List<JarDownloadTask> taskList = toDownload.stream()
-                .map(JarDownloadTask::new)
-                .map(task -> task.withProgressMonitor(new ProgMonNotification(new Notification())))
-                .map(CompletableFuture::supplyAsync)
-                .map(task -> task.join())
-                .toList();
+        return false; // we handle restart reporting ourselves, and we don't know yet anyway
+    }
 
-            PluginHandler.installDownloadedPlugins(true);
-            sb.append(PluginPreference.buildDownloadSummary(taskList));
+    /**
+     * Tries to load the given plugins without restarting JOSM
+     * <p>
+     * This function runs in the EDT after all downloads have completed and the
+     * respective jars have been installed. It tries to load the plugins without
+     * restarting JOSM.
+     *
+     * @param activatedPluginNames
+     * @return true if any of the plugins could not be loaded
+     */
+    void tryLoadPlugins(List<PluginInformation> activatedPlugins) {
+        PluginHandler.pluginListNotLoaded.clear();
+        boolean needRestart = !PluginHandler.loadPlugins(
+            getTabPane(), activatedPlugins, null, true).isEmpty();
+
+        // report restart
+        if (needRestart)
+            new Notification().warning(tr("Please restart JOSM to activate the plugins."))
+                .setDuration(Notification.TIME_VERY_LONG).setVisible(true);
+    }
+
+    /**
+     * Tries to unload the given plugins without restarting JOSM
+     * <p>
+     * If any of the plugins cannot be unloaded, true will be returned.
+     *
+     * @param deactivatedPluginNames the given plugins
+     * @return true if any of the plugins could not be unloaded
+     */
+    void tryUnloadPlugins(List<PluginInformation> deactivatedPlugins) {
+        boolean needRestart = false;
+
+        for (PluginInformation pi : deactivatedPlugins) {
+            if (PluginHandler.removePlugin(pi.getName())) {
+                needRestart = true;
+                new Notification().warning(tr("Unloading ''{0}'' needs restart.", pi.getName())).setVisible(true);
+            } else {
+                new Notification().success(tr("Plugin ''{0}'' unloaded.", pi.getName())).setVisible(true);
+            }
         }
 
-        //
-        // If any plugins were deactivated or updated, we have to restart.  Note: this
-        // works for updates too because getDeactivatedPlugins will report the
-        // deactivated old version of an updated plugin.
-        //
-        List<PluginInformation> deactivatedPlugins = getDeactivatedPlugins(installedPlugins, PluginHandler.getConfigPlugins());
-        boolean needRestart = PluginHandler.removePlugins(deactivatedPlugins);
+        // report restart
+        if (needRestart)
+            new Notification().warning(tr("Please restart JOSM to remove the plugins."))
+                .setDuration(Notification.TIME_VERY_LONG).setVisible(true);
+    }
 
-        //
-        // Load all new plugins that can be loaded at runtime
-        // (The user may want to do some more work before restarting.)
-        //
-        PluginHandler.pluginListNotLoaded.clear();
-        List<PluginInformation> activatedPlugins = getActivatedPlugins(installedPlugins, PluginHandler.getConfigPlugins());
-        Logging.debug("PluginPreference.ok: activated {0} deactivated {1} installed {2}",
-            activatedPlugins.size(), deactivatedPlugins.size(), installedPlugins.size());
+    /**
+     * Tries to update the plugins without restarting
+     * <p>
+     * This function tries to unload and reload the given plugins at runtime.  If any
+     * given plugin cannot be processed in this way, then true will be returned.
+     *
+     * @param updatedPlugins list of plugins to update
+     * @return true if any of the plugins could not be updated
+     */
+    void tryUpdatePlugins(List<PluginInformation> updatedPlugins) {
+        boolean needRestart = false;
 
-        needRestart |= !PluginHandler.loadPlugins(getTabPane(), activatedPlugins, null, true).isEmpty();
+        // first unload all plugins that can load at runtime
+        for (PluginInformation pi : updatedPlugins) {
+            boolean restart = false;
+            if (pi.canLoadAtRuntime()) {
+                if (PluginHandler.removePlugin(pi.getName())) {
+                    restart = true;
+                } else {
+                    PluginHandler.pluginListNotLoaded.clear();
+                    restart |= !PluginHandler.loadPlugins(getTabPane(), updatedPlugins, null, true).isEmpty();
+                }
+            } else {
+                restart = true;
+            }
+            if (restart) {
+                new Notification().warning(tr("Update of plugin ''{0}'' needs restart.", pi.getName())).setVisible(true);
+                needRestart = true;
+            } else {
+                new Notification().info(tr("Plugin ''{0}'' updated.", pi.getName())).setVisible(true);
+            }
+        }
 
-        Logging.debug("PluginPreference.ok: {0} needRestart={1}", sb.toString(), needRestart);
-
-        return needRestart;
+        // report restart
+        if (needRestart)
+            new Notification().warning(tr("Please restart JOSM to complete the update."))
+                .setDuration(Notification.TIME_VERY_LONG).setVisible(true);
     }
 
     /**
@@ -536,20 +641,10 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     }
 
     /**
-     * Scans all locally available plugin jar files.
+     * The action of updating the plugins
      */
-    public Collection<PluginInformation> scanLocallyCachedSiteManifestFiles() {
-        File pluginDir = Preferences.main().getPluginsDirectory();
-        Collection<PluginInformation> l = PluginHandler.scanCachedSiteManifestFiles(pluginDir);
-        Logging.debug("PluginPreference.scanLocallyCachedSiteManifestFiles -> addUpstreamPlugins: {0} plugins", l.size());
-        return l;
-    }
-
-    /**
-     * The action for updating the list of selected plugins
-     */
-    class UpdateSelectedPluginsAction extends AbstractAction {
-        UpdateSelectedPluginsAction() {
+    class UpdateAction extends AbstractAction {
+        UpdateAction() {
             putValue(NAME, tr("Update plugins"));
             putValue(SHORT_DESCRIPTION, tr("Update the selected plugins"));
             new ImageProvider("dialogs", "refresh").getResource().attachImageIcon(this);
@@ -566,23 +661,45 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         }
 
         /**
-         * Update plugins
+         * Updates the plugins
          */
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                final List<PluginInformation> toUpdate = model.getPluginsScheduledForUpdate();
+                List<PluginInformation> toUpdate = model.getPluginsToUpdate();
                 if (toUpdate.isEmpty()) {
+                    Config.getPref().putInt("pluginmanager.version", Version.getInstance().getVersion());
                     alertNothingToUpdate();
                     return;
                 }
-                List<JarDownloadTask> taskList = JarDownloadTask.join(JarDownloadTask.supplyAsync(toUpdate));
 
-                boolean restartRequired = toUpdate.stream().anyMatch(Predicate.not(PluginInformation::canLoadAtRuntime));
-                model.clearLocalPlugins();
-                model.addLocalPlugins(scanLocalPlugins());
-                model.fireTableDataChanged();
-                notifyDownloadResults(table, taskList, restartRequired);
+                // Download all plugins in parallel
+                final List<CompletableFuture<JarDownloadTask>> futureList = toUpdate.stream()
+                    .map(JarDownloadTask::new)
+                    .map(PluginPreference.this::withMonitors)
+                    .map(CompletableFuture::supplyAsync)
+                    .toList();
+
+                working = !futureList.isEmpty();
+
+                // Wait for all tasks to complete, then update table
+                JarDownloadTask.allOf(futureList).thenRun(() ->
+                    GuiHelper.runInEDT(() -> {
+                        // get the list of installed plugins because
+                        // only local plugins know their classes
+                        Set<String> names = new HashSet<>(getNames(toUpdate));
+                        List<PluginInformation>toLoad = PluginHandler.getInstalledPlugins().stream()
+                            .filter(pi -> names.contains(pi.getName())).toList();
+
+                        tryUpdatePlugins(toLoad);
+                        model.clearInstalledPlugins();
+                        model.addInstalledPlugins(scanLocalPlugins());
+                        model.fireTableDataChanged();
+                        Config.getPref().putInt("pluginmanager.version", Version.getInstance().getVersion());
+                        Config.getPref().put("pluginmanager.lastupdate", Long.toString(System.currentTimeMillis()));
+                        working = false;
+                    })
+                );
             } catch (IllegalArgumentException ex) {
                 HelpAwareOptionPane.showOptionDialog(
                     table,
@@ -591,14 +708,12 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     JOptionPane.ERROR_MESSAGE,
                     null // FIXME: provide help context
                 );
-
             }
         }
     }
 
     /**
-     * The action for configuring the plugin download sites
-     *
+     * Opens a dialog to configure the plugin download sites
      */
     class ConfigureSitesAction extends AbstractAction {
         ConfigureSitesAction() {
@@ -627,11 +742,11 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                                     null /* no special help topic */
                                     )
             };
-            PluginConfigurationSitesPanel pnl = new PluginConfigurationSitesPanel();
+            PluginRepositoriesConfigurationDialog dialog = new PluginRepositoriesConfigurationDialog();
 
             int answer = HelpAwareOptionPane.showOptionDialog(
                     table,
-                    pnl,
+                    dialog,
                     tr("Configure Plugin Sites"),
                     JOptionPane.QUESTION_MESSAGE,
                     null,
@@ -641,12 +756,13 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                     );
             if (answer != 0 /* OK */)
                 return;
-            Preferences.main().setPluginSites(pnl.getUpdateSites());
+            Preferences.main().setPluginSites(dialog.getUpdateSites());
         }
     }
 
     /**
-     * The action for selecting the plugins given by a text file compatible to JOSM bug report.
+     * Selects plugins using a text file compatible to the JOSM bug report.
+     *
      * @author Michael Zangl
      */
     class SelectByListAction extends AbstractAction {
@@ -722,12 +838,11 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     }
 
     /**
-     * The action for selecting the plugins given by a text file compatible to JOSM bug report.
-     * @author Michael Zangl
+     * Copies the names of the selected plugins to the clipboard
      */
     class CopyToClipboardAction extends AbstractAction {
         CopyToClipboardAction() {
-            putValue(NAME, tr("Copy to clipboard"));
+            putValue(NAME, tr("Copy"));
             putValue(SHORT_DESCRIPTION, tr("Copies a list of selected plugins to the clipboard"));
             new ImageProvider("copy").getResource().attachImageIcon(this);
         }
@@ -735,162 +850,62 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         @Override
         public void actionPerformed(ActionEvent e) {
             ClipboardUtils.copyString(String.join("\n", model.getSelectedPluginNames()));
-            Notification note = new Notification("Plugin list copied to clipboard!");
-            note.setIcon(JOptionPane.INFORMATION_MESSAGE);
-            note.show();
+
+            new Notification("Plugin list copied to clipboard!")
+                .setIcon(ImageProvider.get("copy", ImageProvider.ImageSizes.XLARGEICON))
+                // .setManager(manager)
+                .setVisible(true);
         }
     }
 
     /**
-     * The action for selecting the plugins given by a text file compatible to JOSM bug report.
-     * @author Michael Zangl
+     * Purges all currently unused plugin files.
      */
     class PurgeAction extends AbstractAction {
         PurgeAction() {
-            putValue(NAME, tr("Purge old jars"));
-            putValue(SHORT_DESCRIPTION, tr("Removes all not currently configured plugin files."));
+            putValue(NAME, tr("Purge"));
+            putValue(SHORT_DESCRIPTION, tr("Removes all installed plugins that are not selected."));
             new ImageProvider("dialogs/delete").getResource().attachImageIcon(this);
+        }
+
+        private List<Path> walkDir(Path dir) {
+            try (Stream<Path> walk = Files.walk(dir)) {
+                return walk.sorted(Comparator.reverseOrder()).toList();
+            } catch (IOException e) {
+                return Collections.emptyList();
+            }
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            List<String> configured = PluginHandler.getConfigPluginNames();
-            List<PluginInformation> notConfigured = scanLocalPlugins().stream()
+            List<String> configured = PluginHandler.getConfiguredPluginNames();
+            List<PluginInformation> toPurge = scanLocalPlugins().stream()
                 .filter(pi -> !configured.contains(pi.getName())).toList();
-            for (var pi : notConfigured) {
-                try {
-                    Path path = Path.of(pi.getUri());
-                    Files.delete(path);
-                    Path dir = Path.of(path.getParent().toString(), pi.getName());
-                    try (Stream<Path> walk = Files.walk(dir)) {
-                        walk.sorted(Comparator.reverseOrder())
-                            .map(Path::toFile)
-                            .forEach(File::delete);
+
+            if (!toPurge.isEmpty()) {
+                String message;
+                for (var pi : toPurge) {
+                    try {
+                        Path path = Path.of(pi.getUri());
+                        Files.delete(path); // delete jar
+                        // eventually delete a subdir of the same name as plugin
+                        List<Path> paths = walkDir(Path.of(path.getParent().toString(), pi.getName()));
+                        for (Path pth : paths) {
+                            Files.delete(pth);
+                        }
+                        message = tr("Purged plugin {0}", pi.getName());
+                        new Notification().info(message).setVisible(true);
+                        Logging.info(message);
                     } catch (IOException ex) {
-                        // this plugin has no directory
+                        message = tr("Could not purge file: {0}", ex.getMessage());
+                        new Notification().warning(message).setVisible(true);
+                        Logging.warn(message);
                     }
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(
-                        getTabPane(),
-                        tr("Could not delete file: {0}.", ex.getMessage()),
-                        tr("Warning"),
-                        JOptionPane.WARNING_MESSAGE
-                    );
                 }
+                model.clearInstalledPlugins();
+                model.addInstalledPlugins(scanLocalPlugins());
+                model.fireTableDataChanged();
             }
-        }
-    }
-
-    private static class PluginConfigurationSitesPanel extends JPanel {
-
-        private final DefaultListModel<String> model = new DefaultListModel<>();
-
-        PluginConfigurationSitesPanel() {
-            super(new GridBagLayout());
-            add(new JLabel(tr("Add JOSM Plugin description URL.")), GBC.eol());
-            for (String s : Preferences.main().getPluginSites()) {
-                model.addElement(s);
-            }
-            final JList<String> list = new JList<>(model);
-            add(new JScrollPane(list), GBC.std().fill());
-            JPanel buttons = new JPanel(new GridBagLayout());
-            buttons.add(new JButton(new AbstractAction(tr("Add")) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String s = JOptionPane.showInputDialog(
-                            GuiHelper.getFrameForComponent(PluginConfigurationSitesPanel.this),
-                            tr("Add JOSM Plugin description URL."),
-                            tr("Enter URL"),
-                            JOptionPane.QUESTION_MESSAGE
-                            );
-                    if (!Utils.isEmpty(s)) {
-                        model.addElement(s);
-                    }
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            buttons.add(new JButton(new AbstractAction(tr("Edit")) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (list.getSelectedValue() == null) {
-                        JOptionPane.showMessageDialog(
-                                GuiHelper.getFrameForComponent(PluginConfigurationSitesPanel.this),
-                                tr("Please select an entry."),
-                                tr("Warning"),
-                                JOptionPane.WARNING_MESSAGE
-                                );
-                        return;
-                    }
-                    String s = (String) JOptionPane.showInputDialog(
-                            MainApplication.getMainFrame(),
-                            tr("Edit JOSM Plugin description URL."),
-                            tr("JOSM Plugin description URL"),
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            null,
-                            list.getSelectedValue()
-                            );
-                    if (!Utils.isEmpty(s)) {
-                        model.setElementAt(s, list.getSelectedIndex());
-                    }
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            buttons.add(new JButton(new AbstractAction(tr("Delete")) {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    if (list.getSelectedValue() == null) {
-                        JOptionPane.showMessageDialog(
-                                GuiHelper.getFrameForComponent(PluginConfigurationSitesPanel.this),
-                                tr("Please select an entry."),
-                                tr("Warning"),
-                                JOptionPane.WARNING_MESSAGE
-                                );
-                        return;
-                    }
-                    model.removeElement(list.getSelectedValue());
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            buttons.add(new JButton(new AbstractAction(tr("Move Up")) {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    int index = list.getSelectedIndex();
-                    if (index > 0) {
-                        model.add(index - 1, model.remove(index));
-                        list.setSelectedIndex(index - 1);
-                    }
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            buttons.add(new JButton(new AbstractAction(tr("Move Down")) {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    int index = list.getSelectedIndex();
-                    if (index < model.size() - 1) {
-                        model.add(index + 1, model.remove(index));
-                        list.setSelectedIndex(index + 1);
-                    }
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            buttons.add(new JButton(new AbstractAction(tr("Add Default Site")) {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    model.add(0, Preferences.getDefaultPluginSite());
-                }
-            }), GBC.eol().fill(HORIZONTAL));
-            add(buttons, GBC.eol());
-
-            add(new JLabel(tr("<html>Use:<ul>" +
-                "<li>https:// to install plugins from the web" +
-                "<li>file:///path/to/file to install a single jar" +
-                "<li>file:///path/to/directory/ to install plugins from a local directory" +
-                "<li>github://owner/repo to install plugins from a github repository")),
-            GBC.eol());
-        }
-
-        protected List<String> getUpdateSites() {
-            if (model.getSize() == 0)
-                return Collections.emptyList();
-            return IntStream.range(0, model.getSize())
-                    .mapToObj(model::get)
-                    .collect(Collectors.toList());
         }
     }
 

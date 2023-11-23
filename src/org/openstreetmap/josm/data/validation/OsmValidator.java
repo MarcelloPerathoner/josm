@@ -109,7 +109,7 @@ public final class OsmValidator {
     /**
      * All available tests in core
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static final Class<Test>[] CORE_TEST_CLASSES = new Class[] {// NOPMD
         /* FIXME - unique error numbers for tests aren't properly unique - ignoring will not work as expected */
         /* Error codes are class.getName().hashCode() + "_" + oldCode. There should almost never be a collision. */

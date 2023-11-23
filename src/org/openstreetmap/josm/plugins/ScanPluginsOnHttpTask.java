@@ -17,7 +17,7 @@ public class ScanPluginsOnHttpTask extends ScanPluginsTask {
      * Replaces {@code %<plugins=>} with {@code plugins=a,b,c}
      */
     private URI fixUri(URI uri) throws URISyntaxException {
-        String pluginString = String.join(",", PluginHandler.getConfigPluginNames());
+        String pluginString = String.join(",", PluginHandler.getConfiguredPluginNames());
         String site = uri.toString();
         if (!pluginString.isEmpty()) {
             site = site.replaceAll(PLACEHOLDER, "$1" + pluginString);

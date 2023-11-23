@@ -14,9 +14,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +40,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -190,7 +187,7 @@ public final class PluginHandler {
     /**
      * Returns the names of the configured plugins
      */
-    public static List<String> getConfigPluginNames() {
+    public static List<String> getConfiguredPluginNames() {
         return Config.getPref().getList(PLUGINS);
     }
 
@@ -224,25 +221,28 @@ public final class PluginHandler {
     }
 
     /**
-     * Returns information about all plugin jars in the configured plugin directory
-     *
-     * @throws IOException if the configured plugin directory is not a directory
+     * Returns information about all installed plugins
+     * <p>
+     * To be installed a plugin .jar must reside in the JOSM plugins directory.
      */
-    public static Collection<PluginInformation> getPluginJarsInPluginDirectory() throws IOException {
-        return getPluginJarsInDirectory(Preferences.main().getPluginsDirectory());
+    public static Collection<PluginInformation> getInstalledPlugins() {
+        try {
+            return getPluginJarsInDirectory(Preferences.main().getPluginsDirectory());
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
     }
 
     /**
      * Returns information about all configured plugins.
+     * <p>
+     * To be configured a plugin must be installed and selected in the plugin
+     * preferences.
      */
-    public static Collection<PluginInformation> getConfigPlugins() {
-        try {
-            List<String> configured = getConfigPluginNames();
-            return getPluginJarsInPluginDirectory().stream()
-                .filter(p -> configured.contains(p.getName())).toList();
-        } catch (IOException e) {
-            return Collections.emptyList();
-        }
+    public static Collection<PluginInformation> getConfiguredPlugins() {
+        List<String> configured = getConfiguredPluginNames();
+        return getInstalledPlugins().stream()
+            .filter(p -> configured.contains(p.getName())).toList();
     }
 
     /**
@@ -250,29 +250,6 @@ public final class PluginHandler {
      */
     public static Collection<PluginInformation> filterPluginInfos(Collection<PluginInformation> infos, Collection<String> names) {
         return infos.stream().filter(p -> names.contains(p.getName())).toList();
-    }
-
-    /**
-     * Reads all cached site manifest files.
-     */
-    public static List<PluginInformation> scanCachedSiteManifestFiles(File pluginsDirectory) {
-        List<PluginInformation> ret = new ArrayList<>();
-        final Pattern pat = Pattern.compile(SITE_MANIFEST_PATTERN);
-        File[] files = pluginsDirectory.listFiles();
-        if (files == null)
-            return ret;
-        for (File file : pluginsDirectory.listFiles()) {
-            String fname = file.getName();
-            if (pat.matcher(fname).matches()) {
-                try (InputStream is = new FileInputStream(file)) {
-                    ret.addAll(new PluginListParser().parse(is, null));
-                } catch (PluginListParseException | IOException e) {
-                    Logging.warn(tr("Failed to scan file ''{0}'' for plugin information. Skipping.", fname));
-                    Logging.error(e);
-                }
-            }
-        }
-        return ret;
     }
 
     static final class PluginInformationAction extends AbstractAction {
@@ -994,8 +971,14 @@ public final class PluginHandler {
             for (PluginInformation pi: plugins) {
                 if (checkLoadPreconditions(parent, plugins, pi, atRunTime)) {
                     toLoad.add(pi);
+                    Logging.info("Plugin ''{0}'' load preconditions check ok.", pi.getName());
                 } else {
                     pluginListNotLoaded.add(pi);
+                    if (atRunTime) {
+                        Logging.info("Plugin ''{0}'' load preconditions do not check!", pi.getName());
+                    } else {
+                        Logging.error("Plugin ''{0}'' load preconditions do not check!", pi.getName());
+                    }
                 }
             }
             // sort the plugins according to their "staging" equivalence class. The
@@ -1144,7 +1127,7 @@ public final class PluginHandler {
             filterUnmaintainedPlugins(parent, configuredPluginNames);
             Logging.debug("Plugins list is finally set to {0}", configuredPluginNames);
 
-            infos = filterPluginInfos(getPluginJarsInPluginDirectory(), configuredPluginNames);
+            infos = filterPluginInfos(getInstalledPlugins(), configuredPluginNames);
 
             if (infos.size() != configuredPluginNames.size()) {
                 // oops, not enough plugins found
@@ -1152,8 +1135,6 @@ public final class PluginHandler {
                 configuredPluginNames.removeAll(found);
                 alertMissingPluginInformation(parent, configuredPluginNames);
             }
-        } catch (IOException e) {
-            Logging.error(e);
         } finally {
             monitor.finishTask();
         }
@@ -1226,10 +1207,10 @@ public final class PluginHandler {
                 pluginsToLoad = SubclassFilteredCollection.filter(pluginsToLoad, pi -> pluginsWantedName.contains(pi.getName()));
             }
 
-            model.addLocalPlugins(pluginsToLoad);
+            model.addInstalledPlugins(pluginsToLoad);
             model.fireTableDataChanged();
 
-            Collection<PluginInformation> pluginsToUpdate = model.getPluginsScheduledForUpdate();
+            Collection<PluginInformation> pluginsToUpdate = model.getPluginsToUpdate();
             Logging.info("updatePlugins: pluginsToUpdate {0}", pluginsToUpdate);
 
             if (!pluginsToUpdate.isEmpty()) {
@@ -1292,6 +1273,19 @@ public final class PluginHandler {
                     options[0],
                     null // FIXME: add help topic
             );
+    }
+
+    /**
+     * Returns the proxy of the plugin of the specified name.
+     * @param name The plugin name
+     * @return The plugin proxy of the specified name, if installed and loaded, or {@code null} otherwise.
+     */
+    public static PluginProxy getPluginProxy(String name) {
+        for (PluginProxy proxy : pluginList) {
+            if (proxy.getPluginInformation().getName().equals(name))
+                return proxy;
+        }
+        return null;
     }
 
     /**
@@ -1711,26 +1705,47 @@ public final class PluginHandler {
     }
 
     /**
+     * Removes a plugin from memory, returning true if JOSM should restart
+     *
+     * @param name The name of the plugin to unload
+     *
+     * @return true if removing the plugin requires a restart
+     * @since 15508
+     */
+    public static boolean removePlugin(String name) {
+        boolean restartNeeded = false;
+        try {
+            PluginProxy proxy = PluginHandler.getPluginProxy(name);
+            if (proxy == null)
+                return false; // cannot remove: plugin not loaded
+            Object plugin = proxy.getPlugin();
+            if (plugin instanceof Destroyable) {
+                ((Destroyable) plugin).destroy();
+                pluginList.remove(proxy);
+                Logging.info("Plugin ''{0}'' removed.", name);
+            } else {
+                restartNeeded = true;
+                Logging.info("Plugin ''{0}'' not removed! Restart needed.", name);
+            }
+        } catch (Exception e) {
+            Logging.error(e);
+            restartNeeded = true;
+        }
+        return restartNeeded;
+    }
+
+    /**
      * Remove plugins from memory, returning true if JOSM should restart
      *
-     * @param deactivatedPlugins The plugins to deactivate
+     * @param plugins The plugins to deactivate
      *
      * @return true if there was a plugin that requires a restart
      * @since 15508
      */
-    public static boolean removePlugins(List<PluginInformation> deactivatedPlugins) {
-        List<Destroyable> noRestart = deactivatedPlugins.stream()
-                .map(info -> PluginHandler.getPlugin(info.getName())).filter(Destroyable.class::isInstance)
-                .map(Destroyable.class::cast).collect(Collectors.toList());
-        boolean restartNeeded;
-        try {
-            noRestart.forEach(Destroyable::destroy);
-            new ArrayList<>(pluginList).stream().filter(proxy -> noRestart.contains(proxy.getPlugin()))
-                    .forEach(pluginList::remove);
-            restartNeeded = deactivatedPlugins.size() != noRestart.size();
-        } catch (Exception e) {
-            Logging.error(e);
-            restartNeeded = true;
+    public static boolean removePlugins(List<String> plugins) {
+        boolean restartNeeded = false;
+        for (String name : plugins) {
+            restartNeeded |= removePlugin(name);
         }
         return restartNeeded;
     }

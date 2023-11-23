@@ -126,6 +126,8 @@ public class ImageProvider {
         SMALLICON(Config.getPref().getInt("iconsize.smallicon", 16)),
         /** LARGE_ICON_KEY value of an Action */
         LARGEICON(Config.getPref().getInt("iconsize.largeicon", 24)),
+        /** XL icon */
+        XLARGEICON(Config.getPref().getInt("iconsize.xlargeicon", 32)),
         /** map icon */
         MAP(Config.getPref().getInt("iconsize.map", 16)),
         /** map icon maximum size */

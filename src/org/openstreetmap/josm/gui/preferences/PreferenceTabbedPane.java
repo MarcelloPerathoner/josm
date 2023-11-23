@@ -326,6 +326,33 @@ public final class PreferenceTabbedPane extends JTabbedPane implements ExpertMod
         return getSetting(ValidatorPreference.class);
     }
 
+    public static void displayAfterOkDialog(String message, boolean requiresRestart) {
+        // display the message, if necessary
+        //
+        if (requiresRestart) {
+            final ButtonSpec[] options = RestartAction.getButtonSpecs();
+            if (0 == HelpAwareOptionPane.showOptionDialog(
+                    MainApplication.getMainFrame(),
+                    message,
+                    tr("Restart"),
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null, /* no special icon */
+                    options,
+                    options[0],
+                    null /* no special help */
+                    )) {
+                MainApplication.getMenu().restart.actionPerformed(null);
+            }
+        } else {
+            JOptionPane.showMessageDialog(
+                    MainApplication.getMainFrame(),
+                    message,
+                    tr("Warning"),
+                    JOptionPane.WARNING_MESSAGE
+                    );
+        }
+    }
+
     /**
      * Saves preferences.
      * <p>
@@ -350,32 +377,10 @@ public final class PreferenceTabbedPane extends JTabbedPane implements ExpertMod
             sb.append(tr("Would you like to restart now?"));
         }
 
-        String message = "<html>" + sb.toString() + "</html>";
-        Logging.info("savePreferences: {0}", message);
-
-        // display the message, if necessary
-        //
-        if (requiresRestart) {
-            final ButtonSpec[] options = RestartAction.getButtonSpecs();
-            if (0 == HelpAwareOptionPane.showOptionDialog(
-                    MainApplication.getMainFrame(),
-                    message,
-                    tr("Restart"),
-                    JOptionPane.INFORMATION_MESSAGE,
-                    null, /* no special icon */
-                    options,
-                    options[0],
-                    null /* no special help */
-                    )) {
-                MainApplication.getMenu().restart.actionPerformed(null);
-            }
-        } else if (!sb.isEmpty()){
-            JOptionPane.showMessageDialog(
-                    MainApplication.getMainFrame(),
-                    message,
-                    tr("Warning"),
-                    JOptionPane.WARNING_MESSAGE
-                    );
+        if (!sb.toString().isEmpty()) {
+            String message = "<html>" + sb.toString() + "</html>";
+            Logging.info("savePreferences: {0}", message);
+            displayAfterOkDialog(message, requiresRestart);
         }
 
         if (MainApplication.getMainFrame() != null) {

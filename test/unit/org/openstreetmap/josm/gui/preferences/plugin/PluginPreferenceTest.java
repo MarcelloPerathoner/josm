@@ -1,17 +1,21 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.preferences.plugin;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
+import org.openstreetmap.josm.gui.HelpAwareOptionPane;
+import org.openstreetmap.josm.gui.HelpAwareOptionPaneTest;
 import org.openstreetmap.josm.gui.preferences.PreferencesTestUtils;
 import org.openstreetmap.josm.plugins.JarDownloadTask;
 import org.openstreetmap.josm.plugins.PluginException;
@@ -66,14 +70,14 @@ public class PluginPreferenceTest {
         JarDownloadTask failedTask = new JarDownloadTask(getMissingBazPluginInformation());
         failedTask.run();
 
-        assertEquals("", PluginPreference.buildDownloadSummary(List.of()));
+        assertEquals("", PluginPreference.buildDownloadSummary(List.of(), false));
 
         final String SUCCESS = "The following plugin has been downloaded <strong>successfully</strong>:<ul><li>dummy_plugin \\(31772\\)</li></ul>";
         final String FAIL    = "Downloading the following plugin has <strong>failed</strong>:<ul><li>baz_plugin<.*";
 
-        assertRegex(SUCCESS,        PluginPreference.buildDownloadSummary(List.of(task)));
-        assertRegex(FAIL,           PluginPreference.buildDownloadSummary(List.of(failedTask)));
-        assertRegex(SUCCESS + FAIL, PluginPreference.buildDownloadSummary(List.of(task, failedTask)));
+        assertRegex(SUCCESS,        PluginPreference.buildDownloadSummary(List.of(task), false));
+        assertRegex(FAIL,           PluginPreference.buildDownloadSummary(List.of(failedTask), false));
+        assertRegex(SUCCESS + FAIL, PluginPreference.buildDownloadSummary(List.of(task, failedTask), false));
     }
 
     /**
@@ -83,12 +87,16 @@ public class PluginPreferenceTest {
      */
     @Test
     void testNotifyDownloadResults() throws MalformedURLException, PluginException {
-        final HelpAwareOptionPaneMocker mocker = new HelpAwareOptionPaneMocker();
-        mocker.getMockResultMap().put("<html></html>", "OK");  // (buildDownloadSummary() output was empty)
-        mocker.getMockResultMap().put("<html>Please restart JOSM to activate the downloaded plugins.</html>", "OK");
+        List<Object> messages = new ArrayList<>();
+        HelpAwareOptionPaneTest.setRobot(o -> { messages.add(o); return 0; });
 
         PluginPreference.notifyDownloadResults(null, List.of(), false);
         PluginPreference.notifyDownloadResults(null, List.of(), true);
+
+        assertEquals(List.of(
+            "<html></html>",
+            "<html>Please restart JOSM to activate the downloaded plugins.</html>"
+        ), messages);
     }
 
     /**
@@ -96,6 +104,8 @@ public class PluginPreferenceTest {
      */
     @Test
     void testAddGui() {
-        PreferencesTestUtils.doTestPreferenceSettingAddGui(new PluginPreference.Factory(), null);
+        assertDoesNotThrow(() ->
+            PreferencesTestUtils.doTestPreferenceSettingAddGui(new PluginPreference.Factory(), null)
+        );
     }
 }

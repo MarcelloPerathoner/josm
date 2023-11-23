@@ -163,6 +163,7 @@ public class AzimuthalEquidistant extends AbstractProj {
         return spherical ? invprojectSpherical(east, north) : invprojectEllipsoidal(east, north);
     }
 
+    @SuppressWarnings("fallthrough")
     double[] projectSpherical(double latRad, double lonRad) {
         double x = 0;
         double y = 0;
@@ -246,6 +247,7 @@ public class AzimuthalEquidistant extends AbstractProj {
         return new double[] {phi, lambda};
     }
 
+    @SuppressWarnings("fallthrough")
     double[] projectEllipsoidal(double latRad, double lonRad) {
         double x = 0;
         double y = 0;

@@ -5,9 +5,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,10 +14,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
-
-import javax.swing.JOptionPane;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -29,27 +25,24 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openstreetmap.josm.TestUtils;
 import org.openstreetmap.josm.data.Preferences;
+import org.openstreetmap.josm.gui.HelpAwareOptionPaneTest;
+import org.openstreetmap.josm.gui.NotificationManager;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
-import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.plugins.PluginHandler;
+import org.openstreetmap.josm.plugins.PluginHandlerTest;
 import org.openstreetmap.josm.plugins.PluginInformation;
 import org.openstreetmap.josm.plugins.PluginProxy;
-import org.openstreetmap.josm.plugins.PluginHandlerTest;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.testutils.PluginServer;
 import org.openstreetmap.josm.testutils.annotations.AssertionsInEDT;
 import org.openstreetmap.josm.testutils.annotations.AssumeRevision;
 import org.openstreetmap.josm.testutils.annotations.FullPreferences;
 import org.openstreetmap.josm.testutils.annotations.Main;
-import org.openstreetmap.josm.testutils.mockers.HelpAwareOptionPaneMocker;
-import org.openstreetmap.josm.testutils.mockers.JOptionPaneSimpleMocker;
 import org.openstreetmap.josm.tools.Logging;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-
-import mockit.MockUp;
 
 /**
  * Higher level tests of {@link PluginPreference} class.
@@ -160,6 +153,18 @@ class PluginPreferenceHighLevelTest {
         return getPlugins(PluginHandler.getLoadedPlugins());
     }
 
+    private void configure(String plugins) {
+        Config.getPref().putList("plugins", Arrays.asList(plugins.split("\\s+")));
+    }
+
+    private PreferenceTabbedPane getTabbedPane() {
+        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
+        tabbedPane.buildGui();
+        // PluginPreference is already added to PreferenceTabbedPane by default
+        tabbedPane.selectTabByPref(PluginPreference.class);
+        return tabbedPane;
+    }
+
     /**
      * Tests choosing a new plugin to install without upgrading an already-installed plugin
      * @throws Exception never
@@ -172,45 +177,30 @@ class PluginPreferenceHighLevelTest {
             new PluginServer.RemotePlugin(null, Collections.singletonMap("Plugin-Version", "2"), "irrelevant_plugin")
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
-        Config.getPref().putList("plugins", Collections.singletonList("dummy_plugin"));
-
-        final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker(
-            Collections.singletonMap(SUCCESS + "<ul><li>baz_plugin (6)</li></ul>" + RESTART, "Cancel")
-        );
 
         Files.copy(this.referenceDummyJarOld.toPath(), this.targetDummyJar.toPath());
 
-        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
-
-        tabbedPane.buildGui();
-        // PluginPreference is already added to PreferenceTabbedPane by default
-        tabbedPane.selectTabByPref(PluginPreference.class);
-
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "downloadListButton")).doClick()
-        );
-
-        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> Config.getPref().getInt("pluginmanager.version", 999) != 999);
-
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        pluginServerRule.resetRequests();
-
+        configure("dummy_plugin");
+        final PreferenceTabbedPane tabbedPane = getTabbedPane();
         final PluginPreferenceModel model = tabbedPane.getPluginPreference().getModel();
 
-        assertEquals("dummy_plugin", getNames(model.getSelectedPlugins()));
         model.select("baz_plugin", true);
         assertEquals("baz_plugin dummy_plugin", getNames(model.getSelectedPlugins()));
 
-        assertEquals("baz_plugin:6", getPlugins(model.getPluginsScheduledForDownload()));
         assertEquals("dummy_plugin:31701", getConfiguredPlugins());
+        assertEquals("baz_plugin:6", getPlugins(model.getPluginsToDownload()));
+
+        List<String> robotList = NotificationManager.getInstance().robotList;
+        robotList.clear();
         tabbedPane.savePreferences();
-        TestUtils.syncEDTAndWorkerThreads();
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
+
         assertEquals("baz_plugin:6 dummy_plugin:31701", getConfiguredPlugins());
 
-        assertEquals(1, haMocker.getInvocationLog().size());
-        Object[] invocationLogEntry = haMocker.getInvocationLog().get(0);
-        assertEquals(1, (int) invocationLogEntry[0]);
-        assertEquals("Restart", invocationLogEntry[2]);
+        assertEquals(List.of(
+            "Downloading plugin: baz_plugin",
+            "Please restart JOSM to activate the plugins."
+        ), robotList);
 
         // dummy_plugin jar shouldn't have been updated
         TestUtils.assertFileContentsEqual(this.referenceDummyJarOld, this.targetDummyJar);
@@ -232,10 +222,6 @@ class PluginPreferenceHighLevelTest {
         // however pluginmanager.lastupdate hasn't been updated
         // questionably correct
         assertEquals("999", Config.getPref().get("pluginmanager.lastupdate", "111"));
-
-        // baz_plugin should have been added to the plugins list
-        assertEquals(Arrays.asList("baz_plugin", "dummy_plugin"),
-                Config.getPref().getList("plugins", null).stream().sorted().collect(Collectors.toList()));
     }
 
     /**
@@ -250,45 +236,30 @@ class PluginPreferenceHighLevelTest {
             new PluginServer.RemotePlugin(null, null, "irrelevant_plugin")
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
-        Config.getPref().putList("plugins", Arrays.asList("baz_plugin", "dummy_plugin"));
-
-        final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker(
-            Collections.singletonMap("<html>" + RESTART, "Cancel")
-        );
 
         Files.copy(this.referenceDummyJarOld.toPath(), this.targetDummyJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
-
-        tabbedPane.buildGui();
-        // PluginPreference is already added to PreferenceTabbedPane by default
-        tabbedPane.selectTabByPref(PluginPreference.class);
-
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "downloadListButton")).doClick()
-        );
-
-        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> Config.getPref().getInt("pluginmanager.version", 999) != 999);
-
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        pluginServerRule.resetRequests();
-
+        configure("baz_plugin dummy_plugin");
+        final PreferenceTabbedPane tabbedPane = getTabbedPane();
         final PluginPreferenceModel model = tabbedPane.getPluginPreference().getModel();
 
-        assertEquals("baz_plugin dummy_plugin", getNames(model.getSelectedPlugins()));
         model.select("baz_plugin", false);
         assertEquals("dummy_plugin", getNames(model.getSelectedPlugins()));
 
         assertEquals("baz_plugin:6 dummy_plugin:31701", getConfiguredPlugins());
+        List<String> robotList = NotificationManager.getInstance().robotList;
+        robotList.clear();
         tabbedPane.savePreferences();
-        TestUtils.syncEDTAndWorkerThreads();
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
+
         assertEquals("dummy_plugin:31701", getConfiguredPlugins());
 
-        assertEquals(1, haMocker.getInvocationLog().size());
-        Object[] invocationLogEntry = haMocker.getInvocationLog().get(0);
-        assertEquals(1, (int) invocationLogEntry[0]);
-        assertEquals("Restart", invocationLogEntry[2]);
+        // This is the correct message! You might think we deactivated a plugin but what
+        // really happended is: the dummy_plugin was *not* loaded, but the checkbox for
+        // it remained checked.  Thus the implementation tried to load the dummy_plugin
+        // at runtime and failed.
+        assertEquals(List.of("Please restart JOSM to activate the plugins."), robotList);
 
         // dummy_plugin jar shouldn't have been updated
         TestUtils.assertFileContentsEqual(this.referenceDummyJarOld, this.targetDummyJar);
@@ -309,10 +280,6 @@ class PluginPreferenceHighLevelTest {
         // however pluginmanager.lastupdate hasn't been updated
         // questionably correct
         assertEquals("999", Config.getPref().get("pluginmanager.lastupdate", "111"));
-
-        // baz_plugin should have been removed from the installed plugins list
-        assertEquals(Collections.singletonList("dummy_plugin"),
-                Config.getPref().getList("plugins", null).stream().sorted().collect(Collectors.toList()));
     }
 
     /**
@@ -328,45 +295,28 @@ class PluginPreferenceHighLevelTest {
             new PluginServer.RemotePlugin(null, Collections.singletonMap("Plugin-Version", "123"), "irrelevant_plugin")
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
-        Config.getPref().putList("plugins", Arrays.asList("baz_plugin", "dummy_plugin"));
-
-        final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker(
-            Collections.singletonMap(
-                "All installed plugins are up to date. JOSM does not have to download newer versions.",
-                "OK"
-            )
-        );
-        final JOptionPaneSimpleMocker jopsMocker = new JOptionPaneSimpleMocker();
 
         Files.copy(this.referenceDummyJarOld.toPath(), this.targetDummyJar.toPath());
         Files.copy(this.referenceBazJarOld.toPath(), this.targetBazJar.toPath());
 
-        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
-
-        tabbedPane.buildGui();
-        // PluginPreference is already added to PreferenceTabbedPane by default
-        tabbedPane.selectTabByPref(PluginPreference.class);
+        configure("baz_plugin dummy_plugin");
+        final PreferenceTabbedPane tabbedPane = getTabbedPane();
         final PluginPreferenceModel model = tabbedPane.getPluginPreference().getModel();
 
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "downloadListButton")).doClick()
-        );
-
-        TestUtils.syncEDTAndWorkerThreads();
+        var messages = new ArrayList<Object>();
+        HelpAwareOptionPaneTest.setRobot(o -> { messages.add(o); return 0; });
 
         assertEquals("baz_plugin:6 dummy_plugin:31701", getConfiguredPlugins());
-        assertEquals("", getPlugins(model.getPluginsScheduledForUpdate()));
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "updatePluginsButton")).doClick()
-        );
-        TestUtils.syncEDTAndWorkerThreads();
+        assertEquals("", getPlugins(model.getPluginsToUpdate()));
+
+        TestUtils.click(tabbedPane, "updatePluginsButton");
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
+
         assertEquals("baz_plugin:6 dummy_plugin:31701", getConfiguredPlugins());
 
-        assertTrue(jopsMocker.getInvocationLog().isEmpty());
-        assertEquals(1, haMocker.getInvocationLog().size());
-        Object[] invocationLogEntry = haMocker.getInvocationLog().get(0);
-        assertEquals(0, (int) invocationLogEntry[0]);
-        assertEquals("Plugins up to date", invocationLogEntry[2]);
+        assertEquals(List.of(
+            "All installed plugins are up to date. JOSM does not have to download newer versions."
+        ), messages);
 
         // neither jar should have changed
         TestUtils.assertFileContentsEqual(this.referenceDummyJarOld, this.targetDummyJar);
@@ -387,11 +337,10 @@ class PluginPreferenceHighLevelTest {
         // questionably correct
         assertEquals("999", Config.getPref().get("pluginmanager.lastupdate", "111"));
 
+        messages.clear();
         tabbedPane.savePreferences();
-        TestUtils.syncEDTAndWorkerThreads();
-
-        assertTrue(jopsMocker.getInvocationLog().isEmpty());
-        assertEquals(1, haMocker.getInvocationLog().size());
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
+        assertEquals(List.of(), messages);
 
         // both jars are still the original version
         TestUtils.assertFileContentsEqual(this.referenceDummyJarOld, this.targetDummyJar);
@@ -424,51 +373,29 @@ class PluginPreferenceHighLevelTest {
             new PluginServer.RemotePlugin(this.referenceBazJarNew)
         );
         pluginServer.applyToWireMockServer(wireMockRuntimeInfo);
-        Config.getPref().putList("plugins", Collections.emptyList());
 
-        final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker();
-        final JOptionPaneSimpleMocker jopsMocker = new JOptionPaneSimpleMocker(Collections.singletonMap(
-            SUCCESS + "<ul><li>dummy_plugin (31772)</li></ul></html>",
-            JOptionPane.OK_OPTION
-        ));
-
-        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
-
-        tabbedPane.buildGui();
-        // PluginPreference is already added to PreferenceTabbedPane by default
-        tabbedPane.selectTabByPref(PluginPreference.class);
-
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "downloadListButton")).doClick()
-        );
-
-        TestUtils.syncEDTAndWorkerThreads();
-
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        pluginServerRule.resetRequests();
-
+        configure("");
+        final PreferenceTabbedPane tabbedPane = getTabbedPane();
         final PluginPreferenceModel model = tabbedPane.getPluginPreference().getModel();
 
-        assertTrue(model.getSelectedPlugins().isEmpty());
         model.select("dummy_plugin", true);
         assertEquals("dummy_plugin", getNames(model.getSelectedPlugins()));
 
-        assertEquals("dummy_plugin:31772", getPlugins(model.getPluginsScheduledForDownload()));
+        assertEquals("dummy_plugin:31772", getPlugins(model.getPluginsToDownload()));
         assertEquals("", getConfiguredPlugins());
         // this cannot work as dummy_plugin:31772 throws java.lang.ClassNotFoundException: org.openstreetmap.josm.gui.NameFormatterHook
         // and has done so since 2017-08-25. See #15182 - move `NameFormatter*` from `gui` to `data.osm`
         PluginHandler.pluginListNotLoaded.clear();
+        List<String> robotList = NotificationManager.getInstance().robotList;
+        robotList.clear();
         tabbedPane.savePreferences();
-        TestUtils.syncEDTAndWorkerThreads();
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
         assertEquals("dummy_plugin:31772", getConfiguredPlugins());
         assertEquals("dummy_plugin:31772", getLoadedPlugins());
 
-        assertEquals(1, jopsMocker.getInvocationLog().size());
-        Object[] invocationLogEntry = jopsMocker.getInvocationLog().get(0);
-        assertEquals(JOptionPane.OK_OPTION, (int) invocationLogEntry[0]);
-        assertEquals("Warning", invocationLogEntry[2]);
-
-        assertTrue(haMocker.getInvocationLog().isEmpty());
+        assertEquals(List.of(
+            "Downloading plugin: dummy_plugin"
+        ), robotList);
 
         // any .jar.new files should have been deleted
         assertFalse(targetDummyJarNew.exists());
@@ -515,46 +442,26 @@ class PluginPreferenceHighLevelTest {
                 )
             )
         );
-        Config.getPref().putList("plugins", Collections.emptyList());
-        final HelpAwareOptionPaneMocker haMocker = new HelpAwareOptionPaneMocker(Collections.singletonMap(
-            SUCCESS + "<ul><li>baz_plugin (6)</li></ul>" + RESTART,
-            "Cancel"
-        ));
-        final JOptionPaneSimpleMocker jopsMocker = new JOptionPaneSimpleMocker();
 
-        final PreferenceTabbedPane tabbedPane = new PreferenceTabbedPane();
-
-        tabbedPane.buildGui();
-        // PluginPreference is already added to PreferenceTabbedPane by default
-        tabbedPane.selectTabByPref(PluginPreference.class);
-
-        GuiHelper.runInEDTAndWait(
-            () -> ((javax.swing.JButton) TestUtils.getComponentByName(tabbedPane, "downloadListButton")).doClick()
-        );
-
-        TestUtils.syncEDTAndWorkerThreads();
-
-        pluginServerRule.verify(1, WireMock.getRequestedFor(WireMock.urlEqualTo("/plugins")));
-        pluginServerRule.resetRequests();
-
+        configure("");
+        final PreferenceTabbedPane tabbedPane = getTabbedPane();
         final PluginPreferenceModel model = tabbedPane.getPluginPreference().getModel();
 
-        assertEquals("", getNames(model.getSelectedPlugins()));
         model.select("baz_plugin", true);
         assertEquals("baz_plugin", getNames(model.getSelectedPlugins()));
-        assertEquals("baz_plugin:6", getPlugins(model.getPluginsScheduledForDownload()));
+        assertEquals("baz_plugin:6", getPlugins(model.getPluginsToDownload()));
 
         assertEquals("", getConfiguredPlugins());
+        List<String> robotList = NotificationManager.getInstance().robotList;
+        robotList.clear();
         tabbedPane.savePreferences();
-        TestUtils.syncEDTAndWorkerThreads();
+        Awaitility.await().atMost(2000, MILLISECONDS).until(() -> !tabbedPane.getPluginPreference().working);
         assertEquals("baz_plugin:6", getConfiguredPlugins());
 
-        assertEquals(1, haMocker.getInvocationLog().size());
-        Object[] invocationLogEntry = haMocker.getInvocationLog().get(0);
-        assertEquals(1, (int) invocationLogEntry[0]);
-        assertEquals("Restart", invocationLogEntry[2]);
-
-        assertTrue(jopsMocker.getInvocationLog().isEmpty());
+        assertEquals(List.of(
+            "Downloading plugin: baz_plugin",
+            "Please restart JOSM to activate the plugins."
+        ), robotList);
 
         // any .jar.new files should have been deleted
         assertFalse(targetDummyJarNew.exists());

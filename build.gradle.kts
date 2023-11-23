@@ -347,9 +347,6 @@ tasks {
         options.release.set(java_lang_version)
 		options.errorprone.isEnabled.set(false) // takes forever
         inputs.files(files(generateJavaCC))
-        /* options.compilerArgs.addAll(listOf(
-            "--add-exports", "java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED",
-        ))*/
 	}
 	compileTestJava {
         options.release.set(java_lang_version)
@@ -362,7 +359,6 @@ tasks {
             include("README")
             include("LICENSE")
         }
-        // val revision = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
         val revision = getRevisionGit();
         val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         val local = true
@@ -400,7 +396,7 @@ tasks {
                 "Permissions"      to "all-permissions",
 
                 // Java 9 stuff. Entries are safely ignored by Java 8
-                "Add-Exports" to "java.desktop/com.sun.java.swing.plaf.gtk java.base/sun.security.action java.desktop/com.apple.eawt java.desktop/com.sun.imageio.spi java.desktop/com.sun.imageio.plugins.jpeg javafx.graphics/com.sun.javafx.application jdk.deploy/com.sun.deploy.config",
+                "Add-Exports" to "java.base/sun.security.action java.desktop/com.apple.eawt java.desktop/com.sun.imageio.spi java.desktop/com.sun.imageio.plugins.jpeg javafx.graphics/com.sun.javafx.application jdk.deploy/com.sun.deploy.config",
                 "Add-Opens"   to "java.base/java.lang java.base/java.nio java.base/jdk.internal.loader java.base/jdk.internal.ref java.desktop/javax.imageio.spi java.desktop/javax.swing.text.html java.prefs/java.util.prefs",
                 // Indicate that this jar may have version specific classes. Only used in Java9+
                 "Multi-Release" to "true"

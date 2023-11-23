@@ -29,25 +29,29 @@ import org.openstreetmap.josm.tools.Utils;
  * <p>
  * Definitions:
  * <ul>
- * <li><b>Local</b>: A plugin that is installed locally.
- * The plugin .jar file is stored in the configured plugins directory.
- * Information about a local plugin is read from the
- * {@code META-INF/MANIFEST.MF} file in the .jar file itself.
+ * <li><b>Installed</b>: A plugin whose jar is stored in the configured plugins directory.
+ * Information about an installed plugin is read from the {@code META-INF/MANIFEST.MF}
+ * file in the .jar file itself.
+ *
+ * <li><b>Selected</b>: A plugin that is ticked in the table.
+ *
+ * <li><b>Configured</b>: A plugin set to load in the Config. A plugin must be installed
+ * before it can be configured. Configured plugins that are not installed will error
+ * during program startup.
+ *
+ * <li><b>Loaded</b>: A plugin currently loaded into memory. A plugin must be configured
+ * before it will load.
  *
  * <li><b>Upstream</b>: A plugin that is offered for download at one or more of
  * the configured plugin repositories. Information about an upstream plugin
  * is usually got by downloading the <b>repository manifest</b> file from the repository.
- * The repository manifest is a concatenation of all {@code META-INF/MANIFEST.MF} files
+ * The repository manifest is a digest of all {@code META-INF/MANIFEST.MF} files
  * of all plugins offered on that repository.
  *
  * <li><b>Compatible</b>: A plugin that <i>according to its own metadata</i> should
  * work well in the current environment. The reasons for incompatibility are: JOSM too old,
  * Java too old, or wrong OS. A plugin may contain links to older versions of itself
  * with laxer requirements.
- *
- * <li><b>Installed</b>: A plugin whose jar is stored in the configured plugins directory.
- *
- * <li><b>Loaded</b>: A plugin currently loaded into memory.
  *
  * <li><b>Latest candidate</b>: The latest version of a given plugin offered for download
  * on any of the configured download sites. May not be compatible.
@@ -58,8 +62,8 @@ import org.openstreetmap.josm.tools.Utils;
  * </ul>
  */
 public class PluginPreferenceModel extends AbstractTableModel implements Consumer<Collection<PluginInformation>> {
-    /** The list of all local plugins */
-    private final List<PluginInformation> localPlugins = new ArrayList<>();
+    /** The list of all installed plugins */
+    private final List<PluginInformation> installedPlugins = new ArrayList<>();
     /** The list of all upstream plugins */
     private final List<PluginInformation> upstreamPlugins = new ArrayList<>();
     /** The names of the selected plugins (aka. ticked checkboxes) */
@@ -67,11 +71,15 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     /** The table rows in the model */
     private final List<TableEntry> entries = new ArrayList<>();
 
+    static List<String> getNames (Collection<PluginInformation> plugins) {
+        return plugins.stream().map(PluginInformation::getName).toList();
+    }
+
     /**
      * Constructs a new {@code PluginPreferencesModel}.
      */
     public PluginPreferenceModel() {
-        selectedPlugins = new HashSet<>(PluginHandler.getConfigPluginNames());
+        selectedPlugins = new HashSet<>(PluginHandler.getConfiguredPluginNames());
     }
 
     @Override
@@ -90,13 +98,21 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     }
 
     /**
-     * Returns the list of all plugins available locally (downloaded ones).
+     * Returns the list of all locally installed plugins
      * @return the list of plugins
      */
-    List<PluginInformation> getLocalPlugins() {
-        synchronized(localPlugins) {
-            return new ArrayList<>(localPlugins);
+    List<PluginInformation> getInstalledPlugins() {
+        synchronized(installedPlugins) {
+            return new ArrayList<>(installedPlugins);
         }
+    }
+
+    /**
+     * Returns the list of all loaded plugins
+     * @return the list of plugins
+     */
+    List<PluginInformation> getLoadedPlugins() {
+        return PluginHandler.getLoadedPlugins();
     }
 
     /**
@@ -129,9 +145,9 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      *
      * @param plugins The locally installed plugins
      */
-    public void addLocalPlugins(Collection<PluginInformation> plugins) {
-        synchronized(localPlugins) {
-            localPlugins.addAll(plugins);
+    public void addInstalledPlugins(Collection<PluginInformation> plugins) {
+        synchronized(installedPlugins) {
+            installedPlugins.addAll(plugins);
         }
     }
 
@@ -141,9 +157,9 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * Note: it is the callers responsibility to call {@code fireTableDataChanged()} in
      * the EDT some time after calling this function to update the JTable.
      */
-    public void clearLocalPlugins() {
-        synchronized(localPlugins) {
-            localPlugins.clear();
+    public void clearInstalledPlugins() {
+        synchronized(installedPlugins) {
+            installedPlugins.clear();
         }
     }
 
@@ -153,18 +169,18 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     @Override
     public void fireTableDataChanged() {
         entries.clear();
-        entries.addAll(pair(localPlugins, upstreamPlugins));
+        entries.addAll(pair(getLoadedPlugins(), installedPlugins, upstreamPlugins));
         super.fireTableDataChanged();
     }
 
     /**
-     * Replies the list of all updateable plugins
+     * Replies the list of all update plugins
      * <p>
      * This list contains the "update" plugin for each plugin.
      *
      * @return the list of plugin information objects
      */
-    List<PluginInformation> getUpdatablePlugins() {
+    List<PluginInformation> getUpdatePlugins() {
         return entries.stream()
                 .map(e -> e.update)
                 .filter(p -> p != null)
@@ -186,7 +202,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     }
 
     /**
-     * Replies the names of the selected plugins
+     * Replies the names of the currently selected plugins
      *
      * @return the names of the selected plugins
      */
@@ -242,18 +258,15 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     }
 
     /**
-     * Replies the plugins that have a newer compatible version available.
+     * Returns the selected plugins that have a compatible update available.
      * <p>
-     * The list also contains all dependencies that have an update.
+     * These are updated if the user hits the "update" button.
      *
-     * @return the set of plugins waiting for update
+     * @return the list of plugins
      */
-    public List<PluginInformation> getPluginsScheduledForUpdate() {
-        Collection<String> dependencies = getDependencies(getUpdatablePlugins(), selectedPlugins);
-        dependencies.addAll(selectedPlugins);
-
+    public List<PluginInformation> getPluginsToUpdate() {
         return entries.stream()
-            .filter(e -> dependencies.contains(e.getName()))
+            .filter(e -> selectedPlugins.contains(e.getName()))
             .filter(TableEntry::hasUpdate)
             .map(e -> e.update)
             .filter(p -> p != null)
@@ -261,24 +274,51 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     }
 
     /**
-     * Replies the set of plugins waiting for download.
+     * Returns the selected plugins that must be downloaded.
      * <p>
-     * These are downloaded if the user hits ok on the preference pane.
+     * These are downloaded if the user hits the "ok" button.
      *
-     * @return the set of plugins waiting for download
+     * @return the list of plugins
      */
-    List<PluginInformation> getPluginsScheduledForDownload() {
-        // FIXME: make clear the semantics of the "ok" and the "update" buttons. ie.
-        // should updates automatically be included if the user hits "ok"?
-        Collection<String> dependencies = getDependencies(getUpdatablePlugins(), selectedPlugins);
-        dependencies.addAll(selectedPlugins);
+    List<PluginInformation> getPluginsToDownload() {
+        // which plugins where activated
+        List<String> activatedPluginNames = getSelectedPluginNames();
+        activatedPluginNames.removeAll(PluginHandler.getConfiguredPluginNames());
+
+        // add dependencies to activated plugins (in case the user unselected them)
+        activatedPluginNames.addAll(getDependencies(getUpdatePlugins(), activatedPluginNames));
+
+        Logging.info("getPluginsToDownload() activated plugin names: {0}", String.join(", ", activatedPluginNames));
 
         return entries.stream()
-            .filter(e -> dependencies.contains(e.getName()))
-            .filter(TableEntry::isDownloadRequired)
+            .filter(e -> activatedPluginNames.contains(e.getName()))
+            .filter(TableEntry::hasUpdate)
             .map(e -> e.update)
             .filter(p -> p != null)
             .toList();
+    }
+
+    /**
+     * Returns plugins that are installed and selected but not currently loaded
+     * <p>
+     * These plugins should be dynamically loaded, else prompt for restart
+     */
+    List<PluginInformation> getPluginsToActivate() {
+        List<String> loadedPluginNames = getNames(PluginHandler.getLoadedPlugins());
+        return PluginHandler.getInstalledPlugins().stream()
+            .filter(pi -> selectedPlugins.contains(pi.getName()))
+            .filter(pi -> !loadedPluginNames.contains(pi.getName()))
+            .toList();
+    }
+
+    /**
+     * Returns plugins that are loaded but not currently selected
+     * <p>
+     * These plugins should be dynamically unloaded, else prompt for restart
+     */
+    List<PluginInformation> getPluginsToDeactivate() {
+        return PluginHandler.getLoadedPlugins().stream()
+            .filter(p -> !selectedPlugins.contains(p.getName())).toList();
     }
 
     /**
@@ -291,7 +331,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
         if (selected) {
             try {
                 selectedPlugins.add(name);
-                getDependencies(getUpdatablePlugins(), selectedPlugins).forEach(selectedPlugins::add);
+                getDependencies(getUpdatePlugins(), selectedPlugins).forEach(selectedPlugins::add);
             } catch (IllegalArgumentException e) {
                 JOptionPane.showMessageDialog(null, e.getMessage());
             }
@@ -313,21 +353,24 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     }
 
     class TableEntry {
-        /** The local plugin (installed and maybe loaded) */
-        PluginInformation local;
+        /** The loaded plugin */
+        PluginInformation loaded;
+        /** The installed plugin (and maybe loaded) */
+        PluginInformation installed;
         /** The best compatible plugin candidate available */
         PluginInformation update;
         /** The latest plugin candidate available */
         PluginInformation latest;
 
-        TableEntry(PluginInformation local, PluginInformation upstream) {
-            this.local = local;
+        TableEntry(PluginInformation loaded, PluginInformation installed, PluginInformation upstream) {
+            this.loaded = loaded;
+            this.installed = installed;
             this.update = upstream != null ? getHighestCompatibleVersion(upstream) : null;
             this.latest = upstream;
         }
 
         String getName() {
-            return (latest != null ? latest : local).getName();
+            return (latest != null ? latest : installed).getName();
         }
 
         String getNameAsHtml() {
@@ -341,7 +384,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
          * @return the description as HTML document
          */
         String getDescriptionAsHtml() {
-            PluginInformation data = latest != null ? latest : local;
+            PluginInformation data = latest != null ? latest : installed;
             List<String> msg = new ArrayList<>();
             msg.add(data.getDescription() == null ? tr("no description available") :
                     Utils.escapeReservedCharactersHTML(data.getDescription()));
@@ -368,14 +411,23 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
         Icon getIcon() {
             if (latest != null && latest.getScaledIcon() != null)
                 return latest.getScaledIcon();
-            return local != null ? local.getScaledIcon() : null;
+            return installed != null ? installed.getScaledIcon() : null;
         }
 
-        String getLocalVersionAsHtml() {
-            if (local != null) {
+        String getLoadedVersionAsHtml() {
+            if (loaded != null) {
                 return hasUpdate()
-                    ? "<html><b style=\"color: red\">" + local.getVersion() + "</b></html>"
-                    : local.getVersion();
+                    ? "<html><b style=\"color: red\">" + loaded.getVersion() + "</b></html>"
+                    : loaded.getVersion();
+            }
+            return null;
+        }
+
+        String getInstalledVersionAsHtml() {
+            if (installed != null) {
+                return hasUpdate()
+                    ? "<html><b style=\"color: red\">" + installed.getVersion() + "</b></html>"
+                    : installed.getVersion();
             }
             return null;
         }
@@ -406,7 +458,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
                 || matches(word, getDescriptionAsHtml())
                 || (latest != null && matches(word, latest.getVersion()))
                 || (update != null && matches(word, update.getVersion()))
-                || (local != null && matches(word, local.getVersion()));
+                || (installed != null && matches(word, installed.getVersion()));
         }
 
         private boolean matches(String filter, String value) {
@@ -478,6 +530,14 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
         }
 
         /**
+         * Sets the loaded plugin.
+         */
+        TableEntry setLoaded(final PluginInformation loaded) {
+            this.loaded = loaded;
+            return this;
+        }
+
+        /**
          * Returns the highest compatible version of a given plugin.
          * <p>
          * Note: May return the given PluginInformation.
@@ -497,23 +557,9 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
         }
 
         /**
-         * Replies true if this this plugin should be downloaded because it is not
-         * available locally.
-         *
-         * @return true if the plugin should be downloaded
-         */
-        public boolean isDownloadRequired() {
-            // cannot download
-            if (latest == null) return false;
-            if (latest.getDownloadLink() == null) return false;
-            // must download
-            if (local == null) return true;
-            return local.getVersion() == null;
-        }
-
-        /**
-         * Replies true if there is a <b>compatible</b> later version of this plugin
-         * available.
+         * Returns true if there is a <b>compatible</b> update available.
+         * <p>
+         * Also returns true if the plugin is not installed locally.
          *
          * @return true if there is a newer version
          */
@@ -522,11 +568,11 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
             if (update.getVersion() == null) return false;
             if (update.getDownloadLink() == null) return false;
 
-            if (local == null) return true;
-            if (local.getVersion() == null) return true;
-            ComparableVersion localVersion = new ComparableVersion(local.getVersion());
+            if (installed == null) return true;
+            if (installed.getVersion() == null) return true;
+            ComparableVersion installedVersion = new ComparableVersion(installed.getVersion());
             ComparableVersion updateVersion = new ComparableVersion(update.getVersion());
-            return localVersion.compareTo(updateVersion) < 0;
+            return installedVersion.compareTo(updateVersion) < 0;
         }
     }
 
@@ -542,27 +588,39 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     /**
      * Pairs local plugins with upstream plugins.
      * <p>
-     * This function pairs every local plugin with the respective "best compatible" and
+     * This function pairs every installed plugin with the respective "best compatible" and
      * "best" upstream candidates. "Best" is currently defined as: The highest version
      * of a given plugin. "Best compatible" must also be compatible with the current
      * environment. See also: {@link PluginInformation#isCompatible isCompatible()}
      * <p>
-     * If there is no suitable partner for local, update or latest, a table entry with
-     * {@code null}s is returned.
+     * If there is no suitable partner for loaded, installed, update or latest,
+     * a table entry with {@code null}s is returned.
      *
-     * @param local the list of local plugins
+     * @param installed the list of locally installed plugins
      * @param upstream the list of upstream plugins
      * @return a list of {@link TableEntry}s
      */
-    private Collection<TableEntry> pair(Collection<PluginInformation> local, Collection<PluginInformation> upstream) {
-        LinkedHashMap<String, TableEntry> map = new LinkedHashMap<>();
-        for(var pi : local) {
-            map.computeIfAbsent(pi.getName(), k -> new TableEntry(pi, null));
+    private Collection<TableEntry> pair(Collection<PluginInformation> loaded,
+            Collection<PluginInformation> installed, Collection<PluginInformation> upstream) {
+
+        LinkedHashMap<String, TableEntry> installedMap = new LinkedHashMap<>();
+        for(var pi : installed) {
+            installedMap.computeIfAbsent(pi.getName(), k -> new TableEntry(null, pi, null));
+        }
+        for(var pi : loaded) {
+            installedMap.compute(pi.getName(), (k, v) -> {
+                if (v == null) {
+                    return new TableEntry(pi, null, null);
+                } else {
+                    v.setLoaded(pi);
+                    return v;
+                }
+            });
         }
         for(var pi : upstream) {
-            map.compute(pi.getName(), (k, v) -> {
+            installedMap.compute(pi.getName(), (k, v) -> {
                 if (v == null) {
-                    return new TableEntry(null, pi);
+                    return new TableEntry(null, null, pi);
                 } else {
                     v.mergeLatest(pi);
                     v.mergeUpdate(pi);
@@ -570,7 +628,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
                 }
             });
         }
-        return map.values();
+        return installedMap.values();
     }
 
     /*
@@ -584,8 +642,8 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
 
     @Override
     public int getColumnCount() {
-        // checkbox, icon, name, local, update, latest
-        return 6;
+        // checkbox, icon, name, loaded, installed, update, latest
+        return 7;
     }
 
     @Override
@@ -610,9 +668,10 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
             case 0: return e.isSelected();
             case 1: return e.getIcon();
             case 2: return e.getNameAsHtml();
-            case 3: return e.getLocalVersionAsHtml();
-            case 4: return e.getUpdateVersionAsHtml();
-            case 5: return e.getLatestVersionAsHtml();
+            case 3: return e.getLoadedVersionAsHtml();
+            case 4: return e.getInstalledVersionAsHtml();
+            case 5: return e.getUpdateVersionAsHtml();
+            case 6: return e.getLatestVersionAsHtml();
             default: return null;
         }
     }

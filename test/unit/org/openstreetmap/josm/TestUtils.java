@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.swing.JButton;
+
 import org.junit.jupiter.api.Assertions;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -65,6 +67,7 @@ import org.openstreetmap.josm.tools.WikiReader;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -486,6 +489,16 @@ public final class TestUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Clicks on a named component
+     */
+    public static void click(Component root, String name) {
+        GuiHelper.runInEDTAndWait(() -> {
+            if (getComponentByName(root, name) instanceof JButton button)
+                button.doClick();
+        });
     }
 
     /**

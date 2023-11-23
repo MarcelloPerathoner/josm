@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -37,6 +38,14 @@ import org.openstreetmap.josm.tools.Logging;
  * Utility methods that display an option dialog with an additional help button that links to the JOSM help
  */
 public final class HelpAwareOptionPane {
+    /**
+     * A function that, if set, supplies answers instead of a human. The function is
+     * called with the message being displayed and should return the answer code.
+     * <p>
+     * DO NOT USE THIS EXCEPT FOR TESTING! This is thread local so that multiple tests
+     * running in parallel won't thrash each others robots.
+     */
+    static Function<Object, Integer> robot = null;
 
     private HelpAwareOptionPane() {
         // Hide default constructor for utils classes
@@ -243,6 +252,12 @@ public final class HelpAwareOptionPane {
      */
     public static int showOptionDialog(Component parentComponent, Object msg, String title, int messageType,
             Icon icon, final ButtonSpec[] options, final ButtonSpec defaultOption, final String helpTopic) {
+
+        // if set, get the robot's answer
+        if (robot != null) {
+            return robot.apply(msg);
+        }
+
         final List<JButton> buttons = createOptionButtons(options, helpTopic);
         if (helpTopic != null) {
             buttons.add(createHelpButton(helpTopic));

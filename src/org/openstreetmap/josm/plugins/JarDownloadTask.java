@@ -14,9 +14,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import java.util.jar.JarFile;
 
 import org.openstreetmap.josm.data.Preferences;
+import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.gui.progress.swing.ProgMon.IProgMonDisplay;
+import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.HttpClient;
 import org.openstreetmap.josm.tools.HttpClient.Response;
 import org.openstreetmap.josm.tools.Logging;
@@ -64,10 +67,14 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private final PluginInformation pluginInformation;
-    private final File filename;
+    private final File newFilename;
+    private final File installedFilename;
+    private final String name;
     private int status = 0;
     private Exception exception = null;
     private IProgMonDisplay progMonDisplay = null;
+    private boolean restartNeeded = false;
+
 
     /**
      * Start download tasks for the given plugins
@@ -92,6 +99,17 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
     }
 
     /**
+     * Returns a new CompletableFuture that is completed when all of
+     * the given CompletableFutures complete.
+     *
+     * @param futureList all futures that must complete
+     * @return a CompletableFuture
+     */
+    public static CompletableFuture<Void> allOf(List<CompletableFuture<JarDownloadTask>> futureList) {
+        return CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()]));
+    }
+
+    /**
      * Join running tasks
      * @see #supplyAsync
      */
@@ -112,9 +130,14 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
      */
     public JarDownloadTask(PluginInformation pluginInformation) {
         this.pluginInformation = pluginInformation;
-        this.filename = new File(
+        name = pluginInformation.getName();
+        newFilename = new File(
             Preferences.main().getPluginsDirectory(),
-            pluginInformation.getName() + ".jar.new"
+            name + ".jar.new"
+        );
+        installedFilename = new File(
+            Preferences.main().getPluginsDirectory(),
+            name + ".jar"
         );
     }
 
@@ -128,12 +151,16 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
         return pluginInformation;
     }
 
-    public File getFilename() {
-        return filename;
+    public File getNewFilename() {
+        return newFilename;
     }
 
     public int getStatus() {
-        return status;
+        return getException() != null ? 600 : status;
+    }
+
+    public boolean getRestartNeeded() {
+        return restartNeeded;
     }
 
     public Exception getException() {
@@ -152,11 +179,7 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
     public void run() {
         try {
             URL url = pluginInformation.getUri().toURL();
-            Logging.debug("Download plugin {0} from {1}...", pluginInformation.getName(), url);
-            if (progMonDisplay != null) {
-                progMonDisplay.setText(tr("Downloading plugin: {0}", pluginInformation.getName()));
-                progMonDisplay.setVisible(true);
-            }
+            Logging.debug("Download plugin {0} from {1}...", name, url);
             if ("https".equals(url.getProtocol()) || "http".equals(url.getProtocol())) {
                 HttpClient downloadConnection = HttpClient.create(url).setAccept(PLUGIN_MIME_TYPES);
                 Response response = downloadConnection.connect();
@@ -166,7 +189,7 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
                 }
 
                 try (InputStream in = response.getContent()) {
-                    Files.deleteIfExists(filename.toPath());
+                    Files.deleteIfExists(newFilename.toPath());
                     copyWithProgressMonitor(in);
                 }
 
@@ -176,26 +199,42 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
                 }
                 */
                 status = response.getResponseCode();
+                if (progMonDisplay != null) {
+                    progMonDisplay.setCurrent((int) response.getContentLength() / 1024);
+                }
             } else {
                 // file:// URLs where HttpClient doesn't work
                 try (InputStream in = url.openStream()) {
-                    Files.deleteIfExists(filename.toPath());
+                    Files.deleteIfExists(newFilename.toPath());
                     copyWithProgressMonitor(in);
                 }
                 status = 200;
             }
-        } catch (IOException e) {
-            exception = e;
-        } finally {
+
+            if (progMonDisplay != null)
+                progMonDisplay.setText(tr("Installing plugin: {0}", name));
+            installPlugin();
+
+            restartNeeded = isRestartNeeded();
             if (progMonDisplay != null) {
-                progMonDisplay.setVisible(false);
+                if (restartNeeded) {
+                    progMonDisplay.warning(tr("Plugin {0} needs restart", name));
+                } else {
+                    progMonDisplay.success(tr("Plugin {0} installed", name));
+                }
             }
+
+        } catch (IOException | PluginDownloadException | PluginException e) {
+            if (progMonDisplay != null)
+                progMonDisplay.error(e.getLocalizedMessage());
+            Logging.warn(e.getLocalizedMessage(), e);
+            exception = e;
         }
     }
 
     private void copyWithProgressMonitor(InputStream in) throws IOException {
         try (OutputStream out = Files.newOutputStream(
-                filename.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                newFilename.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
             int transferred = 0;
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
             int read;
@@ -203,10 +242,72 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
                 out.write(buffer, 0, read);
                 transferred += read;
                 if (progMonDisplay != null) {
-                    progMonDisplay.setCurrent(transferred);
+                    progMonDisplay.setCurrent(transferred / 1024);
                 }
             }
         }
+    }
+
+    /**
+     * Installs the downloaded plugin.
+     * <p>
+     * This function moves the newly downloaded plugin jar with the suffix
+     * {@code .jar.new} to the corresponding {@code .jar} file.  The function refuses to
+     * install an incompatible jar as returned by
+     * {@link PluginInformation#isCompatible}.
+     * @throws PluginDownloadException
+     */
+    public void installPlugin() throws PluginException, PluginDownloadException {
+        final String FAILED = tr("Failed to install plugin ''{0}'' from temporary download file ''{1}''.",
+                installedFilename.toString(), newFilename.toString());
+        final String SKIPPING = tr("Failed to install already downloaded plugin ''{0}''. " +
+                "Skipping installation. JOSM is still going to load the old plugin version.",
+                name);
+        String message;
+
+        try {
+            // Check the plugin is a valid and accessible JAR file before installing it (fix #7754)
+            new JarFile(newFilename).close();
+        } catch (IOException e) {
+            message = FAILED + " " + e.getLocalizedMessage();
+            throw new PluginDownloadException(message, e);
+        }
+
+        PluginInformation pi = new PluginInformation(newFilename, name, newFilename.toURI());
+        if (!pi.isCompatible()) {
+            newFilename.delete(); // FIXME really?
+            message = FAILED + " " + tr("The new plugin is not compatible with your system environment.");
+            throw new PluginDownloadException(message);
+        }
+
+        // Delete the old file
+        if (installedFilename.exists() && !installedFilename.delete()) {
+            message = tr("Failed to delete outdated plugin ''{0}''.", installedFilename.toString());
+            Logging.warn(SKIPPING);
+            throw new PluginDownloadException(message);
+        }
+
+        // Finally install the plugin
+        if (!newFilename.renameTo(installedFilename)) {
+            message = FAILED + " " + tr("Renaming failed.");
+            Logging.warn(SKIPPING);
+            throw new PluginDownloadException(message);
+        }
+    }
+
+    /**
+     * Return true if a restart is needed
+     * <p>
+     * If the plugin is currently loaded, but cannot be unloaded, we must restart JOSM
+     * to get rid of it.
+     *
+     * @return true if a restart is needed
+     */
+    public boolean isRestartNeeded() {
+        if (!getPluginInformation().canLoadAtRuntime())
+            return true;
+        Object plugin = PluginHandler.getPlugin(name);
+        return ((plugin != null) && !(plugin instanceof Destroyable));
     }
 
     /**

@@ -1494,13 +1494,13 @@ public class NavigatableComponent extends JComponent implements Helpful {
      * @return true if inside
      */
     private boolean hitTest(Point p, Node n) {
-        Point2D loc = getPoint2D(n);
+        Point2D screenPosNode = getPoint2D(n);
         for (StyleElement e : getStyleElementList(n)) {
             if (e instanceof NodeElement) {
                 NodeElement ne = (NodeElement) e;
                 Rectangle r = ne.getBoxProvider().get().getBox();
-                r.x += loc.getX();
-                r.y += loc.getY();
+                r.x += (int) screenPosNode.getX();
+                r.y += (int) screenPosNode.getY();
                 if (r.contains(p))
                     return true;
             }

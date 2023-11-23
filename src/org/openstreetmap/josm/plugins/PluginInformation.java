@@ -123,12 +123,12 @@ public final class PluginInformation {
     public PluginInformation(InputStream manifestStream, String name, URI uri) throws PluginException {
         this.name = name;
         this.uri = uri;
-        icon = null;
         invalidManifestEntries = new ArrayList<>();
         try {
             Manifest manifest = new Manifest();
             manifest.read(manifestStream);
             attr = manifest.getMainAttributes();
+            icon = initIcon(attr, null);
             version = new ComparableVersion(getVersion());
             libraries = buildLibraries(attr, null);
             oldVersions = buildOldVersions();
@@ -139,18 +139,16 @@ public final class PluginInformation {
     }
 
     /**
-     * Creates a plugin information object by reading plugin information in Manifest format
-     * from the input stream {@code manifestStream}.
+     * Creates a plugin information object from attributes.
      *
      * @param attributes the manifest attributes
      * @param name the plugin name
      * @param uri the URI of the plugin
-     * @throws PluginException if the plugin information can't be read from the input stream
      */
     public PluginInformation(Attributes attributes, String name, URI uri) {
         this.name = name;
         this.uri = uri;
-        icon = null;
+        icon = initIcon(attributes, null);
         invalidManifestEntries = new ArrayList<>();
         attr = new Attributes(attributes);
         version = new ComparableVersion(getVersion());
@@ -443,6 +441,7 @@ public final class PluginInformation {
     public boolean isExternal() {
         String downloadlink = getDownloadLink();
         return downloadlink != null
+                && !downloadlink.startsWith(Preferences.getDefaultPluginSite())
                 && !downloadlink.startsWith("https://josm.openstreetmap.de/osmsvn/applications/editors/josm/dist/")
                 && !downloadlink.startsWith("https://github.com/JOSM/")
                 && !downloadlink.startsWith("file:");

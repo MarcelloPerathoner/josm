@@ -43,7 +43,7 @@ public class PluginHandlerTest {
      * Returns the configured plugins sorted by name + version
      */
     public static List<PluginInformation> getConfiguredPlugins() throws IOException {
-        return PluginHandler.getConfigPlugins().stream()
+        return PluginHandler.getConfiguredPlugins().stream()
             .sorted(PluginInformation.nameVersion).toList();
     }
 
