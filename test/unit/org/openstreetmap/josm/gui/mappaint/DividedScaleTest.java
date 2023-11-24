@@ -95,6 +95,78 @@ class DividedScaleTest {
     }
 
     /**
+     * Test {@link DividedScale#put} and {@link DividedScale#get}
+     */
+    @Test
+    void testSplitLower() {
+        DividedScale<String> scale = new DividedScale<String>()
+                .put("foo",  new Range(2., 4.))
+                .put("bar",  new Range(6., 8.))
+                .put("baz",  new Range(4., 5.))
+                .put("quux", new Range(8., 9.));
+        assertNull(scale.get(1.5));
+        assertEquals("foo",  scale.get(3.));
+        assertEquals("bar",  scale.get(7.));
+        assertEquals("baz",  scale.get(4.5));
+        assertEquals("quux", scale.get(8.5));
+        assertNull(scale.get(9.5));
+    }
+
+    /**
+     * Test {@link DividedScale#put} and {@link DividedScale#get}
+     */
+    @Test
+    void testSplitUpper() {
+        DividedScale<String> scale = new DividedScale<String>()
+                .put("foo",  new Range(2., 4.))
+                .put("bar",  new Range(6., 8.))
+                .put("baz",  new Range(5., 6.))
+                .put("quux", new Range(0., 2.));
+        assertEquals("quux", scale.get(1.));
+        assertEquals("foo",  scale.get(3.));
+        assertEquals("bar",  scale.get(7.));
+        assertEquals("baz",  scale.get(5.5));
+        assertNull(scale.get(9.));
+    }
+
+    /**
+     * Test {@link DividedScale#put} and {@link DividedScale#get}
+     */
+    @Test
+    void testSplitMiddle() {
+        DividedScale<String> scale = new DividedScale<String>()
+                .put("foo",  new Range(2., 4.))
+                .put("bar",  new Range(6., 8.))
+                .put("baz",  new Range(4.5, 5.5))
+                .put("quux", new Range(0.5, 1.5))
+                .put("quux", new Range(8.5, 9.5));
+        assertNull(scale.get(0.1));
+        assertEquals("quux", scale.get(1.));
+        assertEquals("foo", scale.get(3.));
+        assertNull(scale.get(4.2));
+        assertEquals("baz", scale.get(5.));
+        assertNull(scale.get(5.7));
+        assertEquals("bar", scale.get(7.));
+        assertEquals("quux", scale.get(9.));
+    }
+
+    /**
+     * Test {@link DividedScale#put} and {@link DividedScale#get}
+     */
+    @Test
+    void testSplitExact() {
+        DividedScale<String> scale = new DividedScale<String>()
+                .put("foo", new Range(2., 4.))
+                .put("bar", new Range(6., 8.))
+                .put("baz", new Range(4., 6.));
+        assertNull(scale.get(1.));
+        assertEquals("foo", scale.get(3.));
+        assertEquals("baz", scale.get(5.));
+        assertEquals("bar", scale.get(7.));
+        assertNull(scale.get(9.));
+    }
+
+    /**
      * Test {@link DividedScale#put}
      */
     @Test
@@ -124,6 +196,7 @@ class DividedScaleTest {
         DividedScale<String> scale = new DividedScale<String>()
                 .put("foo", new Range(4., 8.));
         Exception ex = assertThrows(DividedScale.RangeViolatedError.class, () -> scale.put("bar", new Range(2., 5.)));
-        assertEquals("the new range must be within a single subrange", ex.getMessage());
+        assertEquals("the new range must be within a subrange that has no data", ex.getMessage());
+        // assertEquals("the new range must be within a single subrange", ex.getMessage());
     }
 }

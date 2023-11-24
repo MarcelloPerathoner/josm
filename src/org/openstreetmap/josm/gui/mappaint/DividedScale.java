@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.mappaint;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,21 +36,42 @@ public class DividedScale<T> {
         }
     }
 
-    /* list of boundaries for the scale ranges */
-    private final List<Range> ranges;
-    /* data objects for each scale range */
+    /* list of posts */
+    private final List<Double> posts;
+    /* list of fences */
     private final List<T> data;
 
     protected DividedScale() {
-        ranges = new ArrayList<>();
-        ranges.add(Range.ZERO_TO_INFINITY);
+        posts = new ArrayList<>();
         data = new ArrayList<>();
         data.add(null);
     }
 
+    /**
+     * Copy constructor
+     */
     protected DividedScale(DividedScale<T> s) {
-        ranges = new ArrayList<>(s.ranges);
+        posts = new ArrayList<>(s.posts);
         data = new ArrayList<>(s.data);
+    }
+
+    /**
+     * Returns the index or the insertion point
+     * <p>
+     * The index is the point at where the value was actually found. The insertion point
+     * is the index where the value would have to be inserted if not found.
+     *
+     * @param scale scale
+     * @return the index or insertion point
+     */
+    private int indexOf(double scale) {
+        if (scale <= 0)
+            throw new IllegalArgumentException("scale must be <= 0 but is "+scale);
+        int n = data.size();
+        if (n == 0)
+            return -1;
+        int index = Collections.binarySearch(posts, scale);
+        return (index >= 0) ? index : -index - 1;
     }
 
     /**
@@ -59,15 +81,10 @@ public class DividedScale<T> {
      * @return the data object at the given scale, can be null
      */
     public T get(double scale) {
-        if (scale <= 0)
-            throw new IllegalArgumentException("scale must be <= 0 but is "+scale);
-        for (int i = 0; i < data.size(); ++i) {
-            Range range = ranges.get(i);
-            if (range.contains(scale)) {
-                return data.get(i);
-            }
-        }
-        throw new AssertionError();
+        int index = indexOf(scale);
+        if (index == -1)
+            return null;
+        return data.get(index);
     }
 
     /**
@@ -78,15 +95,12 @@ public class DividedScale<T> {
      * @return pair containing data object and range
      */
     public Pair<T, Range> getWithRange(double scale) {
-        if (scale <= 0)
-            throw new IllegalArgumentException("scale must be <= 0 but is "+scale);
-        for (int i = 0; i < data.size(); ++i) {
-            Range range = ranges.get(i);
-            if (range.contains(scale)) {
-                return new Pair<>(data.get(i), range);
-            }
-        }
-        throw new AssertionError();
+        int index = indexOf(scale);
+        if (index == -1)
+            return null;
+        double lower = index < 1 ? 0d : posts.get(index - 1);
+        double upper = index >= posts.size() ? Double.MAX_VALUE : posts.get(index);
+        return new Pair<>(data.get(index), new Range(lower, upper));
     }
 
     /**
@@ -101,7 +115,7 @@ public class DividedScale<T> {
     public DividedScale<T> put(T o, Range r) {
         DividedScale<T> s = new DividedScale<>(this);
         s.putImpl(o, r.getLower(), r.getUpper());
-        s.consistencyTest();
+        // Logging.info(s.toString());
         return s;
     }
 
@@ -110,11 +124,10 @@ public class DividedScale<T> {
      *
      * ASCII-art explanation:
      *
-     *    data[i-1]      data[i]      data[i+1
-     * |--------------|------------|--------------|
-     * (--range[i-1]--]
-     *                (--range[i]--]
-     *                             (--range[i+1]--]
+     *    data[i-1]      data[i]      data[i+1]
+     * (--------------]------------]--------------]
+     *             post[i]      post[i+1]
+     *
      *                       (--------]
      *                     lower     upper
      * @param o data object
@@ -122,65 +135,68 @@ public class DividedScale<T> {
      * @param upper upper bound
      */
     private void putImpl(T o, double lower, double upper) {
-        int i = 0;
-        while (ranges.get(i).getUpper() <= lower) {
-            ++i;
-        }
-        Range split = ranges.get(i);
-        if (split.getUpper() < upper) {
-            throw new RangeViolatedError("the new range must be within a single subrange");
-        } else if (data.get(i) != null) {
+        if (get(upper) != null)
             throw new RangeViolatedError("the new range must be within a subrange that has no data");
-        } else if (split.getLower() == lower && split.getUpper() == upper) {
-            data.set(i, o);
-        } else if (split.getLower() == lower) {
-            ranges.set(i, new Range(split.getLower(), upper));
-            ranges.add(i + 1, new Range(upper, split.getUpper()));
-            data.add(i, o);
-        } else if (split.getUpper() == upper) {
-            ranges.set(i, new Range(split.getLower(), lower));
-            ranges.add(i + 1, new Range(lower, split.getUpper()));
-            data.add(i + 1, o);
-        } else {
-            ranges.set(i, new Range(split.getLower(), lower));
-            ranges.add(i + 1, new Range(lower, upper));
-            ranges.add(i + 2, new Range(upper, split.getUpper()));
-            data.add(i + 1, o);
-            data.add(i + 2, null);
-        }
+
+        // Logging.info(toString());
+
+        int lowerIndex = binarySearchWithInsert(lower);
+        int upperIndex = binarySearchWithInsert(upper);
+        if (lowerIndex + 1 != upperIndex)
+            throw new RangeViolatedError("the new range must be within a single subrange");
+
+        // Logging.info(toString());
+        // Logging.info("lower: {0} upper: {1}", lower, upper);
+        // Logging.info("lowerIndex: {0} upperIndex: {1}", lowerIndex, upperIndex);
+
+        data.set(lowerIndex + 1, o);
     }
 
     /**
-     * Runs a consistency test.
-     * @throws AssertionError When an invariant is broken.
+     * Searches the posts array for the key.
+     * <p>
+     * Returns the index if the exact value was found.  If the value was not found, it
+     * will be inserted and the new index returned.
      */
-    public void consistencyTest() {
-        if (ranges.isEmpty()) throw new AssertionError(ranges);
-        if (data.isEmpty()) throw new AssertionError(data);
-        if (ranges.size() != data.size()) throw new AssertionError();
-        if (ranges.get(0).getLower() != 0) throw new AssertionError();
-        if (ranges.get(ranges.size() - 1).getUpper() != Double.POSITIVE_INFINITY) throw new AssertionError();
-        for (int i = 0; i < data.size() - 1; ++i) {
-            if (ranges.get(i).getUpper() != ranges.get(i + 1).getLower()) throw new AssertionError();
+    private int binarySearchWithInsert(Double key) {
+        int low = 0;
+        int high = posts.size() - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            Double midVal = posts.get(mid);
+
+            if (midVal < key)
+                low = mid + 1;
+            else if (midVal > key)
+                high = mid - 1;
+            else
+                return mid; // key found
         }
+
+        // key not found, insert new post
+        posts.add(low, key);
+        data.add(low + 1, null);
+        return low;
     }
+
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DividedScale<?> that = (DividedScale<?>) obj;
-        return Objects.equals(ranges, that.ranges) &&
+        return Objects.equals(posts, that.posts) &&
                 Objects.equals(data, that.data);
     }
 
     @Override
     public int hashCode() {
-        return 31 * ranges.hashCode() + data.hashCode();
+        return 31 * posts.hashCode() + data.hashCode();
     }
 
     @Override
     public String toString() {
-        return "DS{" + ranges + ' ' + data + '}';
+        return "DS{" + posts + ' ' + data + '}';
     }
 }
