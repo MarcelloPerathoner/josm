@@ -25,21 +25,16 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
 
-      - name: Checkout
+      - name: Checkout Core
         run: |
           git clone --branch develop --depth=1 https://github.com/MarcelloPerathoner/josm.git core
+
+      - name: Build Core
+        run: |
           cd core
-
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Build
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: |
-            jar
-            sourcesJar
-            javadocJar
+          ./gradlew jar sourcesJar javaDoc
+          echo "JOSM_DIR=$(pwd)" >> $GITHUB_ENV
+          cd ..
 
       - name: Generate release tag
         id: tag
@@ -51,6 +46,6 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           files: |
-            build/libs/josm.jar
-            build/libs/josm-sources.jar
-            build/libs/josm-javadoc.jar
+            core/build/libs/josm.jar
+            core/build/libs/josm-sources.jar
+            core/build/libs/josm-javadoc.jar
