@@ -29,12 +29,13 @@ jobs:
         run: |
           git clone --branch develop --depth=1 https://github.com/MarcelloPerathoner/josm.git core
           echo "JOSM_DIR=$(pwd)/core" >> $GITHUB_ENV
+          scripts/main_josm_version_github.py MarcelloPerathoner/josm >> $GITHUB_ENV
 
       - name: Generate release tag
         id: tag
         run: |
           cd core
-          scripts/main_josm_version_github.py MarcelloPerathoner/josm >> $GITHUB_ENV
+          echo "RELEASE_TAG=${{ env.MAIN_JOSM_VERSION }}-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
 
       - name: Build Core
         run: |
@@ -44,6 +45,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.MAIN_JOSM_VERSION }}-$(date +'%Y%m%d-%H%M%S')
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             core/build/libs/*.jar
