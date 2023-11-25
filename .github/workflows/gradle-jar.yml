@@ -28,7 +28,8 @@ jobs:
       - name: Checkout Core
         run: |
           git clone --branch develop --depth=1 https://github.com/MarcelloPerathoner/josm.git core
-          echo "JOSM_DIR=$(pwd)/core" >> $GITHUB_ENV
+          cd core
+          echo "JOSM_DIR=$(pwd)" >> $GITHUB_ENV
           scripts/main_josm_version_github.py MarcelloPerathoner/josm >> $GITHUB_ENV
 
       - name: Generate release tag
