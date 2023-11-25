@@ -39,8 +39,18 @@ plugins {
   pmd
 }
 
-fun getRevisionGit(): String {
-    var revision = "unknown"
+/**
+ * Get a specific property, either from gradle or from the environment
+ */
+fun getProperty(key: String): Any? {
+    if (hasProperty(key)) {
+        return findProperty(key)
+    }
+    return System.getenv(key)
+}
+
+fun getRevisionGit(): String? {
+    var revision: String? = null;
     val gitLog: String = ByteArrayOutputStream().use { outputStream ->
         project.exec {
             commandLine(listOf("git", "log"))
@@ -55,6 +65,14 @@ fun getRevisionGit(): String {
     }
     logger.lifecycle("revision = {}", revision)
     return revision
+}
+
+fun getMainJosmVersion(): String {
+    return System.getenv("MAIN_JOSM_VERSION") ?: getRevisionGit() ?: "unknown";
+}
+
+fun getMainJosmDate(): String {
+    return System.getenv("MAIN_JOSM_DATE") ?: "unknown";
 }
 
 repositories {
@@ -359,7 +377,7 @@ tasks {
             include("README")
             include("LICENSE")
         }
-        val revision = getRevisionGit();
+        val revision = getMainJosmVersion();
         val buildDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         val local = true
         val buildName = "Unofficial"
@@ -381,7 +399,7 @@ tasks {
         })
         delete("bin/")      // vscode
         delete("bintest/")  // vscode
-        delete("foobar/")
+        delete("foobar/")   // tests
     }
     jar {
         archiveBaseName.set("josm") // always "josm" even if the dir we are in is "core"
@@ -391,8 +409,8 @@ tasks {
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
                 "Codebase"         to "josm.openstreetmap.de",
                 "Main-class"       to "org.openstreetmap.josm.gui.MainApplication",
-                // "Main-Version"     to "${version.entry.commit.revision} SVN",
-                // "Main-Date"        to "${version.entry.commit.date}",
+                "Main-Version"     to getMainJosmVersion() + " SVN",
+                "Main-Date"        to getMainJosmDate(),
                 "Permissions"      to "all-permissions",
 
                 // Java 9 stuff. Entries are safely ignored by Java 8
@@ -641,16 +659,6 @@ tasks.withType(JavaCompile::class).configureEach {
         check("UnnecessaryLambda", CheckSeverity.OFF)
         check("WildcardImport", CheckSeverity.ERROR)
     }
-}
-
-/**
- * Get a specific property, either from gradle or from the environment
- */
-fun getProperty(key: String): Any? {
-    if (hasProperty(key)) {
-        return findProperty(key)
-    }
-    return System.getenv(key)
 }
 
 spotless {

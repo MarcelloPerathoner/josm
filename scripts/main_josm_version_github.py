@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
 """
-Builds the release tag
+Gets the main JOSM version
 
-Greps the git log for SVN-ish commit ids and returns the most recent one found.
-Outputs a string in the form "RELEASE_TAG=12345-abcd". You can insert that string
-into the github environment by:
+Greps the git log for git-svn-id's and returns the most recent one found.  Outputs a
+string in the form:
+
+   MAIN_JOSM_VERSION=12345
+   MAIN_JOSM_DATE=ISODATE
+
+Use this script to get the main josm version after a shallow git clone that might not
+reach back far enough.
 
 Examples:
 
-  release_tag.py --suffix custom MarcelloPerathoner/josm >> $GITHUB_ENV
+  release_tag.py MarcelloPerathoner/josm >> $GITHUB_ENV
 
 """
 
@@ -18,6 +23,7 @@ import re
 import requests
 import sys
 
+REGEX = re.compile(r"git-svn-id:.*?trunk@(\d+)")
 
 args = argparse.Namespace()
 
@@ -57,7 +63,6 @@ def build_parser(description: str) -> argparse.ArgumentParser:
 def out(s : str):
     sys.stdout.write(s)
 
-REGEX = re.compile(r"git-svn-id:.*?@(\d+)")
 
 def main() -> None:  # noqa: C901
     """Run this."""
@@ -77,7 +82,9 @@ def main() -> None:  # noqa: C901
     for commit in r.json():
         m = REGEX.search(commit["commit"]["message"])
         if m:
-            out(f"RELEASE_TAG={m.group(1)}{args.suffix}\n")
+            out(f"MAIN_JOSM_VERSION={m.group(1)}\n")
+            date = commit["commit"]["author"]["date"]
+            out(f"MAIN_JOSM_DATE={date}\n")
             sys.exit(0)
 
     sys.exit(1)

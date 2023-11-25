@@ -30,22 +30,20 @@ jobs:
           git clone --branch develop --depth=1 https://github.com/MarcelloPerathoner/josm.git core
           echo "JOSM_DIR=$(pwd)/core" >> $GITHUB_ENV
 
-      - name: Build Core
-        run: |
-          cd core
-          ./gradlew jar sourcesJar javadocJar
-          cd ..
-
       - name: Generate release tag
         id: tag
         run: |
           cd core
-          pip install -r scripts/requirements.txt
-          scripts/release_tag.py --suffix $(date +'%Y%m%d-%H%M%S') MarcelloPerathoner/josm >> $GITHUB_ENV
+          scripts/main_josm_version_github.py MarcelloPerathoner/josm >> $GITHUB_ENV
+
+      - name: Build Core
+        run: |
+          cd core
+          ./gradlew jar sourcesJar javadocJar
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
+          tag_name: ${{ env.MAIN_JOSM_VERSION }}-$(date +'%Y%m%d-%H%M%S')
           files: |
             core/build/libs/*.jar
