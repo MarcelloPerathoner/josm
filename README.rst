@@ -1,29 +1,17 @@
 This is my personal edition of JOSM.
 
-Changes From the Official Version
-=================================
+Caveat: this JOSM custom version is not binary compatible with the official plugins.
 
-Caveat: this JOSM custom version is not binary compatible with following official plugins:
-
-- buildings_tools
-- CommandLine
-- imagery_cachexport
-- Mapillary (`fixed version <https://github.com/MarcelloPerathoner/JOSM-Plugins-Mapillary>`_)
-- OsmInspectorPlugin
-- photoadjust
-- surveyor
-- tageditor
-- tagging-preset-tester
-- trustosm
-- turnlanes
-- turnrestrictions
+Here are some `fixed plugins <https://github.com/MarcelloPerathoner/josm-plugins/releases>`_.
 
 The home directory is `JOSM-custom` instead of `JOSM`. A parallel installation is
 possible.
 
-Here are some `fixed plugins <https://github.com/MarcelloPerathoner/josm-plugins/releases>`_.
-
 Tip: If this version crashes start it with --skip-plugins.
+
+
+Changes From the Official Version
+=================================
 
 Contents
 --------
@@ -219,6 +207,10 @@ MapCSS
 
 #. New functions: `split_traffic_sign` and `URL_query_encode`.
 
+#. New command to rotate icons.
+
+   .. image:: demo/rotate_icon_command.gif
+
 #. Experimental: Caching of expressions has been implemented to speed up applying of
    stylesheets.
 
@@ -226,6 +218,24 @@ MapCSS
    evaluating IMMUTABLE expressions can always be cached.  Results of STABLE expression
    can be cached as long as the DataSet does not change.  Cacheability does propagate:
    `max(1, 2)` is IMMUTABLE but `max(1, tag(lanes))` is STABLE.
+
+
+Plugin Preferences Rewritten
+----------------------------
+
+The preference pane for the plugin system has been rewritten from scratch. It is now
+possible to download plugins from GitHub assets.
+
+.. figure:: demo/plugins.gif
+
+   The new plugin preference pane
+
+
+Notification System Rewritten
+-----------------------------
+
+Notifcations now stack up in the bottom-left corner of the main window. New
+notifications with progressbars.
 
 
 ImageViewerDialog Rewritten

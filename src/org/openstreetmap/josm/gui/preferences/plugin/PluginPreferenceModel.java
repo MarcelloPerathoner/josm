@@ -201,6 +201,12 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
                 .toList();
     }
 
+    Collection<String> getSelectedPluginNamesWithDependencies() {
+        Set<String> plugins = new HashSet<>(selectedPlugins);
+        plugins.addAll(getDependencies(getUpdatePlugins(), selectedPlugins));
+        return plugins;
+    }
+
     /**
      * Replies the names of the currently selected plugins
      *
@@ -265,8 +271,9 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * @return the list of plugins
      */
     public List<PluginInformation> getPluginsToUpdate() {
+        Set<String> selected = new HashSet<>(getSelectedPluginNamesWithDependencies());
         return entries.stream()
-            .filter(e -> selectedPlugins.contains(e.getName()))
+            .filter(e -> selected.contains(e.getName()))
             .filter(TableEntry::hasUpdate)
             .map(e -> e.update)
             .filter(p -> p != null)
@@ -282,11 +289,11 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      */
     List<PluginInformation> getPluginsToDownload() {
         // which plugins where activated
-        List<String> activatedPluginNames = getSelectedPluginNames();
+        Set<String> activatedPluginNames = new HashSet<>(getSelectedPluginNamesWithDependencies());
+        // traditionally updates to installed plugins have been handled separately with
+        // the update button. here we handle only those plugins that where selected
+        // during this preference session
         activatedPluginNames.removeAll(PluginHandler.getConfiguredPluginNames());
-
-        // add dependencies to activated plugins (in case the user unselected them)
-        activatedPluginNames.addAll(getDependencies(getUpdatePlugins(), activatedPluginNames));
 
         Logging.info("getPluginsToDownload() activated plugin names: {0}", String.join(", ", activatedPluginNames));
 
@@ -330,15 +337,14 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     void select(String name, boolean selected) {
         if (selected) {
             try {
+                getDependencies(getUpdatePlugins(), List.of(name));
                 selectedPlugins.add(name);
-                getDependencies(getUpdatePlugins(), selectedPlugins).forEach(selectedPlugins::add);
             } catch (IllegalArgumentException e) {
                 JOptionPane.showMessageDialog(null, e.getMessage());
             }
         } else {
             selectedPlugins.remove(name);
         }
-        super.fireTableDataChanged();
     }
 
     /**

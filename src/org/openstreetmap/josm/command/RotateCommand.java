@@ -90,6 +90,15 @@ public class RotateCommand extends TransformNodesCommand {
      */
     @Override
     protected void transformNodes() {
+        if (nodes.size() == 1) {
+            // rotate a single node, ie. traffic sign
+            Node node = nodes.iterator().next();
+            String direction = node.get("direction");
+            int tsOffset = node.get("traffic_sign") != null ? 180 : 0;
+            if (direction != null && !"forward".equals(direction) && !"backward".equals(direction))
+                node.put("direction", "" + Math.round((360 + tsOffset + Math.toDegrees(rotationAngle + startAngle)) % 360));
+            return;
+        }
         double cosPhi = Math.cos(rotationAngle);
         double sinPhi = Math.sin(rotationAngle);
         for (Node n : nodes) {

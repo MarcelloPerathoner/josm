@@ -205,7 +205,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     boolean working;
 
     /**
-     * is set to true if this preference pane has been selected by the user
+     * True if this preference pane has been activated by the user at least once
      */
     private boolean pluginPreferencesActivated;
 
