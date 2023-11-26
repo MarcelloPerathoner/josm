@@ -1,3 +1,4 @@
+// License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.progress.swing;
 
 import javax.swing.Icon;
@@ -16,19 +17,29 @@ public class ProgMon {
      */
     public interface IProgMonDisplay {
         /** Optional: Sets the dialog title */
-        default IProgMonDisplay setTitle(String title) { return this; }
+        default IProgMonDisplay setTitle(String title) {
+            return this;
+        }
 
         /** Optional: Sets a text message */
-        default IProgMonDisplay setText(String text) { return this; }
+        default IProgMonDisplay setText(String text) {
+            return this;
+        }
 
         /** Optional: Sets an icon */
-        default IProgMonDisplay setIcon(Icon icon) { return this; }
+        default IProgMonDisplay setIcon(Icon icon) {
+            return this;
+        }
 
         /** Optional: Sets the unit, eg. "KB", "MB", "nodes", "ways", ... */
-        default IProgMonDisplay setUnit(String unit) { return this; }
+        default IProgMonDisplay setUnit(String unit) {
+            return this;
+        }
 
         /** Optional: Sets the maximum value. Do not set a maximum value if is indefinite. */
-        default IProgMonDisplay setMaximum(int value) { return this; }
+        default IProgMonDisplay setMaximum(int value) {
+            return this;
+        }
 
         /** Sets the current value. */
         IProgMonDisplay setCurrent(int value);
@@ -37,19 +48,29 @@ public class ProgMon {
         IProgMonDisplay setVisible(boolean visible);
 
         /** Replaces the note with a new one. */
-        default IProgMonDisplay replace(Notification newNotification) { return this; }
+        default IProgMonDisplay replace(Notification newNotification) {
+            return this;
+        }
 
         /** Optional: Sets an error message */
-        default IProgMonDisplay error(String text) { setText(text); return this; }
+        default IProgMonDisplay error(String text) {
+            setText(text); return this;
+        }
 
         /** Optional: Sets a warning message */
-        default IProgMonDisplay warning(String text) { setText(text); return this; }
+        default IProgMonDisplay warning(String text) {
+            setText(text); return this;
+        }
 
         /** Optional: Sets a success message */
-        default IProgMonDisplay success(String text) { setText(text); return this; }
+        default IProgMonDisplay success(String text) {
+            setText(text); return this;
+        }
 
         /** Optional: Sets an info message */
-        default IProgMonDisplay info(String text) { setText(text); return this; }
+        default IProgMonDisplay info(String text) {
+            setText(text); return this;
+        }
     }
 
     /**

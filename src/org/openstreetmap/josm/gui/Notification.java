@@ -51,15 +51,15 @@ import org.openstreetmap.josm.tools.Logging;
  * </pre>
  */
 public class Notification extends JPanel {
-    public static final Icon iconInfo    = ImageProvider.get("info", ImageProvider.ImageSizes.XLARGEICON);
+    public static final Icon iconInfo = ImageProvider.get("info", ImageProvider.ImageSizes.XLARGEICON);
     public static final Icon iconSuccess = ImageProvider.get("dialogs/validator", ImageProvider.ImageSizes.XLARGEICON);
     public static final Icon iconWarning = ImageProvider.get("data/warning", ImageProvider.ImageSizes.XLARGEICON);
-    public static final Icon iconError   = ImageProvider.get("data/error", ImageProvider.ImageSizes.XLARGEICON);
+    public static final Icon iconError = ImageProvider.get("data/error", ImageProvider.ImageSizes.XLARGEICON);
 
-    static final Color PANEL_INFO_BACKGROUND    = new Color(224, 236, 249);
+    static final Color PANEL_INFO_BACKGROUND = new Color(224, 236, 249);
     static final Color PANEL_SUCCESS_BACKGROUND = new Color(128, 255, 128);
     static final Color PANEL_WARNING_BACKGROUND = new Color(255, 255, 128);
-    static final Color PANEL_ERROR_BACKGROUND   = new Color(255, 128, 128);
+    static final Color PANEL_ERROR_BACKGROUND = new Color(255, 128, 128);
 
     /** A small gap, eg. the gap between notification panels */
     private static final int INSET = ImageProvider.adj(5);

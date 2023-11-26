@@ -12,7 +12,7 @@ import org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.Token;
  * Simple literal value, that does not depend on other expressions.
  * @since 5705
  */
-public class LiteralExpression extends MapCSSExpression {
+public final class LiteralExpression extends MapCSSExpression {
     private final Object literal;
 
     /**

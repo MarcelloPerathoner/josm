@@ -94,7 +94,7 @@ public class NotificationManager {
         if (isHeadless)
             return;
         Point mouse = MouseInfo.getPointerInfo().getLocation();
-        synchronized(model) {
+        synchronized (model) {
             for (Iterator<Notification> iter = model.iterator(); iter.hasNext();) {
                 Notification notification = iter.next();
                 Point pt = new Point(mouse);
@@ -121,7 +121,7 @@ public class NotificationManager {
      * @param notification The note to add
      */
     void addNotification(Notification notification) {
-        synchronized(model) {
+        synchronized (model) {
             model.add(notification);
         }
         if (isHeadless) {
@@ -136,7 +136,7 @@ public class NotificationManager {
      * Note: oldNote must be the <i>same</i> Object, not an equals one.
      */
     void replaceNotification(Notification oldNote, Notification newNote) {
-        synchronized(model) {
+        synchronized (model) {
             int index = model.indexOf(oldNote);
             if (index != -1) {
                 model.set(index, newNote);
@@ -154,7 +154,7 @@ public class NotificationManager {
      * Note: oldNote must be the <i>same</i> Object, not an equals one.
      */
     void removeNotification(Notification oldNote) {
-        synchronized(model) {
+        synchronized (model) {
             model.remove(oldNote);
         }
         GuiHelper.runInEDT(() -> {
@@ -168,7 +168,7 @@ public class NotificationManager {
      */
     void clearNotifications() {
         List<Notification> copy;
-        synchronized(model) {
+        synchronized (model) {
             copy = List.copyOf(model);
             model.clear();
         }
@@ -219,7 +219,7 @@ public class NotificationManager {
             pos = SwingUtilities.convertPoint(p, pos, layeredPane);
 
             List<Notification> copy;
-            synchronized(model) {
+            synchronized (model) {
                 copy = List.copyOf(model);
             }
             for (Notification panel : copy) {

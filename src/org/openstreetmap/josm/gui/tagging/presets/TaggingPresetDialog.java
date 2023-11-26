@@ -100,12 +100,12 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
      * @param showApplyButton if true the dialog will have an "Apply" button
      * @param showNewRelationButton if true the dialog will have an "New Relation" button
      */
-    TaggingPresetDialog(TaggingPreset.Instance presetInstance, boolean showApplyButton, boolean showNewRelation) {
+    TaggingPresetDialog(TaggingPreset.Instance presetInstance, boolean showApplyButton, boolean showNewRelationButton) {
         super(MainApplication.getMainFrame(), presetInstance.getPreset().getBaseName(), true);
 
         this.presetInstance = presetInstance;
         this.showApplyButton = showApplyButton;
-        this.showNewRelationButton = showNewRelation;
+        this.showNewRelationButton = showNewRelationButton;
 
         TaggedHandler handler = presetInstance.getHandler();
         if (handler == null || handler.isReadOnly()) {

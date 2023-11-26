@@ -58,7 +58,6 @@ import org.openstreetmap.josm.data.Version;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane;
 import org.openstreetmap.josm.gui.HelpAwareOptionPane.ButtonSpec;
 import org.openstreetmap.josm.gui.Notification;
-import org.openstreetmap.josm.gui.NotificationManager;
 import org.openstreetmap.josm.gui.datatransfer.ClipboardUtils;
 import org.openstreetmap.josm.gui.help.HelpUtil;
 import org.openstreetmap.josm.gui.preferences.ExtensibleTabPreferenceSetting;
@@ -139,7 +138,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
          * one of the words in filter. Replies true if filter is null.
          *
          * @param e the table exntry to match
-         * @param filterExpresssion the filter expression
+         * @param filterExpression the filter expression
          * @return true if this plugin info matches with the filter
          */
         private boolean matchesExpression(PluginPreferenceModel.TableEntry e, String filterExpression) {
@@ -155,7 +154,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         @Override
         public boolean include(Entry<? extends PluginPreferenceModel, ? extends Integer> entry) {
             PluginPreferenceModel.TableEntry e = model.getTableEntryAt(entry.getIdentifier());
-            boolean compatible = (e.installed != null)  || (e.update != null && e.update.isCompatible()) ||
+            boolean compatible = (e.installed != null) || (e.update != null && e.update.isCompatible()) ||
                 (e.latest != null && e.latest.isCompatible());
             return compatible && matchesExpression(e, filter) && matchesInstallationStatus(e, status);
         }
@@ -190,7 +189,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         }
     }
 
-    static List<String> getNames (List<PluginInformation> plugins) {
+    static List<String> getNames(List<PluginInformation> plugins) {
         return plugins.stream().map(PluginInformation::getName).toList();
     }
 
@@ -548,7 +547,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * respective jars have been installed. It tries to load the plugins without
      * restarting JOSM.
      *
-     * @param activatedPlugins
+     * @param activatedPlugins list of plugins that were activated
      */
     void tryLoadPlugins(List<PluginInformation> activatedPlugins) {
         PluginHandler.pluginListNotLoaded.clear();
@@ -686,7 +685,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
                         // get the list of installed plugins because
                         // only local plugins know their classes
                         Set<String> names = new HashSet<>(getNames(toUpdate));
-                        List<PluginInformation>toLoad = PluginHandler.getInstalledPlugins().stream()
+                        List<PluginInformation> toLoad = PluginHandler.getInstalledPlugins().stream()
                             .filter(pi -> names.contains(pi.getName())).toList();
 
                         tryUpdatePlugins(toLoad);

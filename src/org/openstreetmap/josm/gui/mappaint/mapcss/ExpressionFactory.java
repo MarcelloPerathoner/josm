@@ -540,7 +540,7 @@ public final class ExpressionFactory {
 
         /**
          * Constructor
-         * @param cacheAbility the cacheability
+         * @param cacheability the cacheability
          * @param minArgs the minimum legal number of arguments
          * @param maxArgs the maximum legal number of arguments
          */
@@ -783,9 +783,6 @@ public final class ExpressionFactory {
 
     /**
      * Expression representing a supplier of arbitrary type.
-     *
-     * @params f the function to call
-     * @params klass the type of the argument to function f
      */
     static class SupplierExpression extends CacheableExpression {
         Supplier<Object> f;
@@ -803,9 +800,6 @@ public final class ExpressionFactory {
 
     /**
      * Expression representing a supplier of arbitrary type taking env as argument.
-     *
-     * @params f the function to call
-     * @params klass the type of the argument to function f
      */
     static class EnvSupplierExpression extends CacheableExpression {
         Function<Environment, Object> f;
@@ -823,9 +817,6 @@ public final class ExpressionFactory {
 
     /**
      * Expression representing a function taking 1 argument
-     *
-     * @params f the function to call
-     * @params klass the type of the argument to function f
      */
     static class FunctionExpression<T> extends CacheableExpression {
         Function<T, Object> f;
@@ -846,9 +837,6 @@ public final class ExpressionFactory {
 
     /**
      * Expression representing a function taking env + 1 argument
-     *
-     * @params f the function to call
-     * @params klass the type of the second argument to function f
      */
     static class EnvFunctionExpression<T> extends CacheableExpression {
         BiFunction<Environment, T, Object> f;

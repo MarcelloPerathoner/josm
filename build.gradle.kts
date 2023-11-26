@@ -721,7 +721,6 @@ tasks.withType(Javadoc::class) {
     opt.docTitle("<h2><img src=\"https://josm.openstreetmap.de/svn/trunk/nodist/images/logo/header.png\" style=\"vertical-align: middle;\" alt=\"JOSM\"> &mdash; Javadoc</h2>")
     opt.bottom("<a href=\"https://josm.openstreetmap.de/\">JOSM</a>")
     opt.tags(
-        "todo:X",
         "apiNote:a:API Note:",
         "implSpec:a:Implementation Requirements:",
         "implNote:a:Implementation Note:"

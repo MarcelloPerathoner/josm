@@ -71,7 +71,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
     /** The table rows in the model */
     private final List<TableEntry> entries = new ArrayList<>();
 
-    static List<String> getNames (Collection<PluginInformation> plugins) {
+    static List<String> getNames(Collection<PluginInformation> plugins) {
         return plugins.stream().map(PluginInformation::getName).toList();
     }
 
@@ -92,7 +92,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * @return the list of plugins
      */
     List<PluginInformation> getUpstreamPlugins() {
-        synchronized(upstreamPlugins) {
+        synchronized (upstreamPlugins) {
             return new ArrayList<>(upstreamPlugins);
         }
     }
@@ -102,7 +102,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * @return the list of plugins
      */
     List<PluginInformation> getInstalledPlugins() {
-        synchronized(installedPlugins) {
+        synchronized (installedPlugins) {
             return new ArrayList<>(installedPlugins);
         }
     }
@@ -128,7 +128,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * @param plugins The plugins available upstream
      */
     public void addUpstreamPlugins(Collection<PluginInformation> plugins) {
-        synchronized(upstreamPlugins) {
+        synchronized (upstreamPlugins) {
             upstreamPlugins.addAll(plugins);
         }
     }
@@ -146,7 +146,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * @param plugins The locally installed plugins
      */
     public void addInstalledPlugins(Collection<PluginInformation> plugins) {
-        synchronized(installedPlugins) {
+        synchronized (installedPlugins) {
             installedPlugins.addAll(plugins);
         }
     }
@@ -158,7 +158,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
      * the EDT some time after calling this function to update the JTable.
      */
     public void clearInstalledPlugins() {
-        synchronized(installedPlugins) {
+        synchronized (installedPlugins) {
             installedPlugins.clear();
         }
     }
@@ -397,10 +397,10 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
             if (data.getLink() != null) {
                 msg.add(" <a href=\"" + data.getLink() + "\">" + tr("More info...") + "</a>");
             }
-            if(!data.getRequiredPlugins().isEmpty()) {
+            if (!data.getRequiredPlugins().isEmpty()) {
                 msg.add(tr("<b>Requires:</b> {0}", String.join("; ", data.getRequiredPlugins())));
             }
-            if(data.getProvides() != null) {
+            if (data.getProvides() != null) {
                 msg.add(tr("<b>Provides:</b> {0}", data.getProvides()));
             }
             if (update != null && update.getDownloadLink() != null) {
@@ -610,10 +610,10 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
             Collection<PluginInformation> installed, Collection<PluginInformation> upstream) {
 
         LinkedHashMap<String, TableEntry> installedMap = new LinkedHashMap<>();
-        for(var pi : installed) {
+        for (var pi : installed) {
             installedMap.computeIfAbsent(pi.getName(), k -> new TableEntry(null, pi, null));
         }
-        for(var pi : loaded) {
+        for (var pi : loaded) {
             installedMap.compute(pi.getName(), (k, v) -> {
                 if (v == null) {
                     return new TableEntry(pi, null, null);
@@ -623,7 +623,7 @@ public class PluginPreferenceModel extends AbstractTableModel implements Consume
                 }
             });
         }
-        for(var pi : upstream) {
+        for (var pi : upstream) {
             installedMap.compute(pi.getName(), (k, v) -> {
                 if (v == null) {
                     return new TableEntry(null, null, pi);

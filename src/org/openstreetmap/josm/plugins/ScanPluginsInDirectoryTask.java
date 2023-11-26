@@ -10,7 +10,7 @@ import org.openstreetmap.josm.tools.Logging;
 /**
  * Scans a local directory for plugins.
  */
-public class ScanPluginsInDirectoryTask  extends ScanPluginsTask {
+public class ScanPluginsInDirectoryTask extends ScanPluginsTask {
     /**
      * Constructor
      * @param uri must have the format {@code file:///path/to/directory/}

@@ -70,7 +70,6 @@ public abstract class ScanPluginsTask implements Runnable, Supplier<ScanPluginsT
         return null;
     }
 
-
     /**
      * Scans all configured plugin repositories.
      * <p>

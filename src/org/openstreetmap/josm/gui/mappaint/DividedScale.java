@@ -180,7 +180,6 @@ public class DividedScale<T> {
         return low;
     }
 
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

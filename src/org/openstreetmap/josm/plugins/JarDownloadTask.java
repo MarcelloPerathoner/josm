@@ -17,7 +17,6 @@ import java.util.function.Supplier;
 import java.util.jar.JarFile;
 
 import org.openstreetmap.josm.data.Preferences;
-import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.gui.progress.swing.ProgMon.IProgMonDisplay;
 import org.openstreetmap.josm.tools.Destroyable;
 import org.openstreetmap.josm.tools.HttpClient;
@@ -74,7 +73,6 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
     private Exception exception = null;
     private IProgMonDisplay progMonDisplay = null;
     private boolean restartNeeded = false;
-
 
     /**
      * Start download tasks for the given plugins
@@ -175,7 +173,7 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
     /**
      * Downloads the jar file.
      */
-     @Override
+    @Override
     public void run() {
         try {
             URL url = pluginInformation.getUri().toURL();
@@ -255,7 +253,7 @@ public class JarDownloadTask implements Runnable, Supplier<JarDownloadTask> {
      * {@code .jar.new} to the corresponding {@code .jar} file.  The function refuses to
      * install an incompatible jar as returned by
      * {@link PluginInformation#isCompatible}.
-     * @throws PluginDownloadException
+     * @throws PluginDownloadException in case the jar is defective
      */
     public void installPlugin() throws PluginException, PluginDownloadException {
         final String FAILED = tr("Failed to install plugin ''{0}'' from temporary download file ''{1}''.",

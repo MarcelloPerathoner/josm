@@ -242,7 +242,6 @@ public final class PluginInformation {
         return 50;
     }
 
-
     /** The plugin platform on which it is meant to run (windows, osx, unixoid). */
     public String getPlatform() {
         return attr.getValue("Plugin-Platform");
@@ -291,7 +290,7 @@ public final class PluginInformation {
     /**
      * Checks for errors in the manifest
      */
-    private final void checkManifest(Attributes attr) {
+    private void checkManifest(Attributes attr) {
         String lang = LanguageInfo.getLanguageCodeManifest();
 
         String s = Optional.ofNullable(attr.getValue(lang+"Plugin-Link")).orElseGet(() -> attr.getValue("Plugin-Link"));
@@ -336,7 +335,7 @@ public final class PluginInformation {
         }
     }
 
-    private final List<URL> buildLibraries(Attributes attr, File file) {
+    private List<URL> buildLibraries(Attributes attr, File file) {
         List<URL> libs = new ArrayList<>();
         try {
             if (file != null)
@@ -363,7 +362,7 @@ public final class PluginInformation {
         return Collections.unmodifiableList(libs);
     }
 
-    private final Icon initIcon(Attributes attr, File file) {
+    private Icon initIcon(Attributes attr, File file) {
         String iconPath = attr.getValue("Plugin-Icon");
         if (iconPath != null) {
             if (file != null) {
@@ -575,7 +574,7 @@ public final class PluginInformation {
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return getName();
     }
 
@@ -608,7 +607,8 @@ public final class PluginInformation {
      */
     boolean isForCurrentPlatform() {
         try {
-            return getPlatform() == null || PlatformManager.getPlatform().getPlatform() == Platform.valueOf(getPlatform().toUpperCase(Locale.ENGLISH));
+            return getPlatform() == null ||
+                PlatformManager.getPlatform().getPlatform() == Platform.valueOf(getPlatform().toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             Logging.warn(e);
             return true;
