@@ -138,7 +138,8 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
          * Replies true if either the name, the description, or the version match (case insensitive)
          * one of the words in filter. Replies true if filter is null.
          *
-         * @param filter the filter expression
+         * @param e the table exntry to match
+         * @param filterExpresssion the filter expression
          * @return true if this plugin info matches with the filter
          */
         private boolean matchesExpression(PluginPreferenceModel.TableEntry e, String filterExpression) {
@@ -547,8 +548,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * respective jars have been installed. It tries to load the plugins without
      * restarting JOSM.
      *
-     * @param activatedPluginNames
-     * @return true if any of the plugins could not be loaded
+     * @param activatedPlugins
      */
     void tryLoadPlugins(List<PluginInformation> activatedPlugins) {
         PluginHandler.pluginListNotLoaded.clear();
@@ -566,8 +566,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * <p>
      * If any of the plugins cannot be unloaded, true will be returned.
      *
-     * @param deactivatedPluginNames the given plugins
-     * @return true if any of the plugins could not be unloaded
+     * @param deactivatedPlugins the given plugins
      */
     void tryUnloadPlugins(List<PluginInformation> deactivatedPlugins) {
         boolean needRestart = false;
@@ -594,7 +593,6 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
      * given plugin cannot be processed in this way, then true will be returned.
      *
      * @param updatedPlugins list of plugins to update
-     * @return true if any of the plugins could not be updated
      */
     void tryUpdatePlugins(List<PluginInformation> updatedPlugins) {
         boolean needRestart = false;

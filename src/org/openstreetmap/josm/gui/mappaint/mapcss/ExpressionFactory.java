@@ -540,8 +540,9 @@ public final class ExpressionFactory {
 
         /**
          * Constructor
-         * @param name the name of the function in mapcss (used for debugging only)
-         * @param args the argument list
+         * @param cacheAbility the cacheability
+         * @param minArgs the minimum legal number of arguments
+         * @param maxArgs the maximum legal number of arguments
          */
         CacheableExpression(Cacheability cacheability, Integer minArgs, Integer maxArgs) {
             this.cacheability = cacheability;
@@ -636,12 +637,10 @@ public final class ExpressionFactory {
 
         /**
          * Checks the number of actual arguments
-         * @param minExpected the minumum expected number of arguments
-         * @param maxExpected the maximum expected number of arguments
          * @throws IllegalArgumentException if there are more or less arguments than that
          */
         void checkArgsSize() throws IllegalArgumentException {
-            if ((args.size() < minArgs) || (maxArgs != null && args.size() > maxArgs))
+            if ((args.size() < minArgs) || (maxArgs != null && (args.size() > maxArgs)))
                 throw new IllegalArgumentException(tr(
                     "Wrong number of arguments in function: ''{0}''. Expected between {1} and {2}, but got {3}.\n" +
                     "... at {4}",

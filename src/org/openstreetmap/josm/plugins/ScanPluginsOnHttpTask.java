@@ -4,6 +4,9 @@ package org.openstreetmap.josm.plugins;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Scans a HTTP site for plugins.
+ */
 public class ScanPluginsOnHttpTask extends ScanPluginsTask {
     private static final String PLACEHOLDER = "%<(.*)>";
 

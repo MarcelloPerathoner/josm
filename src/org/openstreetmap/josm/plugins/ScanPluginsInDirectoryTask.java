@@ -7,6 +7,9 @@ import java.net.URI;
 
 import org.openstreetmap.josm.tools.Logging;
 
+/**
+ * Scans a local directory for plugins.
+ */
 public class ScanPluginsInDirectoryTask  extends ScanPluginsTask {
     /**
      * Constructor

@@ -86,7 +86,6 @@ final class PresetListEntry extends Item {
      * Convenience constructor.  Constructs a new {@code PresetListEntry}, initialized with a value.
      *
      * @param value value
-     * @param cms the ComboMultiSelect
      */
     PresetListEntry(String value) {
         super(ItemFactory.attributesToMap());

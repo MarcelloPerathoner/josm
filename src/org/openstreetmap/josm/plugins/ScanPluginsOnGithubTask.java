@@ -15,6 +15,9 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 
+/**
+ * Scans a GitHub repository's assets for plugins.
+ */
 public class ScanPluginsOnGithubTask extends ScanPluginsTask {
     static final String BDURL = "browser_download_url";
 

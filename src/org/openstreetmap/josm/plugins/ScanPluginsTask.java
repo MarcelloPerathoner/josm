@@ -31,7 +31,7 @@ import org.openstreetmap.josm.io.CachedFile;
  * <pre>{@code
  * ScanPluginsTask task = create(uri);
  * CompletableFuture<ScanPluginsTask> future = CompletableFuture.supplyAsync(task);
- * // do some work here
+ * // do some lenthy work here ...
  * try {
  *     task = future.join();
  *     task.getPluginInformations();

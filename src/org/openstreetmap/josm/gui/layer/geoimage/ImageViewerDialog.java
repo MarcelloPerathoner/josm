@@ -700,8 +700,8 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     }
 
     /**
-     * Set a new image in the viewer or clear it
-     * @param newImage The new entry or null
+     * Sets new images in the viewer
+     * @param newImages The new images or null
      */
     private void setImages(List<? extends IImageEntry<?>> newImages) {
         ImageDisplay2 imageDisplay = getSelectedImageDisplay();
@@ -712,7 +712,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
 
     /**
      * Creates a tab for a layer if the tab does not yet exist.
-     * @param entry the given layer
+     * @param geoLayer the given layer
      */
     void ensureTabForLayer(IGeoImageLayer geoLayer) {
         if (getTabIndexFor(geoLayer) == -1) {
@@ -1336,9 +1336,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
 
         /**
          * Create a new {@link CloseableTab}.
-         * @param tabbedPane The parent to add property change listeners to. It should be a {@link HideableTabbedPane} in most cases.
-         * @param closeAction The action to run to close the tab. You probably want to call {@link JTabbedPane#removeTabAt(int)}
-         *                    at the very least.
+         * @param imageDisplay the image display
          */
         CloseableTab(ImageDisplay2 imageDisplay) {
             super(new FlowLayout(FlowLayout.LEFT, 10, 0));

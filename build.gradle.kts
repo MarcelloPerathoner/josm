@@ -710,12 +710,24 @@ tasks.withType(JavaCompile::class) {
 }
 tasks.withType(Javadoc::class) {
     isFailOnError = false
-    (options as StandardJavadocDocletOptions).tags(
+    exclude("org.openstreetmap.josm.gui.mappaint.mapcss.parsergen.*")
+    val opt = options as StandardJavadocDocletOptions
+    opt.windowTitle("JOSM")
+    opt.setUse(true)
+    opt.showFromPrivate()
+    opt.setLinkSource(true)
+    opt.setAuthor(false)
+    opt.setLinks(listOf("https://docs.oracle.com/en/java/javase/17/docs/api"))
+    opt.docTitle("<h2><img src=\"https://josm.openstreetmap.de/svn/trunk/nodist/images/logo/header.png\" style=\"vertical-align: middle;\" alt=\"JOSM\"> &mdash; Javadoc</h2>")
+    opt.bottom("<a href=\"https://josm.openstreetmap.de/\">JOSM</a>")
+    opt.tags(
         "todo:X",
         "apiNote:a:API Note:",
         "implSpec:a:Implementation Requirements:",
         "implNote:a:Implementation Note:"
     )
+    opt.addStringOption("-html5")
+    opt.addStringOption("-add-exports", "javafx.graphics/com.sun.javafx.application=ALL-UNNAMED")
 }
 
 // Spotbugs config
