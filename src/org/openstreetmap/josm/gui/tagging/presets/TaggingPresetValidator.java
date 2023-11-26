@@ -50,9 +50,9 @@ public class TaggingPresetValidator implements ChangeListener {
     /**
      * Constructor
      *
-     * @param presetInstance the preset dialog
+     * @param tests the tests to apply
      * @param handler the data handler
-     * @param f the consumer
+     * @param f the consumer of test errors
      */
     public TaggingPresetValidator(Collection<Test> tests, DataSetHandler handler, Consumer<List<TestError>> f) {
         this.tests = tests;

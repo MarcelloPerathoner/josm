@@ -271,7 +271,6 @@ public final class TaggingPresetReader {
      *
      * @param url a given filename, URL or internal resource
      * @param validate if {@code true}, XML validation will be performed
-     * @param displayErrMsg whether to display error messages to the user or not
      * @return the root element of the resource
      */
     public static Root read(String url, boolean validate) throws SAXException, IOException {

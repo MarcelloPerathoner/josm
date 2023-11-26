@@ -117,7 +117,7 @@ public class Notification extends JPanel {
 
     /**
      * Constructs a new {@code Notification} with the given textual content.
-     * @param msg The text to display
+     * @param message The text to display
      */
     public Notification(String message) {
         this();
@@ -150,7 +150,7 @@ public class Notification extends JPanel {
     /**
      * Set the notification text. (Convenience method)
      *
-     * @param msg the message String. Will be wrapped in &lt;html&gt;, so
+     * @param text the message String. Will be wrapped in &lt;html&gt;, so
      * you can use &lt;br&gt; and other markup directly.
      *
      * @return the current Object, for convenience
@@ -210,7 +210,7 @@ public class Notification extends JPanel {
      * <p>
      * Allows displaying notifications in a different JFrame
      *
-     * @param parent the new manager
+     * @param manager the new manager
      * @return this
      */
     public Notification setManager(NotificationManager manager) {

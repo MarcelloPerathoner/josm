@@ -73,7 +73,7 @@ public class NotificationManager {
      * <p>
      * The real parent will be the {@link JLayeredPane} of the nearest
      * {@link RootPaneContainer}, that is the closest ancestor of the parent component
-     * that is either a {@link JDialog} or a {@link JFrame}. Be careful not to attach 2
+     * that is either a {@code JDialog} or a {@code JFrame}. Be careful not to attach 2
      * managers to the same window, eg the main window, because they will fight.
      * <p>
      * If the parent is {@code null}, the main window will be used, either the map view

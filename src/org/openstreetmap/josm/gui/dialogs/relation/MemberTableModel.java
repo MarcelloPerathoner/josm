@@ -76,7 +76,7 @@ implements TableModelListener, DataSelectionListener, DataSetListener, OsmPrimit
      * constructor
      * @param relation relation
      * @param layer data layer
-     * @param taggedHandler2 tagging preset handler
+     * @param tagTableModel the tag table model
      */
     public MemberTableModel(Relation relation, OsmDataLayer layer, TagTableModel tagTableModel) {
         this.relation = relation;

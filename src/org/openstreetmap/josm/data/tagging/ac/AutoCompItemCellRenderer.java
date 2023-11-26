@@ -19,8 +19,6 @@ import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 /**
  * A custom list cell renderer for autocompletion items that adds icons and the value count to some
  * items.
- * <p>
- * See also: {@link AutoCompletionPriority#compareTo}
  */
 public class AutoCompItemCellRenderer extends JosmListCellRenderer<AutoCompletionItem> {
     ToIntFunction<String> valueToCount;

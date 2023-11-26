@@ -30,10 +30,9 @@ public class PluginListParser {
      * Creates the plugin information object
      *
      * @param name the plugin name
-     * @param url the plugin download url
+     * @param uri the plugin download url
      * @param manifest the plugin manifest attributes
      * @return a plugin information object
-     * @throws PluginListParseException if plugin manifest cannot be parsed
      */
     public static PluginInformation createInfo(String name, URI uri, Attributes manifest) {
         return new PluginInformation(

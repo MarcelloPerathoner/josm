@@ -73,7 +73,6 @@ import org.openstreetmap.josm.tools.date.DateUtils;
 
 /**
  * Dialog to view and manipulate geo-tagged images from a {@link GeoImageLayer}.
- * <p>
  * @implNote
  * The dialog has an {@code imagePanel} that {@link OverlayLayout overlays} an
  * {@link ImageDisplay} and a {@link JTabbedPane tabbed pane}.  The tabbed pane will be

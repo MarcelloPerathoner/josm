@@ -10,7 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.tagging.DataHandlers.DataSetHandler;
+import org.openstreetmap.josm.gui.tagging.DataHandlers;
 import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.tools.GBC;
 
@@ -31,7 +31,7 @@ public class PresetListPanel extends JPanel {
      * Updates the preset list
      * <p>
      * Displays a list of all presets that match both {@code types} and {@code tags}. A
-     * click on the item opens a preset dialog connected to the {@link TaggedHandler}
+     * click on the item opens a preset dialog connected to the {@link DataHandlers.TaggedHandler}
      * and the {@link AutoCompletionManager}.
      *
      * @param types collection of tagging presets types
@@ -40,7 +40,7 @@ public class PresetListPanel extends JPanel {
      * @param autoCompletionManager the autocompletion manager or null
      */
     public void updatePresets(final Collection<TaggingPresetType> types, final Map<String, String> tags,
-            final DataSetHandler handler, final AutoCompletionManager autoCompletionManager) {
+            final DataHandlers.DataSetHandler handler, final AutoCompletionManager autoCompletionManager) {
 
         removeAll();
         if (types.isEmpty()) {

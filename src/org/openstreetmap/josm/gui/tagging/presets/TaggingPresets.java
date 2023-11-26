@@ -56,7 +56,6 @@ import org.xml.sax.SAXException;
  *   initializeMenus();
  *   notifyListeners();
  * </pre>
- * <p>
  * @implNote
  * TaggingPresets used to be a global static class, but that caused troubles with unit
  * testing, especially:

@@ -19,7 +19,7 @@ import org.openstreetmap.josm.tools.Pair;
  * <p>
  * It also contains the main entry point for all components to use the bug report system: Call {@link #intercept(Throwable)} to start handling an
  * exception.
- * <h1> Handling Exceptions </h1>
+ * <h2> Handling Exceptions </h2>
  * In your code, you should add try...catch blocks for any runtime exceptions that might happen. It is fine to catch throwable there.
  * <p>
  * You should then add some debug information there. This can be the OSM ids that caused the error, information on the data you were working on

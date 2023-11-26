@@ -471,7 +471,7 @@ public class ImageProvider {
      * @param size the size on a 96 dpi screen
      * @return adapted size (may be unmodified)
      * @since XXX
-     * @seealso int adj(int)
+     * @see int adj(int)
      */
     public static double adj(double size) {
         return size * guiScale;
@@ -483,7 +483,7 @@ public class ImageProvider {
      * @param size the size on a 96 dpi screen
      * @return adapted size (may be unmodified)
      * @since XXX
-     * @seealso int adj(int)
+     * @see int adj(int)
      */
     public static Dimension adj(Dimension size) {
         return new Dimension(adj(size.width), adj(size.height));

@@ -957,7 +957,7 @@ public final class PluginHandler {
      * @param plugins the list of plugins
      * @param monitor the progress monitor. Defaults to {@link NullProgressMonitor#INSTANCE} if null.
      * @param atRunTime set this to true if we are loading at runtime
-     * @returns the list of plugins that could not be loaded
+     * @return the list of plugins that could not be loaded
      */
     public static Collection<PluginInformation> loadPlugins(Component parent, Collection<PluginInformation> plugins,
             ProgressMonitor monitor, boolean atRunTime) {
@@ -1036,8 +1036,8 @@ public final class PluginHandler {
     }
 
     /**
-     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#early} set to true
-     * <i>and</i> a negative {@link PluginInformation#stage} value.
+     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#isEarly} set to true
+     * <i>and</i> a negative {@link PluginInformation#getStage} value.
      * <p>
      * This is meant for plugins that provide additional {@link javax.swing.LookAndFeel}.
      */
@@ -1050,8 +1050,8 @@ public final class PluginHandler {
     }
 
     /**
-     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#early} set to true
-     * <i>and</i> a non-negative {@link PluginInformation#stage} value.
+     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#isEarly} set to true
+     * <i>and</i> a non-negative {@link PluginInformation#getStage} value.
      *
      * @param parent The parent component to be used for the displayed dialog
      * @param plugins the collection of plugins
@@ -1065,7 +1065,7 @@ public final class PluginHandler {
     }
 
     /**
-     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#early} set to false.
+     * Loads plugins from <code>plugins</code> which have the flag {@link PluginInformation#isEarly} set to false.
      *
      * @param parent The parent component to be used for the displayed dialog
      * @param plugins the collection of plugins

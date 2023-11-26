@@ -48,7 +48,7 @@ import org.openstreetmap.josm.tools.Pair;
  * be drawn on the map.
  * There are several steps to derive the list of elements for display:
  * <ol>
- * <li>{@link #generateStyles(IPrimitive, double, boolean)} applies the
+ * <li>{@link #generateStyles} applies the
  * {@link StyleSource}s one after another to get a key-value map of MapCSS
  * properties. Then a preliminary set of StyleElements is derived from the
  * properties map.</li>

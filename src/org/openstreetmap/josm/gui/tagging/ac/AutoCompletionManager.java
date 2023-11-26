@@ -639,11 +639,11 @@ public class AutoCompletionManager implements DataSetListener {
      * Autocompletes with all known values for a given key or given keys.
      * <p>
      * A supplier function may be used to dynamically provide the key.
-     * <pre>
+     * <pre>{@code
      * AutoCompletionManager am = AutoCompletionManager.of(dataSet);
      * AutoCompTextField<String> textField = new AutoCompTextField<>();
      * textField.addAutoCompListener(am.new NaiveValueAutoCompManager("addr:street"));
-     * </pre>
+     * }</pre>
      */
     public class NaiveValueAutoCompManager extends DefaultAutoCompListener<AutoCompletionItem> {
         Supplier<Collection<String>> keysSupplier;
@@ -671,7 +671,7 @@ public class AutoCompletionManager implements DataSetListener {
 
         /**
          * Constructor
-         * @param keys A supplier of a key that gets called before autocompletion.
+         * @param keySupplier A supplier of a key that gets called before autocompletion.
          */
         public NaiveValueAutoCompManager(Supplier<String> keySupplier) {
             this.keysSupplier = () -> Collections.singletonList(keySupplier.get());

@@ -24,6 +24,7 @@ val revisionFile    = "resources/REVISION"
 
 plugins {
   id("application")
+  id("base")
   id("com.diffplug.spotless") version "6.9.1"
   id("com.github.ben-manes.versions") version "0.42.0"
   id("com.github.spotbugs") version "5.0.13"
@@ -359,6 +360,17 @@ dependencies {
         }
     }
 }
+base {
+    archivesBaseName = "josm"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(java_lang_version))
+    }
+}
 
 tasks {
 	compileJava {
@@ -534,7 +546,7 @@ tasks.register<JavaExec>("runClasses") {
     description = "Run JOSM from classes"
     classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
     main = "org.openstreetmap.josm.gui.MainApplication"
-    // args = listOf("sess.joz")
+    args = listOf("sess.joz")
     jvmArgs = jvmOpens
 }
 
@@ -595,14 +607,6 @@ tasks.register<Copy>("downloadDependenciesSources") {
     description = "Downloads the source jars of the runtime dependencies."
     from(sourceSets["sources"].runtimeClasspath)
     into("lib/sources")
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(java_lang_version))
-    }
 }
 
 // Set up ErrorProne
@@ -705,7 +709,13 @@ tasks.withType(JavaCompile::class) {
   options.encoding = "UTF-8"  // The encoding of the java files
 }
 tasks.withType(Javadoc::class) {
-  isFailOnError = false
+    isFailOnError = false
+    (options as StandardJavadocDocletOptions).tags(
+        "todo:X",
+        "apiNote:a:API Note:",
+        "implSpec:a:Implementation Requirements:",
+        "implNote:a:Implementation Note:"
+    )
 }
 
 // Spotbugs config

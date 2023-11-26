@@ -1304,7 +1304,7 @@ public final class Functions {
      * Encode the query part of an URL.
      * <p>
      * The result is a string in the form:
-     * <code>param1=value1&param2=value2&param3=value3</code>. The parameters are
+     * {@code param1=value1&param2=value2&param3=value3}. The parameters are
      * URLencoded.
      * @param map a map of param -> value
      * @return the query string
@@ -1323,7 +1323,7 @@ public final class Functions {
      * Encode the query part of an URL.
      * <p>
      * The result is a string in the form:
-     * <code>namePrefix0=value0&namePrefix1=value1&namePrefix2=value1</code>. The parameters are
+     * {@code namePrefix0=value0&namePrefix1=value1&namePrefix2=value1}. The parameters are
      * URLencoded.  The parameter names are composed of {@code namePrefix} + index in
      * the list.
      *

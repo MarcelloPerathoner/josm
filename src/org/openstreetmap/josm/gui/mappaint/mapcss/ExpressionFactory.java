@@ -750,14 +750,16 @@ public final class ExpressionFactory {
     /**
      * Expression representing a relative float, eg. {@code width: +1;}
      *
-     * @params f the float to add
-     * @params property the name of the property
      */
     public static class RelativeFloatExpression extends CacheableExpression {
         final float f;
         final String property;
         final String layer;
 
+        /**
+         * @param f the float to add
+         * @param property the name of the property
+         */
         RelativeFloatExpression(float f, String property, String layer) {
             super(Cacheability.STABLE, 0, 0);
             this.f = f;
@@ -1209,7 +1211,6 @@ public final class ExpressionFactory {
     public static class CondOperator extends CacheableExpression {
         /**
          * Constructs a new {@code CondOperator}.
-         * @param args arguments
          */
         public CondOperator() {
             super(Cacheability.IMMUTABLE, 3, 3);
@@ -1231,7 +1232,6 @@ public final class ExpressionFactory {
     public static class AndOperator extends CacheableExpression {
         /**
          * Constructs a new {@code AndOperator}.
-         * @param args arguments
          */
         public AndOperator() {
             super(Cacheability.IMMUTABLE, 1, null);
@@ -1251,7 +1251,6 @@ public final class ExpressionFactory {
     public static class OrOperator extends CacheableExpression {
         /**
          * Constructs a new {@code OrOperator}.
-         * @param args arguments
          */
         public OrOperator() {
             super(Cacheability.IMMUTABLE, 1, null);
@@ -1275,7 +1274,6 @@ public final class ExpressionFactory {
         /**
          * Constructor
          * @param f the binary math operator
-         * @param args arguments
          */
         public MathOperator(BinaryOperator<Double> f) {
             super(Cacheability.IMMUTABLE, 1, null);

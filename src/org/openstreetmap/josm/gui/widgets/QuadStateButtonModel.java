@@ -19,15 +19,14 @@ import org.openstreetmap.josm.tools.Logging;
  * {@code isSelected()} now means: the box is ticked
  * and you must also check {@code isUndefined()} to learn the full state.
  * <p>
- * The L&F UI reads the states: armed, pressed, and selected.  When the UI does that, we
+ * The LaF UI reads the states: armed, pressed, and selected.  When the UI does that, we
  * fake states that make the UI look what we want.  When the JCheckBox operates the
  * model through setArmed() and setPressed() it sees the real states.
  * <p>
- * This hack is a blatant misuse of the armed and pressed states.  Since some L&F (eg.
+ * This hack is a blatant misuse of the armed and pressed states.  Since some LaF (eg.
  * GTK) use these states to give visual feedback even outside the "tick" area, this hack
- * will not blend in well with those L&F: the undefined states may produce extraneous
+ * will not blend in well with those LaF: the undefined states may produce extraneous
  * visual artifacts.
- * <p>
  * @see javax.swing.plaf.basic.BasicButtonListener
  * @see javax.swing.DefaultButtonModel
  */
@@ -52,7 +51,7 @@ public class QuadStateButtonModel extends JToggleButton.ToggleButtonModel {
      */
     public static final int UNDEFINED = 1 << 5;
     /**
-     * If set, report faked states for the sake of the L&F UI.
+     * If set, report faked states for the sake of the LaF UI.
      */
     boolean fakeState = true;
 
@@ -61,7 +60,8 @@ public class QuadStateButtonModel extends JToggleButton.ToggleButtonModel {
     /**
      * Constructs a 3- or 4-state toggle button model.
      *
-     * @param triState Constructs a 3-state button if set.
+     * @param initialState the intial state
+     * @param allowedStates the allowed states
      */
     public QuadStateButtonModel(State initialState, List<State> allowedStates) {
         this.allowedStates = allowedStates;

@@ -22,7 +22,7 @@ import org.openstreetmap.josm.tools.Utils;
  *    DE:260,1020-30;265[3.8][42]
  * </code>
  * into a {@code List<Map<String, Object>>} of the form:
- * <table>
+ * <table><caption>Result</caption>
  * <tr><th>country<th>id<th>additional<th>text
  * <tr><td>DE<td>260<td>false<td>empty list
  * <tr><td>DE<td>1020-30<td>true<td>empty list
@@ -34,9 +34,6 @@ import org.openstreetmap.josm.tools.Utils;
  * <p>
  * See: https://wiki.openstreetmap.org/wiki/Key:traffic_sign#Tagging
  *
- * @param trafficSign string to split
- * @param defaultCountry country prefix to use in case there is none in the string
- * @return see text
  * @since xxx
  */
 public class FunctionSplitTrafficSign extends CacheableExpression {

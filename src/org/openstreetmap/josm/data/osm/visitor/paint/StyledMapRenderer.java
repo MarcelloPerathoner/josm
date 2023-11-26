@@ -784,7 +784,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param disabled {@code} true to render disabled version, {@code false} for the standard version
      * @param selected {@code} true to render it as selected, {@code false} otherwise
      * @param member {@code} true to render it as a relation member, {@code false} otherwise
-     * @param theta the angle of rotation in radians
      * @param affineTransform the affine transformation or {@code null}
      */
     public void drawNodeIcon(INode n, MapImage img, boolean disabled, boolean selected, boolean member,
