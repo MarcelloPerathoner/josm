@@ -360,6 +360,7 @@ tasks {
     compileJava {
         options.release.set(java_lang_version)
         options.errorprone.isEnabled.set(false) // takes forever
+        inputs.files(files(generateJavaCC))
     }
     compileTestJava {
         options.release.set(java_lang_version)
@@ -397,7 +398,6 @@ tasks {
         delete("foobar/")   // tests
     }
     jar {
-        archiveBaseName.set("josm") // always "josm" even if the dir we are in is "core"
         inputs.files(files(generateEpsg))
         manifest {
             attributes(
@@ -578,6 +578,10 @@ tasks.withType<Test>().configureEach {
 
 tasks.named("compileScriptsJava") {
     dependsOn("compileIntegrationTestJava");
+}
+
+tasks.named("sourcesJar") {
+    inputs.files(files(generateJavaCC))
 }
 
 tasks.named("check") {
