@@ -93,7 +93,7 @@ repositories {
 }
 
 sourceSets {
-	main {
+    main {
         java {
             setSrcDirs(listOf("src", javaccOutputDir))
         }
@@ -102,21 +102,21 @@ sourceSets {
             exclude("**/custom-epsg")
         }
     }
-	create("scripts") {
-		java {
-			setSrcDirs(listOf("scripts"))
+    create("scripts") {
+        java {
+            setSrcDirs(listOf("scripts"))
             exclude("**/BuildProjectionDefinitions.java")
-		}
+        }
         resources {
             setSrcDirs(listOf("resources"))
         }
- 	}
-	create("epsg") {
-		java {
-			setSrcDirs(listOf("scripts"))
+     }
+    create("epsg") {
+        java {
+            setSrcDirs(listOf("scripts"))
             include("**/BuildProjectionDefinitions.java")
-		}
- 	}
+        }
+     }
     create("sources") {
     }
 }
@@ -177,7 +177,7 @@ testing {
     suites {
         val applyDefaults = { suite: JvmTestSuite ->
             suite.useJUnitJupiter()
-    		suite.sources.resources {
+            suite.sources.resources {
                 srcDirs(listOf("test/data"))
             }
             suite.dependencies {
@@ -357,14 +357,13 @@ base {
 }
 
 tasks {
-	compileJava {
+    compileJava {
         options.release.set(java_lang_version)
-		options.errorprone.isEnabled.set(false) // takes forever
-        inputs.files(files(generateJavaCC))
-	}
-	compileTestJava {
+        options.errorprone.isEnabled.set(false) // takes forever
+    }
+    compileTestJava {
         options.release.set(java_lang_version)
-		options.errorprone.isEnabled.set(false) // takes forever
+        options.errorprone.isEnabled.set(false) // takes forever
     }
     processResources {
         from(project.projectDir) {
@@ -514,14 +513,14 @@ tasks.register<Exec>("runJar") {
 
 val jvmOpens = listOf(
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
-	    "--add-opens", "java.base/java.io=ALL-UNNAMED",
-	    "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-	    "--add-opens", "java.base/java.nio=ALL-UNNAMED",
-	    "--add-opens", "java.base/java.text=ALL-UNNAMED",
-	    "--add-opens", "java.base/java.util=ALL-UNNAMED",
-	    "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED",
-	    "--add-opens", "java.desktop/java.awt=ALL-UNNAMED",
-	    "--add-opens", "java.desktop/javax.swing.text.html=ALL-UNNAMED",
+        "--add-opens", "java.base/java.io=ALL-UNNAMED",
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.nio=ALL-UNNAMED",
+        "--add-opens", "java.base/java.text=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED",
+        "--add-opens", "java.desktop/java.awt=ALL-UNNAMED",
+        "--add-opens", "java.desktop/javax.swing.text.html=ALL-UNNAMED",
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
 )
 
@@ -546,18 +545,18 @@ tasks.withType<Test>().configureEach {
 
     systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
     systemProperty("java.awt.headless", true)
-	systemProperty("josm.test.data",    "test/data")
-	systemProperty("glass.platform",    "Monocle")
-	systemProperty("monocle.platform",  "Headless")
-	systemProperty("prism.order",       "sw")
-	// systemProperty("suppressPermanentFailure", "${suppressPermanentFailure}")
+    systemProperty("josm.test.data",    "test/data")
+    systemProperty("glass.platform",    "Monocle")
+    systemProperty("monocle.platform",  "Headless")
+    systemProperty("prism.order",       "sw")
+    // systemProperty("suppressPermanentFailure", "${suppressPermanentFailure}")
 
     // all tests run sequentially by default,
     // use @Execution(ExecutionMode.CONCURRENT) on test class or method to change
-	systemProperty("junit.jupiter.extensions.autodetection.enabled",        true)
-	systemProperty("junit.jupiter.execution.parallel.enabled",              true)
-	systemProperty("junit.jupiter.execution.parallel.mode.default",         "same_thread")
-	systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "same_thread")
+    systemProperty("junit.jupiter.extensions.autodetection.enabled",        true)
+    systemProperty("junit.jupiter.execution.parallel.enabled",              true)
+    systemProperty("junit.jupiter.execution.parallel.mode.default",         "same_thread")
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "same_thread")
 
     if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
         systemProperty("java.locale.providers", "SPI,JRE,CLDR")
