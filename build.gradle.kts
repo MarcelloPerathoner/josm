@@ -15,11 +15,12 @@ import org.gradle.api.JavaVersion
 
 val java_lang_version = 17
 
-val javaccOutputDir = "${buildDir}/generated/javacc"
-val epsgOutputDir   = "${buildDir}/generated/epsg"
+val buildDir        = getProject().getLayout().getBuildDirectory()
+val javaccOutputDir = buildDir.dir("generated/javacc")
+val epsgOutputDir   = buildDir.dir("generated/epsg")
 val mapcssSrcDir    = "org/openstreetmap/josm/gui/mappaint/mapcss"
-val mapcssOutputDir = "${javaccOutputDir}/${mapcssSrcDir}/parsergen"
-val reportsDir      = "${buildDir}/reports"
+val mapcssOutputDir = javaccOutputDir.get().dir("${mapcssSrcDir}/parsergen")
+val reportsDir      = buildDir.dir("reports")
 val revisionFile    = "resources/REVISION"
 
 plugins {
@@ -38,6 +39,14 @@ plugins {
   jacoco
   java
   pmd
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(java_lang_version))
+    }
 }
 
 /**
@@ -117,22 +126,6 @@ val scriptsImplementation by configurations.getting
 val epsgImplementation by configurations.getting
 val testImplementation by configurations.getting
 
-val integrationTestImplementation by configurations.creating {
-    isCanBeResolved = true
-    isCanBeConsumed = false
-    extendsFrom(configurations["testImplementation"])
-}
-val functionalTestImplementation by configurations.creating {
-    isCanBeResolved = true
-    isCanBeConsumed = false
-    extendsFrom(configurations["testImplementation"])
-}
-val performanceTestImplementation by configurations.creating {
-    isCanBeResolved = true
-    isCanBeConsumed = false
-    extendsFrom(configurations["testImplementation"])
-}
-
 val versions = mapOf(
   "awaitility" to "4.2.0",
   // Errorprone 2.11 requires Java 11+
@@ -169,7 +162,7 @@ val generateEpsg by tasks.registering(JavaExec::class) {
     // "resource://data/projection/custom-epsg".
     description = "Builds the customized EPSG definitions file."
     dependsOn("compileEpsgJava")
-    val outputFile = "${epsgOutputDir}/data/projection/custom-epsg"
+    val outputFile = epsgOutputDir.get().file("data/projection/custom-epsg")
     mainClass.set("BuildProjectionDefinitions")
     args(listOf(".", outputFile))
     classpath = sourceSets["epsg"].runtimeClasspath
@@ -178,7 +171,6 @@ val generateEpsg by tasks.registering(JavaExec::class) {
     // the input directory hardcoded in the script
     inputs.dir("nodist/data/projection")
     outputs.dir(epsgOutputDir)
-    // outputs.file(epsgOutputDir)
 }
 
 testing {
@@ -361,15 +353,7 @@ dependencies {
     }
 }
 base {
-    archivesBaseName = "josm"
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(java_lang_version))
-    }
+    archivesName = "josm"
 }
 
 tasks {
@@ -446,14 +430,14 @@ tasks {
         val formats = listOf("png", "jpeg", "tiff")
         exclude {
             val matchResult = regex.find(it.toString())
-            matchResult != null && !formats.contains(matchResult?.groupValues?.get(1))
+            matchResult != null && !formats.contains(matchResult.groupValues.get(1))
         }
 
         val regex2 = """org/apache/commons/compress/compressors/([^/]+)/""".toRegex()
         val formats2 = listOf("bzip2", "deflate64", "lzw", "xz")
         exclude {
             val matchResult = regex2.find(it.toString())
-            matchResult != null && !formats2.contains(matchResult?.groupValues?.get(1))
+            matchResult != null && !formats2.contains(matchResult.groupValues.get(1))
         }
 
         // exclude("META-INF/*")
@@ -545,7 +529,7 @@ tasks.register<JavaExec>("runClasses") {
     group = "Execution"
     description = "Run JOSM from classes"
     classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
-    main = "org.openstreetmap.josm.gui.MainApplication"
+    mainClass = "org.openstreetmap.josm.gui.MainApplication"
     args = listOf("sess.joz")
     jvmArgs = jvmOpens
 }
@@ -630,7 +614,7 @@ tasks.withType(JavaCompile::class).configureEach {
         "-Xlint:unchecked",
         "-Xmaxwarns", "1000",
     ))
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
+    if (java_lang_version >= 21) {
         options.compilerArgs.addAll(listOf(
             "-Xlint:-this-escape",  // just floods the console
         ))
@@ -734,12 +718,12 @@ spotbugs {
     ignoreFailures.set(true)
     effort.set(com.github.spotbugs.snom.Effort.MAX)
     reportLevel.set(com.github.spotbugs.snom.Confidence.LOW)
-    reportsDir.set(file("$buildDir/reports/spotbugs"))
+    reportsDir.set(reportsDir.dir("spotbugs"))
 }
 tasks.spotbugsMain {
     reports.create("html") {
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/spotbugs.html"))
+        outputLocation.set(buildDir.file("reports/spotbugs.html"))
         setStylesheet("fancy-hist.xsl")
     }
 }

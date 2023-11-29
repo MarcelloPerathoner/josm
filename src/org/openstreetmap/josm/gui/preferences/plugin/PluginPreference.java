@@ -197,7 +197,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
     private JSplitPane splitPane;
     private final PluginPreferenceModel model = new PluginPreferenceModel();
     private PluginUpdatePolicyPanel pnlPluginUpdatePolicy;
-    /** For easier testing. True while background tasks are still active. */
+    /** True while background tasks are still active. Use for testing. */
     boolean working;
 
     /**

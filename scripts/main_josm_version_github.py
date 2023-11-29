@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Gets the main JOSM version
+Gets the main JOSM version from the GitHub API
 
 Greps the git log for git-svn-id's and returns the most recent one found.  Outputs a
 string in the form:
@@ -9,12 +9,12 @@ string in the form:
    MAIN_JOSM_VERSION=12345
    MAIN_JOSM_DATE=ISODATE
 
-Use this script to get the main josm version after a shallow git clone that might not
-reach back far enough.
+Use this script to get the main JOSM version from the GitHub API if you only did a
+shallow git clone whose log might not reach back far enough.
 
 Examples:
 
-  release_tag.py MarcelloPerathoner/josm >> $GITHUB_ENV
+  main_josm_version_github.py MarcelloPerathoner/josm >> $GITHUB_ENV
 
 """
 

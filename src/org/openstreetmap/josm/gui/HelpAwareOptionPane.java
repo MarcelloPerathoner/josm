@@ -42,8 +42,7 @@ public final class HelpAwareOptionPane {
      * A function that, if set, supplies answers instead of a human. The function is
      * called with the message being displayed and should return the answer code.
      * <p>
-     * DO NOT USE THIS EXCEPT FOR TESTING! This is thread local so that multiple tests
-     * running in parallel won't thrash each others robots.
+     * DO NOT USE THIS EXCEPT FOR TESTING!
      */
     static Function<Object, Integer> robot = null;
 
@@ -253,6 +252,18 @@ public final class HelpAwareOptionPane {
     public static int showOptionDialog(Component parentComponent, Object msg, String title, int messageType,
             Icon icon, final ButtonSpec[] options, final ButtonSpec defaultOption, final String helpTopic) {
 
+        // Log message. Useful for bug reports and unit tests
+        switch (messageType) {
+            case JOptionPane.ERROR_MESSAGE:
+                Logging.error(title + " - " + msg);
+                break;
+            case JOptionPane.WARNING_MESSAGE:
+                Logging.warn(title + " - " + msg);
+                break;
+            default:
+                Logging.info(title + " - " + msg);
+        }
+
         // if set, get the robot's answer
         if (robot != null) {
             return robot.apply(msg);
@@ -287,18 +298,6 @@ public final class HelpAwareOptionPane {
                 buttons.toArray(),
                 defaultButton
         );
-
-        // Log message. Useful for bug reports and unit tests
-        switch (messageType) {
-            case JOptionPane.ERROR_MESSAGE:
-                Logging.error(title + " - " + msg);
-                break;
-            case JOptionPane.WARNING_MESSAGE:
-                Logging.warn(title + " - " + msg);
-                break;
-            default:
-                Logging.info(title + " - " + msg);
-        }
 
         if (!GraphicsEnvironment.isHeadless()) {
             doShowOptionDialog(parentComponent, title, options, defaultOption, helpTopic, buttons, pane);

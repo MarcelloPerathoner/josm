@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Handler;
@@ -38,6 +40,7 @@ import org.openstreetmap.josm.gui.layer.GpxLayer;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.preferences.plugin.PluginPreferenceModel;
+import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.testutils.annotations.BasicPreferences;
 import org.openstreetmap.josm.testutils.annotations.HTTPS;
 import org.openstreetmap.josm.testutils.annotations.Main;
@@ -236,11 +239,8 @@ public class PluginHandlerTestIT {
      * Downloads and loads all JOSM plugins.
      */
     public static void loadAllPlugins() {
-        ReadRemotePluginInformationTask pluginInfoDownloadTask = new ReadRemotePluginInformationTask(
-                Preferences.main().getOnlinePluginSites());
+        Collection<PluginInformation> plugins = ScanPluginsTask.getAvailablePlugins();
 
-        pluginInfoDownloadTask.run();
-        Collection<PluginInformation> plugins = pluginInfoDownloadTask.getAvailablePlugins();
         System.out.println("Original plugin list contains " + plugins.size() + " plugins");
         assertFalse(plugins.isEmpty(), plugins::toString);
         PluginInformation info = plugins.iterator().next();
@@ -262,18 +262,6 @@ public class PluginHandlerTestIT {
             }
         }
 
-        // On Java < 11 and headless mode, filter plugins requiring JavaFX as Monocle is not available
-        int javaVersion = Utils.getJavaVersion();
-        if (GraphicsEnvironment.isHeadless() && javaVersion < 11) {
-            for (Iterator<PluginInformation> it = plugins.iterator(); it.hasNext();) {
-                PluginInformation pi = it.next();
-                if (pi.getRequiredPlugins().contains("javafx")) {
-                    System.out.println("Ignoring " + pi.getName() + " (requiring JavaFX and we're using Java < 11 in headless mode)");
-                    it.remove();
-                }
-            }
-        }
-
         // Skip unofficial plugins in headless mode, too much work for us for little added-value
         /*
         if (GraphicsEnvironment.isHeadless()) {
@@ -289,8 +277,18 @@ public class PluginHandlerTestIT {
 
         System.out.println("Filtered plugin list contains " + plugins.size() + " plugins");
 
-        // Download plugins
-        MainApplicationTest.downloadPlugins(plugins);
+        // Start downloading all plugins in parallel
+        final List<CompletableFuture<JarDownloadTask>> futureList = plugins.stream()
+            .map(JarDownloadTask::new)
+            .map(CompletableFuture::supplyAsync)
+            .toList();
+
+        // Wait for all downloads and installs to complete
+        JarDownloadTask.allOf(futureList).join();
+
+        // reload plugin information to get the classnames, which are not found in the
+        // repository manifests
+        plugins = PluginHandler.getInstalledPlugins();
 
         loadPlugins(plugins);
     }

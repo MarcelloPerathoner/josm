@@ -628,7 +628,7 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
             new Notification(
                 tr("The preset <i>{0}</i> cannot be applied since nothing has been selected!", getLocaleName()))
                 .setIcon(JOptionPane.WARNING_MESSAGE)
-                .show();
+                .setVisible(true);
             return null;
         }
 

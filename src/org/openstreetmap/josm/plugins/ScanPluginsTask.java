@@ -31,7 +31,7 @@ import org.openstreetmap.josm.io.CachedFile;
  * <pre>{@code
  * ScanPluginsTask task = create(uri);
  * CompletableFuture<ScanPluginsTask> future = CompletableFuture.supplyAsync(task);
- * // do some lenthy work here ...
+ * // do some lengthy work here ...
  * try {
  *     task = future.join();
  *     task.getPluginInformations();
@@ -91,11 +91,32 @@ public abstract class ScanPluginsTask implements Runnable, Supplier<ScanPluginsT
     }
 
     /**
+     * Returns a new CompletableFuture that is completed when all of
+     * the given CompletableFutures complete.
+     *
+     * @param futureList all futures that must complete
+     * @return a CompletableFuture
+     */
+    public static CompletableFuture<Void> allOf(List<CompletableFuture<ScanPluginsTask>> futureList) {
+        return CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()]));
+    }
+
+    /**
      * Joins running tasks
      * @see #supplyAsync
      */
     public static List<ScanPluginsTask> join(Collection<CompletableFuture<ScanPluginsTask>> taskList) {
         return taskList.stream().map(task -> task.join()).toList();
+    }
+
+    /**
+     * Returns all plugins available at the configured plugin repositories.
+     * @return a list of all available plugins
+     */
+    public static List<PluginInformation> getAvailablePlugins() {
+        List<CompletableFuture<ScanPluginsTask>> futureList = ScanPluginsTask.supplyAsync();
+        List<ScanPluginsTask> taskList = ScanPluginsTask.join(futureList);
+        return taskList.stream().flatMap(task -> task.getPluginInformations().stream()).toList();
     }
 
     /**

@@ -192,11 +192,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
         this.data.addImageDataUpdateListener(this);
         this.data.setLayer(this);
         if (!ImageViewerDialog.hasInstance()) {
-            GuiHelper.runInEDTAndWait(() -> {
-                if (!ImageViewerDialog.hasInstance()) {
-                    ImageViewerDialog.createInstance();
-                }
-            });
+            GuiHelper.runInEDTAndWait(ImageViewerDialog::getInstance);
         }
         if (getInvalidGeoImages().size() == data.size()) {
             ImageEntry firstImage = this.data.getFirstImage();

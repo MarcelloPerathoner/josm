@@ -72,7 +72,7 @@ class PluginPreferenceHighLevelTest {
     public void setUp(TestInfo testInfo) throws ReflectiveOperationException {
 
         // some other tests actually go ahead and load plugins (notably at time of writing,
-        // MainApplicationTest$testUpdateAndLoadPlugins), which really isn't a reversible operation.
+        // MainApplicationTest#testUpdateAndLoadPlugins), which really isn't a reversible operation.
         // it is, however, possible to pretend to our tests temporarily that they *aren't* loaded by
         // setting the PluginHandler#pluginList to empty for the duration of this test. ideally these
         // other tests wouldn't be so badly behaved or would at least do this from a separate batch
@@ -111,6 +111,7 @@ class PluginPreferenceHighLevelTest {
      */
     @AfterEach
     public void tearDown(TestInfo testInfo) throws ReflectiveOperationException {
+        HelpAwareOptionPaneTest.setRobot(null);
         Logging.info("********** Done test: {0}", testInfo.getDisplayName());
         // restore actual PluginHandler#pluginList
         @SuppressWarnings("unchecked")

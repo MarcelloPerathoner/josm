@@ -89,7 +89,7 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
     private static final List<? extends IImageEntry<?>> NO_IMAGES = Collections.emptyList();
 
     // Only one instance of that class is present at one time
-    private static volatile ImageViewerDialog dialog;
+    private static ImageViewerDialog dialog;
 
     /** The center panel that holds the ImageDisplay */
     private final JPanel imagePanel = new JPanel();
@@ -102,24 +102,19 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
 
     JToggleButton tbCentre;
 
-    static void createInstance() {
-        if (dialog != null)
-            throw new IllegalStateException("ImageViewerDialog instance was already created");
-        dialog = new ImageViewerDialog();
-    }
-
     /**
      * Replies the unique instance of this dialog
      * @return the unique instance
      */
     public static ImageViewerDialog getInstance() {
         synchronized (ImageViewerDialog.class) {
-            if (dialog == null)
-                createInstance();
-            MapFrame map = MainApplication.getMap();
-            if (map != null && map.getToggleDialog(ImageViewerDialog.class) == null) {
-                map.addToggleDialog(dialog);
+            if (dialog == null) {
+                dialog = new ImageViewerDialog();
             }
+        }
+        MapFrame map = MainApplication.getMap();
+        if (map != null && map.getToggleDialog(ImageViewerDialog.class) == null) {
+            map.addToggleDialog(dialog);
         }
         return dialog;
     }
@@ -130,14 +125,18 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
      * @since 18613
      */
     public static boolean hasInstance() {
-        return dialog != null;
+        synchronized (ImageViewerDialog.class) {
+            return dialog != null;
+        }
     }
 
     /**
      * Destroy the current dialog
      */
     private static void destroyInstance() {
-        dialog = null;
+        synchronized (ImageViewerDialog.class) {
+            dialog = null;
+        }
     }
 
     private ImageViewerDialog() {

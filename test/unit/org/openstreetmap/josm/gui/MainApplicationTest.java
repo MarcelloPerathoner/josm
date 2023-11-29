@@ -237,6 +237,7 @@ public class MainApplicationTest {
             MainApplication.loadLatePlugins(null, monitor, plugins);
             assertNotNull(PluginHandler.getPlugin("buildings_tools"));
         } finally {
+            PluginHandler.removePlugins(List.of("buildings_tools", "log4j"));
             if (old != null) {
                 System.setProperty("josm.plugins", old);
             } else {
