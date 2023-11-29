@@ -86,31 +86,44 @@ def build_parser(description: str) -> argparse.ArgumentParser:
 def out(s : str):
     sys.stdout.write(s)
 
+def b64_icon(archive, bname: bytes) -> bytes:
+    """Base-64-encode the plugin icon"""
 
-def b64_icon(archive, name: str):
     mimetype = ""
+    name = bname.strip().decode("UTF-8")
     if name.endswith(".svg"):
-        mimetype = "image/svg+xml"
+        mimetype = b"image/svg+xml"
     if name.endswith(".png"):
-        mimetype = "image/png"
+        mimetype = b"image/png"
     if name.endswith(".jpg"):
-        mimetype = "image/jpeg"
+        mimetype = b"image/jpeg"
     if name.endswith(".jpeg"):
-        mimetype = "image/jpeg"
+        mimetype = b"image/jpeg"
 
     icon = archive.open(name).read()
-    return f"data:{mimetype};base64,{base64.b64encode(icon).decode('UTF8')}"
+    return b"data:" + mimetype + b";base64," + base64.b64encode(icon)
+
 
 def scan_jar(filename : str):
     archive = zipfile.ZipFile(filename, 'r')
+    output = []
     with archive.open('META-INF/MANIFEST.MF') as manifest:
-        for line in io.TextIOWrapper(manifest, "UTF8"):
-            if line.startswith(" "):
-                out(line[1:].rstrip("\r\n"))
-            elif line.startswith("Plugin-Icon:") and args.icons:
-                out("\n\tPlugin-Icon: " + b64_icon(archive, line[12:].strip()))
+        # this is almost too ridiculous for telling but Sun/Oracle decided to wrap
+        # manifest lines after 72 *BYTES* not *CHARACTERS* so that if a multi-byte UTF-8
+        # characters happens to start at pos. 71, we end up with the two halves of an
+        # UTF-8-character separated by a newline and space.
+        #
+        # We must be careful to do all our fiddling with bytes until the lines are
+        # re-joined.
+        for line in manifest:
+            if line.startswith(b" "):
+                output.append(line[1:].rstrip(b"\r\n"))
+            elif line.startswith(b"Plugin-Icon:") and args.icons:
+                output.append(b"\n\tPlugin-Icon: " + b64_icon(archive, line[12:]))
             else:
-                out("\n\t" + line.rstrip("\r\n"))
+                output.append(b"\n\t" + line.rstrip(b"\r\n"))
+
+    out(b"".join(output).decode("UTF-8"))
 
 
 def main() -> None:  # noqa: C901
