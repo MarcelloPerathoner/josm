@@ -1,6 +1,8 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.tagging.presets;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import javax.swing.JComponent;
@@ -13,7 +15,7 @@ import javax.swing.JMenu;
  */
 final class Root extends TaggingPresetMenu {
     /** The url of the XML resource. */
-    String url;
+    final URI baseUri;
 
     final String author;
     final String version;
@@ -37,6 +39,11 @@ final class Root extends TaggingPresetMenu {
         link = attributes.get("link");
         iconName = attributes.get("icon");
         baseLanguage = attributes.get("baselanguage");
+        try {
+            baseUri = new URI(attributes.get("base_uri"));
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     /**
@@ -62,6 +69,6 @@ final class Root extends TaggingPresetMenu {
 
     @Override
     public String toString() {
-        return "Root [" + url + "]";
+        return "Root [" + baseUri.toString() + "]";
     }
 }

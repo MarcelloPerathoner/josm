@@ -173,10 +173,10 @@ public class ElemStyles implements PreferenceChangedListener {
             Pair<StyleElementList, Range> p = getImpl(osm, scale, nc);
             if (osm instanceof INode && isDefaultNodes()) {
                 if (p.a.isEmpty()) {
-                    if (FunctionAutoText.getText(osm) != null) {
-                        p.a = DefaultStyles.DEFAULT_NODE_STYLELIST_TEXT;
-                    } else {
-                        p.a = DefaultStyles.DEFAULT_NODE_STYLELIST;
+                    p.a = DefaultStyles.DEFAULT_NODE_STYLELIST;
+                    String text = FunctionAutoText.getText(osm);
+                    if (text != null) {
+                        p.a = new StyleElementList(p.a, BoxTextElement.createNoStyle(text));
                     }
                 } else {
                     boolean hasNonModifier = false;
@@ -192,8 +192,9 @@ public class ElemStyles implements PreferenceChangedListener {
                     }
                     if (!hasNonModifier) {
                         p.a = new StyleElementList(p.a, DefaultStyles.SIMPLE_NODE_ELEMSTYLE);
-                        if (!hasText && FunctionAutoText.getText(osm) != null) {
-                            p.a = new StyleElementList(p.a, DefaultStyles.SIMPLE_NODE_TEXT_ELEMSTYLE);
+                        String text = FunctionAutoText.getText(osm);
+                        if (!hasText && text != null) {
+                            p.a = new StyleElementList(p.a, BoxTextElement.createNoStyle(text));
                         }
                     }
                 }
@@ -424,9 +425,9 @@ public class ElemStyles implements PreferenceChangedListener {
                 NodeElement nodeStyle = NodeElement.create(env);
                 if (nodeStyle != null) {
                     sl.add(nodeStyle);
-                    addIfNotNull(sl, BoxTextElement.create(env, nodeStyle.getBoxProvider()));
+                    addIfNotNull(sl, BoxTextElement.create(env, nodeStyle.getSymbolBounds()));
                 } else {
-                    addIfNotNull(sl, BoxTextElement.create(env, DefaultStyles.SIMPLE_NODE_ELEMSTYLE_BOXPROVIDER));
+                    addIfNotNull(sl, BoxTextElement.create(env, DefaultStyles.PreferenceChangeListener.getRect()));
                 }
             } else if (osm instanceof IRelation) {
                 if (((IRelation<?>) osm).isMultipolygon()) {

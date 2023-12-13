@@ -6,6 +6,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
 

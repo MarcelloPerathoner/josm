@@ -95,7 +95,7 @@ class MapCSSPerformanceTest {
         BufferedImage img = new BufferedImage(mv.getWidth(), mv.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g = img.createGraphics();
         g.setClip(0, 0, mv.getWidth(), mv.getHeight());
-        StyledMapRenderer visitor = new StyledMapRenderer(g, mv, false);
+        StyledMapRenderer visitor = new StyledMapRenderer(mv, false);
 
         System.out.print("Rendering ...");
         long time = timed(

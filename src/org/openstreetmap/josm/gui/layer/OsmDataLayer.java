@@ -102,7 +102,6 @@ import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapFrame;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
 import org.openstreetmap.josm.gui.datatransfer.ClipboardUtils;
 import org.openstreetmap.josm.gui.datatransfer.data.OsmLayerTransferData;
@@ -496,16 +495,19 @@ public class OsmDataLayer extends AbstractOsmDataLayer implements Listener, Data
      * are drawn by the edit layer).
      * Draw nodes last to overlap the ways they belong to.
      */
-    @Override public void paint(final Graphics2D g, final MapView mv, Bounds box) {
-        boolean active = mv.getLayerManager().getActiveLayer() == this;
+    @Override
+    public void paint(MapViewGraphics mvGraphics) {
+        // Logging.info("OsmDataLayer.paint");
+        Graphics2D g = mvGraphics.getDefaultGraphics();
+        boolean active = mapView.getLayerManager().getActiveLayer() == this;
         boolean inactive = !active && Config.getPref().getBoolean("draw.data.inactive_color", true);
-        boolean virtual = !inactive && mv.isVirtualNodesEnabled();
+        boolean virtual = !inactive && mapView.isVirtualNodesEnabled();
 
         // draw the hatched area for non-downloaded region. only draw if we're the active
         // and bounds are defined; don't draw for inactive layers or loaded GPX files etc
         if (active && DrawingPreference.SOURCE_BOUNDS_PROP.get() && !data.getDataSources().isEmpty()) {
             // initialize area with current viewport
-            Rectangle b = mv.getBounds();
+            Rectangle b = mapView.getBounds();
             // on some platforms viewport bounds seem to be offset from the left,
             // over-grow it just to be sure
             b.grow(100, 100);
@@ -516,14 +518,14 @@ public class OsmDataLayer extends AbstractOsmDataLayer implements Listener, Data
                 if (bounds.isCollapsed()) {
                     continue;
                 }
-                p.append(mv.getState().getArea(bounds), false);
+                p.append(mapView.getState().getArea(bounds), false);
             }
             // subtract combined areas
             Area a = new Area(b);
             a.subtract(new Area(p));
 
             // paint remainder
-            MapViewPoint anchor = mv.getState().getPointFor(new EastNorth(0, 0));
+            MapViewPoint anchor = mapView.getState().getPointFor(new EastNorth(0, 0));
             Rectangle2D anchorRect = new Rectangle2D.Double(anchor.getInView().getX() % HATCHED_SIZE,
                     anchor.getInView().getY() % HATCHED_SIZE, HATCHED_SIZE, HATCHED_SIZE);
             if (hatched != null) {
@@ -537,11 +539,11 @@ public class OsmDataLayer extends AbstractOsmDataLayer implements Listener, Data
             }
         }
 
-        AbstractMapRenderer painter = MapRendererFactory.getInstance().createActiveRenderer(g, mv, inactive);
-        painter.enableSlowOperations(mv.getMapMover() == null || !mv.getMapMover().movementInProgress()
+        AbstractMapRenderer painter = MapRendererFactory.getInstance().createActiveRenderer(g, mapView, inactive);
+        painter.enableSlowOperations(mapView.getMapMover() == null || !mapView.getMapMover().movementInProgress()
                 || !PROPERTY_HIDE_LABELS_WHILE_DRAGGING.get());
-        painter.render(data, virtual, box);
-        MainApplication.getMap().conflictDialog.paintConflicts(g, mv);
+        painter.render(data, virtual, mvGraphics);
+        MainApplication.getMap().conflictDialog.paintConflicts(g, mapView);
     }
 
     @Override public String getToolTipText() {

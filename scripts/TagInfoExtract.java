@@ -433,9 +433,9 @@ public class TagInfoExtract {
                 BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g = img.createGraphics();
                 g.setClip(0, 0, 16, 16);
-                StyledMapRenderer renderer = new StyledMapRenderer(g, nc, false);
-                renderer.getSettings(false);
-                element.paintPrimitive(osm, MapPaintSettings.INSTANCE, renderer, false, false, false);
+                StyledMapRenderer renderer = new StyledMapRenderer(nc, false);
+                renderer.getSettings(g, false);
+                element.paintPrimitive(osm, MapPaintSettings.INSTANCE, renderer, g, false, false, false);
                 final String imageName = type + "_" + normalize(tag.toString()) + ".png";
                 try (OutputStream out = Files.newOutputStream(options.imageDir.resolve(imageName))) {
                     ImageIO.write(img, "png", out);

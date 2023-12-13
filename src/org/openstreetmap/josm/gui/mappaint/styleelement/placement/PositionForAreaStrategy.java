@@ -33,17 +33,21 @@ public interface PositionForAreaStrategy {
     boolean supportsGlyphVector();
 
     /**
-     * Generates the transformed glyph vectors for the given text.
+     * Aligns glyphs along a path
+     * <p>
+     * The input text may consist of multiple segments of bidirectional text. The way
+     * may consist of multiple segments.
+     *
      * @param path The path to place the text along
-     * @param nb The bounds of the text
-     * @param gvs The glyph vectors for the text. May be modified
-     * @param isDoubleTranslationBug <code>true</code> to fix a glyph placement bug.
+     * @param stringBounds The bounds of the text as returned by fontMetrics.getStringBounds(text, g)
+     * @param gvList a list of {@link GlyphVector} each vector containing a segment of
+     * the text in either ltr or rtl direction.
      *
      * @return The glyph vectors.
      * @throws UnsupportedOperationException if {@link #supportsGlyphVector()} returns false
      */
     default List<GlyphVector> generateGlyphVectors(
-            MapViewPath path, Rectangle2D nb, List<GlyphVector> gvs, boolean isDoubleTranslationBug) {
+            MapViewPath path, Rectangle2D stringBounds, List<GlyphVector> gvList) {
         throw new UnsupportedOperationException("Single glyph transformation is not supported by this implementation");
     }
 

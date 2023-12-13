@@ -21,6 +21,6 @@ class WireframeMapRendererPerformanceTest extends AbstractMapRendererPerformance
 
     @Override
     protected Rendering buildRenderer() {
-        return new WireframeMapRenderer(g, nc, false);
+        return new WireframeMapRenderer(nc, false);
     }
 }

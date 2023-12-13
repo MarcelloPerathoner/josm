@@ -91,6 +91,13 @@ public class BBox implements IBounds {
         // otherwise use default which is an invalid BBox
     }
 
+    public BBox inflate(double factor) {
+        double dx = getWidth() * factor;
+        double dy = getHeight() * factor;
+
+        return new BBox(xmin - dx, ymin - dy, xmax + dx, ymax + dy);
+    }
+
     /**
      * Create BBox for all nodes of the way with known coordinates.
      * If no node has a known coordinate, an invalid BBox is returned.

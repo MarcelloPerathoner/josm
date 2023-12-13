@@ -16,13 +16,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.visitor.BoundingXYVisitor;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.LayerListDialog;
 import org.openstreetmap.josm.gui.dialogs.LayerListPopup;
 import org.openstreetmap.josm.gui.dialogs.validator.ValidatorTreePanel;
@@ -69,12 +67,13 @@ public class ValidatorLayer extends Layer implements LayerChangeListener {
      * Draw nodes last to overlap the ways they belong to.
      */
     @Override
-    public void paint(final Graphics2D g, final MapView mv, Bounds bounds) {
+    public void paint(MapViewGraphics mvGraphics) {
         DefaultMutableTreeNode root = MainApplication.getMap().validatorDialog.tree.getRoot();
         if (root == null || root.getChildCount() == 0)
             return;
+        final Graphics2D g = mvGraphics.getDefaultGraphics();
 
-        PaintVisitor paintVisitor = new PaintVisitor(g, mv);
+        PaintVisitor paintVisitor = new PaintVisitor(g, mapView);
 
         DefaultMutableTreeNode severity = (DefaultMutableTreeNode) root.getLastChild();
         while (severity != null) {

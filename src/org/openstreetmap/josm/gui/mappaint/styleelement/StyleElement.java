@@ -2,6 +2,10 @@
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +59,47 @@ public abstract class StyleElement implements StyleKeys {
     public boolean defaultSelectedHandling;
 
     /**
+     * Convenience function to transform bounds
+     * <p>
+     * This function returns a bounds rectangle that contains the transformed bounds.
+     * The returned rectangle will be axis-aligned even if the transform contains a
+     * rotation.
+     *
+     * @param bbox the untransformed bounds
+     * @param at the affine transformation
+     * @return the transformed bounds
+     */
+    public static Rectangle transformBounds(Rectangle bbox, AffineTransform at) {
+        Point[] pts = new Point[4];
+        pts[0] = new Point(bbox.x,              bbox.y);
+        pts[1] = new Point(bbox.x + bbox.width, bbox.y);
+        pts[2] = new Point(bbox.x,              bbox.y + bbox.height);
+        pts[3] = new Point(bbox.x + bbox.width, bbox.y + bbox.height);
+        at.transform(pts, 0, pts, 0, 4);
+        Rectangle bounds = new Rectangle(pts[0]);
+        bounds.add(pts[1]);
+        bounds.add(pts[2]);
+        bounds.add(pts[3]);
+        return bounds;
+    }
+
+    /**
+     * Returns screen bounds for the element rendered with the style
+     * <p>
+     * An osm node has a bbox containing a single point, but with styles applied the
+     * bounds may well be much bigger, ie. the size of the symbol or the size of the
+     * node text.  This default implementation, which you should override, returns the
+     * primitive's bbox inflated by a small fixed amount.
+     * <p>
+     * The bbox is in screen coordinates relative to the mapview origin.
+     * <p>
+     * If the exact bounds are expensive to calculate you may return inexact bounds that
+     * are guaranteed to contain the exact bounds, ie. return a bigger rectangle.
+     */
+    public abstract Rectangle getBounds(IPrimitive osm, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member);
+
+    /**
      * Construct a new StyleElement
      * @param majorZIndex like z-index, but higher priority
      * @param zIndex order the objects are drawn
@@ -89,7 +134,7 @@ public abstract class StyleElement implements StyleKeys {
      * @param member true, if primitive is not selected and member of a selected relation
      * @since 13662 (signature)
      */
-    public abstract void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public abstract void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter, Graphics2D g,
             boolean selected, boolean outermember, boolean member);
 
     /**
@@ -173,6 +218,15 @@ public abstract class StyleElement implements StyleKeys {
     private static Font getCachedFont(String name, int style, int size) {
         return FONT_MAP.computeIfAbsent(new FontDescriptor(name, style, size), fd -> new Font(fd.name, fd.style, fd.size));
     }
+
+    /**
+     * Font for nodes without style
+     */
+    static Font noStyleFont = getCachedFont(
+        getDefaultFontName(),
+        Font.PLAIN,
+        Math.round(getDefaultFontSize())
+    );
 
     protected static Font getFont(Cascade c, String s) {
         String name = c.get(FONT_FAMILY, getDefaultFontName(), String.class);

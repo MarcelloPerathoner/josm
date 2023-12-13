@@ -23,6 +23,7 @@ import org.openstreetmap.josm.data.projection.ProjectionConfigurationException;
 import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.data.projection.Projections.ProjectionDefinition;
 import org.openstreetmap.josm.data.projection.proj.Proj;
+import org.openstreetmap.josm.tools.Logging;
 
 /**
  * Generates the list of projections by combining two sources: The list from the
@@ -74,6 +75,7 @@ public final class BuildProjectionDefinitions {
      * @throws IOException if any I/O error occurs
      */
     public static void main(String[] args) throws IOException {
+        Projections.initFrom(null);
         buildList(args.length > 0 ? args[0] : ".",
                   args.length > 1 ? args[1] : OUTPUT_EPSG_FILE);
     }
@@ -350,7 +352,6 @@ public final class BuildProjectionDefinitions {
             // Proj fails with "k <= 0" for ESRI:102470
             result = false;
         }
-
         return result;
     }
 

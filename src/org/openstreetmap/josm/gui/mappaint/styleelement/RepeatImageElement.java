@@ -1,12 +1,21 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
+import java.awt.AlphaComposite;
+import java.awt.Composite;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.IWay;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
+import org.openstreetmap.josm.data.osm.visitor.paint.OffsetIterator;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
+import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
+import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
@@ -126,12 +135,100 @@ public class RepeatImageElement extends StyleElement {
     }
 
     @Override
-    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public Rectangle getBounds(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        if (primitive instanceof IWay<?> way) {
+            final int imgHeight = pattern.getHeight();
+
+            int dyImage = (int) ((align.getAlignmentOffset() - .5) * imgHeight);
+
+            Rectangle bounds = new Rectangle(0, 0, -1, -1);
+            OffsetIterator it = new OffsetIterator(renderer.getMapViewState(), way.getNodes(), offset);
+            MapViewPoint start = it.next();
+            AffineTransform at = new AffineTransform();
+            while (it.hasNext()) {
+                MapViewPoint end = it.next();
+                double dx = end.getInViewX() - start.getInViewX();
+                double dy = end.getInViewY() - start.getInViewY();
+                Rectangle r = new Rectangle(0, -dyImage, (int) Math.sqrt(dx * dx + dy * dy), imgHeight);
+                at.setToTranslation(start.getInViewX(), start.getInViewY());
+                at.rotate(Math.atan2(dy, dx));
+                bounds.add(transformBounds(r, at));
+                start = end;
+            }
+            return bounds;
+        }
+        return null;
+    }
+
+    @Override
+    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
         if (primitive instanceof IWay) {
-            IWay<?> w = (IWay<?>) primitive;
-            painter.drawRepeatImage(w, pattern, painter.isInactiveMode() || w.isDisabled(), offset, spacing, phase, opacity, align);
+            IWay<?> way = (IWay<?>) primitive;
+            boolean disabled = renderer.isInactiveMode() || way.isDisabled();
+            final int imgWidth = pattern.getWidth();
+            final double repeat = imgWidth + spacing;
+            final int imgHeight = pattern.getHeight();
+
+            int dy1 = (int) ((align.getAlignmentOffset() - .5) * imgHeight);
+            int dy2 = dy1 + imgHeight;
+
+            OffsetIterator it = new OffsetIterator(renderer.getMapViewState(), way.getNodes(), offset);
+            MapViewPath path = new MapViewPath(renderer.getMapViewState());
+            if (it.hasNext()) {
+                path.moveTo(it.next());
+            }
+            while (it.hasNext()) {
+                path.lineTo(it.next());
+            }
+
+            double startOffset = computeStartOffset(phase, repeat);
+
+            Image image = pattern.getImage(disabled);
+            Composite saveComposite = g.getComposite();
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+            AffineTransform saveTransform = g.getTransform();
+
+            path.visitClippedLine(repeat, (inLineOffset, start, end, startIsOldEnd) -> {
+                final double segmentLength = start.distanceToInView(end);
+                if (segmentLength < 0.1) {
+                    // avoid odd patterns when zoomed out.
+                    return;
+                }
+                if (segmentLength > repeat * 500) {
+                    // simply skip drawing so many images - something must be wrong.
+                    return;
+                }
+                g.setTransform(saveTransform);
+                g.translate(start.getInViewX(), start.getInViewY());
+                double dx = end.getInViewX() - start.getInViewX();
+                double dy = end.getInViewY() - start.getInViewY();
+                g.rotate(Math.atan2(dy, dx));
+
+                // The start of the next image
+                // It is shifted by startOffset.
+                double imageStart = -((inLineOffset - startOffset + repeat) % repeat);
+
+                while (imageStart < segmentLength) {
+                    int x = (int) imageStart;
+                    int sx1 = Math.max(0, -x);
+                    int sx2 = imgWidth - Math.max(0, x + imgWidth - (int) Math.ceil(segmentLength));
+                    g.drawImage(image, x + sx1, dy1, x + sx2, dy2, sx1, 0, sx2, imgHeight, null);
+                    imageStart += repeat;
+                }
+            });
+            g.setComposite(saveComposite);
+            g.setTransform(saveTransform);
         }
+    }
+
+    private static double computeStartOffset(double phase, final double repeat) {
+        double startOffset = phase % repeat;
+        if (startOffset < 0) {
+            startOffset += repeat;
+        }
+        return startOffset;
     }
 
     @Override

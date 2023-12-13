@@ -29,6 +29,7 @@ import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
 import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.draw.MapPath2D;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Utils;
 
@@ -93,6 +94,8 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
             4, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL);
     private MapViewRectangle viewClip;
 
+    private Graphics2D g;
+
     /**
      * Creates an wireframe render
      *
@@ -103,8 +106,8 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
      * @throws IllegalArgumentException if {@code g} is null
      * @throws IllegalArgumentException if {@code nc} is null
      */
-    public WireframeMapRenderer(Graphics2D g, NavigatableComponent nc, boolean isInactiveMode) {
-        super(g, nc, isInactiveMode);
+    public WireframeMapRenderer(NavigatableComponent nc, boolean isInactiveMode) {
+        super(nc, isInactiveMode);
     }
 
     @Override
@@ -125,8 +128,8 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
     }
 
     @Override
-    protected void getSettings(boolean virtual) {
-        super.getSettings(virtual);
+    protected void getSettings(Graphics2D g, boolean virtual) {
+        super.getSettings(g, virtual);
         MapPaintSettings settings = MapPaintSettings.INSTANCE;
         showDirectionArrow = settings.isShowDirectionArrow();
         showOnewayArrow = settings.isShowOnewayArrow();
@@ -150,12 +153,13 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
     }
 
     @Override
-    public void render(OsmData<?, ?, ?, ?> data, boolean virtual, Bounds bounds) {
-        BBox bbox = bounds.toBBox();
+    public void render(OsmData<?, ?, ?, ?> data, boolean virtual, MapViewGraphics mvGraphics) {
+        g = mvGraphics.getDefaultGraphics();
+        final BBox bbox = mapState.getForView(mvGraphics.getBounds()).getLatLonBoundsBox().toBBox();
         Rectangle clip = g.getClipBounds();
         clip.grow(50, 50);
         viewClip = mapState.getViewArea(clip);
-        getSettings(virtual);
+        getSettings(g, virtual);
 
         for (final IRelation<?> rel : data.searchRelations(bbox)) {
             if (rel.isDrawable() && !rel.isSelected() && !rel.isDisabledAndHidden()) {
@@ -178,7 +182,7 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
                 }
             }
         }
-        displaySegments();
+        displaySegments(g);
 
         // Display highlighted ways after the other ones (fix #8276)
         List<IWay<?>> specialWays = new ArrayList<>(untaggedWays);
@@ -187,30 +191,30 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
             way.accept(this);
         }
         specialWays.clear();
-        displaySegments();
+        displaySegments(g);
 
         for (final IPrimitive osm : data.getSelected()) {
             if (osm.isDrawable()) {
                 osm.accept(this);
             }
         }
-        displaySegments();
+        displaySegments(g);
 
         for (final INode osm: data.searchNodes(bbox)) {
             if (osm.isDrawable() && !osm.isSelected() && !osm.isDisabledAndHidden()) {
                 osm.accept(this);
             }
         }
-        drawVirtualNodes(data, bbox);
+        drawVirtualNodes(g, data, bbox);
 
         // draw highlighted way segments over the already drawn ways. Otherwise each
         // way would have to be checked if it contains a way segment to highlight when
         // in most of the cases there won't be more than one segment. Since the wireframe
         // renderer does not feature any transparency there should be no visual difference.
         for (final WaySegment wseg : data.getHighlightedWaySegments()) {
-            drawSegment(mapState.getPointFor(wseg.getFirstNode()), mapState.getPointFor(wseg.getSecondNode()), highlightColor, false);
+            drawSegment(g, mapState.getPointFor(wseg.getFirstNode()), mapState.getPointFor(wseg.getSecondNode()), highlightColor, false);
         }
-        displaySegments();
+        displaySegments(g);
     }
 
     /**
@@ -237,7 +241,7 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
         if (n.isIncomplete()) return;
 
         if (n.isHighlighted()) {
-            drawNode(n, highlightColor, selectedNodeSize, fillSelectedNode);
+            drawNode(g, n, highlightColor, selectedNodeSize, fillSelectedNode);
         } else {
             Color color;
 
@@ -271,7 +275,7 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
             (n.isConnectionNode() && fillConnectionNode) ||
             fillUnselectedNode;
 
-            drawNode(n, color, size, fill);
+            drawNode(g, n, color, size, fill);
         }
     }
 
@@ -319,10 +323,10 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
                 MapViewPoint p = mapState.getPointFor(it.next());
                 int pOutside = p.getOutsideRectangleFlags(viewClip);
                 if ((pOutside & lastPOutside) == 0) {
-                    drawSegment(lastP, p, wayColor,
+                    drawSegment(g, lastP, p, wayColor,
                             showOnlyHeadArrowOnly ? !it.hasNext() : showThisDirectionArrow);
                     if ((showOrderNumber || (showOrderNumberOnSelectedWay && w.isSelected())) && !isInactiveMode) {
-                        drawOrderNumber(lastP, p, orderNumber, g.getColor());
+                        drawOrderNumber(g, lastP, p, orderNumber, g.getColor());
                     }
                 }
                 lastP = p;
@@ -389,7 +393,7 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
     }
 
     @Override
-    public void drawNode(INode n, Color color, int size, boolean fill) {
+    public void drawNode(Graphics2D g, INode n, Color color, int size, boolean fill) {
         if (size > 1) {
             MapViewPoint p = mapState.getPointFor(n);
             if (!p.isInView())
@@ -430,9 +434,9 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
      * @param showDirection <code>true</code> if segment direction should be indicated.
      * @since 10827
      */
-    protected void drawSegment(MapViewPoint p1, MapViewPoint p2, Color col, boolean showDirection) {
+    protected void drawSegment(Graphics2D g, MapViewPoint p1, MapViewPoint p2, Color col, boolean showDirection) {
         if (!col.equals(currentColor)) {
-            displaySegments(col);
+            displaySegments(g, col);
         }
         drawSegment(currentPath, p1, p2, showDirection);
     }
@@ -440,8 +444,8 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
     /**
      * Finally display all segments in currect path.
      */
-    protected void displaySegments() {
-        displaySegments(null);
+    protected void displaySegments(Graphics2D g) {
+        displaySegments(g, null);
     }
 
     /**
@@ -449,7 +453,7 @@ public class WireframeMapRenderer extends AbstractMapRenderer implements Primiti
      *
      * @param newColor This color is set after the path is drawn.
      */
-    protected void displaySegments(Color newColor) {
+    protected void displaySegments(Graphics2D g, Color newColor) {
         if (currentPath != null) {
             g.setColor(currentColor);
             g.draw(currentPath);

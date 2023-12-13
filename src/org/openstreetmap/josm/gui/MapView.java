@@ -49,7 +49,6 @@ import org.openstreetmap.josm.data.osm.visitor.paint.PaintColors;
 import org.openstreetmap.josm.data.osm.visitor.paint.Rendering;
 import org.openstreetmap.josm.data.osm.visitor.paint.relations.MultipolygonCache;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
-import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
 import org.openstreetmap.josm.gui.autofilter.AutoFilterManager;
 import org.openstreetmap.josm.gui.datatransfer.OsmTransferHandler;
 import org.openstreetmap.josm.gui.layer.Layer;
@@ -57,11 +56,11 @@ import org.openstreetmap.josm.gui.layer.LayerManager;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerAddEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerOrderChangeEvent;
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
 import org.openstreetmap.josm.gui.layer.MainLayerManager;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable;
-import org.openstreetmap.josm.gui.layer.MapViewPaintable.LayerPainter;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.MapViewEvent;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.PaintableInvalidationEvent;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.PaintableInvalidationListener;
@@ -199,6 +198,11 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
                 Logging.debug("A layer triggered a repaint while being added: " + layer);
                 warningPrinted = true;
             }
+        }
+
+        @Override
+        public LayerPainter attachToMapView(MapViewEvent event) {
+            return this;
         }
 
         @Override
@@ -346,7 +350,8 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
             Layer layer = e.getAddedLayer();
             registeredLayers.put(layer, new WarningLayerPainter(layer));
             // Layers may trigger a redraw during this call if they open dialogs.
-            LayerPainter painter = layer.attachToMapView(new MapViewEvent(this, false));
+            LayerPainter painter = layer.createMapViewPainter();
+            painter.attachToMapView(new MapViewEvent(this, false));
             if (!registeredLayers.containsKey(layer)) {
                 // The layer may have removed itself during attachToMapView()
                 Logging.warn("Layer was removed during attachToMapView()");
@@ -454,33 +459,33 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
     /**
      * Paints the given layer to the graphics object, using the current state of this map view.
      * @param layer The layer to draw.
-     * @param g A graphics object. It should have the width and height of this component
+     * @param mvGraphics MapViewGraphic describing the area to paint
      * @throws IllegalArgumentException If the layer is not part of this map view.
      * @since 11226
      */
-    public void paintLayer(Layer layer, Graphics2D g) {
+    public void paintLayer(Layer layer, MapViewGraphics mvGraphics) {
         try {
             LayerPainter painter = registeredLayers.get(layer);
             if (painter == null) {
                 Logging.warn("Cannot paint layer, it is not registered: {0}", layer);
                 return;
             }
-            MapViewRectangle clipBounds = getState().getViewArea(g.getClipBounds());
-            MapViewGraphics paintGraphics = new MapViewGraphics(this, g, clipBounds);
+            // Logging.info("paintLayer clipBounds: {0}", clipBounds.toString());
             float opacity = (float) layer.getOpacity();
 
             if (opacity < 1.0f) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+                mvGraphics.getDefaultGraphics().setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
             }
-            painter.paint(paintGraphics);
-            g.setPaintMode();
+            // Logging.info("MapView.paintLayer: {0} {1}", layer, painter);
+            painter.paint(mvGraphics);
+            mvGraphics.getDefaultGraphics().setPaintMode();
         } catch (JosmRuntimeException | IllegalArgumentException | IllegalStateException t) {
             BugReport.intercept(t).put("layer", layer).warn();
         }
     }
 
     /**
-     * Draw the component.
+     * Called by swing to draw the mapview component.
      */
     @Override
     public void paint(Graphics g) {
@@ -545,10 +550,6 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
                 && lastClipBounds.contains(g.getClipBounds())
                 && nonChangedLayers.equals(visibleLayers.subList(0, nonChangedLayers.size()));
 
-        if (null == offscreenBuffer || offscreenBuffer.getWidth() != width || offscreenBuffer.getHeight() != height) {
-            offscreenBuffer = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        }
-
         if (!canUseBuffer || nonChangedLayersBuffer == null) {
             if (null == nonChangedLayersBuffer
                     || nonChangedLayersBuffer.getWidth() != width || nonChangedLayersBuffer.getHeight() != height) {
@@ -560,8 +561,11 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
             g2.setColor(PaintColors.getBackgroundColor());
             g2.fillRect(0, 0, width, height);
 
+            MapViewGraphics mvGraphicsNonChangedLayers = new MapViewGraphics(nonChangedLayersBuffer, g2,
+                new Rectangle(nonChangedLayersBuffer.getWidth(), nonChangedLayersBuffer.getHeight()));
+
             for (int i = 0; i < nonChangedLayersCount; i++) {
-                paintLayer(visibleLayers.get(i), g2);
+                paintLayer(visibleLayers.get(i), mvGraphicsNonChangedLayers);
             }
         } else {
             // Maybe there were more unchanged layers then last time - draw them to buffer
@@ -569,8 +573,12 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
                 Graphics2D g2 = nonChangedLayersBuffer.createGraphics();
                 g2.setClip(scaledClip);
                 g2.setTransform(trDef);
+
+                MapViewGraphics mvGraphicsNonChangedLayers = new MapViewGraphics(nonChangedLayersBuffer, g2,
+                new Rectangle(nonChangedLayersBuffer.getWidth(), nonChangedLayersBuffer.getHeight()));
+
                 for (int i = nonChangedLayers.size(); i < nonChangedLayersCount; i++) {
-                    paintLayer(visibleLayers.get(i), g2);
+                    paintLayer(visibleLayers.get(i), mvGraphicsNonChangedLayers);
                 }
             }
         }
@@ -580,20 +588,30 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
         lastViewID = getViewID();
         lastClipBounds = g.getClipBounds();
 
+        if (null == offscreenBuffer || offscreenBuffer.getWidth() != width || offscreenBuffer.getHeight() != height) {
+            offscreenBuffer = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        }
+
         Graphics2D tempG = offscreenBuffer.createGraphics();
         tempG.setClip(scaledClip);
         tempG.setTransform(new AffineTransform());
         tempG.drawImage(nonChangedLayersBuffer, 0, 0, null);
         tempG.setTransform(trDef);
 
+        // setup to draw the whole buffer
+        MapViewGraphics mvGraphics = new MapViewGraphics(offscreenBuffer, tempG,
+            new Rectangle(offscreenBuffer.getWidth(), offscreenBuffer.getHeight()));
+
         for (int i = nonChangedLayersCount; i < visibleLayers.size(); i++) {
-            paintLayer(visibleLayers.get(i), tempG);
+            paintLayer(visibleLayers.get(i), mvGraphics);
         }
 
         try {
-            drawTemporaryLayers(tempG, getLatLonBounds(new Rectangle(
+            drawTemporaryLayers(mvGraphics,
+                getLatLonBounds(new Rectangle(
                     (int) Math.round(g.getClipBounds().x * uiScaleX),
-                    (int) Math.round(g.getClipBounds().y * uiScaleY))));
+                    (int) Math.round(g.getClipBounds().y * uiScaleY)))
+            );
         } catch (JosmRuntimeException | IllegalArgumentException | IllegalStateException e) {
             BugReport.intercept(e).put("temporaryLayers", temporaryLayers).warn();
         }
@@ -650,11 +668,11 @@ LayerManager.LayerChangeListener, MainLayerManager.ActiveLayerChangeListener {
         }
     }
 
-    private void drawTemporaryLayers(Graphics2D tempG, Bounds box) {
+    private void drawTemporaryLayers(MapViewGraphics graphics, Bounds box) {
         synchronized (temporaryLayers) {
             for (MapViewPaintable mvp : temporaryLayers) {
                 try {
-                    mvp.paint(tempG, this, box);
+                    mvp.paint(graphics);
                 } catch (JosmRuntimeException | IllegalArgumentException | IllegalStateException e) {
                     throw BugReport.intercept(e).put("mvp", mvp);
                 }

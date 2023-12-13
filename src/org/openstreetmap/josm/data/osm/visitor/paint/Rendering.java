@@ -3,6 +3,7 @@ package org.openstreetmap.josm.data.osm.visitor.paint;
 
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.OsmData;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 
 /**
  * <p>An object which can render data provided by a {@link OsmData}.</p>
@@ -20,5 +21,5 @@ public interface Rendering {
      * with {@code bbox} are rendered
      * @since 13810 (signature)
      */
-    void render(OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, Bounds bbox);
+    void render(OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, MapViewGraphics mvGraphics);
 }

@@ -291,8 +291,8 @@ public final class MapRendererFactory {
      */
     public AbstractMapRenderer createActiveRenderer(Graphics2D g, NavigatableComponent viewport, boolean isInactiveMode) {
         try {
-            Constructor<?> c = activeRenderer.getConstructor(Graphics2D.class, NavigatableComponent.class, boolean.class);
-            return AbstractMapRenderer.class.cast(c.newInstance(g, viewport, isInactiveMode));
+            Constructor<?> c = activeRenderer.getConstructor(NavigatableComponent.class, boolean.class);
+            return AbstractMapRenderer.class.cast(c.newInstance(viewport, isInactiveMode));
         } catch (ReflectiveOperationException | IllegalArgumentException e) {
             throw new MapRendererFactoryException(e);
         }

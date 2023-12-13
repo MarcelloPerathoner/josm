@@ -1,4 +1,4 @@
-<presets xmlns="http://josm.openstreetmap.de/tagging-preset-1.0" shortdescription="Traffic Signs in Italy" description="A preset to tag traffic signs in Italy." version="0.0.1" icon="https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg">
+<presets description="A preset to tag traffic signs in Italy." de.description="Eine Vorlage für italienische Verkehrszeichen." en.description="A preset to tag traffic signs in Italy." it.description="Un preset per i segnali stradali italiani." xmlns="http://josm.openstreetmap.de/tagging-preset-1.0" shortdescription="Traffic Signs in Italy" version="0.0.1" icon_base="svgs/" icon="flag.svg">
   <chunk id="t">
     <optional>
       <combo key="direction" text="Direction" values="N,NE,E,SE,S,SW,W,NW,0,45,90,135,180,225,270,315,forward,backward" values_sort="false"/>
@@ -6,1075 +6,1067 @@
       <combo key="length" text="Length" values="1 km,2 km,5 km" values_sort="false"/>
     </optional>
   </chunk>
-  <group name="Traffic Signs in Italy" it.name="Segnaletica stradale in Italia" icon="https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg" icon_base="https://upload.wikimedia.org/wikipedia/commons/" sort_menu="false">
-    <group icon_size="48" it.name="Segnali di pericolo" name="Danger warning signs" icon="5/5c/Italian_traffic_signs_-_altri_pericoli.svg">
-      <item name="II.5" icon="f/fa/Italian_traffic_signs_-_curva_pericolosa_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Curva a sinistra" tooltip="Dangerous bend (to the left)">
-        <key key="traffic_sign" value="IT:II.5;hazard"/>
+  <group name="Traffic Signs in Italy" de.name="Verkehrszeichen in Italien" en.name="Traffic Signs in Italy" it.name="Segnaletica stradale in Italia" icon="flag.svg" sort_menu="false">
+    <group icon_size="48" it.name="Segnali di pericolo" name="Danger warning signs" icon="altri_pericoli.svg">
+      <item name="II.5" icon="curva_pericolosa_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Curva a sinistra" tooltip="Dangerous bend (to the left)">
+        <key key="traffic_sign" value="IT:II.5"/>
         <key key="hazard" value="turn"/>
         <key key="turn" value="left"/>
         <reference ref="t"/>
       </item>
-      <item name="II.4" icon="9/99/Italian_traffic_signs_-_curva_pericolosa_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Curva a destra" tooltip="Dangerous bend (to the right)">
-        <key key="traffic_sign" value="IT:II.4;hazard"/>
+      <item name="II.4" icon="curva_pericolosa_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Curva a destra" tooltip="Dangerous bend (to the right)">
+        <key key="traffic_sign" value="IT:II.4"/>
         <key key="hazard" value="turn"/>
         <key key="turn" value="right"/>
         <reference ref="t"/>
       </item>
-      <item name="II.7" icon="d/de/Italian_traffic_signs_-_doppia_curva_sx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a sinistra" tooltip="Dangerous double bend (the first to the left)">
-        <key key="traffic_sign" value="IT:II.7;hazard"/>
+      <item name="II.7" icon="doppia_curva_sx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a sinistra" tooltip="Dangerous double bend (the first to the left)">
+        <key key="traffic_sign" value="IT:II.7"/>
         <key key="hazard" value="turns"/>
         <key key="turns" value="left"/>
         <reference ref="t"/>
       </item>
-      <item name="II.6" icon="1/1b/Italian_traffic_signs_-_doppia_curva_dx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a destra" tooltip="Dangerous double bend (the first to the right)">
-        <key key="traffic_sign" value="IT:II.6;hazard"/>
+      <item name="II.6" icon="doppia_curva_dx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a destra" tooltip="Dangerous double bend (the first to the right)">
+        <key key="traffic_sign" value="IT:II.6"/>
         <key key="hazard" value="turns"/>
         <key key="turns" value="right"/>
         <reference ref="t"/>
       </item>
-      <item name="II.15" icon="d/df/Italian_traffic_signs_-_discesa_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Discesa pericolosa" tooltip="Dangerous descent">
-        <key key="traffic_sign" value="IT:II.15;hazard"/>
+      <item name="II.15" icon="discesa_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Discesa pericolosa" tooltip="Dangerous descent">
+        <key key="traffic_sign" value="IT:II.15"/>
         <key key="hazard" value="steep_incline"/>
         <key key="steep_incline" value="down"/>
         <text text="Incline" key="incline"/>
         <reference ref="t"/>
       </item>
-      <item name="II.16" icon="7/7b/Italian_traffic_signs_-_salita_ripida.svg" type="node" preset_name_label="true" it.tooltip="Salita ripida" tooltip="Dangerous ascent">
-        <key key="traffic_sign" value="IT:II.16;hazard"/>
+      <item name="II.16" icon="salita_ripida.svg" type="node" preset_name_label="true" it.tooltip="Salita ripida" tooltip="Dangerous ascent">
+        <key key="traffic_sign" value="IT:II.16"/>
         <key key="hazard" value="steep_incline"/>
         <key key="steep_incline" value="up"/>
         <text text="Incline" key="incline"/>
         <reference ref="t"/>
       </item>
-      <item name="II.17" icon="e/e0/Italian_traffic_signs_-_strettoia_simmetrica.svg" type="node" preset_name_label="true" it.tooltip="Strettoia simmetrica" tooltip="Carriageway narrows (both sides)">
-        <key key="traffic_sign" value="IT:II.17;hazard"/>
+      <item name="II.17" icon="strettoia_simmetrica.svg" type="node" preset_name_label="true" it.tooltip="Strettoia simmetrica" tooltip="Carriageway narrows (both sides)">
+        <key key="traffic_sign" value="IT:II.17"/>
         <key key="hazard" value="road_narrows"/>
         <reference ref="t"/>
       </item>
-      <item name="II.19" icon="f/f6/Italian_traffic_signs_-_strettoia_asimmetrica_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a destra" tooltip="Carriageway narrows (right side)">
-        <key key="traffic_sign" value="IT:II.19;hazard"/>
+      <item name="II.19" icon="strettoia_asimmetrica_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a destra" tooltip="Carriageway narrows (right side)">
+        <key key="traffic_sign" value="IT:II.19"/>
         <key key="hazard" value="road_narrows"/>
         <reference ref="t"/>
       </item>
-      <item name="II.18" icon="2/28/Italian_traffic_signs_-_strettoia_asimmetrica_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a sinistra" tooltip="Carriageway narrows (left side)">
-        <key key="traffic_sign" value="IT:II.18;hazard"/>
+      <item name="II.18" icon="strettoia_asimmetrica_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a sinistra" tooltip="Carriageway narrows (left side)">
+        <key key="traffic_sign" value="IT:II.18"/>
         <key key="hazard" value="road_narrows"/>
         <reference ref="t"/>
       </item>
-      <item name="II.1" icon="3/3c/Italian_traffic_signs_-_strada_dissestata.svg" type="node" preset_name_label="true" it.tooltip="Strada deformata" tooltip="Uneven road">
-        <key key="traffic_sign" value="IT:II.1;hazard"/>
+      <item name="II.1" icon="strada_deformata_figura_ii_1.svg" type="node" preset_name_label="true" it.tooltip="Strada deformata" tooltip="Uneven road">
+        <key key="traffic_sign" value="IT:II.1"/>
         <key key="hazard" value="damaged_road"/>
         <reference ref="t"/>
       </item>
-      <item name="II.2" icon="4/42/Italian_traffic_signs_-_dosso.svg" type="node" preset_name_label="true" it.tooltip="Dosso" tooltip="Hump in road">
-        <key key="traffic_sign" value="IT:II.2;hazard"/>
+      <item name="II.2" icon="dosso.svg" type="node" preset_name_label="true" it.tooltip="Dosso" tooltip="Hump in road">
+        <key key="traffic_sign" value="IT:II.2"/>
         <key key="hazard" value="bump"/>
         <reference ref="t"/>
       </item>
-      <item name="II.3" icon="8/83/Italian_traffic_signs_-_cunetta.svg" type="node" preset_name_label="true" it.tooltip="Cunetta" tooltip="Dip in road">
-        <key key="traffic_sign" value="IT:II.3;hazard"/>
+      <item name="II.3" icon="cunetta.svg" type="node" preset_name_label="true" it.tooltip="Cunetta" tooltip="Dip in road">
+        <key key="traffic_sign" value="IT:II.3"/>
         <key key="hazard" value="dip"/>
         <reference ref="t"/>
       </item>
-      <item name="II.22" icon="e/e4/Italian_traffic_signs_-_strada_sdrucciolevole.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole" tooltip="Slippery road">
-        <key key="traffic_sign" value="IT:II.22;hazard"/>
+      <item name="II.22" icon="strada_sdrucciolevole.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole" tooltip="Slippery road">
+        <key key="traffic_sign" value="IT:II.22"/>
         <key key="hazard" value="slippery"/>
         <reference ref="t"/>
       </item>
-      <item name="II.26" icon="2/29/Italian_traffic_signs_-_doppio_senso.svg" type="node" preset_name_label="true" it.tooltip="Doppio senso di circolazione" tooltip="Two-way traffic">
-        <key key="traffic_sign" value="IT:II.26;oneway"/>
+      <item name="II.26" icon="doppio_senso_di_circolazione_figura_ii_26.svg" type="node" preset_name_label="true" it.tooltip="Doppio senso di circolazione" tooltip="Two-way traffic">
+        <key key="traffic_sign" value="IT:II.26"/>
         <key key="oneway" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.31a" icon="6/62/Italian_traffic_signs_-_semaforo_verticale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (vertical)">
-        <key key="traffic_sign" value="IT:II.31a;hazard"/>
+      <item name="II.31a" icon="semaforo_verticale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (vertical)">
+        <key key="traffic_sign" value="IT:II.31a"/>
         <key key="hazard" value="traffic_signals"/>
         <reference ref="t"/>
       </item>
-      <item name="II.31b" icon="5/5d/Italian_traffic_signs_-_semaforo_orizzontale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (horizontal)">
-        <key key="traffic_sign" value="IT:II.31b;hazard"/>
+      <item name="II.31b" icon="semaforo_orizzontale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (horizontal)">
+        <key key="traffic_sign" value="IT:II.31b"/>
         <key key="hazard" value="traffic_signals"/>
         <reference ref="t"/>
       </item>
-      <item name="II.13" icon="5/5e/Italian_traffic_signs_-_attraversamento_pericoloso.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
-        <key key="traffic_sign" value="IT:II.13;hazard"/>
+      <item name="II.13" icon="attraversamento_pericoloso.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
+        <key key="traffic_sign" value="IT:II.13"/>
         <key key="hazard" value="crossing"/>
         <reference ref="t"/>
       </item>
-      <item name="II.23" icon="a/a0/Italian_traffic_signs_-_bambini.svg" type="node" preset_name_label="true" it.tooltip="Bambini" tooltip="Children">
-        <key key="traffic_sign" value="IT:II.23;hazard"/>
+      <item name="II.23" icon="bambini.svg" type="node" preset_name_label="true" it.tooltip="Bambini" tooltip="Children">
+        <key key="traffic_sign" value="IT:II.23"/>
         <key key="hazard" value="children"/>
         <reference ref="t"/>
       </item>
-      <item name="II.24" icon="c/c2/Italian_traffic_signs_-_animali_domestici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali domestici vaganti" tooltip="Cattle crossing">
-        <key key="traffic_sign" value="IT:II.24;hazard"/>
+      <item name="II.24" icon="animali_domestici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali domestici vaganti" tooltip="Cattle crossing">
+        <key key="traffic_sign" value="IT:II.24"/>
         <key key="hazard" value="animal_crossing"/>
         <reference ref="t"/>
       </item>
-      <item name="II.25" icon="9/99/Italian_traffic_signs_-_animali_selvatici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali selvatici vaganti" tooltip="Wildlife crossing">
-        <key key="traffic_sign" value="IT:II.25;hazard"/>
+      <item name="II.25" icon="animali_selvatici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali selvatici vaganti" tooltip="Wildlife crossing">
+        <key key="traffic_sign" value="IT:II.25"/>
         <key key="hazard" value="animal_crossing"/>
         <reference ref="t"/>
       </item>
-      <item name="II.33" icon="2/2e/Italian_traffic_signs_-_forte_vento_laterale.svg" type="node" preset_name_label="true" it.tooltip="Forte vento laterale" tooltip="Cross-wind">
-        <key key="traffic_sign" value="IT:II.33;hazard"/>
+      <item name="II.33" icon="forte_vento_laterale.svg" type="node" preset_name_label="true" it.tooltip="Forte vento laterale" tooltip="Cross-wind">
+        <key key="traffic_sign" value="IT:II.33"/>
         <key key="hazard" value="side_winds"/>
         <reference ref="t"/>
       </item>
-      <item name="II.21" icon="f/f9/Italian_traffic_signs_-_banchina_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Banchina cedevole" tooltip="Dangerous shoulder">
-        <key key="traffic_sign" value="IT:II.21;hazard"/>
+      <item name="II.21" icon="banchina_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Banchina cedevole" tooltip="Dangerous shoulder">
+        <key key="traffic_sign" value="IT:II.21"/>
         <key key="hazard" value="dangerous_shoulder"/>
         <reference ref="t"/>
       </item>
-      <item name="II.34" icon="f/f5/Italian_traffic_signs_-_pericolo_di_incendio.svg" type="node" preset_name_label="true" it.tooltip="Pericolo di incendio" tooltip="Danger of wildfires">
-        <key key="traffic_sign" value="IT:II.34;hazard"/>
+      <item name="II.34" icon="pericolo_di_incendio.svg" type="node" preset_name_label="true" it.tooltip="Pericolo di incendio" tooltip="Danger of wildfires">
+        <key key="traffic_sign" value="IT:II.34"/>
         <key key="hazard" value="wildfires"/>
         <reference ref="t"/>
       </item>
-      <item name="II.29" icon="d/d4/Italian_traffic_signs_-_materiale_instabile.svg" type="node" preset_name_label="true" it.tooltip="Materiale instabile" tooltip="Loose gravel">
-        <key key="traffic_sign" value="IT:II.29;hazard"/>
+      <item name="II.29" icon="materiale_instabile.svg" type="node" preset_name_label="true" it.tooltip="Materiale instabile" tooltip="Loose gravel">
+        <key key="traffic_sign" value="IT:II.29"/>
         <key key="hazard" value="loose_gravel"/>
         <reference ref="t"/>
       </item>
-      <item name="II.30a" icon="1/11/Italian_traffic_signs_-_caduta_massi_da_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
-        <key key="traffic_sign" value="IT:II.30a;hazard"/>
+      <item name="II.30a" icon="caduta_massi_da_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
+        <key key="traffic_sign" value="IT:II.30a"/>
         <key key="hazard" value="falling_rocks"/>
         <reference ref="t"/>
       </item>
-      <item name="II.30b" icon="9/95/Italian_traffic_signs_-_caduta_massi_da_destra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
-        <key key="traffic_sign" value="IT:II.30b;hazard"/>
+      <item name="II.30b" icon="caduta_massi_da_destra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
+        <key key="traffic_sign" value="IT:II.30b"/>
         <key key="hazard" value="falling_rocks"/>
         <reference ref="t"/>
       </item>
-      <item name="II.14" icon="d/db/Italian_traffic_signs_-_attraversamento_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Cyclists entering or crossing">
-        <key key="traffic_sign" value="IT:II.14;hazard"/>
+      <item name="II.14" icon="attraversamento_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Cyclists entering or crossing">
+        <key key="traffic_sign" value="IT:II.14"/>
         <key key="hazard" value="cyclists"/>
         <reference ref="t"/>
       </item>
-      <item name="II.32" icon="7/7c/Italian_traffic_signs_-_aeromobili.svg" type="node" preset_name_label="true" it.tooltip="Aeromobili" tooltip="Airfield">
-        <key key="traffic_sign" value="IT:II.32;hazard"/>
+      <item name="II.32" icon="aeromobili.svg" type="node" preset_name_label="true" it.tooltip="Aeromobili" tooltip="Airfield">
+        <key key="traffic_sign" value="IT:II.32"/>
         <key key="hazard" value="low_flying_aircraft"/>
         <reference ref="t"/>
       </item>
-      <item name="II.27" icon="c/c3/Italian_traffic_signs_-_circolazione_rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Circolazione Rotatoria" tooltip="Roundabout ahead">
-        <key key="traffic_sign" value="IT:II.27;hazard"/>
+      <item name="II.27" icon="circolazione_rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Circolazione Rotatoria" tooltip="Roundabout ahead">
+        <key key="traffic_sign" value="IT:II.27"/>
         <key key="hazard" value="roundabout"/>
         <reference ref="t"/>
       </item>
-      <item name="II.35" icon="5/5c/Italian_traffic_signs_-_altri_pericoli.svg" type="node" preset_name_label="true" it.tooltip="Altri pericoli" tooltip="Other dangers">
-        <key key="traffic_sign" value="IT:II.35;hazard"/>
+      <item name="II.35" icon="altri_pericoli.svg" type="node" preset_name_label="true" it.tooltip="Altri pericoli" tooltip="Other dangers">
+        <key key="traffic_sign" value="IT:II.35"/>
         <reference ref="t"/>
       </item>
-      <item name="II.12" icon="2/21/Italian_traffic_signs_-_attraversamento_tramviario.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento tranviario" tooltip="Intersection with a tramway line">
-        <key key="traffic_sign" value="IT:II.12;hazard"/>
+      <item name="II.12" icon="attraversamento_tramviario.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento tranviario" tooltip="Intersection with a tramway line">
+        <key key="traffic_sign" value="IT:II.12"/>
         <key key="hazard" value="level_crossing"/>
         <key key="crossing:barrier" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.28" icon="3/3c/Italian_traffic_signs_-_sbocco_su_molo.svg" type="node" preset_name_label="true" it.tooltip="Sbocco su molo o su argine" tooltip="Road leads on to quay or river bank">
-        <key key="traffic_sign" value="IT:II.28;hazard"/>
+      <item name="II.28" icon="sbocco_su_molo.svg" type="node" preset_name_label="true" it.tooltip="Sbocco su molo o su argine" tooltip="Road leads on to quay or river bank">
+        <key key="traffic_sign" value="IT:II.28"/>
         <key key="hazard" value="quay"/>
         <reference ref="t"/>
       </item>
-      <item name="II.8" icon="d/da/Italian_traffic_signs_-_passaggio_a_livello_con_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello con barriere" tooltip="Level-crossings with gates">
-        <key key="traffic_sign" value="IT:II.8;hazard"/>
+      <item name="II.8" icon="passaggio_a_livello_con_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello con barriere" tooltip="Level-crossings with gates">
+        <key key="traffic_sign" value="IT:II.8"/>
         <key key="hazard" value="level_crossing"/>
         <key key="crossing:barrier" value="yes"/>
         <reference ref="t"/>
       </item>
-      <item name="II.9" icon="d/d1/Italian_traffic_signs_-_passaggio_a_livello_senza_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello senza barriere" tooltip="Other level-crossings">
-        <key key="traffic_sign" value="IT:II.9;hazard"/>
+      <item name="II.9" icon="passaggio_a_livello_senza_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello senza barriere" tooltip="Other level-crossings">
+        <key key="traffic_sign" value="IT:II.9"/>
         <key key="hazard" value="level_crossing"/>
         <key key="crossing:barrier" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.10a" icon="9/9a/Italian_traffic_signs_-_croce_di_S.Andrea.svg" type="node" preset_name_label="true" it.tooltip="Croce di Sant'Andrea" tooltip="Single-rail level-crossing">
+      <item name="II.10a" icon="croce_di_s.andrea.svg" type="node" preset_name_label="true" it.tooltip="Croce di Sant'Andrea" tooltip="Single-rail level-crossing">
         <key key="traffic_sign" value="IT:II.10a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.10b" icon="a/a8/Italian_traffic_signs_-_Doppia_croce_di_Sant'Andrea.svg" type="node" preset_name_label="true" it.tooltip="Doppia croce di Sant'Andrea" tooltip="Multi-rail level-crossing">
+      <item name="II.10b" icon="doppia_croce_di_santandrea.svg" type="node" preset_name_label="true" it.tooltip="Doppia croce di Sant'Andrea" tooltip="Multi-rail level-crossing">
         <key key="traffic_sign" value="IT:II.10b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.11a" icon="e/e1/Italian_traffic_signs_-_pannello_distanziometrico_150.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (240 m)">
+      <item name="II.11a" icon="pannello_distanziometrico_150.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (240 m)">
         <key key="traffic_sign" value="IT:II.11a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.11b" icon="2/20/Italian_traffic_signs_-_pannello_distanziometrico_100.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (160 m)">
+      <item name="II.11b" icon="pannello_distanziometrico_100.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (160 m)">
         <key key="traffic_sign" value="IT:II.11b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.11c" icon="e/ec/Italian_traffic_signs_-_pannello_distanziometrico_50.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (80 m)">
+      <item name="II.11c" icon="pannello_distanziometrico_50.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (80 m)">
         <key key="traffic_sign" value="IT:II.11c"/>
         <reference ref="t"/>
       </item>
-      <item name="II.20" icon="a/ad/Italian_traffic_signs_-_ponte_mobile.svg" type="node" preset_name_label="true" it.tooltip="Ponte mobile" tooltip="Movable bridge">
-        <key key="traffic_sign" value="IT:II.20;hazard"/>
+      <item name="II.20" icon="ponte_mobile.svg" type="node" preset_name_label="true" it.tooltip="Ponte mobile" tooltip="Movable bridge">
+        <key key="traffic_sign" value="IT:II.20"/>
         <key key="hazard" value="swing_bridge"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali di precedenza" name="Priority signs" icon="1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg">
-      <item name="II.36" icon="8/89/Italian_traffic_signs_-_dare_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza" tooltip="Give way">
-        <key key="traffic_sign" value="IT:II.36;give_way"/>
+    <group icon_size="48" it.name="Segnali di precedenza" name="Priority signs" icon="fermarsi_e_dare_precedenza_-_stop.svg">
+      <item name="II.36" icon="dare_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza" tooltip="Give way">
+        <key key="traffic_sign" value="IT:II.36"/>
         <reference ref="t"/>
       </item>
-      <item name="II.37" icon="1/1c/Italian_traffic_signs_-_fermarsi_e_dare_precedenza_-_stop.svg" type="node" preset_name_label="true" it.tooltip="Fermarsi e dare precedenza" tooltip="Stop">
-        <key key="traffic_sign" value="IT:II.37;stop"/>
+      <item name="II.37" icon="fermarsi_e_dare_precedenza_-_stop.svg" type="node" preset_name_label="true" it.tooltip="Fermarsi e dare precedenza" tooltip="Stop">
+        <key key="traffic_sign" value="IT:II.37"/>
         <reference ref="t"/>
       </item>
-      <item name="II.38" icon="c/cd/Italian_traffic_signs_-_distanza.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di dare precedenza" tooltip="Advance warning of give way">
-        <key key="traffic_sign" value="IT:II.38;yield_ahead"/>
-        <text text="Distance" key="distance"/>
+      <item name="II.38" icon="distanza.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di dare precedenza" tooltip="Advance warning of give way">
+        <key key="traffic_sign" value="IT:II.38"/>
         <reference ref="t"/>
       </item>
-      <item name="II.39" icon="b/b5/Italian_traffic_signs_-_preavviso.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di fermarsi e dare precedenza" tooltip="Advance warning of stop">
-        <key key="traffic_sign" value="IT:II.39;stop_ahead"/>
-        <text text="Distance" key="distance"/>
+      <item name="II.39" icon="preavviso.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di fermarsi e dare precedenza" tooltip="Advance warning of stop">
+        <key key="traffic_sign" value="IT:II.39"/>
         <reference ref="t"/>
       </item>
-      <item name="II.40" icon="3/31/Italian_traffic_signs_-_intersezione_con_precedenza_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con precedenza a destra" tooltip="Intersection with general priority ahead">
-        <key key="traffic_sign" value="IT:II.40;priority_road"/>
+      <item name="II.40" icon="intersezione_con_precedenza_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con precedenza a destra" tooltip="Intersection with general priority ahead">
+        <key key="traffic_sign" value="IT:II.40"/>
         <key key="priority_road" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.41" icon="c/cc/Italian_traffic_signs_-_dare_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza nei sensi unici alternati" tooltip="Oncoming traffic has priority">
-        <key key="traffic_sign" value="IT:II.41;priority"/>
+      <item name="II.41" icon="dare_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza nei sensi unici alternati" tooltip="Oncoming traffic has priority">
+        <key key="traffic_sign" value="IT:II.41"/>
         <key key="priority" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.42" icon="f/f3/Italian_traffic_signs_-_fine_del_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Fine del diritto di precedenza" tooltip="End of priority road">
-        <key key="traffic_sign" value="IT:II.42;priority_road"/>
+      <item name="II.42" icon="fine_del_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Fine del diritto di precedenza" tooltip="End of priority road">
+        <key key="traffic_sign" value="IT:II.42"/>
         <key key="priority_road" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.43a" icon="b/bb/Italian_traffic_signs_-_intersezione_con_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
+      <item name="II.43a" icon="intersezione_con_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
         <key key="traffic_sign" value="IT:II.43a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.43b" icon="c/cc/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
+      <item name="II.43b" icon="intersezione_a_t_con_diritto_di_precedenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
         <key key="traffic_sign" value="IT:II.43b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.43c" icon="9/96/Italian_traffic_signs_-_intersezione_a_T_con_diritto_di_precedenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
+      <item name="II.43c" icon="intersezione_a_t_con_diritto_di_precedenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
         <key key="traffic_sign" value="IT:II.43c"/>
         <reference ref="t"/>
       </item>
-      <item name="II.43d" icon="0/0c/Italian_traffic_signs_-_confluenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a destra" tooltip="Intersection with a road the users of which must give way">
+      <item name="II.43d" icon="confluenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a destra" tooltip="Intersection with a road the users of which must give way">
         <key key="traffic_sign" value="IT:II.43d"/>
         <reference ref="t"/>
       </item>
-      <item name="II.43e" icon="c/ce/Italian_traffic_signs_-_confluenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a sinistra" tooltip="Intersection with a road the users of which must give way">
+      <item name="II.43e" icon="confluenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a sinistra" tooltip="Intersection with a road the users of which must give way">
         <key key="traffic_sign" value="IT:II.43e"/>
         <reference ref="t"/>
       </item>
-      <item name="II.44" icon="b/b8/Italian_traffic_signs_-_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza" tooltip="Priority road">
+      <item name="II.44" icon="diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza" tooltip="Priority road">
         <key key="traffic_sign" value="IT:II.44;priority_road"/>
-        <text text="Priority_road" key="priority_road"/>
         <reference ref="t"/>
       </item>
-      <item name="II.45" icon="3/33/Italian_traffic_signs_-_diritto_di_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza nei sensi unici alternati" tooltip="Priority over oncoming traffic">
+      <item name="II.45" icon="diritto_di_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza nei sensi unici alternati" tooltip="Priority over oncoming traffic">
         <key key="traffic_sign" value="IT:II.45;priority"/>
-        <key key="priority" value="yes"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali di divieto" name="Prohibitory or restrictive signs" icon="e/eb/Italian_traffic_signs_-_limite_di_velocità_50.svg">
-      <item name="II.46" icon="7/75/Italian_traffic_signs_-_divieto_di_transito.svg" type="node" preset_name_label="true" it.tooltip="Divieto di transito" tooltip="Closed to all vehicles in both directions">
-        <key key="traffic_sign" value="IT:II.46;vehicle"/>
+    <group icon_size="48" it.name="Segnali di divieto" name="Prohibitory or restrictive signs" icon="limite_di_velocità_50.svg">
+      <item name="II.46" icon="divieto_di_transito.svg" type="node" preset_name_label="true" it.tooltip="Divieto di transito" tooltip="Closed to all vehicles in both directions">
+        <key key="traffic_sign" value="IT:II.46"/>
         <key key="vehicle" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.47" icon="5/5e/Italian_traffic_signs_-_senso_vietato.svg" type="node" preset_name_label="true" it.tooltip="Senso vietato" tooltip="No entry">
-        <key key="traffic_sign" value="IT:II.47;oneway"/>
+      <item name="II.47" icon="senso_vietato.svg" type="node" preset_name_label="true" it.tooltip="Senso vietato" tooltip="No entry">
+        <key key="traffic_sign" value="IT:II.47"/>
         <key key="oneway" value="yes"/>
         <reference ref="t"/>
       </item>
-      <item name="II.48" icon="2/26/Italian_traffic_signs_-_divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso" tooltip="Prohibition of overtaking">
-        <key key="traffic_sign" value="IT:II.48;overtaking"/>
+      <item name="II.48" icon="divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso" tooltip="Prohibition of overtaking">
+        <key key="traffic_sign" value="IT:II.48"/>
         <key key="overtaking" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.49" icon="6/6d/Italian_traffic_signs_-_distanziamento_minimo_obbligatorio.svg" type="node" preset_name_label="true" it.tooltip="Distanziamento minimo obbligatorio" tooltip="Minimum distance between vehicles">
-        <key key="traffic_sign" value="IT:II.49;mindistance"/>
+      <item name="II.49" icon="distanziamento_minimo_obbligatorio.svg" type="node" preset_name_label="true" it.tooltip="Distanziamento minimo obbligatorio" tooltip="Minimum distance between vehicles">
+        <key key="traffic_sign" value="IT:II.49"/>
         <text text="Mindistance" key="mindistance"/>
         <reference ref="t"/>
       </item>
-      <item name="II.50" icon="e/eb/Italian_traffic_signs_-_limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Limite massimo di velocità" tooltip="Speed limit">
-        <key key="traffic_sign" value="IT:II.50;maxspeed"/>
+      <item name="II.50" icon="limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Limite massimo di velocità" tooltip="Speed limit">
+        <key key="traffic_sign" value="IT:II.50"/>
         <text text="Maxspeed" key="maxspeed"/>
         <reference ref="t"/>
       </item>
-      <item name="II.51" icon="5/5c/Italian_traffic_signs_-_divieto_di_segnalazioni_acustiche.svg" type="node" preset_name_label="true" it.tooltip="Divieto di segnalazioni acustiche" tooltip="Prohibition of the use of audible warning devices">
+      <item name="II.51" icon="divieto_di_segnalazioni_acustiche.svg" type="node" preset_name_label="true" it.tooltip="Divieto di segnalazioni acustiche" tooltip="Prohibition of the use of audible warning devices">
         <key key="traffic_sign" value="IT:II.51"/>
         <reference ref="t"/>
       </item>
-      <item name="II.52" icon="5/53/Italian_traffic_signs_-_divieto_di_sorpasso_per_veicoli_oltre_3,5t.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="Prohibition of overtaking for trucks">
-        <key key="traffic_sign" value="IT:II.52;overtaking:hgv"/>
+      <item name="II.52" icon="divieto_di_sorpasso_per_veicoli_oltre_35t.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="Prohibition of overtaking for trucks">
+        <key key="traffic_sign" value="IT:II.52"/>
         <key key="overtaking:hgv" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.53" icon="9/9a/Italian_traffic_signs_-_divieto_di_transito_alla_trazione_animale.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a trazione animale" tooltip="No entry for animal-powered vehicles">
-        <key key="traffic_sign" value="IT:II.53;carriage"/>
+      <item name="II.53" icon="divieto_di_transito_alla_trazione_animale.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a trazione animale" tooltip="No entry for animal-powered vehicles">
+        <key key="traffic_sign" value="IT:II.53"/>
         <key key="carriage" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.54" icon="5/56/Italian_traffic_signs_-_transito_vietato_ai_pedoni.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai pedoni" tooltip="No entry for pedestrians">
-        <key key="traffic_sign" value="IT:II.54;foot"/>
+      <item name="II.54" icon="transito_vietato_ai_pedoni.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai pedoni" tooltip="No entry for pedestrians">
+        <key key="traffic_sign" value="IT:II.54"/>
         <key key="foot" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.55" icon="8/8c/Italian_traffic_signs_-_transito_vietato_ai_velocipedi_(figura_II_55).svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle biciclette" tooltip="No entry for bicycles">
-        <key key="traffic_sign" value="IT:II.55;bicycle"/>
+      <item name="II.55" icon="transito_vietato_ai_velocipedi_figura_ii_55.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle biciclette" tooltip="No entry for bicycles">
+        <key key="traffic_sign" value="IT:II.55"/>
         <key key="bicycle" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.56" icon="4/49/Italian_traffic_signs_-_divieto_di_transito_motocicli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai motocicli" tooltip="No entry for motorcycles">
-        <key key="traffic_sign" value="IT:II.56;motorcycle"/>
+      <item name="II.56" icon="divieto_di_transito_motocicli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai motocicli" tooltip="No entry for motorcycles">
+        <key key="traffic_sign" value="IT:II.56"/>
         <key key="motorcycle" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.57" icon="a/ae/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_a_braccia.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a braccia" tooltip="No entry for hand carts">
-        <key key="traffic_sign" value="IT:II.57;handcart"/>
+      <item name="II.57" icon="divieto_di_transito_a_veicoli_a_braccia.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a braccia" tooltip="No entry for hand carts">
+        <key key="traffic_sign" value="IT:II.57"/>
         <key key="handcart" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.58" icon="3/33/Italian_traffic_signs_-_divieto_di_transito_a_tutti_gli_autoveicoli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti gli autoveicoli" tooltip="No entry for all motor vehicles">
-        <key key="traffic_sign" value="IT:II.58;motorcar"/>
+      <item name="II.58" icon="divieto_di_transito_a_tutti_gli_autoveicoli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti gli autoveicoli" tooltip="No entry for all motor vehicles">
+        <key key="traffic_sign" value="IT:II.58"/>
         <key key="motorcar" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.59" icon="b/bc/Italian_traffic_signs_-_divieto_di_transito_agli_autobus.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato agli autobus" tooltip="No entry for buses">
-        <key key="traffic_sign" value="IT:II.59;bus"/>
+      <item name="II.59" icon="divieto_di_transito_agli_autobus.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato agli autobus" tooltip="No entry for buses">
+        <key key="traffic_sign" value="IT:II.59"/>
         <key key="bus" value="no"/>
         <key key="tourist_bus" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.60a" icon="8/81/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="No entry for trucks (with a permissible maximum with more than 3.5 t)">
-        <key key="traffic_sign" value="IT:II.60a;hgv"/>
+      <item name="II.60a" icon="divieto_di_transito_ai_veicoli_da_trasporto.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="No entry for trucks (with a permissible maximum with more than 3.5 t)">
+        <key key="traffic_sign" value="IT:II.60a"/>
         <key key="hgv" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.60b" icon="7/75/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_da_trasporto_6,5t.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a ... tonnellate" tooltip="No entry for trucks with a permissible maximum with more than ... t">
-        <key key="traffic_sign" value="IT:II.60b;maxweightrating:hgv"/>
+      <item name="II.60b" icon="transito_vietato_ai_veicoli_di_massa_a_pieno_carico_superiore_alle_..._tonnellate_figura_ii_60-b.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a ... tonnellate" tooltip="No entry for trucks with a permissible maximum with more than ... t">
+        <key key="traffic_sign" value="IT:II.60b"/>
         <text text="Maxweightrating:hgv" key="maxweightrating:hgv"/>
         <reference ref="t"/>
       </item>
-      <item name="II.61" icon="b/b7/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti i veicoli a motore trainanti un rimorchio" tooltip="No entry for vehicles drawing a trailer">
-        <key key="traffic_sign" value="IT:II.61;trailer"/>
+      <item name="II.61" icon="divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti i veicoli a motore trainanti un rimorchio" tooltip="No entry for vehicles drawing a trailer">
+        <key key="traffic_sign" value="IT:II.61"/>
         <key key="trailer" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.62" icon="9/9a/Italian_traffic_signs_-_divieto_di_transito_alle_macchine_agricole.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle macchine agricole" tooltip="No entry for tractors">
-        <key key="traffic_sign" value="IT:II.62;agricultural"/>
+      <item name="II.62" icon="divieto_di_transito_alle_macchine_agricole.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle macchine agricole" tooltip="No entry for tractors">
+        <key key="traffic_sign" value="IT:II.62"/>
         <key key="agricultural" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.63" icon="d/dc/Italian_traffic_signs_-_divieto_di_transito_a_trasporti_pericolosi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano merci pericolose" tooltip="No entry for vehicles transporting dangerous goods">
-        <key key="traffic_sign" value="IT:II.63;hazmat"/>
+      <item name="II.63" icon="divieto_di_transito_a_trasporti_pericolosi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano merci pericolose" tooltip="No entry for vehicles transporting dangerous goods">
+        <key key="traffic_sign" value="IT:II.63"/>
         <key key="hazmat" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.64a" icon="9/9d/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano esplosivi o prodotti facilmente infiammabili" tooltip="No entry for vehicles carrying explosives or readily inflammable substances">
+      <item name="II.64a" icon="divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano esplosivi o prodotti facilmente infiammabili" tooltip="No entry for vehicles carrying explosives or readily inflammable substances">
         <key key="traffic_sign" value="IT:II.64a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.64b" icon="1/1e/Italian_traffic_signs_-_divieto_di_transito_agli_inquinanti_idrici.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano prodotti suscettibili di contaminare l'acqua" tooltip="No entry for vehicles carrying goods capable of water pollution">
-        <key key="traffic_sign" value="IT:II.64b;hazmat:water"/>
+      <item name="II.64b" icon="divieto_di_transito_agli_inquinanti_idrici.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano prodotti suscettibili di contaminare l'acqua" tooltip="No entry for vehicles carrying goods capable of water pollution">
+        <key key="traffic_sign" value="IT:II.64b"/>
         <key key="hazmat:water" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.65" icon="c/c7/Italian_traffic_signs_-_divieto_di_transito_larghezza_2,30m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi larghezza superiore a ... metri" tooltip="No entry for vehicles wider than the specified limit">
-        <key key="traffic_sign" value="IT:II.65;maxwidth"/>
+      <item name="II.65" icon="divieto_di_transito_larghezza_230m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi larghezza superiore a ... metri" tooltip="No entry for vehicles wider than the specified limit">
+        <key key="traffic_sign" value="IT:II.65"/>
         <text text="Maxwidth" key="maxwidth"/>
         <reference ref="t"/>
       </item>
-      <item name="II.66" icon="2/25/Italian_traffic_signs_-_divieto_di_transito_altezza_3,50m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi altezza complessiva superiore a ... metri" tooltip="No entry for vehicles higher than the specified limit">
-        <key key="traffic_sign" value="IT:II.66;maxwidth"/>
+      <item name="II.66" icon="divieto_di_transito_altezza_350m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi altezza complessiva superiore a ... metri" tooltip="No entry for vehicles higher than the specified limit">
+        <key key="traffic_sign" value="IT:II.66"/>
         <text text="Maxheight" key="maxheight"/>
         <reference ref="t"/>
       </item>
-      <item name="II.67" icon="a/ab/Italian_traffic_signs_-_divieto_di_transito_ai_veicoli_lunghi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli, o a complessi di veicoli, aventi lunghezza superiore a ... metri" tooltip="No entry for vehicles or vehicle combinations longer than the specified limit">
-        <key key="traffic_sign" value="IT:II.67;maxwidth"/>
+      <item name="II.67" icon="divieto_di_transito_ai_veicoli_lunghi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli, o a complessi di veicoli, aventi lunghezza superiore a ... metri" tooltip="No entry for vehicles or vehicle combinations longer than the specified limit">
+        <key key="traffic_sign" value="IT:II.67"/>
         <text text="Maxlength" key="maxlength"/>
         <reference ref="t"/>
       </item>
-      <item name="II.68" icon="c/cd/Italian_traffic_signs_-_divieto_di_transito_a_veicoli_di_massa_sopra_7t.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi una massa superiore a ... tonnellate" tooltip="No entry for vehicles heavier than the specified limit">
-        <key key="traffic_sign" value="IT:II.68;maxweight"/>
+      <item name="II.68" icon="transito_vietato_ai_veicoli_aventi_una_massa_superiore_a_..._tonnellate_figura_ii_68.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi una massa superiore a ... tonnellate" tooltip="No entry for vehicles heavier than the specified limit">
+        <key key="traffic_sign" value="IT:II.68"/>
         <text text="Maxweight" key="maxweight"/>
         <reference ref="t"/>
       </item>
-      <item name="II.69" icon="c/ca/Italian_traffic_signs_-_divieto_di_transito_a_carico_su_asse_7t.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi massa per asse superiore a ... tonnellate" tooltip="No entry for vehicles which immediate weight per axle is over the specified limit">
-        <key key="traffic_sign" value="IT:II.69;maxaxleload"/>
+      <item name="II.69" icon="transito_vietato_ai_veicoli_aventi_massa_per_asse_superiore_a_..._tonnellate_figura_ii_69.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi massa per asse superiore a ... tonnellate" tooltip="No entry for vehicles which immediate weight per axle is over the specified limit">
+        <key key="traffic_sign" value="IT:II.69"/>
         <text text="Maxaxleload" key="maxaxleload"/>
         <reference ref="t"/>
       </item>
-      <item name="II.70" icon="7/78/Italian_traffic_signs_-_via_libera.svg" type="node" preset_name_label="true" it.tooltip="Via libera" tooltip="End of all prohibitions">
+      <item name="II.70" icon="via_libera.svg" type="node" preset_name_label="true" it.tooltip="Via libera" tooltip="End of all prohibitions">
         <key key="traffic_sign" value="IT:II.70"/>
         <reference ref="t"/>
       </item>
-      <item name="II.71" icon="4/45/Italian_traffic_signs_-_fine_limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Fine limitazione di velocità" tooltip="End of speed limit">
-        <key key="traffic_sign" value="IT:II.71;maxspeed"/>
+      <item name="II.71" icon="fine_limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Fine limitazione di velocità" tooltip="End of speed limit">
+        <key key="traffic_sign" value="IT:II.71"/>
         <key key="maxspeed" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.72" icon="7/73/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso" tooltip="End of overtaking prohibition">
-        <key key="traffic_sign" value="IT:II.72;overtaking"/>
+      <item name="II.72" icon="fine_del_divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso" tooltip="End of overtaking prohibition">
+        <key key="traffic_sign" value="IT:II.72"/>
         <key key="overtaking" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.73" icon="d/dd/Italian_traffic_signs_-_fine_del_divieto_di_sorpasso_per_veicoli_oltre_3,5t.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 t" tooltip="End of overtaking prohibition for trucks">
-        <key key="traffic_sign" value="IT:II.73;overtaking:hgv"/>
+      <item name="II.73" icon="fine_del_divieto_di_sorpasso_per_veicoli_oltre_35t.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 t" tooltip="End of overtaking prohibition for trucks">
+        <key key="traffic_sign" value="IT:II.73"/>
         <key key="overtaking:hgv" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.74" icon="9/94/Italian_traffic_signs_-_divieto_di_sosta.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sosta" tooltip="Parking prohibited">
-        <key key="traffic_sign" value="IT:II.74;parking"/>
+      <item name="II.74" icon="divieto_di_sosta.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sosta" tooltip="Parking prohibited">
+        <key key="traffic_sign" value="IT:II.74"/>
         <key key="parking" value="no_parking"/>
         <reference ref="t"/>
       </item>
-      <item name="II.75" icon="0/06/Italian_traffic_signs_-_divieto_di_fermata.svg" type="node" preset_name_label="true" it.tooltip="Divieto di fermata" tooltip="Standing and parking prohibited">
-        <key key="traffic_sign" value="IT:II.75;parking"/>
+      <item name="II.75" icon="divieto_di_fermata.svg" type="node" preset_name_label="true" it.tooltip="Divieto di fermata" tooltip="Standing and parking prohibited">
+        <key key="traffic_sign" value="IT:II.75"/>
         <key key="parking" value="no_stopping"/>
         <reference ref="t"/>
       </item>
-      <item name="II.76" icon="b/bc/Italian_traffic_signs_-_parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio" tooltip="Parking">
-        <key key="traffic_sign" value="IT:II.76;amenity"/>
+      <item name="II.76" icon="parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio" tooltip="Parking">
+        <key key="traffic_sign" value="IT:II.76"/>
         <key key="amenity" value="parking"/>
         <reference ref="t"/>
       </item>
-      <item name="II.77" icon="0/04/Italian_traffic_signs_-_preavviso_di_parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di parcheggio" tooltip="Advance warning of parking">
+      <item name="II.77" icon="preavviso_di_parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di parcheggio" tooltip="Advance warning of parking">
         <key key="traffic_sign" value="IT:II.77"/>
         <reference ref="t"/>
       </item>
-      <item name="II.78" icon="e/ed/Italian_traffic_signs_-_passo_carrabile.svg" type="node" preset_name_label="true" it.tooltip="Passo carrabile">
+      <item name="II.78" icon="passo_carrabile.svg" type="node" preset_name_label="true" it.tooltip="Passo carrabile">
         <key key="traffic_sign" value="IT:II.78"/>
         <reference ref="t"/>
       </item>
-      <item name="II.79" icon="c/c4/Italian_traffic_signs_-_parcheggio_riservato_pronto_soccorso.svg" type="node" preset_name_label="true" it.tooltip="Sosta consentita a particolare categoria" tooltip="Various parking exceptions">
+      <item name="II.79" icon="parcheggio_riservato_pronto_soccorso.svg" type="node" preset_name_label="true" it.tooltip="Sosta consentita a particolare categoria" tooltip="Various parking exceptions">
         <key key="traffic_sign" value="IT:II.79"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali di obbligo" name="Mandatory signs" icon="6/6d/Italian_traffic_signs_-_percorso_pedonale.svg">
-      <item name="II.80a" icon="4/45/Italian_traffic_signs_-_direzione_obbligatoria_dritto.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria diritto" tooltip="Mandatory direction straight ahead">
+    <group icon_size="48" it.name="Segnali di obbligo" name="Mandatory signs" icon="percorso_pedonale.svg">
+      <item name="II.80a" icon="direzione_obbligatoria_dritto.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria diritto" tooltip="Mandatory direction straight ahead">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="only_straight_on"/>
         <key key="traffic_sign" value="IT:II.80a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.80b" icon="b/bf/Italian_traffic_signs_-_direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a sinistra" tooltip="Turn left here">
+      <item name="II.80b" icon="direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a sinistra" tooltip="Turn left here">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="only_left_turn"/>
         <key key="traffic_sign" value="IT:II.80b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.80c" icon="2/2e/Italian_traffic_signs_-_direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a destra" tooltip="Turn right here">
+      <item name="II.80c" icon="direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a destra" tooltip="Turn right here">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="only_right_turn"/>
         <key key="traffic_sign" value="IT:II.80c"/>
         <reference ref="t"/>
       </item>
-      <item name="II.80d" icon="5/5a/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a destra" tooltip="Mandatory left turn">
+      <item name="II.80d" icon="preavviso_di_direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a destra" tooltip="Mandatory left turn">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="only_right_turn"/>
         <key key="traffic_sign" value="IT:II.80d"/>
         <reference ref="t"/>
       </item>
-      <item name="II.80e" icon="9/92/Italian_traffic_signs_-_preavviso_di_direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a sinistra" tooltip="Mandatory right turn">
+      <item name="II.80e" icon="preavviso_di_direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a sinistra" tooltip="Mandatory right turn">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="only_left_turn"/>
         <key key="traffic_sign" value="IT:II.80e"/>
         <reference ref="t"/>
       </item>
-      <item name="II.81a" icon="0/06/Italian_traffic_signs_-_direzioni_consentite_a_destra_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite destra e sinistra" tooltip="Mandatory right or left turn">
+      <item name="II.81a" icon="direzioni_consentite_a_destra_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite destra e sinistra" tooltip="Mandatory right or left turn">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="no_straight_on"/>
         <key key="traffic_sign" value="IT:II.81a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.81b" icon="7/78/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e destra" tooltip="Mandatory direction straight ahead or right turn">
+      <item name="II.81b" icon="direzioni_consentite_a_dritto_ed_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e destra" tooltip="Mandatory direction straight ahead or right turn">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="no_left_turn"/>
         <key key="traffic_sign" value="IT:II.81b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.81c" icon="d/d7/Italian_traffic_signs_-_direzioni_consentite_a_dritto_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e sinistra" tooltip="Mandatory direction straight ahead or left turn">
+      <item name="II.81c" icon="direzioni_consentite_a_dritto_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e sinistra" tooltip="Mandatory direction straight ahead or left turn">
         <link wiki="IT:Relation:restriction"/>
         <key key="restriction" value="no_right_turn"/>
         <key key="traffic_sign" value="IT:II.81c"/>
         <reference ref="t"/>
       </item>
-      <item name="II.82a" icon="7/73/Italian_traffic_signs_-_passaggio_obbligatorio_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a sinistra" tooltip="Pass by on the left-hand side">
+      <item name="II.82a" icon="passaggio_obbligatorio_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a sinistra" tooltip="Pass by on the left-hand side">
         <key key="traffic_sign" value="IT:II.82a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.82b" icon="0/0e/Italian_traffic_signs_-_passaggio_obbligatorio_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a destra" tooltip="Pass by on the right-hand side">
+      <item name="II.82b" icon="passaggio_obbligatorio_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a destra" tooltip="Pass by on the right-hand side">
         <key key="traffic_sign" value="IT:II.82b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.83" icon="c/c8/Italian_traffic_signs_-_passaggi_consentiti.svg" type="node" preset_name_label="true" it.tooltip="Passaggi consentiti" tooltip="Drive around">
+      <item name="II.83" icon="passaggi_consentiti.svg" type="node" preset_name_label="true" it.tooltip="Passaggi consentiti" tooltip="Drive around">
         <key key="traffic_sign" value="IT:II.83"/>
         <reference ref="t"/>
       </item>
-      <item name="II.84" icon="a/a1/Italian_traffic_signs_-_rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Rotatoria" tooltip="Compulsary Roundabout">
+      <item name="II.84" icon="rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Rotatoria" tooltip="Compulsary Roundabout">
         <key key="junction" value="roundabout"/>
         <key key="traffic_sign" value="IT:II.84"/>
         <reference ref="t"/>
       </item>
-      <item name="II.85" icon="7/77/Italian_traffic_signs_-_limite_minimo_di_velocità_(figura_II_85).svg" type="node" preset_name_label="true" it.tooltip="Limite minimo di velocità" tooltip="Compulsory minimum speed">
-        <key key="traffic_sign" value="IT:II.85;minspeed"/>
+      <item name="II.85" icon="limite_minimo_di_velocità_figura_ii_85.svg" type="node" preset_name_label="true" it.tooltip="Limite minimo di velocità" tooltip="Compulsory minimum speed">
+        <key key="traffic_sign" value="IT:II.85"/>
         <text text="Minspeed" key="minspeed"/>
         <reference ref="t"/>
       </item>
-      <item name="II.86" icon="1/11/Italian_traffic_signs_-_fine_limite_minimo_di_velocità_30.svg" type="node" preset_name_label="true" it.tooltip="Fine limite minimo di velocità" tooltip="End of compulsory minimum speed">
-        <key key="traffic_sign" value="IT:II.86;minspeed"/>
+      <item name="II.86" icon="fine_limite_minimo_di_velocità_30.svg" type="node" preset_name_label="true" it.tooltip="Fine limite minimo di velocità" tooltip="End of compulsory minimum speed">
+        <key key="traffic_sign" value="IT:II.86"/>
         <key key="minspeed" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.87" icon="e/e2/Italian_traffic_signs_-_catene_da_neve_obbligatorie.svg" type="node" preset_name_label="true" it.tooltip="Catene per neve obbligatorie" tooltip="Snow chains compulsory">
+      <item name="II.87" icon="catene_da_neve_obbligatorie.svg" type="node" preset_name_label="true" it.tooltip="Catene per neve obbligatorie" tooltip="Snow chains compulsory">
         <key key="traffic_sign" value="IT:II.87"/>
         <reference ref="t"/>
       </item>
-      <item name="II.88" icon="6/6d/Italian_traffic_signs_-_percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale" tooltip="Compulsory footpath">
-        <key key="traffic_sign" value="IT:II.88;foot"/>
+      <item name="II.88" icon="percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale" tooltip="Compulsory footpath">
+        <key key="traffic_sign" value="IT:II.88"/>
         <key key="foot" value="designated"/>
         <reference ref="t"/>
       </item>
-      <item name="II.89" icon="1/14/Italian_traffic_signs_-_fine_percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale" tooltip="End footpath">
-        <key key="traffic_sign" value="IT:II.89;foot"/>
+      <item name="II.89" icon="fine_percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale" tooltip="End footpath">
+        <key key="traffic_sign" value="IT:II.89"/>
         <key key="foot" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.90" icon="c/cc/Italian_traffic_signs_-_pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile" tooltip="Compulsory cycle track">
-        <key key="traffic_sign" value="IT:II.90;bicycle"/>
+      <item name="II.90" icon="pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile" tooltip="Compulsory cycle track">
+        <key key="traffic_sign" value="IT:II.90"/>
         <key key="bicycle" value="designated"/>
         <reference ref="t"/>
       </item>
-      <item name="II.91" icon="0/0a/Italian_traffic_signs_-_fine_pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine pista ciclabile" tooltip="End Cycleway">
-        <key key="traffic_sign" value="IT:II.91;bicycle"/>
+      <item name="II.91" icon="fine_pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine pista ciclabile" tooltip="End Cycleway">
+        <key key="traffic_sign" value="IT:II.91"/>
         <key key="bicycle" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.92a" icon="d/d1/Italian_traffic_signs_-_pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile contigua al marciapiede" tooltip="Footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.92a;bicycle;foot"/>
+      <item name="II.92a" icon="pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile contigua al marciapiede" tooltip="Footpath and cycleway">
+        <key key="traffic_sign" value="IT:II.92a"/>
         <key key="foot" value="designated"/>
         <key key="bicycle" value="designated"/>
         <key key="segregated" value="yes"/>
         <reference ref="t"/>
       </item>
-      <item name="II.93a" icon="d/d4/Italian_traffic_signs_-_fine_pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Fine della pista ciclabile contigua al marciapiede" tooltip="End of footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.93a;bicycle;foot"/>
+      <item name="II.93a" icon="fine_pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Fine della pista ciclabile contigua al marciapiede" tooltip="End of footpath and cycleway">
+        <key key="traffic_sign" value="IT:II.93a"/>
         <key key="foot" value="implicit"/>
         <key key="bicycle" value="implicit"/>
         <key key="segregated" value="yes"/>
         <reference ref="t"/>
       </item>
-      <item name="II.92b" icon="0/00/Italian_traffic_signs_-_percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale e ciclabile" tooltip="Footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.92b;bicycle;foot"/>
+      <item name="II.92b" icon="percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale e ciclabile" tooltip="Footpath and cycleway">
+        <key key="traffic_sign" value="IT:II.92b"/>
         <key key="foot" value="designated"/>
         <key key="bicycle" value="designated"/>
         <key key="segregated" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.93b" icon="0/0d/Italian_traffic_signs_-_fine_percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale e ciclabile" tooltip="End of footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.93b;bicycle;foot"/>
+      <item name="II.93b" icon="fine_percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale e ciclabile" tooltip="End of footpath and cycleway">
+        <key key="traffic_sign" value="IT:II.93b"/>
         <key key="foot" value="implicit"/>
         <key key="bicycle" value="implicit"/>
         <key key="segregated" value="no"/>
         <reference ref="t"/>
       </item>
-      <item name="II.94" icon="e/e8/Italian_traffic_signs_-_percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Percorso riservato ai quadrupedi da soma o da sella" tooltip="Compulsory track for riders on horseback">
-        <key key="traffic_sign" value="IT:II.94;horse"/>
+      <item name="II.94" icon="percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Percorso riservato ai quadrupedi da soma o da sella" tooltip="Compulsory track for riders on horseback">
+        <key key="traffic_sign" value="IT:II.94"/>
         <key key="horse" value="designated"/>
         <reference ref="t"/>
       </item>
-      <item name="II.95" icon="6/6d/Italian_traffic_signs_-_fine_percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso riservato ai quadrupedi da soma o da sella" tooltip="End of path for riders on animals">
-        <key key="traffic_sign" value="IT:II.95;horse"/>
+      <item name="II.95" icon="fine_percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso riservato ai quadrupedi da soma o da sella" tooltip="End of path for riders on animals">
+        <key key="traffic_sign" value="IT:II.95"/>
         <key key="horse" value="implicit"/>
         <reference ref="t"/>
       </item>
-      <item name="II.96" icon="6/6f/Italian_traffic_signs_-_dogana.svg" type="node" preset_name_label="true" it.tooltip="Alt - Dogana" tooltip="Prohibition of passing without stopping (Customs)">
+      <item name="II.96" icon="dogana.svg" type="node" preset_name_label="true" it.tooltip="Alt - Dogana" tooltip="Prohibition of passing without stopping (Customs)">
         <key key="amenity" value="customs"/>
         <text text="Barrier" key="barrier"/>
         <key key="traffic_sign" value="IT:II.96"/>
         <reference ref="t"/>
       </item>
-      <item name="II.97a" icon="f/f7/Italian_traffic_signs_-_confine_CEE.svg" type="node" preset_name_label="true" it.tooltip="Confine di Stato tra paesi della Comunità Europea" tooltip="European state boundary">
+      <item name="II.97a" icon="confine_cee.svg" type="node" preset_name_label="true" it.tooltip="Confine di Stato tra paesi della Comunità Europea" tooltip="European state boundary">
         <key key="traffic_sign" value="IT:II.97a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.97b" icon="0/05/Italian_traffic_signs_-_confine_francia.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di confine di Stato tra paesi della Comunità Europea" tooltip="Advance warning of european state boundary">
+      <item name="II.97b" icon="confine_francia.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di confine di Stato tra paesi della Comunità Europea" tooltip="Advance warning of european state boundary">
         <key key="traffic_sign" value="IT:II.97b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.98" icon="8/8a/Fig._52_-_Alt_-_Polizia_-_1959.svg" type="node" preset_name_label="true" it.tooltip="Alt - Polizia" tooltip="Prohibition of passing without stopping (Police)">
-        <key key="traffic_sign" value="IT:II.98"/>
-        <reference ref="t"/>
-      </item>
-      <item name="II.99" icon="1/10/Italian_traffic_signs_-_stazione.svg" type="node" preset_name_label="true" it.tooltip="Alt - Stazione" tooltip="Prohibition of passing without stopping (Tollbooth)">
+      <item name="II.99" icon="stazione.svg" type="node" preset_name_label="true" it.tooltip="Alt - Stazione" tooltip="Prohibition of passing without stopping (Tollbooth)">
         <key key="traffic_sign" value="IT:II.99"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnale di itinerario" name="Itinerary sign" icon="1/19/Italian_traffic_signs_-_segnale_di_itinerario_extraurbano_(figura_II_272).svg">
-      <item name="II.272" icon="1/19/Italian_traffic_signs_-_segnale_di_itinerario_extraurbano_(figura_II_272).svg" type="node" preset_name_label="true" it.tooltip="Segnale di itinerario" tooltip="Itinerary sign">
+    <group icon_size="48" it.name="Segnale di itinerario" name="Itinerary sign" icon="segnale_di_itinerario_extraurbano_figura_ii_272.svg">
+      <item name="II.272" icon="segnale_di_itinerario_extraurbano_figura_ii_272.svg" type="node" preset_name_label="true" it.tooltip="Segnale di itinerario" tooltip="Itinerary sign">
         <key key="traffic_sign" value="IT:II.272"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali di località e di localizzazione" name="Place identification signs" icon="8/84/Italian_traffic_signs_-_inizio_regione.svg">
-      <item name="II.273" icon="0/08/Italian_traffic_signs_-_inizio_centro_abitato_(figura_II_273).svg" type="node" preset_name_label="true" it.tooltip="Inizio centro abitato" tooltip="Begin of city limits">
-        <key key="traffic_sign" value="IT:II.273;city_limit"/>
+    <group icon_size="48" it.name="Segnali di località e di localizzazione" name="Place identification signs" icon="inizio_regione.svg">
+      <item name="II.273" icon="inizio_centro_abitato_figura_ii_273.svg" type="node" preset_name_label="true" it.tooltip="Inizio centro abitato" tooltip="Begin of city limits">
+        <key key="traffic_sign" value="IT:II.273"/>
         <text text="Name" key="name"/>
         <reference ref="t"/>
       </item>
-      <item name="II.274" icon="6/6f/Italian_traffic_signs_-_fine_centro_abitato_(figura_II_274).svg" type="node" preset_name_label="true" it.tooltip="Fine centro abitato" tooltip="End of city limits">
-        <key key="traffic_sign" value="IT:II.274;city_limit"/>
+      <item name="II.274" icon="fine_centro_abitato_figura_ii_274.svg" type="node" preset_name_label="true" it.tooltip="Fine centro abitato" tooltip="End of city limits">
+        <key key="traffic_sign" value="IT:II.274"/>
         <key key="city_limit" value="end"/>
         <text text="Name" key="name"/>
         <reference ref="t"/>
       </item>
-      <item name="II.275" icon="8/84/Italian_traffic_signs_-_inizio_regione.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine regione" tooltip="Begin and end of region">
+      <item name="II.275" icon="inizio_regione.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine regione" tooltip="Begin and end of region">
         <key key="traffic_sign" value="IT:II.275"/>
         <reference ref="t"/>
       </item>
-      <item name="II.276" icon="4/46/Italian_traffic_signs_-_inizio_provincia.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine provincia" tooltip="Begin and end of province">
+      <item name="II.276" icon="inizio_provincia.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine provincia" tooltip="Begin and end of province">
         <key key="traffic_sign" value="IT:II.276"/>
         <reference ref="t"/>
       </item>
-      <item name="II.284" icon="e/e7/Italian_traffic_signs_-_localizzazione_polizia_municipale_(figura_II_284).svg" type="node" preset_name_label="true" it.tooltip="Polizia municipale" tooltip="City police">
+      <item name="II.284" icon="localizzazione_polizia_municipale_figura_ii_284.svg" type="node" preset_name_label="true" it.tooltip="Polizia municipale" tooltip="City police">
         <key key="traffic_sign" value="IT:II.284"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali di conferma" name="Confirmatory signs" icon="9/98/Italian_traffic_signs_-_segnale_di_conferma_autostradale_(figura_II_285).svg">
-      <item name="II.285" icon="9/98/Italian_traffic_signs_-_segnale_di_conferma_autostradale_(figura_II_285).svg" type="node" preset_name_label="true" it.tooltip="Segnale di conferma" tooltip="Confirmatory sign">
+    <group icon_size="48" it.name="Segnali di conferma" name="Confirmatory signs" icon="segnale_di_conferma_autostradale_figura_ii_285.svg">
+      <item name="II.285" icon="segnale_di_conferma_autostradale_figura_ii_285.svg" type="node" preset_name_label="true" it.tooltip="Segnale di conferma" tooltip="Confirmatory sign">
         <key key="traffic_sign" value="IT:II.285"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali turistici e di territorio" icon="4/4f/Italian_traffic_signs_-_inizio_territorio_comunale.svg">
-      <item name="II.294" icon="4/4f/Italian_traffic_signs_-_inizio_territorio_comunale.svg" type="node" preset_name_label="true" it.tooltip="Inizio territorio comunale" tooltip="Begin of municipal area">
+    <group icon_size="48" it.name="Segnali turistici e di territorio" icon="inizio_territorio_comunale.svg">
+      <item name="II.294" icon="inizio_territorio_comunale.svg" type="node" preset_name_label="true" it.tooltip="Inizio territorio comunale" tooltip="Begin of municipal area">
         <key key="traffic_sign" value="IT:II.294"/>
         <reference ref="t"/>
       </item>
-      <item name="II.295" icon="d/df/Italian_traffic_signs_-_fiume.svg" type="node" preset_name_label="true" it.tooltip="Indicazione turistica" tooltip="Indication for tourists">
+      <item name="II.295" icon="fiume.svg" type="node" preset_name_label="true" it.tooltip="Indicazione turistica" tooltip="Indication for tourists">
         <key key="traffic_sign" value="IT:II.295"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali utili per la guida" name="Indication signs" icon="5/52/Italian_traffic_signs_-_attraversamento_pedonale.svg">
-      <item name="II.302" icon="a/ad/Italian_traffic_signs_-_ospedale.svg" type="node" preset_name_label="true" it.tooltip="Ospedale" tooltip="Hospital">
+    <group icon_size="48" it.name="Segnali utili per la guida" name="Indication signs" icon="attraversamento_pedonale.svg">
+      <item name="II.302" icon="ospedale.svg" type="node" preset_name_label="true" it.tooltip="Ospedale" tooltip="Hospital">
         <key key="traffic_sign" value="IT:II.302"/>
         <reference ref="t"/>
       </item>
-      <item name="II.303" icon="5/52/Italian_traffic_signs_-_attraversamento_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
+      <item name="II.303" icon="attraversamento_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
         <key key="traffic_sign" value="IT:II.303"/>
         <reference ref="t"/>
       </item>
-      <item name="II.304" icon="7/70/Italian_traffic_signs_-_scuolabus.svg" type="node" preset_name_label="true" it.tooltip="Scuolabus" tooltip="School bus (stop)">
+      <item name="II.304" icon="scuolabus.svg" type="node" preset_name_label="true" it.tooltip="Scuolabus" tooltip="School bus (stop)">
         <key key="traffic_sign" value="IT:II.304"/>
         <reference ref="t"/>
       </item>
-      <item name="II.305" icon="7/7a/Italian_traffic_signs_-_SOS.svg" type="node" preset_name_label="true" it.tooltip="SOS" tooltip="Emergency phone">
+      <item name="II.305" icon="sos.svg" type="node" preset_name_label="true" it.tooltip="SOS" tooltip="Emergency phone">
         <key key="traffic_sign" value="IT:II.305"/>
         <reference ref="t"/>
       </item>
-      <item name="II.306" icon="e/ef/Italian_traffic_signs_-_sottopassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sottopassaggio pedonale" tooltip="Pedestrian underpass">
+      <item name="II.306" icon="sottopassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sottopassaggio pedonale" tooltip="Pedestrian underpass">
         <key key="traffic_sign" value="IT:II.306"/>
         <reference ref="t"/>
       </item>
-      <item name="II.307" icon="d/d6/Italian_traffic_signs_-_sovrappassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sovrapassaggio pedonale" tooltip="Pedestrian overpass">
+      <item name="II.307" icon="sovrappassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sovrapassaggio pedonale" tooltip="Pedestrian overpass">
         <key key="traffic_sign" value="IT:II.307"/>
         <reference ref="t"/>
       </item>
-      <item name="II.308" icon="a/a7/Italian_traffic_signs_-_rampa_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Rampa pedonale" tooltip="Pedestrian underpass without steps">
+      <item name="II.308" icon="rampa_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Rampa pedonale" tooltip="Pedestrian underpass without steps">
         <key key="traffic_sign" value="IT:II.308"/>
         <reference ref="t"/>
       </item>
-      <item name="II.309" icon="9/9e/Italian_traffic_signs_-_strada_senza_uscita.svg" type="node" preset_name_label="true" it.tooltip="Strada senza uscita" tooltip="No through road">
+      <item name="II.309" icon="strada_senza_uscita.svg" type="node" preset_name_label="true" it.tooltip="Strada senza uscita" tooltip="No through road">
         <key key="traffic_sign" value="IT:II.309"/>
         <reference ref="t"/>
       </item>
-      <item name="II.310" icon="6/64/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_OSX.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
+      <item name="II.310" icon="preavviso_di_strada_senza_uscita_osx.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
         <key key="traffic_sign" value="IT:II.310"/>
         <reference ref="t"/>
       </item>
-      <item name="II.311" icon="2/22/Italian_traffic_signs_-_preavviso_di_strada_senza_uscita_DX.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
+      <item name="II.311" icon="preavviso_di_strada_senza_uscita_dx.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
         <key key="traffic_sign" value="IT:II.311"/>
         <reference ref="t"/>
       </item>
-      <item name="II.312" icon="7/7b/Italian_traffic_signs_-_velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Velocità consigliata" tooltip="Advisory speed">
+      <item name="II.312" icon="velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Velocità consigliata" tooltip="Advisory speed">
         <key key="traffic_sign" value="IT:II.312"/>
         <reference ref="t"/>
       </item>
-      <item name="II.313" icon="6/67/Italian_traffic_signs_-_fine_velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Fine velocità consigliata" tooltip="End advisory speed">
+      <item name="II.313" icon="fine_velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Fine velocità consigliata" tooltip="End advisory speed">
         <key key="traffic_sign" value="IT:II.313"/>
         <reference ref="t"/>
       </item>
-      <item name="II.314" icon="b/b8/Italian_traffic_signs_-_strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Strada riservata ai veicoli a motore" tooltip="Motorroad (road for motor vehicles only)">
+      <item name="II.314" icon="strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Strada riservata ai veicoli a motore" tooltip="Motorroad (road for motor vehicles only)">
         <key key="traffic_sign" value="IT:II.314"/>
         <reference ref="t"/>
       </item>
-      <item name="II.315" icon="f/fc/Italian_traffic_signs_-_fine_strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Fine strada riservata ai veicoli a motore" tooltip="End of motorroad (end of road for motor vehicles only)">
+      <item name="II.315" icon="fine_strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Fine strada riservata ai veicoli a motore" tooltip="End of motorroad (end of road for motor vehicles only)">
         <key key="traffic_sign" value="IT:II.315"/>
         <reference ref="t"/>
       </item>
-      <item name="II.316" icon="0/0e/Italian_traffic_signs_-_galleria_blu.svg" type="node" preset_name_label="true" it.tooltip="Galleria" tooltip="Tunnel">
+      <item name="II.316" icon="galleria_blu.svg" type="node" preset_name_label="true" it.tooltip="Galleria" tooltip="Tunnel">
         <key key="traffic_sign" value="IT:II.316"/>
         <reference ref="t"/>
       </item>
-      <item name="II.317" icon="c/c3/Italian_traffic_signs_-_ponte_blu.svg" type="node" preset_name_label="true" it.tooltip="Ponte" tooltip="Bridge">
+      <item name="II.317" icon="ponte_blu.svg" type="node" preset_name_label="true" it.tooltip="Ponte" tooltip="Bridge">
         <key key="traffic_sign" value="IT:II.317"/>
         <reference ref="t"/>
       </item>
-      <item name="II.318" icon="f/fc/Italian_traffic_signs_-_zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Zona residenziale" tooltip="Home zone">
+      <item name="II.318" icon="zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Zona residenziale" tooltip="Home zone">
         <key key="traffic_sign" value="IT:II.318"/>
         <reference ref="t"/>
       </item>
-      <item name="II.319" icon="6/64/Italian_traffic_signs_-_fine_zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Fine zona residenziale" tooltip="End of home zone">
+      <item name="II.319" icon="fine_zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Fine zona residenziale" tooltip="End of home zone">
         <key key="traffic_sign" value="IT:II.319"/>
         <reference ref="t"/>
       </item>
-      <item name="II.320" icon="7/78/Italian_traffic_signs_-_area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Area pedonale urbana" tooltip="Pedestrian zone">
+      <item name="II.320" icon="area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Area pedonale urbana" tooltip="Pedestrian zone">
         <key key="traffic_sign" value="IT:II.320"/>
         <reference ref="t"/>
       </item>
-      <item name="II.321" icon="2/2c/Italian_traffic_signs_-_fine_area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine area pedonale urbana" tooltip="End of pedestrian zone">
+      <item name="II.321" icon="fine_area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine area pedonale urbana" tooltip="End of pedestrian zone">
         <key key="traffic_sign" value="IT:II.321"/>
         <reference ref="t"/>
       </item>
-      <item name="II.322a" icon="b/b5/Italian_traffic_signs_-_zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Zona a traffico limitato" tooltip="Restricted vehicluar access zone">
+      <item name="II.322a" icon="zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Zona a traffico limitato" tooltip="Restricted vehicluar access zone">
         <key key="traffic_sign" value="IT:II.322a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.322b" icon="f/fd/Italian_traffic_signs_-_fine_zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Fine zona a traffico limitato" tooltip="End of restricted vehicluar access zone">
+      <item name="II.322b" icon="fine_zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Fine zona a traffico limitato" tooltip="End of restricted vehicluar access zone">
         <key key="traffic_sign" value="IT:II.322b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.323a" icon="e/e7/Italian_traffic_signs_-_zona_a_velocità_limitata_(figura_II_323-a).svg" type="node" preset_name_label="true" it.tooltip="Zona a velocità limitata" tooltip="Maximum speed zone">
+      <item name="II.323a" icon="zona_a_velocità_limitata_figura_ii_323-a.svg" type="node" preset_name_label="true" it.tooltip="Zona a velocità limitata" tooltip="Maximum speed zone">
         <key key="traffic_sign" value="IT:II.323a"/>
         <reference ref="t"/>
       </item>
-      <item name="II.323b" icon="b/b7/Italian_traffic_signs_-_fine_zona_a_velocità_limitata_(figura_II_323-b).svg" type="node" preset_name_label="true" it.tooltip="Fine zona a velocità limitata" tooltip="End maximum speed zone">
+      <item name="II.323b" icon="fine_zona_a_velocità_limitata_figura_ii_323-b.svg" type="node" preset_name_label="true" it.tooltip="Fine zona a velocità limitata" tooltip="End maximum speed zone">
         <key key="traffic_sign" value="IT:II.323b"/>
         <reference ref="t"/>
       </item>
-      <item name="II.324" icon="6/6c/Italian_traffic_signs_-_attraversamento_ciclabile_2.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Bicycle crossing">
+      <item name="II.324" icon="attraversamento_ciclabile_2.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Bicycle crossing">
         <key key="traffic_sign" value="IT:II.324"/>
         <reference ref="t"/>
       </item>
-      <item name="II.325" icon="a/a6/Italian_traffic_signs_-_svolta_a_sx_semidiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra semidiretta" tooltip="Route for making an indirect left turn">
+      <item name="II.325" icon="svolta_a_sx_semidiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra semidiretta" tooltip="Route for making an indirect left turn">
         <key key="traffic_sign" value="IT:II.325"/>
         <reference ref="t"/>
       </item>
-      <item name="II.326" icon="e/e4/Italian_traffic_signs_-_svolta_a_sx_indiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra indiretta" tooltip="Route for making an indirect left turn">
+      <item name="II.326" icon="svolta_a_sx_indiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra indiretta" tooltip="Route for making an indirect left turn">
         <key key="traffic_sign" value="IT:II.326"/>
         <reference ref="t"/>
       </item>
-      <item name="II.327" icon="2/20/Italian_traffic_signs_-_inversione_di_marcia.svg" type="node" preset_name_label="true" it.tooltip="Inversione di marcia" tooltip="Infrastructure for reversing (u-turn)">
+      <item name="II.327" icon="inversione_di_marcia.svg" type="node" preset_name_label="true" it.tooltip="Inversione di marcia" tooltip="Infrastructure for reversing (u-turn)">
         <key key="traffic_sign" value="IT:II.327"/>
         <reference ref="t"/>
       </item>
-      <item name="II.328" icon="3/3d/Italian_traffic_signs_-_piazzola_su_viabilità_ordinaria.svg" type="node" preset_name_label="true" it.tooltip="Piazzola su viabilità ordinaria" tooltip="Emergency stopping place">
+      <item name="II.328" icon="piazzola_su_viabilità_ordinaria.svg" type="node" preset_name_label="true" it.tooltip="Piazzola su viabilità ordinaria" tooltip="Emergency stopping place">
         <key key="traffic_sign" value="IT:II.328"/>
         <reference ref="t"/>
       </item>
-      <item name="II.329" icon="3/37/Italian_traffic_signs_-_piazzola_autostradale_sos.svg" type="node" preset_name_label="true" it.tooltip="Piazzola + SOS autostradale" tooltip="Emergency stopping place with emergency phone (on motorways)">
+      <item name="II.329" icon="piazzola_autostradale_sos.svg" type="node" preset_name_label="true" it.tooltip="Piazzola + SOS autostradale" tooltip="Emergency stopping place with emergency phone (on motorways)">
         <key key="traffic_sign" value="IT:II.329"/>
         <reference ref="t"/>
       </item>
-      <item name="II.330" icon="d/d0/Italian_traffic_signs_-_transitabilità_1.svg" type="node" preset_name_label="true" it.tooltip="Transitabilità" tooltip="Road open or closed">
+      <item name="II.330" icon="transitabilità_1.svg" type="node" preset_name_label="true" it.tooltip="Transitabilità" tooltip="Road open or closed">
         <key key="traffic_sign" value="IT:II.330"/>
         <reference ref="t"/>
       </item>
-      <item name="II.337" icon="b/b2/Italian_traffic_signs_-_uso_corsie_(figura_II_337).svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (no trucks)">
+      <item name="II.337" icon="uso_corsie_figura_ii_337.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (no trucks)">
         <key key="traffic_sign" value="IT:II.337"/>
         <reference ref="t"/>
       </item>
-      <item name="II.338" icon="1/1b/Italian_traffic_signs_-_uso_corsie_(figura_II_338).svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (minimum speed)">
+      <item name="II.338" icon="uso_corsie_figura_ii_338.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (minimum speed)">
         <key key="traffic_sign" value="IT:II.338"/>
         <reference ref="t"/>
       </item>
-      <item name="II.339" icon="c/cf/Italian_traffic_signs_-_uso_corsie_(figura_II_339).svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
+      <item name="II.339" icon="uso_corsie_figura_ii_339.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
         <key key="traffic_sign" value="IT:II.339"/>
         <reference ref="t"/>
       </item>
-      <item name="II.340" icon="b/ba/Italian_traffic_signs_-_uso_corsie_(figura_II_340).svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
+      <item name="II.340" icon="uso_corsie_figura_ii_340.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
         <key key="traffic_sign" value="IT:II.340"/>
         <reference ref="t"/>
       </item>
-      <item name="II.341" icon="8/84/Italian_traffic_signs_-_variazione_corsie_disponibili_(figura_II_341).svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (2 -&gt; 1)">
+      <item name="II.341" icon="variazione_corsie_disponibili_figura_ii_341.svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (2 -&gt; 1)">
         <key key="traffic_sign" value="IT:II.341"/>
         <reference ref="t"/>
       </item>
-      <item name="II.342" icon="b/bf/Italian_traffic_signs_-_variazione_corsie_disponibili_(figura_II_342).svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (1 -&gt; 2)">
+      <item name="II.342" icon="variazione_corsie_disponibili_figura_ii_342.svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (1 -&gt; 2)">
         <key key="traffic_sign" value="IT:II.342"/>
         <reference ref="t"/>
       </item>
-      <item name="II.345" icon="3/3d/Italian_traffic_signs_-_inizio_autostrada_(figura_II_345).svg" type="node" preset_name_label="true" it.tooltip="Inizio autostrada (sfondo verde) / inizio strada extraurbana principale (sfondo blu)" tooltip="Motorway (green background) / Expressway (blue background)">
+      <item name="II.345" icon="inizio_autostrada_figura_ii_345.svg" type="node" preset_name_label="true" it.tooltip="Inizio autostrada (sfondo verde) / inizio strada extraurbana principale (sfondo blu)" tooltip="Motorway (green background) / Expressway (blue background)">
         <key key="traffic_sign" value="IT:II.345"/>
         <reference ref="t"/>
       </item>
-      <item name="II.346" icon="f/ff/Italian_traffic_signs_-_segnale_fine_autostrada.svg" type="node" preset_name_label="true" it.tooltip="Fine autostrada (sfondo verde) / fine strada extraurbana principale (sfondo blu)" tooltip="End motorway (green background) / end expressway (blue background)">
+      <item name="II.346" icon="segnale_fine_autostrada.svg" type="node" preset_name_label="true" it.tooltip="Fine autostrada (sfondo verde) / fine strada extraurbana principale (sfondo blu)" tooltip="End motorway (green background) / end expressway (blue background)">
         <key key="traffic_sign" value="IT:II.346"/>
         <reference ref="t"/>
       </item>
-      <item name="II.348" icon="f/f2/Italian_traffic_signs_-_senso_unico_(a_destra).svg" type="node" preset_name_label="true" it.tooltip="Senso unico parallelo" tooltip="One way">
+      <item name="II.348" icon="senso_unico_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Senso unico parallelo" tooltip="One way">
         <key key="traffic_sign" value="IT:II.348"/>
         <reference ref="t"/>
       </item>
-      <item name="II.349" icon="8/8b/Italian_traffic_signs_-_senso_unico_frontale.svg" type="node" preset_name_label="true" it.tooltip="Senso unico frontale" tooltip="One way">
+      <item name="II.349" icon="senso_unico_frontale.svg" type="node" preset_name_label="true" it.tooltip="Senso unico frontale" tooltip="One way">
         <key key="traffic_sign" value="IT:II.349"/>
         <reference ref="t"/>
       </item>
-      <item name="II.350" icon="2/25/Italian_traffic_signs_-_preavviso_deviazione_consigliata_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Preavviso deviazione consigliata autocarri in transito" tooltip="Suggested detour for trucks ahead">
+      <item name="II.350" icon="preavviso_deviazione_consigliata_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Preavviso deviazione consigliata autocarri in transito" tooltip="Suggested detour for trucks ahead">
         <key key="traffic_sign" value="IT:II.350"/>
         <reference ref="t"/>
       </item>
-      <item name="II.351" icon="a/ae/Italian_traffic_signs_-_direzione_autocarri_consigliata.svg" type="node" preset_name_label="true" it.tooltip="Deviazione consigliata autocarri in transito" tooltip="Advised itinerary for heavy vehicles">
+      <item name="II.351" icon="direzione_autocarri_consigliata.svg" type="node" preset_name_label="true" it.tooltip="Deviazione consigliata autocarri in transito" tooltip="Advised itinerary for heavy vehicles">
         <key key="traffic_sign" value="IT:II.351"/>
         <reference ref="t"/>
       </item>
-      <item name="II.352" icon="d/d0/Italian_traffic_signs_-_limiti_di_velocità_generali_(figura_II_352).svg" type="node" preset_name_label="true" it.tooltip="Limiti di velocità generali" tooltip="General speed limits">
+      <item name="II.352" icon="limiti_di_velocità_generali_figura_ii_352.svg" type="node" preset_name_label="true" it.tooltip="Limiti di velocità generali" tooltip="General speed limits">
         <key key="traffic_sign" value="IT:II.352"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali che forniscono indicazioni di servizi utili" name="Information, facilities or service signs" icon="e/ee/Italian_traffic_signs_-_rifornimento.svg">
-      <item name="II.353" icon="d/d0/Italian_traffic_signs_-_pronto_soccorso.svg" type="node" preset_name_label="true" it.tooltip="Pronto soccorso" tooltip="First aid">
+    <group icon_size="48" it.name="Segnali che forniscono indicazioni di servizi utili" name="Information, facilities or service signs" icon="rifornimento.svg">
+      <item name="II.353" icon="pronto_soccorso_figura_ii_353.svg" type="node" preset_name_label="true" it.tooltip="Pronto soccorso" tooltip="First aid">
         <key key="traffic_sign" value="IT:II.353"/>
         <reference ref="t"/>
       </item>
-      <item name="II.354" icon="a/a7/Italian_traffic_signs_-_riparazioni.svg" type="node" preset_name_label="true" it.tooltip="Assistenza meccanica" tooltip="Breakdown service">
+      <item name="II.354" icon="riparazioni.svg" type="node" preset_name_label="true" it.tooltip="Assistenza meccanica" tooltip="Breakdown service">
         <key key="traffic_sign" value="IT:II.354"/>
         <reference ref="t"/>
       </item>
-      <item name="II.355" icon="5/57/Italian_traffic_signs_-_telefono.svg" type="node" preset_name_label="true" it.tooltip="Telefono" tooltip="Telephone">
+      <item name="II.355" icon="telefono.svg" type="node" preset_name_label="true" it.tooltip="Telefono" tooltip="Telephone">
         <key key="traffic_sign" value="IT:II.355"/>
         <reference ref="t"/>
       </item>
-      <item name="II.356" icon="e/ee/Italian_traffic_signs_-_rifornimento.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento" tooltip="Filling station">
+      <item name="II.356" icon="rifornimento.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento" tooltip="Filling station">
         <key key="traffic_sign" value="IT:II.356"/>
         <reference ref="t"/>
       </item>
-      <item name="II.357" icon="d/d7/Italian_traffic_signs_-_rifornimento_verde.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento (verde)" tooltip="Filling station (green)">
+      <item name="II.357" icon="rifornimento_verde.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento (verde)" tooltip="Filling station (green)">
         <key key="traffic_sign" value="IT:II.357"/>
         <reference ref="t"/>
       </item>
-      <item name="II.358" icon="0/0b/Italian_traffic_sign_-_fermata_autobus.svg" type="node" preset_name_label="true" it.tooltip="Fermata autobus" tooltip="Bus stop">
+      <item name="II.358" icon="fermata_autobus.svg" type="node" preset_name_label="true" it.tooltip="Fermata autobus" tooltip="Bus stop">
         <key key="traffic_sign" value="IT:II.358"/>
         <reference ref="t"/>
       </item>
-      <item name="II.359" icon="2/29/Italian_traffic_signs_-_fermata_tram.svg" type="node" preset_name_label="true" it.tooltip="Fermata tram" tooltip="Tramway stop">
+      <item name="II.359" icon="fermata_tram.svg" type="node" preset_name_label="true" it.tooltip="Fermata tram" tooltip="Tramway stop">
         <key key="traffic_sign" value="IT:II.359"/>
         <reference ref="t"/>
       </item>
-      <item name="II.360" icon="4/49/Italian_traffic_signs_-_informazioni_(figura_II_360).svg" type="node" preset_name_label="true" it.tooltip="Informazioni" tooltip="Informations">
+      <item name="II.360" icon="informazioni_figura_ii_360.svg" type="node" preset_name_label="true" it.tooltip="Informazioni" tooltip="Informations">
         <key key="traffic_sign" value="IT:II.360"/>
         <reference ref="t"/>
       </item>
-      <item name="II.361" icon="7/72/Italian_traffic_signs_-_ostello_per_la_gioventù.svg" type="node" preset_name_label="true" it.tooltip="Ostello per la gioventù" tooltip="Youth hostel">
+      <item name="II.361" icon="ostello_per_la_gioventù.svg" type="node" preset_name_label="true" it.tooltip="Ostello per la gioventù" tooltip="Youth hostel">
         <key key="traffic_sign" value="IT:II.361"/>
         <reference ref="t"/>
       </item>
-      <item name="II.362" icon="8/86/Italian_traffic_signs_-_area_pic_nic.svg" type="node" preset_name_label="true" it.tooltip="Area per picnic" tooltip="Picnic site">
+      <item name="II.362" icon="area_pic_nic.svg" type="node" preset_name_label="true" it.tooltip="Area per picnic" tooltip="Picnic site">
         <key key="traffic_sign" value="IT:II.362"/>
         <reference ref="t"/>
       </item>
-      <item name="II.363" icon="d/d6/Italian_traffic_signs_-_campeggio.svg" type="node" preset_name_label="true" it.tooltip="Campeggio" tooltip="Camping and caravan site">
+      <item name="II.363" icon="campeggio.svg" type="node" preset_name_label="true" it.tooltip="Campeggio" tooltip="Camping and caravan site">
         <key key="traffic_sign" value="IT:II.363"/>
         <reference ref="t"/>
       </item>
-      <item name="II.364" icon="5/51/Italian_traffic_signs_-_radio_informazioni_stradali.svg" type="node" preset_name_label="true" it.tooltip="Radio informazioni stradali" tooltip="Radio station giving traffic information">
+      <item name="II.364" icon="radio_informazioni_stradali.svg" type="node" preset_name_label="true" it.tooltip="Radio informazioni stradali" tooltip="Radio station giving traffic information">
         <key key="traffic_sign" value="IT:II.364"/>
         <reference ref="t"/>
       </item>
-      <item name="II.365" icon="c/cb/Italian_traffic_signs_-_albergo.svg" type="node" preset_name_label="true" it.tooltip="Motel" tooltip="Hotel or motel">
+      <item name="II.365" icon="albergo.svg" type="node" preset_name_label="true" it.tooltip="Motel" tooltip="Hotel or motel">
         <key key="traffic_sign" value="IT:II.365"/>
         <reference ref="t"/>
       </item>
-      <item name="II.366" icon="2/2b/Italian_traffic_signs_-_bar.svg" type="node" preset_name_label="true" it.tooltip="Bar" tooltip="Refreshments or cafeteria">
+      <item name="II.366" icon="bar.svg" type="node" preset_name_label="true" it.tooltip="Bar" tooltip="Refreshments or cafeteria">
         <key key="traffic_sign" value="IT:II.366"/>
         <reference ref="t"/>
       </item>
-      <item name="II.367" icon="0/06/Italian_traffic_signs_-_ristorante.svg" type="node" preset_name_label="true" it.tooltip="Ristorante" tooltip="Restaurant">
+      <item name="II.367" icon="ristorante.svg" type="node" preset_name_label="true" it.tooltip="Ristorante" tooltip="Restaurant">
         <key key="traffic_sign" value="IT:II.367"/>
         <reference ref="t"/>
       </item>
-      <item name="II.368" icon="a/a6/Italian_traffic_signs_-_parcheggio_di_scambio_con_autobus.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (bus)" tooltip="Park and ride (bus)">
+      <item name="II.368" icon="parcheggio_di_scambio_con_autobus.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (bus)" tooltip="Park and ride (bus)">
         <key key="traffic_sign" value="IT:II.368"/>
         <reference ref="t"/>
       </item>
-      <item name="II.369" icon="4/4d/Italian_traffic_signs_-_parcheggio_di_scambio_con_tram.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (tram)" tooltip="Park and ride (tramway)">
+      <item name="II.369" icon="parcheggio_di_scambio_con_tram.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (tram)" tooltip="Park and ride (tramway)">
         <key key="traffic_sign" value="IT:II.369"/>
         <reference ref="t"/>
       </item>
-      <item name="II.370" icon="8/8c/Italian_traffic_signs_-_parcheggio_di_scambio_con_metro.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (treno)" tooltip="Park and ride (railway)">
+      <item name="II.370" icon="parcheggio_di_scambio_con_metro.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (treno)" tooltip="Park and ride (railway)">
         <key key="traffic_sign" value="IT:II.370"/>
         <reference ref="t"/>
       </item>
-      <item name="II.371" icon="1/15/Italian_traffic_signs_-_parcheggio_+_escursionismo.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (pedoni)" tooltip="Starting-point for walks">
+      <item name="II.371" icon="parcheggio__escursionismo.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (pedoni)" tooltip="Starting-point for walks">
         <key key="traffic_sign" value="IT:II.371"/>
         <reference ref="t"/>
       </item>
-      <item name="II.372" icon="1/17/Italian_traffic_signs_-_auto_su_treno_(figura_II_372).svg" type="node" preset_name_label="true" it.tooltip="Auto su treno" tooltip="Motorail">
+      <item name="II.372" icon="auto_su_treno_figura_ii_372.svg" type="node" preset_name_label="true" it.tooltip="Auto su treno" tooltip="Motorail">
         <key key="traffic_sign" value="IT:II.372"/>
         <reference ref="t"/>
       </item>
-      <item name="II.373" icon="a/a3/Italian_traffic_signs_-_auto_al_seguito_(figura_II_373).svg" type="node" preset_name_label="true" it.tooltip="Auto al seguito" tooltip="Motorail">
+      <item name="II.373" icon="auto_al_seguito_figura_ii_373.svg" type="node" preset_name_label="true" it.tooltip="Auto al seguito" tooltip="Motorail">
         <key key="traffic_sign" value="IT:II.373"/>
         <reference ref="t"/>
       </item>
-      <item name="II.374" icon="3/3a/Italian_traffic_signs_-_auto_su_nave.svg" type="node" preset_name_label="true" it.tooltip="Auto su nave" tooltip="Ferry">
+      <item name="II.374" icon="auto_su_nave.svg" type="node" preset_name_label="true" it.tooltip="Auto su nave" tooltip="Ferry">
         <key key="traffic_sign" value="IT:II.374"/>
         <reference ref="t"/>
       </item>
-      <item name="II.375" icon="1/17/Italian_traffic_signs_-_taxi.svg" type="node" preset_name_label="true" it.tooltip="Taxi" tooltip="Taxi">
+      <item name="II.375" icon="taxi.svg" type="node" preset_name_label="true" it.tooltip="Taxi" tooltip="Taxi">
         <key key="traffic_sign" value="IT:II.375"/>
         <reference ref="t"/>
       </item>
-      <item name="II.376" icon="1/19/Italian_traffic_signs_-_area_di_servizio.svg" type="node" preset_name_label="true" it.tooltip="Area di servizio" tooltip="Service area">
+      <item name="II.376" icon="area_di_servizio.svg" type="node" preset_name_label="true" it.tooltip="Area di servizio" tooltip="Service area">
         <key key="traffic_sign" value="IT:II.376"/>
         <reference ref="t"/>
       </item>
-      <item name="II.377" icon="a/a5/Italian_traffic_signs_-_area_con_scarico_liquami.svg" type="node" preset_name_label="true" it.tooltip="Area attrezzata con impianti di scarico" tooltip="Caravan waste disposal site">
+      <item name="II.377" icon="area_con_scarico_liquami.svg" type="node" preset_name_label="true" it.tooltip="Area attrezzata con impianti di scarico" tooltip="Caravan waste disposal site">
         <key key="traffic_sign" value="IT:II.377"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Pannelli integrativi" name="Additional panels" icon="e/ec/Italian_traffic_signs_-_andamento_strada_principale.svg">
-      <item name="MII.1" icon="c/cd/Italian_traffic_signs_-_distanza.svg" type="node" preset_name_label="true" it.tooltip="Distanza" tooltip="Distance">
+    <group icon_size="48" it.name="Pannelli integrativi" name="Additional panels" icon="andamento_strada_principale.svg">
+      <item name="MII.1" icon="distanza.svg" type="node" preset_name_label="true" it.tooltip="Distanza" tooltip="Distance">
         <key key="traffic_sign" value="IT:MII.1"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.2" icon="b/bb/Italian_traffic_signs_-_estesa_1.svg" type="node" preset_name_label="true" it.tooltip="Estesa" tooltip="Length">
+      <item name="MII.2" icon="estesa_1.svg" type="node" preset_name_label="true" it.tooltip="Estesa" tooltip="Length">
         <key key="traffic_sign" value="IT:MII.2"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.3" icon="3/39/Italian_traffic_signs_-_validità_1.svg" type="node" preset_name_label="true" it.tooltip="Periodo" tooltip="Period">
+      <item name="MII.3" icon="validità_1.svg" type="node" preset_name_label="true" it.tooltip="Periodo" tooltip="Period">
         <key key="traffic_sign" value="IT:MII.3"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.4a" icon="a/a4/Italian_traffic_signs_-_limitazione.svg" type="node" preset_name_label="true" it.tooltip="Limitazioni" tooltip="Limitations">
+      <item name="MII.4a" icon="limitazione.svg" type="node" preset_name_label="true" it.tooltip="Limitazioni" tooltip="Limitations">
         <key key="traffic_sign" value="IT:MII.4a"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.4b" icon="0/02/Italian_traffic_signs_-_eccezione.svg" type="node" preset_name_label="true" it.tooltip="Eccezioni" tooltip="Exceptions">
+      <item name="MII.4b" icon="eccezione.svg" type="node" preset_name_label="true" it.tooltip="Eccezioni" tooltip="Exceptions">
         <key key="traffic_sign" value="IT:MII.4b"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5a1" icon="f/fd/Italian_traffic_signs_-_inizio_vert.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
+      <item name="MII.5a1" icon="inizio_vert.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
         <key key="traffic_sign" value="IT:MII.5a1"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5a2" icon="7/7d/Italian_traffic_signs_-_continua_vert.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
+      <item name="MII.5a2" icon="continua_vert.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
         <key key="traffic_sign" value="IT:MII.5a2"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5a3" icon="4/4b/Italian_traffic_signs_-_fine_vert.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
+      <item name="MII.5a3" icon="fine_vert.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
         <key key="traffic_sign" value="IT:MII.5a3"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5b1" icon="3/38/Italian_traffic_signs_-_inizio_orizz.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
+      <item name="MII.5b1" icon="inizio_orizz.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
         <key key="traffic_sign" value="IT:MII.5b1"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5b2" icon="0/0c/Italian_traffic_signs_-_continua_orizz.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
+      <item name="MII.5b2" icon="continua_orizz.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
         <key key="traffic_sign" value="IT:MII.5b2"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.5b3" icon="2/26/Italian_traffic_signs_-_fine_orizz.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
+      <item name="MII.5b3" icon="fine_orizz.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
         <key key="traffic_sign" value="IT:MII.5b3"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6a" icon="8/80/Italian_traffic_signs_-_segnaletica_in_rifacimento.svg" type="node" preset_name_label="true" it.tooltip="Segni orizzontali in corso di rifacimento" tooltip="Missing road markings">
+      <item name="MII.6a" icon="segnaletica_in_rifacimento.svg" type="node" preset_name_label="true" it.tooltip="Segni orizzontali in corso di rifacimento" tooltip="Missing road markings">
         <key key="traffic_sign" value="IT:MII.6a"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6b" icon="5/5f/Italian_traffic_signs_-_incidente.svg" type="node" preset_name_label="true" it.tooltip="Incidente" tooltip="Accident">
+      <item name="MII.6b" icon="incidente.svg" type="node" preset_name_label="true" it.tooltip="Incidente" tooltip="Accident">
         <key key="traffic_sign" value="IT:MII.6b"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6c" icon="6/6a/Italian_traffic_signs_-_attraversamento_binari.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento di binari" tooltip="Road intersects tracks">
+      <item name="MII.6c" icon="attraversamento_binari.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento di binari" tooltip="Road intersects tracks">
         <key key="traffic_sign" value="IT:MII.6c"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6d" icon="b/ba/Italian_traffic_signs_-_sgombraneve_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Sgombraneve in azione" tooltip="Snowplow in action">
+      <item name="MII.6d" icon="sgombraneve_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Sgombraneve in azione" tooltip="Snowplow in action">
         <key key="traffic_sign" value="IT:MII.6d"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6e" icon="5/55/Italian_traffic_signs_-_zona_soggetta_ad_allagamento.svg" type="node" preset_name_label="true" it.tooltip="Zona soggetta ad allagamento" tooltip="Flood prone zone">
-        <key key="traffic_sign" value="IT:MII.6e;hazard"/>
+      <item name="MII.6e" icon="zona_soggetta_ad_allagamento.svg" type="node" preset_name_label="true" it.tooltip="Zona soggetta ad allagamento" tooltip="Flood prone zone">
+        <key key="traffic_sign" value="IT:MII.6e"/>
         <key key="hazard" value="flood_prone"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6f" icon="c/c8/Italian_traffic_signs_-_Coda.svg" type="node" preset_name_label="true" it.tooltip="Coda" tooltip="Congestion">
-        <key key="traffic_sign" value="IT:MII.6f;hazard"/>
+      <item name="MII.6f" icon="coda.svg" type="node" preset_name_label="true" it.tooltip="Coda" tooltip="Congestion">
+        <key key="traffic_sign" value="IT:MII.6f"/>
         <key key="hazard" value="queues_likely"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6g" icon="e/ee/Italian_traffic_signs_-_mezzi_di_lavoro_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Mezzi di lavoro in azione" tooltip="Heavy equipment in action">
+      <item name="MII.6g" icon="mezzi_di_lavoro_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Mezzi di lavoro in azione" tooltip="Heavy equipment in action">
         <key key="traffic_sign" value="IT:MII.6g"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6h" icon="7/74/Italian_traffic_signs_-_strada_sdrucciolevole_per_ghiaccio.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per ghiaccio" tooltip="Slippery road because of ice or snow">
-        <key key="traffic_sign" value="IT:MII.6h;hazard"/>
+      <item name="MII.6h" icon="strada_sdrucciolevole_per_ghiaccio.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per ghiaccio" tooltip="Slippery road because of ice or snow">
+        <key key="traffic_sign" value="IT:MII.6h"/>
         <key key="hazard" value="ice"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6i" icon="e/e5/Italian_traffic_signs_-_strada_sdrucciolevole_per_pioggia.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per pioggia" tooltip="Slippery road because of rain">
+      <item name="MII.6i" icon="strada_sdrucciolevole_per_pioggia.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per pioggia" tooltip="Slippery road because of rain">
         <key key="traffic_sign" value="IT:MII.6i"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6l" icon="7/7c/Italian_traffic_sign_-_autocarri_in_rallentamento.svg" type="node" preset_name_label="true" it.tooltip="Autocarri in rallentamento" tooltip="Trucks slowing down">
+      <item name="MII.6l" icon="autocarri_in_rallentamento.svg" type="node" preset_name_label="true" it.tooltip="Autocarri in rallentamento" tooltip="Trucks slowing down">
         <key key="traffic_sign" value="IT:MII.6l"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6m" icon="5/59/Italian_traffic_signs_-_rimozione_forzata.svg" type="node" preset_name_label="true" it.tooltip="Zona rimozione coatta" tooltip="Forced removal">
+      <item name="MII.6m" icon="rimozione_forzata.svg" type="node" preset_name_label="true" it.tooltip="Zona rimozione coatta" tooltip="Forced removal">
         <key key="traffic_sign" value="IT:MII.6m"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6n" icon="5/5c/Italian_traffic_signs_-_segnale_di_corsia.svg" type="node" preset_name_label="true" it.tooltip="Segnale di corsia">
+      <item name="MII.6n" icon="segnale_di_corsia.svg" type="node" preset_name_label="true" it.tooltip="Segnale di corsia">
         <key key="traffic_sign" value="IT:MII.6n"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6p1" icon="2/20/Italian_traffic_signs_-_tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
+      <item name="MII.6p1" icon="tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
         <key key="traffic_sign" value="IT:MII.6p1"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6p2" icon="0/02/Italian_traffic_signs_-_numero_del_tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
+      <item name="MII.6p2" icon="numero_del_tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
         <key key="traffic_sign" value="IT:MII.6p2"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6q1" icon="1/15/Italian_traffic_signs_-_pulizia_meccanica_della_strada.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
+      <item name="MII.6q1" icon="pulizia_meccanica_della_strada.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
         <key key="traffic_sign" value="IT:MII.6q1"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.6q2" icon="5/56/Italian_traffic_signs_-_pulizia_meccanica_della_strada_1.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
+      <item name="MII.6q2" icon="pulizia_meccanica_della_strada_1.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
         <key key="traffic_sign" value="IT:MII.6q2"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.7" icon="e/ec/Italian_traffic_signs_-_andamento_strada_principale.svg" type="node" preset_name_label="true" it.tooltip="Andamento strada principale (disegni diversi a seconda della topologia)" tooltip="Bend in priority road">
+      <item name="MII.7" icon="andamento_strada_principale.svg" type="node" preset_name_label="true" it.tooltip="Andamento strada principale (disegni diversi a seconda della topologia)" tooltip="Bend in priority road">
         <key key="traffic_sign" value="IT:MII.7"/>
         <reference ref="t"/>
       </item>
     </group>
-    <group icon_size="48" it.name="Segnali compositi" name="Composite signs" icon="0/09/Italian_traffic_signs_-_itinerario_obbligatorio_merci_pericolose.svg">
-      <item name="MII.8a" icon="4/4e/Italian_traffic_signs_-_divieto_di_sosta_temporaneo.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
+    <group icon_size="48" it.name="Segnali compositi" name="Composite signs" icon="itinerario_obbligatorio_merci_pericolose.svg">
+      <item name="MII.8a" icon="divieto_di_sosta_temporaneo.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
         <key key="traffic_sign" value="IT:MII.8a"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.8b" icon="0/09/Italian_traffic_signs_-_itinerario_obbligatorio_merci_pericolose.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito" tooltip="Mandatory direction for vehicles carrying dangerous goods">
+      <item name="MII.8b" icon="itinerario_obbligatorio_merci_pericolose.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito" tooltip="Mandatory direction for vehicles carrying dangerous goods">
         <key key="traffic_sign" value="IT:MII.8b"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.8c" icon="e/e0/Italian_traffic_signs_-_preavviso_deviazione_obbligatoria_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
+      <item name="MII.8c" icon="preavviso_deviazione_obbligatoria_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
         <key key="traffic_sign" value="IT:MII.8c"/>
         <reference ref="t"/>
       </item>
-      <item name="MII.8d" icon="1/18/Italian_traffic_signs_-_divieto_di_transito_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
+      <item name="MII.8d" icon="divieto_di_transito_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
         <key key="traffic_sign" value="IT:MII.8d"/>
         <reference ref="t"/>
       </item>

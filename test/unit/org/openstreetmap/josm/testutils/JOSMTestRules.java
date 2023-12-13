@@ -589,6 +589,7 @@ public class JOSMTestRules implements TestRule, AfterEachCallback, BeforeEachCal
             }
         }
 
+        Projections.initFrom("resource://data/projection/custom-epsg");
         if (useProjection) {
             ProjectionRegistry.setProjection(Projections.getProjectionByCode("EPSG:3857")); // Mercator
         }

@@ -37,8 +37,15 @@ plugins {
   checkstyle
   eclipse
   jacoco
-  java
   pmd
+}
+
+application {
+    mainClass = "org.openstreetmap.josm.gui.MainApplication"
+}
+
+base {
+    archivesName = "josm"
 }
 
 java {
@@ -110,13 +117,13 @@ sourceSets {
         resources {
             setSrcDirs(listOf("resources"))
         }
-     }
+    }
     create("epsg") {
         java {
             setSrcDirs(listOf("scripts"))
             include("**/BuildProjectionDefinitions.java")
         }
-     }
+    }
     create("sources") {
     }
 }
@@ -127,14 +134,13 @@ val epsgImplementation by configurations.getting
 val testImplementation by configurations.getting
 
 val versions = mapOf(
-  "awaitility" to "4.2.0",
-  // Errorprone 2.11 requires Java 11+
-  "errorprone" to if (JavaVersion.current() >= JavaVersion.VERSION_11) "2.22.0" else "2.10.0",
-  "jdatepicker" to "1.3.4",
-  "junit" to "5.10.0",
-  "pmd" to "6.54.0",
-  "spotbugs" to "${spotbugs.toolVersion.get()}",
-  "wiremock" to "2.35.0"
+    "awaitility" to "4.2.0",
+    "errorprone" to "2.22.0",
+    "jdatepicker" to "1.3.4",
+    "junit" to "5.10.0",
+    "pmd" to "6.54.0",
+    "spotbugs" to "${spotbugs.toolVersion.get()}",
+    "wiremock" to "2.35.0"
 )
 
 val generateJavaCC by tasks.registering(JavaExec::class) {
@@ -156,21 +162,15 @@ val generateJavaCC by tasks.registering(JavaExec::class) {
 }
 
 val generateEpsg by tasks.registering(JavaExec::class) {
-    // This script should be fixed to use resources.  As it is, it reads files from a
-    // hardcoded location.  Also, and perhaps much worse, the static Projection class
-    // croaks if it cannot find at least an empty file at
-    // "resource://data/projection/custom-epsg".
     description = "Builds the customized EPSG definitions file."
     dependsOn("compileEpsgJava")
-    val outputFile = epsgOutputDir.get().file("data/projection/custom-epsg")
     mainClass.set("BuildProjectionDefinitions")
+    val outputFile = epsgOutputDir.get().file("data/projection/custom-epsg")
     args(listOf(".", outputFile))
     classpath = sourceSets["epsg"].runtimeClasspath
-    // provide the empty resource://data/projection/custom-epsg
-    classpath += files(sourceSets["main"].resources.srcDirs)
     // the input directory hardcoded in the script
     inputs.dir("nodist/data/projection")
-    outputs.dir(epsgOutputDir)
+    outputs.dir(epsgOutputDir) // dir not file! or runClasses will not find these resources
 }
 
 testing {
@@ -288,6 +288,7 @@ dependencies {
     implementation("org.apache.maven:maven-artifact:3.9.5")
     implementation("org.openstreetmap.jmapviewer:jmapviewer:2.16")
     implementation("org.tukaani:xz:1.9")
+    implementation("org.locationtech.jts:jts-core:1.19.0")
 
     // the following 2 are deprecated and scheduled for removal in 2024
     implementation("org.glassfish:javax.json:1.1.4")
@@ -297,9 +298,7 @@ dependencies {
     runtimeOnly("org.webjars.npm:tag2link:2022.11.28")
 
     compileOnly("net.java.dev.javacc:javacc:7.0.12")
-
-    implementation("com.google.code.findbugs:jsr305:3.0.2")
-    testImplementation("org.apache.commons:commons-lang3:3.13.0")
+    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
     if (!JavaVersion.current().isJava9Compatible) {
         errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
@@ -326,6 +325,9 @@ dependencies {
     testImplementation("net.trajano.commons:commons-testing:2.1.0")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.14.1")
     testImplementation("org.awaitility:awaitility:${versions["awaitility"]}")
+    testImplementation("org.apache.commons:commons-lang3:3.13.0")
+    testImplementation("org.openjdk.jmh:jmh-core:1.37")
+    testImplementation("org.openjdk.jmh:jmh-generator-annprocess:1.37")
     testImplementation("org.jmockit:jmockit:1.49.a") // patched version from JOSM nexus
 
     testImplementation("org.eclipse.parsson:parsson:1.1.4")
@@ -351,9 +353,6 @@ dependencies {
             sourcesImplementation("${id.group}:${id.name}:${id.version}:sources"){ isTransitive = false }
         }
     }
-}
-base {
-    archivesName = "josm"
 }
 
 tasks {
@@ -403,7 +402,7 @@ tasks {
             attributes(
                 "Application-Name" to "JOSM - Java OpenStreetMap Editor",
                 "Codebase"         to "josm.openstreetmap.de",
-                "Main-class"       to "org.openstreetmap.josm.gui.MainApplication",
+                "Main-Class"       to "org.openstreetmap.josm.gui.MainApplication",
                 "Main-Version"     to getMainJosmVersion() + " SVN",
                 "Main-Date"        to getMainJosmDate(),
                 "Permissions"      to "all-permissions",
@@ -503,14 +502,6 @@ tasks.named<Test>("test") {
 }
 */
 
-tasks.register<Exec>("runJar") {
-    group = "Execution"
-    description = "Run JOSM from jar"
-    dependsOn("jar")
-    val jar = files(tasks.jar).asPath
-    commandLine = listOf("java", "-jar", jar, "sess.joz")
-}
-
 val jvmOpens = listOf(
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
         "--add-opens", "java.base/java.io=ALL-UNNAMED",
@@ -524,12 +515,20 @@ val jvmOpens = listOf(
         "--add-opens", "java.prefs/java.util.prefs=ALL-UNNAMED",
 )
 
+tasks.register<Exec>("runJar") {
+    group = "Execution"
+    description = "Run JOSM from jar"
+    dependsOn("jar")
+    val jar = files(tasks.jar).asPath
+    commandLine = listOf("java", "-jar", jar, "sess.joz")
+}
+
 tasks.register<JavaExec>("runClasses") {
     group = "Execution"
     description = "Run JOSM from classes"
     classpath = sourceSets["main"].runtimeClasspath + files(generateEpsg)
     mainClass = "org.openstreetmap.josm.gui.MainApplication"
-    args = listOf("sess.joz")
+    // args = listOf("sess.joz")
     jvmArgs = jvmOpens
 }
 

@@ -27,9 +27,6 @@ import org.openstreetmap.josm.tools.Logging;
  * @since 4087
  */
 public abstract class AbstractMapRenderer implements Rendering {
-
-    /** the graphics context to which the visitor renders OSM objects */
-    protected final Graphics2D g;
     /** the map viewport - provides projection and hit detection functionality */
     protected final NavigatableComponent nc;
 
@@ -75,10 +72,8 @@ public abstract class AbstractMapRenderer implements Rendering {
      * @throws IllegalArgumentException if {@code g} is null
      * @throws IllegalArgumentException if {@code nc} is null
      */
-    protected AbstractMapRenderer(Graphics2D g, NavigatableComponent nc, boolean isInactiveMode) {
-        CheckParameterUtil.ensureParameterNotNull(g);
+    protected AbstractMapRenderer(NavigatableComponent nc, boolean isInactiveMode) {
         CheckParameterUtil.ensureParameterNotNull(nc);
-        this.g = g;
         this.nc = nc;
         this.mapState = nc.getState();
         this.isInactiveMode = isInactiveMode;
@@ -92,7 +87,7 @@ public abstract class AbstractMapRenderer implements Rendering {
      * @param size size in pixels
      * @param fill determines if the square must be filled
      */
-    public abstract void drawNode(INode n, Color color, int size, boolean fill);
+    public abstract void drawNode(Graphics2D g, INode n, Color color, int size, boolean fill);
 
     /**
      * Draw an number of the order of the two consecutive nodes within the
@@ -104,7 +99,7 @@ public abstract class AbstractMapRenderer implements Rendering {
      * @param clr The color to use for drawing the text.
      * @since 10827
      */
-    protected void drawOrderNumber(MapViewPoint p1, MapViewPoint p2, int orderNumber, Color clr) {
+    protected void drawOrderNumber(Graphics2D g, MapViewPoint p1, MapViewPoint p2, int orderNumber, Color clr) {
         if (isSegmentVisible(p1, p2) && isLargeSegment(p1, p2, segmentNumberSpace)) {
             String on = Integer.toString(orderNumber);
             int strlen = on.length();
@@ -131,7 +126,7 @@ public abstract class AbstractMapRenderer implements Rendering {
      * @param bbox The bounding box being displayed.
      * @since 13810 (signature)
      */
-    public void drawVirtualNodes(OsmData<?, ?, ?, ?> data, BBox bbox) {
+    public void drawVirtualNodes(Graphics2D g, OsmData<?, ?, ?, ?> data, BBox bbox) {
         if (virtualNodeSize == 0 || data == null || bbox == null || data.isLocked())
             return;
         // print normal virtual nodes
@@ -168,6 +163,14 @@ public abstract class AbstractMapRenderer implements Rendering {
         }
     }
 
+    public NavigatableComponent getNavigatableComponent() {
+        return nc;
+    }
+
+    public MapViewState getMapViewState() {
+        return mapState;
+    }
+
     /**
      * Reads the color definitions from preferences. This function is <code>public</code>, so that
      * color names in preferences can be displayed even without calling the wireframe display before.
@@ -187,7 +190,7 @@ public abstract class AbstractMapRenderer implements Rendering {
      *
      * @param virtual <code>true</code> if virtual nodes are used
      */
-    protected void getSettings(boolean virtual) {
+    protected void getSettings(Graphics2D g, boolean virtual) {
         this.virtualNodeSize = virtual ? Config.getPref().getInt("mappaint.node.virtual-size", 8) / 2 : 0;
         this.virtualNodeSpace = Config.getPref().getInt("mappaint.node.virtual-space", 70);
         this.segmentNumberSpace = Config.getPref().getInt("mappaint.segmentnumber.space", 40);

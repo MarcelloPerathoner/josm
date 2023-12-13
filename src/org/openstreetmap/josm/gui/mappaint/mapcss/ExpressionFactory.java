@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.Node;
@@ -770,9 +770,9 @@ public final class ExpressionFactory {
         public Object evalImpl(Environment env) {
             Float base = Cascade.convertTo(env.getCascade(layer).get(property), Float.class);
             if (base == null) {
-                Logging.warn(tr(
-                    "{3}: ''{1}: +{0}'': there is no ''{1}'' on the ''{2}'' layer.",
-                    f, property, layer, getSourceLine()));
+                // Logging.warn(tr(
+                //     "{3}: ''{1}: +{0}'': there is no ''{1}'' on the ''{2}'' layer.",
+                //     f, property, layer, getSourceLine()));
                 // throw mapCSSException(tr(
                 //     "Relative float ''+{0}'': there is no ''{1}'' on the ''{2}'' layer.", f, property, layer));
                 return f;

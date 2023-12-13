@@ -96,9 +96,11 @@ public final class Projections {
     private static final Map<String, Ellipsoid> ellipsoids = new HashMap<>();
     private static final Map<String, Datum> datums = new HashMap<>();
     private static final Map<String, NTV2GridShiftFileWrapper> nadgrids = new HashMap<>();
-    private static final Map<String, ProjectionDefinition> inits;
+    private static final Map<String, ProjectionDefinition> inits = new LinkedHashMap<>();
 
-    static {
+    public static void initFrom(String path) {
+        Logging.info("Initializing projections from: {0}", path);
+
         registerBaseProjection("aea", AlbersEqualArea.class, "core");
         registerBaseProjection("aeqd", AzimuthalEquidistant.class, "core");
         registerBaseProjection("cass", CassiniSoldner.class, "core");
@@ -166,20 +168,17 @@ public final class Projections {
                 "Potsdam Rauenberg 1950 DHDN", "potsdam",
                 Ellipsoid.Bessel1841, 598.1, 73.7, 418.2, 0.202, 0.045, -2.455, 6.7));
 
-        try {
-            inits = new LinkedHashMap<>();
-            for (ProjectionDefinition pd : loadProjectionDefinitions("resource://data/projection/custom-epsg")) {
-                inits.put(pd.code, pd);
-                loadNadgrids(pd.definition);
+        if (path != null) {
+            try {
+                for (ProjectionDefinition pd : loadProjectionDefinitions(path)) {
+                    inits.put(pd.code, pd);
+                    loadNadgrids(pd.definition);
+                }
+            } catch (IOException ex) {
+                throw new JosmRuntimeException(ex);
             }
-        } catch (IOException ex) {
-            throw new JosmRuntimeException(ex);
         }
         allCodes.addAll(inits.keySet());
-    }
-
-    private Projections() {
-        // Hide default constructor for utils classes
     }
 
     private static void loadNadgrids(String definition) {
@@ -361,6 +360,7 @@ public final class Projections {
      * @return the corresponding projection, if the code is known, null otherwise
      */
     public static Projection getProjectionByCode(String code) {
+        Logging.info("getProjectionByCode: {0}", code);
         return code != null ? projectionsByCodeCache.computeIfAbsent(code, Projections::computeProjectionByCode) : null;
     }
 

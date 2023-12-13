@@ -20,10 +20,15 @@ import org.openstreetmap.josm.tools.ImageProvider;
  * representations of a {@code presets.xml} file.  Their main use is as templates to
  * create a {@link TaggingPresetDialog}.
  * <p>
+ * We lack a parent pointer because we are not really building a tree but a DAG
+ * (directed acyclic graph). "Chunks" are referenced and not copied, and so they may
+ * have more than one parent.
+ * <p>
  * To every Item class there is a companion class {@link Instance} that holds all
- * mutable data. An Instance is created along with every active component and registered
- * with the {@link TaggingPresetDialog}.  The preset dialog calls the registered item
- * instances {@link Item.Instance#addChangedTag to save the user edits}.
+ * mutable data. An Instance is created along with every active component (ie. swing
+ * component the user can edit) and registered with the {@link TaggingPresetDialog}.
+ * The preset dialog calls the registered item instances
+ * {@link Item.Instance#addChangedTag to save the user edits}.
  * <p>
  * All data access goes through the
  * {@link org.openstreetmap.josm.gui.tagging.DataHandlers.TaggedHandler TaggedHandler}.

@@ -1,15 +1,17 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
-import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.LineMetrics;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 
 import org.openstreetmap.josm.data.osm.INode;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
-import org.openstreetmap.josm.data.osm.visitor.paint.PaintColors;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
@@ -20,95 +22,6 @@ import org.openstreetmap.josm.tools.CheckParameterUtil;
  * Text style attached to a style with a bounding box, like an icon or a symbol.
  */
 public class BoxTextElement extends StyleElement {
-
-    /**
-     * Something that provides us with a {@link BoxProviderResult}
-     * @since 10600 (functional interface)
-     */
-    @FunctionalInterface
-    public interface BoxProvider {
-        /**
-         * Compute and get the {@link BoxProviderResult}. The temporary flag is set if the result of the computation may change in the future.
-         * @return The result of the computation.
-         */
-        BoxProviderResult get();
-    }
-
-    /**
-     * A box rectangle with a flag if it is temporary.
-     */
-    public static class BoxProviderResult {
-        private final Rectangle box;
-        private final boolean temporary;
-
-        /**
-         * Create a new box provider result
-         * @param box The box
-         * @param temporary The temporary flag, will be returned by {@link #isTemporary()}
-         */
-        public BoxProviderResult(Rectangle box, boolean temporary) {
-            this.box = box;
-            this.temporary = temporary;
-        }
-
-        /**
-         * Returns the box.
-         * @return the box
-         */
-        public Rectangle getBox() {
-            return box;
-        }
-
-        /**
-         * Determines if the box can change in future calls of the {@link BoxProvider#get()} method
-         * @return {@code true} if the box can change in future calls of the {@code BoxProvider#get()} method
-         */
-        public boolean isTemporary() {
-            return temporary;
-        }
-    }
-
-    /**
-     * A {@link BoxProvider} that always returns the same non-temporary rectangle
-     */
-    public static class SimpleBoxProvider implements BoxProvider {
-        private final Rectangle box;
-
-        /**
-         * Constructs a new {@code SimpleBoxProvider}.
-         * @param box the box
-         */
-        public SimpleBoxProvider(Rectangle box) {
-            this.box = box;
-        }
-
-        @Override
-        public BoxProviderResult get() {
-            return new BoxProviderResult(box, false);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(box);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            SimpleBoxProvider that = (SimpleBoxProvider) obj;
-            return Objects.equals(box, that.box);
-        }
-    }
-
-    /**
-     * Caches the default text color from the preferences.
-     *
-     * FIXME: the cache isn't updated if the user changes the preference during a JOSM
-     * session. There should be preference listener updating this cache.
-     */
-    private static volatile Color defaultTextColorCache;
-
     /**
      * The text this element should display.
      */
@@ -130,19 +43,22 @@ public class BoxTextElement extends StyleElement {
      */
     public Keyword vAlign;
 
-    protected BoxProvider boxProvider;
+    /** The bounding box of the node's symbol or icon */
+    protected Rectangle symbolBounds;
+
+    private static Cascade emptyCascade = new Cascade();
 
     /**
      * Create a new {@link BoxTextElement}
      * @param c The current cascade
      * @param text The text to display
-     * @param boxProvider The box provider to use
+     * @param symbolBounds The bounding box of the node's symbol or icon
      * @param offsetX x offset, in screen space
      * @param offsetY y offset, in screen space
      * @param hAlign The horizontal alignment {@link Keyword}
      * @param vAlign The vertical alignment {@link Keyword}
      */
-    public BoxTextElement(Cascade c, TextLabel text, BoxProvider boxProvider,
+    public BoxTextElement(Cascade c, TextLabel text, Rectangle symbolBounds,
             int offsetX, int offsetY, Keyword hAlign, Keyword vAlign) {
         super(c, 5f);
         xOffset = offsetX;
@@ -151,22 +67,19 @@ public class BoxTextElement extends StyleElement {
         CheckParameterUtil.ensureParameterNotNull(hAlign);
         CheckParameterUtil.ensureParameterNotNull(vAlign);
         this.text = text;
-        this.boxProvider = boxProvider;
+        this.symbolBounds = symbolBounds;
         this.hAlign = hAlign;
         this.vAlign = vAlign;
     }
 
     /**
-     * Create a new {@link BoxTextElement} with a boxprovider and a box.
+     * Create a new {@link BoxTextElement}
      * @param env The MapCSS environment
-     * @param boxProvider The box provider.
+     * @param bbox The bounding box
      * @return A new {@link BoxTextElement} or <code>null</code> if the creation failed.
      */
-    public static BoxTextElement create(Environment env, BoxProvider boxProvider) {
-        if (defaultTextColorCache == null)
-            initDefaultParameters();
-
-        TextLabel text = TextLabel.create(env, defaultTextColorCache, false);
+    public static BoxTextElement create(Environment env, Rectangle bbox) {
+        TextLabel text = TextLabel.create(env, DefaultStyles.PreferenceChangeListener.getTextColor(), false);
         if (text == null) return null;
         // Skip any primitives that don't have text to draw. (Styles are recreated for any tag change.)
         // The concrete text to render is not cached in this object, but computed for each
@@ -179,27 +92,82 @@ public class BoxTextElement extends StyleElement {
 
         Point2D offset = TextLabel.getTextOffset(c);
 
-        return new BoxTextElement(c, text, boxProvider, (int) offset.getX(), (int) -offset.getY(), hAlign, vAlign);
+        return new BoxTextElement(c, text, bbox, (int) offset.getX(), (int) -offset.getY(), hAlign, vAlign);
     }
 
     /**
-     * Get the box in which the content should be drawn.
-     * @return The box.
+     * Creates a new {@link BoxTextElement} for a node without styles.
+     *
+     * @param text the node text
+     * @return A new {@link BoxTextElement} or <code>null</code> if the creation failed.
      */
-    public Rectangle getBox() {
-        return boxProvider.get().getBox();
+    public static BoxTextElement createNoStyle(String text) {
+        return new BoxTextElement(emptyCascade, TextLabel.createNoStyle(text),
+            DefaultStyles.PreferenceChangeListener.getRect(), 0, 0, Keyword.RIGHT, Keyword.BOTTOM);
     }
 
-    private static void initDefaultParameters() {
-        if (defaultTextColorCache == null)
-            defaultTextColorCache = PaintColors.TEXT.get();
+    /**
+     * Anchors the text to the node symbol or icon.
+     * <p>
+     * <pre>
+     *       left-above __center-above___ right-above
+     *         left-top|                 |right-top
+     *                 |                 |
+     *      left-center|  center-center  |right-center
+     *                 |                 |
+     *      left-bottom|_________________|right-bottom
+     *       left-below   center-below    right-below
+     * </pre>
+     *
+     * @param stringBounds the size of the text when drawn
+     * @param metrics the line metrics of the text
+     * @return the top-left point of the text in screen coordinates
+     */
+    public Point anchor(Rectangle2D stringBounds, LineMetrics metrics) {
+        int x = xOffset;
+        int y = yOffset;
+        Rectangle box = symbolBounds;
+        if (hAlign == Keyword.RIGHT) {
+            x += box.x + box.width + 2;
+        } else {
+            int textWidth = (int) stringBounds.getWidth();
+            if (hAlign == Keyword.CENTER) {
+                x -= textWidth / 2d;
+            } else if (hAlign == Keyword.LEFT) {
+                x -= -box.x + 4 + textWidth;
+            } else throw new AssertionError();
+        }
+
+        if (vAlign == Keyword.BOTTOM) {
+            y += box.y + box.height;
+        } else {
+            if (vAlign == Keyword.ABOVE) {
+                y -= -box.y + (int) metrics.getDescent();
+            } else if (vAlign == Keyword.TOP) {
+                y -= -box.y - (int) metrics.getAscent();
+            } else if (vAlign == Keyword.CENTER) {
+                y += (int) ((metrics.getAscent() - metrics.getDescent()) / 2);
+            } else if (vAlign == Keyword.BELOW) {
+                y += box.y + box.height + (int) metrics.getAscent() + 2;
+            } else throw new AssertionError();
+        }
+        return new Point(x, y);
     }
 
     @Override
-    public void paintPrimitive(IPrimitive osm, MapPaintSettings settings, StyledMapRenderer painter,
+    public Rectangle getBounds(IPrimitive osm, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
         if (osm instanceof INode) {
-            painter.drawBoxText((INode) osm, this);
+            return renderer.getBoxTextBounds((INode) osm, this, g);
+        }
+        return null;
+    }
+
+    @Override
+    public void paintPrimitive(IPrimitive osm, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        if (osm instanceof INode) {
+            renderer.drawBoxText(g, (INode) osm, this);
         }
     }
 
@@ -214,17 +182,17 @@ public class BoxTextElement extends StyleElement {
                xOffset == that.xOffset &&
                yOffset == that.yOffset &&
                Objects.equals(text, that.text) &&
-               Objects.equals(boxProvider, that.boxProvider);
+               Objects.equals(symbolBounds, that.symbolBounds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), text, boxProvider, hAlign, vAlign, xOffset, yOffset);
+        return Objects.hash(super.hashCode(), text, symbolBounds, hAlign, vAlign, xOffset, yOffset);
     }
 
     @Override
     public String toString() {
         return "BoxTextElement{" + super.toString() + ' ' + text.toStringImpl()
-                + " box=" + getBox() + " hAlign=" + hAlign + " vAlign=" + vAlign + " xOffset=" + xOffset + " yOffset=" + yOffset + '}';
+                + " symbolBounds=" + symbolBounds + " hAlign=" + hAlign + " vAlign=" + vAlign + " xOffset=" + xOffset + " yOffset=" + yOffset + '}';
     }
 }

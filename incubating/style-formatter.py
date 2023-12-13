@@ -16,7 +16,7 @@ DESCRIPTION = "A stylesheet for traffic signs in Italy."
 VERSION = "0.1"
 AUTHOR = "Marcello Perathoner"
 
-ICON = "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg"
+ICON = "svgs/flag.svg"
 
 items = json.load(sys.stdin)
 
@@ -45,11 +45,12 @@ for item in items:
         id2aspect[id_] = item.get("height", 1.0) / item.get("width", 1.0)
 
 # substitute empty signs for those signs that support custom text
-id2url["II.50"] = "maxspeed-empty.svg"
-id2url["II.71"] = "maxspeed-end-empty.svg"
-id2url["MII.1"] = "distance-empty.svg"
-id2url["MII.2"] = "length-empty.svg"
-id2url["MII.3"] = "distance-empty.svg"
+id2url["II.50"]   = "maxspeed-empty.svg"
+id2url["II.71"]   = "maxspeed-end-empty.svg"
+id2url["II.323a"] = "zone-maxspeed-empty.svg"
+id2url["MII.1"]   = "distance-empty.svg"
+id2url["MII.2"]   = "length-empty.svg"
+id2url["MII.3"]   = "distance-empty.svg"
 
 # meta[lang="it"] {}
 

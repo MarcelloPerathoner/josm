@@ -33,8 +33,8 @@ import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.visitor.paint.RenderBenchmarkCollector.CapturingBenchmark;
+import org.openstreetmap.josm.data.osm.visitor.paint.StyleRecord;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
-import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer.StyleRecord;
 import org.openstreetmap.josm.data.preferences.sources.SourceEntry;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.NavigatableComponent;
@@ -215,7 +215,7 @@ public class MapRendererPerformanceTest {
                 bounds = nc.getLatLonBounds(g.getClipBounds());
             }
 
-            StyledMapRenderer renderer = new StyledMapRenderer(g, nc, false);
+            StyledMapRenderer renderer = new StyledMapRenderer(nc, false);
             assertEquals(IMG_WIDTH, (int) nc.getState().getViewWidth());
             assertEquals(IMG_HEIGHT, (int) nc.getState().getViewHeight());
 

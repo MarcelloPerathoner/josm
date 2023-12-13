@@ -3,6 +3,8 @@ package org.openstreetmap.josm.gui.mappaint.styleelement;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -115,16 +117,36 @@ public class LineElement extends StyleElement {
     }
 
     @Override
-    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public Rectangle getBounds(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+
+        boolean showOrientation = wayDirectionArrows;
+        if (defaultSelectedHandling) {
+            showOrientation = !isModifier && (selected || paintSettings.isShowDirectionArrow()) && !paintSettings.isUseRealWidth();
+        }
+        float myWidth = line.getLineWidth();
+        if (showOrientation) {
+            myWidth += 10;
+        } else {
+            if (paintSettings.isUseRealWidth() && realWidth > 0) {
+                myWidth = Math.max(myWidth, (int) (100 / (float) (renderer.getCircum() / realWidth)));
+            }
+        }
+        Rectangle r = renderer.getNavigatableComponent().getRectangle(primitive.getBBox());
+        int d = (int) Math.ceil(myWidth / 2f);
+        r.grow(d, d);
+        return r;
+    }
+
+    @Override
+    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
         /* show direction arrows, if draw.segment.relevant_directions_only is not set,
         the way is tagged with a direction key
         (even if the tag is negated as in oneway=false) or the way is selected */
-        boolean showOrientation;
+        boolean showOrientation = wayDirectionArrows;
         if (defaultSelectedHandling) {
             showOrientation = !isModifier && (selected || paintSettings.isShowDirectionArrow()) && !paintSettings.isUseRealWidth();
-        } else {
-            showOrientation = wayDirectionArrows;
         }
         boolean showOneway = !isModifier && !selected &&
                 !paintSettings.isUseRealWidth() &&
@@ -133,10 +155,9 @@ public class LineElement extends StyleElement {
         /* head only takes over control if the option is true,
         the direction should be shown at all and not only because it's selected */
         boolean showOnlyHeadArrowOnly = showOrientation && !selected && paintSettings.isShowHeadArrowOnly();
-        INode lastN;
 
-        Color myDashedColor = dashesBackground;
-        BasicStroke myLine = line, myDashLine = dashesLine;
+        BasicStroke myLine = line;
+        BasicStroke myDashLine = dashesLine;
         if (realWidth > 0 && paintSettings.isUseRealWidth() && !showOrientation) {
             float myWidth = (int) (100 / (float) (painter.getCircum() / realWidth));
             if (myWidth < line.getLineWidth()) {
@@ -151,6 +172,7 @@ public class LineElement extends StyleElement {
         }
 
         Color myColor = color;
+        Color myDashedColor = dashesBackground;
         if (defaultSelectedHandling && selected) {
             myColor = paintSettings.getSelectedColor(color.getAlpha());
         } else if (member || outermember) {
@@ -161,8 +183,9 @@ public class LineElement extends StyleElement {
         }
 
         if (primitive instanceof IWay) {
+            INode lastN;
             IWay<?> w = (IWay<?>) primitive;
-            painter.drawWay(w, myColor, myLine, myDashLine, myDashedColor, offset, showOrientation,
+            painter.drawWay(g, w, myColor, myLine, myDashLine, myDashedColor, offset, showOrientation,
                     showOnlyHeadArrowOnly, showOneway, onewayReversed);
 
             if ((paintSettings.isShowOrderNumber() || (paintSettings.isShowOrderNumberOnSelectedWay() && selected))
@@ -172,7 +195,7 @@ public class LineElement extends StyleElement {
                 for (INode n : w.getNodes()) {
                     if (lastN != null) {
                         orderNumber++;
-                        painter.drawOrderNumber(lastN, n, orderNumber, myColor);
+                        painter.drawOrderNumber(g, lastN, n, orderNumber, myColor);
                     }
                     lastN = n;
                 }

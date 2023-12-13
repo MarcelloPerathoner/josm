@@ -3,6 +3,7 @@ package org.openstreetmap.josm.gui;
 
 import java.awt.Container;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
@@ -190,6 +191,28 @@ public final class MapViewState implements Serializable {
         return new MapViewViewPoint(x, y);
     }
 
+    public MapViewPoint getForView(Point pt) {
+        return new MapViewViewPoint(pt.getX(), pt.getY());
+    }
+
+    public MapViewPoint getForView(Point2D pt) {
+        return new MapViewViewPoint(pt.getX(), pt.getY());
+    }
+
+    public MapViewRectangle getForView(Rectangle r) {
+        return new MapViewRectangle(
+            getForView(r.getX(), r.getY()),
+            getForView(r.getX() + r.getWidth(), r.getY() + r.getHeight())
+        );
+    }
+
+    public MapViewRectangle getForView(Rectangle2D r) {
+        return new MapViewRectangle(
+            getForView(r.getX(), r.getY()),
+            getForView(r.getX() + r.getWidth(), r.getY() + r.getHeight())
+        );
+    }
+
     /**
      * Gets the {@link MapViewPoint} for the given {@link EastNorth} coordinate.
      * @param eastNorth the position.
@@ -227,6 +250,17 @@ public final class MapViewState implements Serializable {
     }
 
     /**
+     * Project WGS84 a lat/lon point to east/north without using all those fancy classes
+     * that are all incompatible to each other and only get in the way.
+     * @param ll the point in lat/lon coords
+     * @return the point in east/north coords
+     */
+    public Point2D latlonToEastNorth (Point2D ll) {
+        EastNorth en = getProjection().latlon2eastNorth(new LatLon(ll.getX(), ll.getY()));
+        return new Point2D.Double(en.east(), en.north());
+    }
+
+    /**
      * Gets the {@link MapViewPoint} for the given node.
      * This is faster than {@link #getPointFor(LatLon)} because it uses the node east/north cache.
      * @param node The node
@@ -246,7 +280,7 @@ public final class MapViewState implements Serializable {
     }
 
     /**
-     * Gets a rectangle of the view as map view area.
+     * Gets a rectangle of the view as MapViewRectangle area.
      * @param rectangle The rectangle to get.
      * @return The view area.
      * @since 10827
@@ -674,7 +708,7 @@ public final class MapViewState implements Serializable {
     }
 
     /**
-     * A rectangle on the MapView. It is rectangular in screen / EastNorth space.
+     * A rectangle in screen coordinates.
      * @author Michael Zangl
      */
     public class MapViewRectangle {
@@ -692,7 +726,7 @@ public final class MapViewState implements Serializable {
         }
 
         /**
-         * Gets the projection bounds for this rectangle.
+         * Gets the projection bounds in east/north for this rectangle.
          * @return The projection bounds.
          */
         public ProjectionBounds getProjectionBounds() {
@@ -702,7 +736,7 @@ public final class MapViewState implements Serializable {
         }
 
         /**
-         * Gets a rough estimate of the bounds by assuming lat/lon are parallel to x/y.
+         * Gets a rough estimate of the lat/lon bounds by approximating lat/lon as parallel to x/y.
          * @return The bounds computed by converting the corners of this rectangle.
          * @see #getLatLonBoundsBox()
          */
@@ -713,8 +747,10 @@ public final class MapViewState implements Serializable {
         }
 
         /**
-         * Gets the real bounds that enclose this rectangle.
-         * This is computed respecting that the borders of this rectangle may not be a straight line in latlon coordinates.
+         * Gets the real lat/lon bounds that enclose this rectangle.
+         * <p>
+         * This is computed respecting that the borders of this rectangle are not
+         * straight lines in latlon coordinates.
          * @return The bounds.
          * @since 10458
          */

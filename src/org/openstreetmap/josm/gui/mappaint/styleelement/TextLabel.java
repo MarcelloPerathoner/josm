@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
+import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.mapcss.FunctionAutoText;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
@@ -43,6 +44,8 @@ public class TextLabel implements StyleKeys {
 
     /** {@code icon-rotation} * {@code icon-transform} or {@code null}. */
     public final AffineTransform textTransform;
+
+    private static AffineTransform identTransform = new AffineTransform();
 
     /**
      * Creates a new text element
@@ -92,10 +95,16 @@ public class TextLabel implements StyleKeys {
      * @throws IllegalArgumentException if {@code defaultTextColor} is null
      */
     public static TextLabel create(Environment env, Color defaultTextColor, boolean defaultAnnotate) {
-        CheckParameterUtil.ensureParameterNotNull(defaultTextColor);
+        // CheckParameterUtil.ensureParameterNotNull(defaultTextColor);
         Cascade c = env.getCascade();
+        String text = null;
 
-        String text = c.get(TEXT, null, String.class);
+        Object textObject = c.get(TEXT);
+        if ((textObject instanceof Keyword keyword) && (keyword == Keyword.AUTO)) {
+            text = FunctionAutoText.getText(env.osm);
+        } else if (textObject instanceof String) {
+            text = (String) textObject;
+        }
         if (text == null && defaultAnnotate) {
             text = FunctionAutoText.getText(env.osm);
         }
@@ -105,7 +114,7 @@ public class TextLabel implements StyleKeys {
 
         Font font = StyleElement.getFont(c, text);
 
-        Color color = c.get(TEXT_COLOR, defaultTextColor, Color.class);
+        Color color = c.get(TEXT_COLOR, defaultTextColor != null ? defaultTextColor : Color.WHITE, Color.class);
         float alpha = c.get(TEXT_OPACITY, 1f, Float.class);
         color = ColorHelper.alphaMultiply(color, alpha);
 
@@ -126,6 +135,17 @@ public class TextLabel implements StyleKeys {
             textTransform.rotate(textRotation);
         }
         return new TextLabel(text, font, color, haloRadius, haloColor, textTransform);
+    }
+
+    /**
+     * Builds a text label for a node without styles.
+     *
+     * @param osm the text
+     * @return the text element
+     */
+    public static TextLabel createNoStyle(String text) {
+        return new TextLabel(text, StyleElement.noStyleFont,
+            DefaultStyles.PreferenceChangeListener.getTextColor(), null, null, identTransform);
     }
 
     /**

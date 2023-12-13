@@ -28,6 +28,7 @@ def get_valid_filename(name):
 PAGE = "https://wiki.openstreetmap.org/wiki/IT:Road_signs_in_Italy#Segnaletica_verticale_(Vertical_signs)"
 HEADERS = {'User-Agent': 'OSM Traffic Sign Bot/0.0.1 (marcello@perathoner.de)'}
 PREFIX = re.compile("^https://upload.wikimedia.org/wikipedia/commons/./../Italian_traffic_signs?_-_")
+ICON_FLAG = "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg"
 
 r = requests.get(PAGE, headers = HEADERS)
 root = html.fromstring(r.text)
@@ -91,3 +92,8 @@ for item in tqdm(items):
 
 with open("osm-it-scrape.json", "w") as fp2:
     json.dump(items, fp2, indent=4, ensure_ascii=False)
+
+# the italian flag
+r = requests.get(ICON_FLAG, headers = HEADERS)
+with open("svgs/flag.svg", "wb") as fp:
+    fp.write(r.content)

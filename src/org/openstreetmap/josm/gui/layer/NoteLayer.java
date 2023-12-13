@@ -34,7 +34,6 @@ import javax.swing.text.View;
 
 import org.openstreetmap.josm.actions.AutoScaleAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.Data;
 import org.openstreetmap.josm.data.notes.Note;
 import org.openstreetmap.josm.data.notes.Note.State;
@@ -169,12 +168,13 @@ public class NoteLayer extends AbstractModifiableLayer implements MouseListener,
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds box) {
+    public void paint(MapViewGraphics mvGraphics) {
         final int iconHeight = ImageProvider.ImageSizes.SMALLICON.getHeight();
         final int iconWidth = ImageProvider.ImageSizes.SMALLICON.getWidth();
+        final Graphics2D g = mvGraphics.getDefaultGraphics();
 
         for (Note note : noteData.getNotes()) {
-            Point p = mv.getPoint(note.getLatLon());
+            Point p = mapView.getPoint(note.getLatLon());
 
             ImageIcon icon;
             if (note.getId() < 0) {
@@ -190,7 +190,7 @@ public class NoteLayer extends AbstractModifiableLayer implements MouseListener,
         }
         Note selectedNote = noteData.getSelectedNote();
         if (selectedNote != null) {
-            paintSelectedNote(g, mv, iconHeight, iconWidth, selectedNote);
+            paintSelectedNote(g, mapView, iconHeight, iconWidth, selectedNote);
         } else {
             hideNoteWindow();
         }

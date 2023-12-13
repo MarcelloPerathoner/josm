@@ -63,6 +63,8 @@ import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToMarkerLayer;
 import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToNextMarker;
 import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToPreviousMarker;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.imagery.Vector3D;
@@ -473,10 +475,12 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds bounds) {
-        int width = mv.getWidth();
-        int height = mv.getHeight();
+    public void paint(MapViewGraphics mvGraphics) {
+        final Graphics2D g = mvGraphics.getDefaultGraphics();
+        int width = mapView.getWidth();
+        int height = mapView.getHeight();
         Rectangle clip = g.getClipBounds();
+        Bounds bounds = mapView.getState().getForView(mvGraphics.getBounds()).getLatLonBoundsBox();
         if (useThumbs) {
             if (!thumbsLoaded) {
                 startLoadThumbs();
@@ -498,11 +502,11 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
                 tempG.setComposite(saveComp);
 
                 for (ImageEntry e : data.searchImages(bounds)) {
-                    paintImage(e, mv, clip, tempG);
+                    paintImage(e, mapView, clip, tempG);
                 }
                 for (ImageEntry img: this.data.getSelectedImages()) {
                     // Make sure the selected image is on top in case multiple images overlap.
-                    paintImage(img, mv, clip, tempG);
+                    paintImage(img, mapView, clip, tempG);
                 }
                 updateOffscreenBuffer = false;
             }
@@ -512,8 +516,8 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
                 if (e.getPos() == null) {
                     continue;
                 }
-                Point p = mv.getPoint(e.getPos());
-                icon.paintIcon(mv, g,
+                Point p = mapView.getPoint(e.getPos());
+                icon.paintIcon(mapView, g,
                         p.x - icon.getIconWidth() / 2,
                         p.y - icon.getIconHeight() / 2);
             }
@@ -522,7 +526,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
         final IImageEntry<?> currentImage = ImageViewerDialog.getCurrentImage();
         for (ImageEntry e: data.getSelectedImages()) {
             if (e != null && e.getPos() != null) {
-                Point p = mv.getPoint(e.getPos());
+                Point p = mapView.getPoint(e.getPos());
                 Dimension imgDim = getImageDimension(e);
 
                 if (e.getExifImgDir() != null) {
@@ -535,11 +539,11 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
                     g.setColor(new Color(128, 0, 0, 122));
                     g.fillRect(p.x - imgDim.width / 2, p.y - imgDim.height / 2, imgDim.width, imgDim.height);
                 } else if (e.equals(currentImage)) {
-                    selectedIcon.paintIcon(mv, g,
+                    selectedIcon.paintIcon(mapView, g,
                             p.x - imgDim.width / 2,
                             p.y - imgDim.height / 2);
                 } else {
-                    selectedIconNotImageViewer.paintIcon(mv, g,
+                    selectedIconNotImageViewer.paintIcon(mapView, g,
                             p.x - imgDim.width / 2,
                             p.y - imgDim.height / 2);
                 }
@@ -786,12 +790,12 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
     @Override
     public LayerPainter attachToMapView(MapViewEvent event) {
         MapView.addZoomChangeListener(this);
-        return new CompatibilityModeLayerPainter() {
-            @Override
-            public void detachFromMapView(MapViewEvent event) {
-                MapView.removeZoomChangeListener(GeoImageLayer.this);
-            }
-        };
+        return this;
+    }
+
+    @Override
+    public void detachFromMapView(MapViewEvent event) {
+        MapView.removeZoomChangeListener(GeoImageLayer.this);
     }
 
     @Override

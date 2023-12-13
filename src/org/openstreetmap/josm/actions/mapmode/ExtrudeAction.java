@@ -34,7 +34,6 @@ import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.MoveCommand;
 import org.openstreetmap.josm.command.SequenceCommand;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
@@ -53,6 +52,8 @@ import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.SymbolShape;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener;
@@ -234,6 +235,11 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
         dualAlignShortcut = Shortcut.registerShortcut("mapmode:extrudedualalign",
                 tr("Edit: {0}", tr("Extrude Dual alignment")), KeyEvent.CHAR_UNDEFINED, Shortcut.NONE);
         readPreferences(); // to show prefernces in table before entering the mode
+    }
+
+    @Override
+    public LayerPainter attachToMapView(MapViewEvent event) {
+        return this;
     }
 
     @Override
@@ -1027,8 +1033,11 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
     // -------------------------------------------------------------------------
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds box) {
-        Graphics2D g2 = g;
+    public void paint(MapViewGraphics mvGraphics) {
+        MapView mapView = MainApplication.getMap().mapView;
+        if (mapView == null)
+            return;
+        final Graphics2D g2 = mvGraphics.getDefaultGraphics();
         if (mode == Mode.select) {
             // Nothing to do
         } else {
@@ -1045,7 +1054,7 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
                     g2.setColor(mainColor);
                     g2.setStroke(mainStroke);
                     // Draw rectangle around new area.
-                    MapViewPath b = new MapViewPath(mv);
+                    MapViewPath b = new MapViewPath(mapView);
                     b.moveTo(p1);
                     b.lineTo(p3);
                     b.lineTo(p4);
@@ -1055,11 +1064,11 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
 
                     if (dualAlignActive) {
                         // Draw reference ways
-                        drawReferenceSegment(g2, mv, dualAlignSegment1);
-                        drawReferenceSegment(g2, mv, dualAlignSegment2);
+                        drawReferenceSegment(g2, mapView, dualAlignSegment1);
+                        drawReferenceSegment(g2, mapView, dualAlignSegment2);
                     } else if (activeMoveDirection != null && normalUnitVector != null) {
                         // Draw reference way
-                        drawReferenceSegment(g2, mv, activeMoveDirection);
+                        drawReferenceSegment(g2, mapView, activeMoveDirection);
 
                         // Draw right angle marker on first node position, only when moving at right angle
                         if (activeMoveDirection.perpendicular) {
@@ -1070,7 +1079,7 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
                             if (headingDiff < 0)
                                 headingDiff += 2 * Math.PI;
                             boolean mirrorRA = Math.abs(headingDiff - Math.PI) > 1e-5;
-                            Point pr1 = mv.getPoint(activeMoveDirection.p1);
+                            Point pr1 = mapView.getPoint(activeMoveDirection.p1);
                             drawAngleSymbol(g2, pr1, normalUnitVector, mirrorRA);
                         }
                     }
@@ -1078,22 +1087,22 @@ public class ExtrudeAction extends MapMode implements MapViewPaintable, KeyPress
                     g2.setColor(mainColor);
                     if (p1.distance(p2) < 3) {
                         g2.setStroke(mainStroke);
-                        g2.draw(new MapViewPath(mv).shapeAround(p1, SymbolShape.CIRCLE, symbolSize));
+                        g2.draw(new MapViewPath(mapView).shapeAround(p1, SymbolShape.CIRCLE, symbolSize));
                     } else {
                         g2.setStroke(oldLineStroke);
-                        g2.draw(new MapViewPath(mv).moveTo(p1).lineTo(p2));
+                        g2.draw(new MapViewPath(mapView).moveTo(p1).lineTo(p2));
                     }
 
                     if (dualAlignActive) {
                         // Draw reference ways
-                        drawReferenceSegment(g2, mv, dualAlignSegment1);
-                        drawReferenceSegment(g2, mv, dualAlignSegment2);
+                        drawReferenceSegment(g2, mapView, dualAlignSegment1);
+                        drawReferenceSegment(g2, mapView, dualAlignSegment2);
                     } else if (activeMoveDirection != null) {
 
                         g2.setColor(helperColor);
                         g2.setStroke(helperStrokeDash);
                         // Draw a guideline along the normal.
-                        Point2D centerpoint = mv.getPoint2D(p1.interpolate(p2, .5));
+                        Point2D centerpoint = mapView.getPoint2D(p1.interpolate(p2, .5));
                         g2.draw(createSemiInfiniteLine(centerpoint, normalUnitVector, g2));
                         // Draw right angle marker on initial position, only when moving at right angle
                         if (activeMoveDirection.perpendicular) {

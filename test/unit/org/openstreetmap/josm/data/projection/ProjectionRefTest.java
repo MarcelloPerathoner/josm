@@ -372,6 +372,7 @@ class ProjectionRefTest {
      */
     @Test
     void testProjections() throws IOException {
+        Projections.initFrom("resource://data/projection/custom-epsg");
         Set<String> failures = Collections.synchronizedSet(new TreeSet<>());
         Map<String, Set<String>> failingProjs = new ConcurrentHashMap<>();
         Set<String> allCodes = new HashSet<>(Projections.getAllProjectionCodes());

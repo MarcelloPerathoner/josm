@@ -6,7 +6,6 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -19,9 +18,6 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
 import org.openstreetmap.josm.gui.mappaint.StyleSource;
-import org.openstreetmap.josm.gui.mappaint.mapcss.ExpressionFactory.CacheableExpression;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProviderResult;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -74,9 +70,6 @@ public class MapImage {
      * The y offset of the anchor of this image
      */
     public int offsetY;
-
-    public CacheableExpression rotation;
-    public CacheableExpression transform;
 
     private boolean temporary;
 
@@ -259,56 +252,6 @@ public class MapImage {
      */
     public boolean isTemporary() {
         return temporary;
-    }
-
-    protected class MapImageBoxProvider implements BoxProvider {
-        @Override
-        public BoxProviderResult get() {
-            return new BoxProviderResult(box(), temporary);
-        }
-
-        private Rectangle box() {
-            int w = getWidth(), h = getHeight();
-            if (mustRescale(getImage())) {
-                w = 16;
-                h = 16;
-            }
-            return new Rectangle(-w/2, -h/2, w, h);
-        }
-
-        private MapImage getParent() {
-            return MapImage.this;
-        }
-
-        @Override
-        public int hashCode() {
-            return MapImage.this.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof BoxProvider))
-                return false;
-            if (obj instanceof MapImageBoxProvider) {
-                MapImageBoxProvider other = (MapImageBoxProvider) obj;
-                return MapImage.this.equals(other.getParent());
-            } else if (temporary) {
-                return false;
-            } else {
-                final BoxProvider other = (BoxProvider) obj;
-                BoxProviderResult resultOther = other.get();
-                if (resultOther.isTemporary()) return false;
-                return box().equals(resultOther.getBox());
-            }
-        }
-    }
-
-    /**
-     * Gets a box provider that provides a box that covers the size of this image
-     * @return The box provider
-     */
-    public BoxProvider getBoxProvider() {
-        return new MapImageBoxProvider();
     }
 
     private boolean mustRescale(Image image) {

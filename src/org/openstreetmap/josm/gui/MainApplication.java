@@ -95,6 +95,7 @@ import org.openstreetmap.josm.data.preferences.sources.SourceType;
 import org.openstreetmap.josm.data.projection.ProjectionBoundsProvider;
 import org.openstreetmap.josm.data.projection.ProjectionCLI;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
+import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.data.projection.datum.NTV2GridShiftFileSource;
 import org.openstreetmap.josm.data.projection.datum.NTV2GridShiftFileWrapper;
 import org.openstreetmap.josm.data.projection.datum.NTV2Proj4DirGridShiftFileSource;
@@ -842,6 +843,8 @@ public class MainApplication {
         if (skipLoadingPlugins) {
             Logging.info(tr("Plugin loading skipped"));
         }
+
+        Projections.initFrom("resource://data/projection/custom-epsg");
 
         if (Logging.isLoggingEnabled(Logging.LEVEL_TRACE)) {
             // Enable debug in OAuth signpost via system preference, but only at trace level

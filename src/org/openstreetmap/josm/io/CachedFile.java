@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -268,35 +270,30 @@ public class CachedFile implements Closeable {
         if (initialized)
             return cacheFile;
         initialized = true;
-        if (name == null || name.startsWith("resource://")) {
+        if (name == null) {
             return null;
         }
-        URL url;
         try {
-            url = new URL(name);
-            if ("file".equals(url.getProtocol())) {
-                cacheFile = new File(name.substring("file:/".length() - 1));
-                if (!cacheFile.exists()) {
-                    cacheFile = new File(name.substring("file://".length() - 1));
-                }
-            } else {
-                try {
-                    cacheFile = checkLocal(url);
-                } catch (SecurityException e) {
-                    throw new IOException(e);
-                }
-            }
-        } catch (MalformedURLException e) {
-            if (name.startsWith("josmdir://")) {
-                cacheFile = new File(Config.getDirs().getUserDataDirectory(false), name.substring("josmdir://".length()));
-            } else if (name.startsWith("josmplugindir://")) {
-                cacheFile = new File(Preferences.main().getPluginsDirectory(), name.substring("josmplugindir://".length()));
-            } else {
+            URI uri = new URI(name);
+            if (uri.getScheme() == null) {
                 cacheFile = new File(name);
+            } else if ("resource".equals(uri.getScheme())) {
+                return null;
+            } else if ("file".equals(uri.getScheme())) {
+                cacheFile = new File(uri.getPath());
+            } else if ("josmdir".equals(uri.getScheme())) {
+                cacheFile = new File(Config.getDirs().getUserDataDirectory(false), uri.getPath());
+            } else if ("josmplugindir".equals(uri.getScheme())) {
+                cacheFile = new File(Preferences.main().getPluginsDirectory(), uri.getPath());
+            } else if (uri.isAbsolute()) {
+                cacheFile = checkLocal(uri.toURL());
             }
+        } catch (SecurityException | URISyntaxException e) {
+            cacheFile = new File(name);
+            throw new IOException("Unable to get cache file for " + getName(), e);
         }
         if (cacheFile == null)
-            throw new IOException("Unable to get cache file for "+getName());
+            throw new IOException("Unable to get cache file for " + getName());
         return cacheFile;
     }
 

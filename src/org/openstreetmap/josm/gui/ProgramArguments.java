@@ -201,7 +201,7 @@ public class ProgramArguments {
         return map;
     }
 
-    private static String getValue(String... kv) {
+    public static String getValue(String... kv) {
         if (kv.length < 2) {
             return "";
         } else if ("null".equals(kv[1])) {

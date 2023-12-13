@@ -1,11 +1,18 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
+import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
+import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
@@ -19,7 +26,6 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAre
  * @since 11730
  */
 public class AreaIconElement extends StyleElement {
-    final Cascade c;
     /**
      * The icon that is displayed on the center of the area.
      */
@@ -30,20 +36,68 @@ public class AreaIconElement extends StyleElement {
      */
     private final PositionForAreaStrategy iconPosition;
 
+    /** The image bounds, centered */
+    private final Rectangle iconRect;
+
+    /** The icon rotation */
+    private final double theta;
+
     protected AreaIconElement(Cascade c, MapImage iconImage, PositionForAreaStrategy iconPosition) {
         super(c, 4.8f);
-        this.c = c;
         this.iconImage = Objects.requireNonNull(iconImage, "iconImage");
         this.iconPosition = Objects.requireNonNull(iconPosition, "iconPosition");
+        this.theta = c.get(ICON_ROTATION, 0d, Double.class);
+        int w = iconImage.getWidth();
+        int h = iconImage.getHeight();
+        this.iconRect = new Rectangle(-w / 2, -h / 2, w, h);
     }
 
     @Override
-    public void paintPrimitive(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public Rectangle getBounds(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
-        if (painter.isShowIcons()) {
-            Double rotation = c.get(ICON_ROTATION, 0d, Double.class);
-            painter.drawAreaIcon(osm, iconImage, painter.isInactiveMode() || osm.isDisabled(), selected, member,
-                    rotation, iconPosition);
+        if (renderer.isShowIcons()) {
+            Rectangle bounds = new Rectangle(0, 0, -1, -1);
+            AffineTransform affineTransform = new AffineTransform();
+
+            renderer.forEachPolygon(osm, path -> {
+                MapViewPositionAndRotation placement = iconPosition.findLabelPlacement(path, iconRect);
+                if (placement != null) {
+                    MapViewPoint p = placement.getPoint();
+                    affineTransform.setToTranslation(p.getInViewX(), p.getInViewY());
+                    affineTransform.rotate(theta + placement.getRotation());
+                    bounds.add(transformBounds(iconRect, affineTransform));
+                }
+            });
+            return bounds;
+        }
+        return null;
+    }
+
+    @Override
+    public void paintPrimitive(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        if (renderer.isShowIcons()) {
+            renderer.forEachPolygon(osm, path -> {
+                MapViewPositionAndRotation placement = iconPosition.findLabelPlacement(path, iconRect);
+                if (placement == null) {
+                    return;
+                }
+                MapViewPoint p = placement.getPoint();
+                AffineTransform affineTransform = new AffineTransform();
+                affineTransform.translate(p.getInViewX(), p.getInViewY());
+                affineTransform.rotate(theta + placement.getRotation());
+                boolean disabled = renderer.isInactiveMode() || osm.isDisabled();
+                renderer.drawIcon(g, iconImage, disabled, selected, member, affineTransform, (gr, r) -> {
+                    if (renderer.getUseStrokes()) {
+                        gr.setStroke(new BasicStroke(2));
+                    }
+                    // only draw a minor highlighting, so that users do not confuse this for a point.
+                    Color color = renderer.getSelectionHintColor(disabled, selected);
+                    color = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * .2));
+                    gr.setColor(color);
+                    gr.draw(r);
+                });
+            });
         }
     }
 
@@ -66,7 +120,7 @@ public class AreaIconElement extends StyleElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), c, iconImage, iconPosition);
+        return Objects.hash(super.hashCode(), theta, iconImage, iconPosition);
     }
 
     @Override
@@ -82,7 +136,7 @@ public class AreaIconElement extends StyleElement {
         }
         AreaIconElement other = (AreaIconElement) obj;
         return Objects.equals(iconImage, other.iconImage) &&
-                Objects.equals(c, other.c) &&
+                Objects.equals(theta, other.theta) &&
                 Objects.equals(iconPosition, other.iconPosition);
     }
 

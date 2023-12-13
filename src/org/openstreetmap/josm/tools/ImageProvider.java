@@ -101,9 +101,10 @@ import com.kitfox.svg.SVGUniverse;
 public class ImageProvider {
 
     // CHECKSTYLE.OFF: SingleSpaceSeparator
-    private static final String HTTP_PROTOCOL = "http://";
+    private static final String HTTP_PROTOCOL  = "http://";
     private static final String HTTPS_PROTOCOL = "https://";
-    private static final String WIKI_PROTOCOL = "wiki://";
+    private static final String WIKI_PROTOCOL  = "wiki://";
+    private static final String FILE_PROTOCOL  = "file:";
     // CHECKSTYLE.ON: SingleSpaceSeparator
 
     /**
@@ -493,8 +494,7 @@ public class ImageProvider {
      * Constructs a new {@code ImageProvider} from a filename in a given directory.
      *
      * @param subdir subdirectory the image lies in
-     * @param name   the name of the image. If it does not end with '.png' or
-     *               '.svg',
+     * @param name   the name of the image. If it does not end with '.png' or '.svg',
      *               both extensions are tried.
      * @throws NullPointerException if name is null
      */
@@ -506,8 +506,8 @@ public class ImageProvider {
     /**
      * Constructs a new {@code ImageProvider} from a filename.
      *
-     * @param name the name of the image. If it does not end with '.png' or '.svg',
-     *             both extensions are tried.
+     * @param name the name of the image. If it does not end with '.png' or '.svg', both
+     *             extensions are tried.
      * @throws NullPointerException if name is null
      */
     public ImageProvider(String name) {
@@ -1111,36 +1111,37 @@ public class ImageProvider {
         // concurrently can result
         // for example in loops in map entries (ie freeze when such entry is retrieved)
 
-        String prefix = isDisabled ? "dis:" : "";
+        String disabledPrefix = isDisabled ? "dis:" : "";
         if (name.startsWith("data:")) {
-            ImageResource ir = cache.get(prefix + name);
+            ImageResource ir = cache.get(disabledPrefix + name);
             if (ir != null)
                 return ir;
             ir = getIfAvailableDataUrl(name);
             if (ir != null) {
-                cache.put(prefix + name, ir);
+                cache.put(disabledPrefix + name, ir);
             }
             return ir;
         }
 
         ImageType type = Utils.hasExtension(name, "svg") ? ImageType.SVG : ImageType.OTHER;
+        String cacheName = disabledPrefix + name + "?" + query;
 
-        if (name.startsWith(HTTP_PROTOCOL) || name.startsWith(HTTPS_PROTOCOL)) {
-            ImageResource ir = cache.get(prefix + name);
+        if (name.startsWith(HTTP_PROTOCOL) || name.startsWith(HTTPS_PROTOCOL) || name.startsWith(FILE_PROTOCOL)) {
+            ImageResource ir = cache.get(cacheName);
             if (ir != null)
                 return ir;
             ir = getIfAvailableHttp(name, type, query);
             if (ir != null) {
-                cache.put(prefix + name, ir);
+                cache.put(cacheName, ir);
             }
             return ir;
         } else if (name.startsWith(WIKI_PROTOCOL)) {
-            ImageResource ir = cache.get(prefix + name);
+            ImageResource ir = cache.get(cacheName + name);
             if (ir != null)
                 return ir;
             ir = getIfAvailableWiki(name, type, query);
             if (ir != null) {
-                cache.put(prefix + name, ir);
+                cache.put(cacheName, ir);
             }
             return ir;
         }
@@ -1168,7 +1169,7 @@ public class ImageProvider {
                 }
 
                 String fullName = subdir + name + ext;
-                String cacheName = prefix + fullName;
+                cacheName = disabledPrefix + fullName;
                 /* cache separately */
                 if (!Utils.isEmpty(dirs)) {
                     cacheName = "id:" + id + ':' + fullName;
@@ -1228,6 +1229,7 @@ public class ImageProvider {
      * @return the requested image or null if the request failed
      */
     private static ImageResource getIfAvailableHttp(String url, ImageType type, String query) {
+        // Logging.info("getIfAvailableHttp: {0}?{1}", url, query);
         try (CachedFile cf = new CachedFile(url + "?" + query).setDestDir(
                 new File(Config.getDirs().getCacheDirectory(true), "images").getPath());
                 InputStream is = cf.getInputStream()) {

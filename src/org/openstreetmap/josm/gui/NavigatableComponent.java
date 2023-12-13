@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -635,6 +636,16 @@ public class NavigatableComponent extends JComponent implements Helpful {
      */
     public Point2D getPoint2D(Node n) {
         return getPoint2D(n.getEastNorth());
+    }
+
+    /**
+     * Converts the bbox given in lat/lon to screen coordinates.
+     */
+    public Rectangle getRectangle(BBox bbox) {
+        Point2D tl = getPoint2D(bbox.getTopLeft());
+        Point2D br = getPoint2D(bbox.getBottomRight());
+
+        return new Rectangle((int) tl.getX(), (int) tl.getY(), (int) (br.getX() - tl.getX()), (int) (br.getY() - tl.getY()));
     }
 
     /**
@@ -1498,7 +1509,7 @@ public class NavigatableComponent extends JComponent implements Helpful {
         for (StyleElement e : getStyleElementList(n)) {
             if (e instanceof NodeElement) {
                 NodeElement ne = (NodeElement) e;
-                Rectangle r = ne.getBoxProvider().get().getBox();
+                Rectangle r = ne.getSymbolBounds();
                 r.x += (int) screenPosNode.getX();
                 r.y += (int) screenPosNode.getY();
                 if (r.contains(p))

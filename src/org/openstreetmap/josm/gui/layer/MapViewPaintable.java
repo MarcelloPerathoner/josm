@@ -1,9 +1,6 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.layer;
 
-import java.awt.Graphics2D;
-
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.gui.MapView;
 
 /**
@@ -15,8 +12,7 @@ import org.openstreetmap.josm.gui.MapView;
  * @since   608 (creation)
  * @since 10600 (functional interface)
  */
-@FunctionalInterface
-public interface MapViewPaintable {
+public interface MapViewPaintable extends LayerPainter {
 
     /**
      * This event is fired whenever the paintable got invalidated and needs repainting some time in the future.
@@ -66,33 +62,6 @@ public interface MapViewPaintable {
     }
 
     /**
-     * Gets a new LayerPainter that paints this {@link MapViewPaintable} to the given map view.
-     *
-     * @author Michael Zangl
-     * @since 10458
-     */
-    interface LayerPainter {
-
-        /**
-         * Paints the given layer.
-         * <p>
-         * This can be called in any thread at any time. You will not receive parallel calls for the same map view but you can receive parallel
-         * calls if you use the same {@link LayerPainter} for different map views.
-         * @param graphics The graphics object of the map view you should use.
-         *                 It provides you with a content pane, the bounds and the view state.
-         */
-        void paint(MapViewGraphics graphics);
-
-        /**
-         * Called when the layer is removed from the map view and this painter is not used any more.
-         * <p>
-         * This method is called once on the painter returned by {@link Layer#attachToMapView}
-         * @param event The event.
-         */
-        void detachFromMapView(MapViewEvent event);
-    }
-
-    /**
      * A event that is fired whenever the map view is attached or detached from any layer.
      * @author Michael Zangl
      * @see Layer#attachToMapView
@@ -134,14 +103,6 @@ public interface MapViewPaintable {
             return "AttachToMapViewEvent [mapView=" + mapView + ", temporaryLayer=" + temporaryLayer + "]";
         }
     }
-
-    /**
-     * Paint the dataset using the engine set.
-     * @param g Graphics
-     * @param mv The object that can translate GeoPoints to screen coordinates.
-     * @param bbox Bounding box
-     */
-    void paint(Graphics2D g, MapView mv, Bounds bbox);
 
     /**
      * Adds a new paintable invalidation listener.

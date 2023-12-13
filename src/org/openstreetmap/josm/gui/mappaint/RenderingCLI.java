@@ -13,6 +13,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import javax.imageio.ImageIO;
 import org.openstreetmap.gui.jmapviewer.OsmMercator;
 import org.openstreetmap.josm.cli.CLIModule;
 import org.openstreetmap.josm.data.Bounds;
+import org.openstreetmap.josm.data.Preferences;
 import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
@@ -35,6 +37,7 @@ import org.openstreetmap.josm.data.preferences.JosmUrls;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.data.projection.Projections;
+import org.openstreetmap.josm.gui.ProgramArguments;
 import org.openstreetmap.josm.gui.mappaint.RenderingHelper.StyleData;
 import org.openstreetmap.josm.io.Compression;
 import org.openstreetmap.josm.io.IllegalDataException;
@@ -82,6 +85,7 @@ public class RenderingCLI implements CLIModule {
     private Integer argHeightPx;
     private String argProjection;
     private Integer argMaxImageSize;
+    private List<String> argSet;
 
     private StyleData argCurrentStyle;
 
@@ -102,7 +106,9 @@ public class RenderingCLI implements CLIModule {
         WIDTH_PX(true, '*'),
         HEIGHT_PX(true, '*'),
         PROJECTION(true, '*'),
-        MAX_IMAGE_SIZE(true, '*');
+        MAX_IMAGE_SIZE(true, '*'),
+        /** --set=&lt;key&gt;=&lt;value&gt;            Set preference key to value */
+        SET(true, '*');
 
         private final String name;
         private final boolean requiresArg;
@@ -214,6 +220,7 @@ public class RenderingCLI implements CLIModule {
 
         argCurrentStyle = new StyleData();
         argStyles = new ArrayList<>();
+        argSet = new ArrayList<>();
 
         parser.parseOptionsOrExit(Arrays.asList(argArray));
 
@@ -372,6 +379,9 @@ public class RenderingCLI implements CLIModule {
                         tr("Expected integer number >= 0 for option {0}, but got ''{1}''", "--max-image-size", arg));
             }
             break;
+        case SET:
+            argSet.add(arg);
+            break;
         default:
             throw new AssertionError("Unexpected option index: " + o);
         }
@@ -450,6 +460,12 @@ public class RenderingCLI implements CLIModule {
         Config.setPreferencesInstance(new MemoryPreferences());
         Config.setUrlsProvider(JosmUrls.getInstance());
         Config.getPref().putBoolean("mappaint.auto_reload_local_styles", false); // unnecessary to listen for external changes
+        for (String arg : argSet) {
+            String[] pair = arg.split("=", 2);
+            Config.getPref().put(pair[0], ProgramArguments.getValue(pair));
+        }
+
+        Projections.initFrom("resource://data/projection/custom-epsg");
         String projCode = Optional.ofNullable(argProjection).orElse("epsg:3857");
         ProjectionRegistry.setProjection(Projections.getProjectionByCode(projCode.toUpperCase(Locale.US)));
 

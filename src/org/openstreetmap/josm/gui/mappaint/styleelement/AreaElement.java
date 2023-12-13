@@ -2,7 +2,9 @@
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
@@ -120,7 +122,13 @@ public class AreaElement extends StyleElement {
     }
 
     @Override
-    public void paintPrimitive(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public Rectangle getBounds(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        return renderer.getNavigatableComponent().getRectangle(primitive.getBBox());
+    }
+
+    @Override
+    public void paintPrimitive(IPrimitive osm, MapPaintSettings paintSettings, StyledMapRenderer painter, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
         Color myColor = color;
         if (osm instanceof IWay) {
@@ -131,12 +139,12 @@ public class AreaElement extends StyleElement {
                     myColor = paintSettings.getRelationSelectedColor(color.getAlpha());
                 }
             }
-            painter.drawArea((IWay<?>) osm, myColor, fillImage, extent, extentThreshold, painter.isInactiveMode() || osm.isDisabled());
+            painter.drawArea(g, (IWay<?>) osm, myColor, fillImage, extent, extentThreshold, painter.isInactiveMode() || osm.isDisabled());
         } else if (osm instanceof Relation) {
             if (color != null && (selected || outermember)) {
                 myColor = paintSettings.getRelationSelectedColor(color.getAlpha());
             }
-            painter.drawArea((Relation) osm, myColor, fillImage, extent, extentThreshold, painter.isInactiveMode() || osm.isDisabled());
+            painter.drawArea(g, (Relation) osm, myColor, fillImage, extent, extentThreshold, painter.isInactiveMode() || osm.isDisabled());
         }
     }
 

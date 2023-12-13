@@ -1,14 +1,17 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
-import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.gui.mappaint.Cascade;
+import java.awt.Color;
+import java.awt.Rectangle;
+
+import org.openstreetmap.josm.data.osm.visitor.paint.PaintColors;
 import org.openstreetmap.josm.gui.mappaint.Environment;
-import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MultiCascade;
 import org.openstreetmap.josm.gui.mappaint.StyleElementList;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
+import org.openstreetmap.josm.spi.preferences.Config;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 
 /**
  * Default element styles.
@@ -16,7 +19,57 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvid
  */
 public final class DefaultStyles implements StyleKeys {
 
-    private DefaultStyles() {
+    /**
+	 * Class that keeps a cache of the configured node size and text color
+	 */
+	public static class PreferenceChangeListener implements PreferenceChangedListener {
+	    static int size = 0;
+	    static int size2 = 0;
+	    static Rectangle rect;
+	    static Color textColor;
+
+	    PreferenceChangeListener() {
+	        calcSize();
+	        Config.getPref().addPreferenceChangeListener(this);
+	    }
+
+	    public static Rectangle getRect() {
+	        return rect;
+	    }
+
+	    public static int getSize() {
+	        return size;
+	    }
+
+	    public static int getSize2() {
+	        return size2;
+	    }
+
+	    public static Color getTextColor() {
+	        return textColor;
+	    }
+
+	    private static void calcSize() {
+	        size = NodeElement.max(
+	            Config.getPref().getInt("mappaint.node.selected-size", 5),
+	            Config.getPref().getInt("mappaint.node.unselected-size", 3),
+	            Config.getPref().getInt("mappaint.node.connection-size", 5),
+	            Config.getPref().getInt("mappaint.node.tagged-size", 3)
+	        );
+            size2 = size / 2;
+	        rect = new Rectangle(-size2, -size2, size, size);
+	        textColor = PaintColors.TEXT.get();
+	    }
+
+	    @Override
+	    public void preferenceChanged(PreferenceChangeEvent e) {
+	        calcSize();
+	    }
+	}
+
+    private static final PreferenceChangeListener prefListener = new PreferenceChangeListener();
+
+	private DefaultStyles() {
         // Hide public constructor
     }
 
@@ -25,33 +78,11 @@ public final class DefaultStyles implements StyleKeys {
      */
     public static final NodeElement SIMPLE_NODE_ELEMSTYLE;
 
-    /**
-     * A box provider that provides the size of a simple node
-     */
-    public static final BoxProvider SIMPLE_NODE_ELEMSTYLE_BOXPROVIDER;
-
     static {
         MultiCascade mc = new MultiCascade();
         mc.getOrCreateCascade(MultiCascade.DEFAULT);
         SIMPLE_NODE_ELEMSTYLE = NodeElement.create(new Environment(null, mc, MultiCascade.DEFAULT, null), 4.1f, true);
-        if (SIMPLE_NODE_ELEMSTYLE == null) throw new AssertionError();
-        SIMPLE_NODE_ELEMSTYLE_BOXPROVIDER = SIMPLE_NODE_ELEMSTYLE.getBoxProvider();
-    }
-
-    /**
-     * The default style a simple node should use for it's text
-     */
-    public static final BoxTextElement SIMPLE_NODE_TEXT_ELEMSTYLE;
-
-    static {
-        MultiCascade mc = new MultiCascade();
-        Cascade c = mc.getOrCreateCascade(MultiCascade.DEFAULT);
-        c.put(TEXT, Keyword.AUTO);
-        Node n = new Node();
-        n.put("name", "dummy");
-        SIMPLE_NODE_TEXT_ELEMSTYLE = BoxTextElement.create(
-            new Environment(n, mc, MultiCascade.DEFAULT, null), SIMPLE_NODE_ELEMSTYLE.getBoxProvider());
-        if (SIMPLE_NODE_TEXT_ELEMSTYLE == null) throw new AssertionError();
+        assert SIMPLE_NODE_ELEMSTYLE != null;
     }
 
     /**
@@ -59,10 +90,4 @@ public final class DefaultStyles implements StyleKeys {
      * @see DefaultStyles#SIMPLE_NODE_ELEMSTYLE
      */
     public static final StyleElementList DEFAULT_NODE_STYLELIST = new StyleElementList(DefaultStyles.SIMPLE_NODE_ELEMSTYLE);
-
-    /**
-     * The default styles that are used for nodes with text.
-     */
-    public static final StyleElementList DEFAULT_NODE_STYLELIST_TEXT = new StyleElementList(DefaultStyles.SIMPLE_NODE_ELEMSTYLE,
-            DefaultStyles.SIMPLE_NODE_TEXT_ELEMSTYLE);
 }

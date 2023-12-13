@@ -77,7 +77,6 @@ import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.actions.ImageryAdjustAction;
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -132,7 +131,6 @@ import org.openstreetmap.josm.tools.MemoryManager.NotEnoughMemoryException;
 import org.openstreetmap.josm.tools.TextUtils;
 import org.openstreetmap.josm.tools.Utils;
 import org.openstreetmap.josm.tools.bugreport.BugReport;
-
 /**
  * Base abstract class that supports displaying images provided by TileSource. It might be TMS source, WMS or WMTS
  * It implements all standard functions of tilesource based layers: autozoom, tile reloads, layer saving, loading,etc.
@@ -555,18 +553,19 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
 
     @Override
     public LayerPainter attachToMapView(MapViewEvent event) {
+        mapView = event.getMapView();
         initializeIfRequired();
 
-        event.getMapView().addMouseListener(adapter);
+        mapView.addMouseListener(adapter);
         MapView.addZoomChangeListener(this);
 
         if (this instanceof NativeScaleLayer && Boolean.TRUE.equals(NavigatableComponent.PROP_ZOOM_SCALE_FOLLOW_NATIVE_RES_AT_LOAD.get())) {
-            event.getMapView().setNativeScaleLayer((NativeScaleLayer) this);
+            mapView.setNativeScaleLayer((NativeScaleLayer) this);
         }
 
         // FIXME: why do we need this? Without this, if you add a WMS layer and do not move the mouse, sometimes, tiles do not start loading.
         // FIXME: Check if this is still required.
-        event.getMapView().repaint(500);
+        mapView.repaint(500);
 
         return super.attachToMapView(event);
     }
@@ -584,7 +583,7 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
     }
 
     @Override
-    protected LayerPainter createMapViewPainter(MapViewEvent event) {
+    public LayerPainter createMapViewPainter() {
         return new TileSourcePainter();
     }
 
@@ -1524,146 +1523,10 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds bounds) {
+    public void paint(MapViewGraphics mvGraphics) {
         // old and unused.
     }
 
-    private void drawInViewArea(Graphics2D g, MapView mv, ProjectionBounds pb) {
-        int zoom = currentZoomLevel;
-        if (getDisplaySettings().isAutoZoom()) {
-            zoom = getBestZoom();
-        }
-
-        DeepTileSet dts = new DeepTileSet(pb, getMinZoomLvl(), zoom);
-
-        int displayZoomLevel = zoom;
-
-        boolean noTilesAtZoom = false;
-        if (getDisplaySettings().isAutoZoom() && getDisplaySettings().isAutoLoad()) {
-            // Auto-detection of tilesource maxzoom (currently fully works only for Bing)
-            TileSet ts0 = dts.getTileSet(zoom);
-            if (!ts0.hasVisibleTiles() && (!ts0.hasLoadingTiles() || ts0.hasOverzoomedTiles())) {
-                noTilesAtZoom = true;
-            }
-            // Find highest zoom level with at least one visible tile
-            for (int tmpZoom = zoom; tmpZoom > dts.minZoom; tmpZoom--) {
-                if (dts.getTileSet(tmpZoom).hasVisibleTiles()) {
-                    displayZoomLevel = tmpZoom;
-                    break;
-                }
-            }
-            // Do binary search between currentZoomLevel and displayZoomLevel
-            while (zoom > displayZoomLevel && !ts0.hasVisibleTiles() && ts0.hasOverzoomedTiles()) {
-                zoom = (zoom + displayZoomLevel)/2;
-                ts0 = dts.getTileSet(zoom);
-            }
-
-            setZoomLevel(zoom, false);
-
-            // If all tiles at displayZoomLevel is loaded, load all tiles at next zoom level
-            // to make sure there're really no more zoom levels
-            // loading is done in the next if section
-            if (zoom == displayZoomLevel && !ts0.hasLoadingTiles() && zoom < dts.maxZoom) {
-                zoom++;
-                ts0 = dts.getTileSet(zoom);
-            }
-            // When we have overzoomed tiles and all tiles at current zoomlevel is loaded,
-            // load tiles at previovus zoomlevels until we have all tiles on screen is loaded.
-            // loading is done in the next if section
-            while (zoom > dts.minZoom && ts0.hasOverzoomedTiles() && !ts0.hasLoadingTiles()) {
-                zoom--;
-                ts0 = dts.getTileSet(zoom);
-            }
-        } else if (getDisplaySettings().isAutoZoom()) {
-            setZoomLevel(zoom, false);
-        }
-        TileSet ts = dts.getTileSet(zoom);
-
-        // try to load tiles from desired zoom level, no matter what we will show (for example, tiles from previous zoom level
-        // on zoom in)
-        ts.loadAllTiles(false);
-
-        if (displayZoomLevel != zoom) {
-            ts = dts.getTileSet(displayZoomLevel);
-            if (!dts.getTileSet(displayZoomLevel).hasAllLoadedTiles() && displayZoomLevel < zoom) {
-                // if we are showing tiles from lower zoom level, ensure that all tiles are loaded as they are few,
-                // and should not trash the tile cache
-                // This is especially needed when dts.getTileSet(zoom).tooLarge() is true and we are not loading tiles
-                ts.loadAllTiles(false);
-            }
-        }
-
-        g.setColor(Color.DARK_GRAY);
-
-        List<Tile> missedTiles = this.paintTileImages(g, ts);
-        if (getDisplaySettings().isAutoLoad()) {
-            ts.overloadTiles();
-        }
-        if (getDisplaySettings().isAutoZoom()) {
-            /*
-             * consult calculation in estimateTileCacheSize() before changing values here.
-             *
-             *  @see #estimateTileCacheSize()
-             */
-            int[] otherZooms = {1, 2, -1, -2, -3, -4, -5};
-
-            for (int otherZoom: otherZooms) {
-                missedTiles = tryLoadFromDifferentZoom(g, displayZoomLevel, missedTiles, otherZoom);
-                if (missedTiles.isEmpty()) {
-                    break;
-                }
-            }
-        }
-
-        if (Logging.isDebugEnabled() && !missedTiles.isEmpty()) {
-            Logging.debug("still missed {0} in the end", missedTiles.size());
-        }
-        g.setColor(Color.red);
-        g.setFont(InfoFont);
-
-        // The current zoom tileset should have all of its tiles due to the loadAllTiles(), unless it to tooLarge()
-        for (Tile t : ts.allExistingTiles()) {
-            this.paintTileText(t, g);
-        }
-
-        EastNorth min = pb.getMin();
-        EastNorth max = pb.getMax();
-        attribution.paintAttribution(g, mv.getWidth(), mv.getHeight(), getShiftedCoord(min), getShiftedCoord(max),
-                displayZoomLevel, this);
-
-        g.setColor(Color.lightGray);
-
-        if (ts.tooLarge()) {
-            myDrawString(g, tr("zoom in to load more tiles"), 120, 120);
-        } else if (!getDisplaySettings().isAutoZoom() && ts.tooSmall()) {
-            myDrawString(g, tr("increase tiles zoom level (change resolution) to see more detail"), 120, 120);
-        }
-        if (noTilesAtZoom) {
-            myDrawString(g, tr("No tiles at this zoom level"), 120, 120);
-        }
-        if (Logging.isDebugEnabled()) {
-            int xOffset = 50;
-            myDrawString(g, tr("Current zoom: {0}", currentZoomLevel), xOffset, 165);
-            myDrawString(g, tr("Display zoom: {0}", displayZoomLevel), xOffset, 180);
-            myDrawString(g, tr("Pixel scale: {0}", getScaleFactor(currentZoomLevel)), xOffset, 195);
-            myDrawString(g, tr("Best zoom: {0}", getBestZoom()), xOffset, 210);
-            myDrawString(g, tr("Estimated cache size: {0}", estimateTileCacheSize()), xOffset, 225);
-            if (tileLoader instanceof TMSCachedTileLoader) {
-                int yOffset = 255;
-                myDrawString(g, tr("=== Cache stats ==="), xOffset, yOffset);
-                yOffset += 5;
-                for (String part: ((TMSCachedTileLoader) tileLoader).getStats().split("\n", -1)) {
-                    String regex = "^-{3,}(.+)";
-                    if (part.matches(regex)) {
-                        part = part.replaceAll(regex, "--- $1");
-                        yOffset += 5;
-                    }
-                    yOffset += 15;
-                    myDrawString(g, tr(part), xOffset, yOffset);
-                }
-            }
-        }
-    }
 
     private List<Tile> tryLoadFromDifferentZoom(Graphics2D g, int displayZoomLevel, List<Tile> missedTiles,
             int zoomOffset) {
@@ -1999,9 +1862,10 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
         }
     }
 
-    private class TileSourcePainter extends CompatibilityModeLayerPainter {
+    private class TileSourcePainter implements LayerPainter {
         /** The memory handle that will hold our tile source. */
         private MemoryHandle<?> memory;
+        MapView mapView;
 
         @Override
         public void paint(MapViewGraphics graphics) {
@@ -2009,8 +1873,7 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
             if (memory != null) {
                 doPaint(graphics);
                 if (AbstractTileSourceLayer.this instanceof MVTLayer) {
-                    AbstractTileSourceLayer.this.paint(graphics.getDefaultGraphics(), graphics.getMapView(), graphics.getMapView()
-                      .getRealBounds());
+                    AbstractTileSourceLayer.this.paint(graphics);
                 }
             } else {
                 Graphics g = graphics.getDefaultGraphics();
@@ -2023,12 +1886,152 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
             }
         }
 
-        private void doPaint(MapViewGraphics graphics) {
+        private void doPaint(MapViewGraphics mvGraphics) {
             try {
-                drawInViewArea(graphics.getDefaultGraphics(), graphics.getMapView(), graphics.getClipBounds().getProjectionBounds());
+                drawInViewArea(mvGraphics);
             } catch (IllegalArgumentException | IllegalStateException e) {
                 throw BugReport.intercept(e)
-                               .put("graphics", graphics).put("tileSource", tileSource).put("currentZoomLevel", currentZoomLevel);
+                               .put("graphics", mvGraphics).put("tileSource", tileSource).put("currentZoomLevel", currentZoomLevel);
+            }
+        }
+
+        private void drawInViewArea(MapViewGraphics mvGraphics) {
+            Graphics2D g = mvGraphics.getDefaultGraphics();
+            ProjectionBounds pb = mapView.getState().getForView(mvGraphics.getBounds()).getProjectionBounds();
+
+            int zoom = currentZoomLevel;
+            if (getDisplaySettings().isAutoZoom()) {
+                zoom = getBestZoom();
+            }
+
+            DeepTileSet dts = new DeepTileSet(pb, getMinZoomLvl(), zoom);
+
+            int displayZoomLevel = zoom;
+
+            boolean noTilesAtZoom = false;
+            if (getDisplaySettings().isAutoZoom() && getDisplaySettings().isAutoLoad()) {
+                // Auto-detection of tilesource maxzoom (currently fully works only for Bing)
+                TileSet ts0 = dts.getTileSet(zoom);
+                if (!ts0.hasVisibleTiles() && (!ts0.hasLoadingTiles() || ts0.hasOverzoomedTiles())) {
+                    noTilesAtZoom = true;
+                }
+                // Find highest zoom level with at least one visible tile
+                for (int tmpZoom = zoom; tmpZoom > dts.minZoom; tmpZoom--) {
+                    if (dts.getTileSet(tmpZoom).hasVisibleTiles()) {
+                        displayZoomLevel = tmpZoom;
+                        break;
+                    }
+                }
+                // Do binary search between currentZoomLevel and displayZoomLevel
+                while (zoom > displayZoomLevel && !ts0.hasVisibleTiles() && ts0.hasOverzoomedTiles()) {
+                    zoom = (zoom + displayZoomLevel)/2;
+                    ts0 = dts.getTileSet(zoom);
+                }
+
+                setZoomLevel(zoom, false);
+
+                // If all tiles at displayZoomLevel is loaded, load all tiles at next zoom level
+                // to make sure there're really no more zoom levels
+                // loading is done in the next if section
+                if (zoom == displayZoomLevel && !ts0.hasLoadingTiles() && zoom < dts.maxZoom) {
+                    zoom++;
+                    ts0 = dts.getTileSet(zoom);
+                }
+                // When we have overzoomed tiles and all tiles at current zoomlevel is loaded,
+                // load tiles at previovus zoomlevels until we have all tiles on screen is loaded.
+                // loading is done in the next if section
+                while (zoom > dts.minZoom && ts0.hasOverzoomedTiles() && !ts0.hasLoadingTiles()) {
+                    zoom--;
+                    ts0 = dts.getTileSet(zoom);
+                }
+            } else if (getDisplaySettings().isAutoZoom()) {
+                setZoomLevel(zoom, false);
+            }
+            TileSet ts = dts.getTileSet(zoom);
+
+            // try to load tiles from desired zoom level, no matter what we will show (for example, tiles from previous zoom level
+            // on zoom in)
+            ts.loadAllTiles(false);
+
+            if (displayZoomLevel != zoom) {
+                ts = dts.getTileSet(displayZoomLevel);
+                if (!dts.getTileSet(displayZoomLevel).hasAllLoadedTiles() && displayZoomLevel < zoom) {
+                    // if we are showing tiles from lower zoom level, ensure that all tiles are loaded as they are few,
+                    // and should not trash the tile cache
+                    // This is especially needed when dts.getTileSet(zoom).tooLarge() is true and we are not loading tiles
+                    ts.loadAllTiles(false);
+                }
+            }
+
+            g.setColor(Color.DARK_GRAY);
+
+            List<Tile> missedTiles = paintTileImages(g, ts);
+            if (getDisplaySettings().isAutoLoad()) {
+                ts.overloadTiles();
+            }
+            if (getDisplaySettings().isAutoZoom()) {
+                /*
+                 * consult calculation in estimateTileCacheSize() before changing values here.
+                 *
+                 *  @see #estimateTileCacheSize()
+                 */
+                int[] otherZooms = {1, 2, -1, -2, -3, -4, -5};
+
+                for (int otherZoom: otherZooms) {
+                    missedTiles = tryLoadFromDifferentZoom(g, displayZoomLevel, missedTiles, otherZoom);
+                    if (missedTiles.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+
+            if (Logging.isDebugEnabled() && !missedTiles.isEmpty()) {
+                Logging.debug("still missed {0} in the end", missedTiles.size());
+            }
+            g.setColor(Color.red);
+            g.setFont(InfoFont);
+
+            // The current zoom tileset should have all of its tiles due to the loadAllTiles(), unless it to tooLarge()
+            for (Tile t : ts.allExistingTiles()) {
+                paintTileText(t, g);
+            }
+
+            EastNorth min = pb.getMin();
+            EastNorth max = pb.getMax();
+            attribution.paintAttribution(g, mapView.getWidth(), mapView.getHeight(), getShiftedCoord(min), getShiftedCoord(max),
+                    displayZoomLevel, AbstractTileSourceLayer.this);
+
+            g.setColor(Color.lightGray);
+
+            if (ts.tooLarge()) {
+                myDrawString(g, tr("zoom in to load more tiles"), 120, 120);
+            } else if (!getDisplaySettings().isAutoZoom() && ts.tooSmall()) {
+                myDrawString(g, tr("increase tiles zoom level (change resolution) to see more detail"), 120, 120);
+            }
+            if (noTilesAtZoom) {
+                myDrawString(g, tr("No tiles at this zoom level"), 120, 120);
+            }
+            if (Logging.isDebugEnabled()) {
+                int xOffset = 50;
+                myDrawString(g, tr("Current zoom: {0}", currentZoomLevel), xOffset, 165);
+                myDrawString(g, tr("Display zoom: {0}", displayZoomLevel), xOffset, 180);
+                myDrawString(g, tr("Pixel scale: {0}", getScaleFactor(currentZoomLevel)), xOffset, 195);
+                myDrawString(g, tr("Best zoom: {0}", getBestZoom()), xOffset, 210);
+                myDrawString(g, tr("Estimated cache size: {0}", estimateTileCacheSize()), xOffset, 225);
+                if (tileLoader instanceof TMSCachedTileLoader) {
+                    int yOffset = 255;
+                    myDrawString(g, tr("=== Cache stats ==="), xOffset, yOffset);
+                    yOffset += 5;
+                    for (String part: ((TMSCachedTileLoader) tileLoader).getStats().split("\n", -1)) {
+                        String regex = "^-{3,}(.+)";
+                        if (part.matches(regex)) {
+                            part = part.replaceAll(regex, "--- $1");
+                            yOffset += 5;
+                        }
+                        yOffset += 15;
+                        myDrawString(g, tr(part), xOffset, yOffset);
+                    }
+                }
             }
         }
 
@@ -2050,10 +2053,15 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
         }
 
         @Override
+        public LayerPainter attachToMapView(MapViewEvent event) {
+            mapView = event.getMapView();
+            return this;
+        }
+
+        @Override
         public void detachFromMapView(MapViewEvent event) {
             event.getMapView().removeMouseListener(adapter);
             MapView.removeZoomChangeListener(AbstractTileSourceLayer.this);
-            super.detachFromMapView(event);
             if (memory != null) {
                 memory.free();
             }

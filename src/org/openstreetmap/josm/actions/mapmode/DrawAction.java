@@ -35,7 +35,6 @@ import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.DataSelectionListener;
@@ -61,6 +60,8 @@ import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.draw.MapPath2D;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener;
@@ -182,6 +183,11 @@ public class DrawAction extends MapMode implements MapViewPaintable, DataSelecti
         cursorJoinWay = ImageProvider.getCursor("crosshair", "joinway");
 
         snapHelper.init();
+    }
+
+    @Override
+    public LayerPainter attachToMapView(MapViewEvent event) {
+        return this;
     }
 
     private JCheckBoxMenuItem addMenuItem() {
@@ -1196,7 +1202,7 @@ public class DrawAction extends MapMode implements MapViewPaintable, DataSelecti
     }
 
     @Override
-    public synchronized void paint(Graphics2D g, MapView mv, Bounds box) {
+    public synchronized void paint(MapViewGraphics mvGraphics) {
         // sanity checks
         MapView mapView = MainApplication.getMap().mapView;
         if (mapView == null || mousePos == null
@@ -1206,18 +1212,18 @@ public class DrawAction extends MapMode implements MapViewPaintable, DataSelecti
                 || !mapView.getState().getForView(mousePos.getX(), mousePos.getY()).isInView())
             return;
 
-        Graphics2D g2 = g;
-        snapHelper.drawIfNeeded(g2, mv.getState());
+        final Graphics2D g2 = mvGraphics.getDefaultGraphics();
+        snapHelper.drawIfNeeded(g2, mapView.getState());
         if (!DRAW_HELPER_LINE.get() || wayIsFinished || shift)
             return;
 
         if (!snapHelper.isActive()) {
             g2.setColor(RUBBER_LINE_COLOR.get());
             g2.setStroke(RUBBER_LINE_STROKE.get());
-            paintConstructionGeometry(mv, g2);
+            paintConstructionGeometry(mapView, g2);
         } else if (DRAW_CONSTRUCTION_GEOMETRY.get()) {
             // else use color and stoke from  snapHelper.draw
-            paintConstructionGeometry(mv, g2);
+            paintConstructionGeometry(mapView, g2);
         }
     }
 

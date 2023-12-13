@@ -31,7 +31,7 @@ class StyledMapRendererPerformanceTest extends AbstractMapRendererPerformanceTes
 
     @Override
     protected Rendering buildRenderer() {
-        return new StyledMapRenderer(g, nc, false);
+        return new StyledMapRenderer(nc, false);
     }
 
     /**

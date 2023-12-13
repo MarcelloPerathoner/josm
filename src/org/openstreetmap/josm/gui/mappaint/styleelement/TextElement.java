@@ -1,18 +1,29 @@
 // License: GPL. For details, see LICENSE file.
 package org.openstreetmap.josm.gui.mappaint.styleelement;
 
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
 import java.util.Objects;
 
 import org.openstreetmap.josm.data.osm.IPrimitive;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapPaintSettings;
 import org.openstreetmap.josm.data.osm.visitor.paint.PaintColors;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
+import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
 import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.StyleKeys;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.CompletelyInsideAreaStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAreaStrategy;
+import org.openstreetmap.josm.tools.Logging;
+import org.openstreetmap.josm.tools.Utils;
 
 /**
  * The text that is drawn for a way/area. It may be drawn along the outline or onto the way.
@@ -88,9 +99,42 @@ public class TextElement extends StyleElement {
     }
 
     @Override
-    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer painter,
+    public void paintPrimitive(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
-        painter.drawText(primitive, text, getLabelPositionStrategy());
+        renderer.drawText(g, primitive, text, getLabelPositionStrategy());
+    }
+
+    @Override
+    public Rectangle getBounds(IPrimitive primitive, MapPaintSettings paintSettings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        if (!renderer.isShowNames()) {
+            return null;
+        }
+        String name = text.getString(primitive);
+        if (Utils.isEmpty(name)) {
+            return null;
+        }
+
+        FontMetrics fontMetrics = g.getFontMetrics(text.font); // if slow, use cache
+        Rectangle2D stringBounds = fontMetrics.getStringBounds(name, g); // if slow, approximate by strlen()*maxcharbounds(font)
+        Rectangle bounds = new Rectangle(0, 0, -1, -1); // a "nonexistent" {@link Rectangle}
+
+        FontRenderContext frc = g.getFontRenderContext();
+        renderer.forEachPolygon(primitive, path -> {
+            MapViewPositionAndRotation center = labelPositionStrategy.findLabelPlacement(path, stringBounds);
+            if (center != null) {
+                AffineTransform at = renderer.getDisplayTextTransform(stringBounds, center);
+                bounds.add(StyleElement.transformBounds(stringBounds.getBounds(), at));
+            } else if (labelPositionStrategy.supportsGlyphVector()) {
+                List<GlyphVector> gvs = Utils.getGlyphVectorsBidi(name, text.font, frc);
+                for (GlyphVector gv : labelPositionStrategy.generateGlyphVectors(path, stringBounds, gvs)) {
+                    bounds.add(gv.getPixelBounds(frc, 0f, 0f));
+                }
+            } else {
+                Logging.trace("Couldn't find a correct label placement for {0} / {1}", primitive, name);
+            }
+        });
+        return bounds;
     }
 
     @Override

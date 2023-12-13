@@ -108,12 +108,12 @@ public final class TaggingPresetReader {
         public void startElement(String ns, String lname, String qname, Attributes a) throws SAXException {
             Item item = null;
             Map<String, String> attributes = getAttributes(a);
+            attributes.put("base_uri", locator.getSystemId());
 
             try {
                 item = ItemFactory.build(lname, attributes);
                 if (item instanceof Root && root == null) {
                     root = (Root) item;
-                    root.url = locator.getSystemId();
                 }
                 if (!stack.isEmpty()) {
                     // add this item to the parent

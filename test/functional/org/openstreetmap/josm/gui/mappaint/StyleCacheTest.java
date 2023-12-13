@@ -115,7 +115,7 @@ class StyleCacheTest {
         MapPaintStyles.getStyles().clearCached();
         StyleCache.clearStyleCachePool();
         Bounds bounds = new Bounds(53.56, 13.25, 53.57, 13.26);
-        Rendering visitor = new StyledMapRenderer(g, nc, false);
+        Rendering visitor = new StyledMapRenderer(nc, false);
         nc.zoomTo(bounds);
         Integer internPoolSize = null;
         for (int i = 0; i < 10; i++) {
@@ -148,7 +148,7 @@ class StyleCacheTest {
     void testStyleCacheInternPool2() {
         StyleCache.clearStyleCachePool();
         Bounds bounds = new Bounds(53.56, 13.25, 53.57, 13.26);
-        Rendering visitor = new StyledMapRenderer(g, nc, false);
+        Rendering visitor = new StyledMapRenderer(nc, false);
         nc.zoomTo(bounds);
         visitor.render(dsCity2, true, bounds);
 

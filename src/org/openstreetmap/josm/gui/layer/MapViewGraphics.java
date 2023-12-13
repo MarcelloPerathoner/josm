@@ -2,9 +2,10 @@
 package org.openstreetmap.josm.gui.layer;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
 import org.openstreetmap.josm.gui.MapView;
-import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
 
 /**
  * This class provides layers with access to drawing on the map view.
@@ -18,21 +19,28 @@ import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
  * @since 10458
  */
 public class MapViewGraphics {
-
     private final Graphics2D graphics;
-    private final MapView mapView;
-    private final MapViewRectangle clipBounds;
-
+    private final BufferedImage buffer;
     /**
+     * The bounds of the buffer in screen (MapView) coordinates. These bounds describe
+     * the position of the buffer relative to the screen. In the simplest case the size
+     * of the screen and the size of the buffer and the bounds are the same.  But if we
+     * are to redraw only a small portion of the screen, the bounds will describe that
+     * portion and the size of the buffer will be the size of the portion only.
+     */
+    private final Rectangle bounds;
+
+	/**
      * Constructs a new {@code MapViewGraphics}.
      * @param mapView map view
+     * @param buffer the buffer to draw into
      * @param graphics default graphics
-     * @param clipBounds clip bounds for this graphics instance
+     * @param bounds bounds in buffer coordinates of the area to be drawn
      */
-    public MapViewGraphics(MapView mapView, Graphics2D graphics, MapViewRectangle clipBounds) {
-        this.mapView = mapView;
+    public MapViewGraphics(BufferedImage buffer, Graphics2D graphics, Rectangle bounds) {
         this.graphics = graphics;
-        this.clipBounds = clipBounds;
+        this.buffer = buffer;
+        this.bounds = bounds;
     }
 
     /**
@@ -44,24 +52,20 @@ public class MapViewGraphics {
         return graphics;
     }
 
-    /**
-     * Gets the {@link MapView} that is the base to this draw call.
-     * @return The map view.
-     */
-    public MapView getMapView() {
-        return mapView;
-    }
+    public BufferedImage getBuffer() {
+		return buffer;
+	}
 
     /**
-     * Gets the clip bounds for this graphics instance.
-     * @return The clip bounds.
+     * Returns the area to be drawn in screen coordinates
+     * @return the area to be drawn
      */
-    public MapViewRectangle getClipBounds() {
-        return clipBounds;
-    }
+    public Rectangle getBounds() {
+		return bounds;
+	}
 
     @Override
     public String toString() {
-        return "MapViewGraphics [graphics=" + graphics + ", mapView=" + mapView + ", clipBounds=" + clipBounds + ']';
+        return "MapViewGraphics [graphics=" + graphics + ", bounds=" + bounds + ']';
     }
 }

@@ -80,6 +80,6 @@ public class MapCSSException extends RuntimeException {
     public String getMessage() {
         if (line == null || column == null)
             return super.getMessage();
-        return String.format("%s:%s:%s Error: %s", source, line, column, super.getMessage());
+        return String.format("%s:%s:%s Error: %s (%s)", source, line, column, super.getMessage(), getCause());
     }
 }

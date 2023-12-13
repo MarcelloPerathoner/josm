@@ -39,6 +39,11 @@ public class GpxRouteLayer extends AbstractModifiableLayer {
     }
 
     @Override
+    public void paint(MapViewGraphics mvGraphics) {
+        // unused - we use a painter so this is not called.
+    }
+
+    @Override
     public boolean isModified() {
         return fromLayer.isModified();
     }
@@ -82,12 +87,7 @@ public class GpxRouteLayer extends AbstractModifiableLayer {
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds bbox) {
-        // unused - we use a painter so this is not called.
-    }
-
-    @Override
-    protected LayerPainter createMapViewPainter(MapViewEvent event) {
+    public LayerPainter createMapViewPainter() {
         return new GpxDrawHelper(fromLayer) {
             @Override
             protected Iterable<Line> getLinesIterable(boolean[] trackVisibility) {

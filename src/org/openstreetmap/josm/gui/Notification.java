@@ -399,7 +399,6 @@ public class Notification extends JPanel {
     @Override
     public void setVisible(boolean show) {
         if (show) {
-            build();
             remaining = getDuration();
             manager.addNotification(this);
         } else {
@@ -428,7 +427,7 @@ public class Notification extends JPanel {
     /**
      * Build the panel
      */
-    private void build() {
+    void build() {
         JButton btnClose = new JButton(new CloseAction());
         btnClose.setContentAreaFilled(false);
 

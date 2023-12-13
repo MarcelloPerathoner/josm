@@ -127,7 +127,10 @@ public class NotificationManager {
         if (isHeadless) {
             robotList.add(notification.getText());
         }
-        GuiHelper.runInEDT(this::redraw);
+        GuiHelper.runInEDT(() -> {
+            notification.build();
+            redraw();
+        });
     }
 
     /**

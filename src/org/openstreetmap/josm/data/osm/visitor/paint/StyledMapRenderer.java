@@ -5,7 +5,6 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -26,16 +25,21 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -44,6 +48,8 @@ import java.util.function.Supplier;
 import javax.swing.AbstractButton;
 import javax.swing.FocusManager;
 
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.quadtree.Quadtree;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.BBox;
@@ -68,19 +74,21 @@ import org.openstreetmap.josm.gui.MapViewState.MapViewPoint;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.MapViewPositionAndRotation;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
-import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles;
+import org.openstreetmap.josm.gui.mappaint.StyleElementList;
+import org.openstreetmap.josm.gui.mappaint.styleelement.AreaElement;
+import org.openstreetmap.josm.gui.mappaint.styleelement.AreaIconElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement;
-import org.openstreetmap.josm.gui.mappaint.styleelement.DefaultStyles;
 import org.openstreetmap.josm.gui.mappaint.styleelement.MapImage;
-import org.openstreetmap.josm.gui.mappaint.styleelement.RepeatImageElement.LineImageAlignment;
+import org.openstreetmap.josm.gui.mappaint.styleelement.NodeElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.Symbol;
+import org.openstreetmap.josm.gui.mappaint.styleelement.TextElement;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.PositionForAreaStrategy;
 import org.openstreetmap.josm.spi.preferences.Config;
-import org.openstreetmap.josm.tools.CompositeList;
 import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.Geometry.AreaAndPerimeter;
 import org.openstreetmap.josm.tools.HiDPISupport;
@@ -95,198 +103,8 @@ import org.openstreetmap.josm.tools.bugreport.BugReport;
  * @since 486
  */
 public class StyledMapRenderer extends AbstractMapRenderer {
-
-    private static final ForkJoinPool THREAD_POOL = newForkJoinPool();
-
-    private static ForkJoinPool newForkJoinPool() {
-        try {
-            return Utils.newForkJoinPool(
-                    "mappaint.StyledMapRenderer.style_creation.numberOfThreads", "styled-map-renderer-%d", Thread.NORM_PRIORITY);
-        } catch (SecurityException e) {
-            Logging.log(Logging.LEVEL_ERROR, "Unable to create new ForkJoinPool", e);
-            return null;
-        }
-    }
-
-    /**
-     * This stores a style and a primitive that should be painted with that style.
-     */
-    public static class StyleRecord implements Comparable<StyleRecord> {
-        private final StyleElement style;
-        private final IPrimitive osm;
-        private final int flags;
-        private final long order;
-
-        StyleRecord(StyleElement style, IPrimitive osm, int flags) {
-            this.style = style;
-            this.osm = osm;
-            this.flags = flags;
-
-            long styleOrder = 0;
-            if ((this.flags & FLAG_DISABLED) == 0) {
-                styleOrder |= 1;
-            }
-
-            styleOrder <<= 24;
-            styleOrder |= floatToFixed(this.style.majorZIndex, 24);
-
-            // selected on top of member of selected on top of unselected
-            // FLAG_DISABLED bit is the same at this point, but we simply ignore it
-            styleOrder <<= 4;
-            styleOrder |= this.flags & 0xf;
-
-            styleOrder <<= 24;
-            styleOrder |= floatToFixed(this.style.zIndex, 24);
-
-            styleOrder <<= 1;
-            // simple node on top of icons and shapes
-            if (DefaultStyles.SIMPLE_NODE_ELEMSTYLE.equals(this.style)) {
-                styleOrder |= 1;
-            }
-
-            this.order = styleOrder;
-        }
-
-        /**
-         * Converts a float to a fixed point decimal so that the order stays the same.
-         *
-         * @param number The float to convert
-         * @param totalBits
-         *            Total number of bits. 1 sign bit. There should be at least 15 bits.
-         * @return The float converted to an integer.
-         */
-        protected static long floatToFixed(float number, int totalBits) {
-            long value = Float.floatToIntBits(number) & 0xffffffffL;
-
-            boolean negative = (value & 0x80000000L) != 0;
-            // Invert the sign bit, so that negative numbers are lower
-            value ^= 0x80000000L;
-            // Now do the shift. Do it before accounting for negative numbers (symmetry)
-            if (totalBits < 32) {
-                value >>= (32 - totalBits);
-            }
-            // positive numbers are sorted now. Negative ones the wrong way.
-            if (negative) {
-                // Negative number: re-map it
-                value = (1L << (totalBits - 1)) - value;
-            }
-            return value;
-        }
-
-        @Override
-        public int compareTo(StyleRecord other) {
-            int d = Long.compare(order, other.order);
-            if (d != 0) {
-                return d;
-            }
-
-            // newer primitives to the front
-            long id = this.osm.getUniqueId() - other.osm.getUniqueId();
-            if (id > 0)
-                return 1;
-            if (id < 0)
-                return -1;
-
-            return Float.compare(this.style.objectZIndex, other.style.objectZIndex);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(order, osm, style, flags);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-            StyleRecord other = (StyleRecord) obj;
-            return flags == other.flags
-                && order == other.order
-                && Objects.equals(osm, other.osm)
-                && Objects.equals(style, other.style);
-        }
-
-        /**
-         * Get the style for this style element.
-         * @return The style
-         */
-        public StyleElement getStyle() {
-            return style;
-        }
-
-        /**
-         * Paints the primitive with the style.
-         * @param paintSettings The settings to use.
-         * @param painter The painter to paint the style.
-         */
-        public void paintPrimitive(MapPaintSettings paintSettings, StyledMapRenderer painter) {
-            style.paintPrimitive(
-                    osm,
-                    paintSettings,
-                    painter,
-                    (flags & FLAG_SELECTED) != 0,
-                    (flags & FLAG_OUTERMEMBER_OF_SELECTED) != 0,
-                    (flags & FLAG_MEMBER_OF_SELECTED) != 0
-            );
-        }
-
-        @Override
-        public String toString() {
-            return "StyleRecord [style=" + style + ", osm=" + osm + ", flags=" + flags + "]";
-        }
-    }
-
-    private static final Map<Font, Boolean> IS_GLYPH_VECTOR_DOUBLE_TRANSLATION_BUG = new HashMap<>();
-
-    /**
-     * Check, if this System has the GlyphVector double translation bug.
-     * <p>
-     * With this bug, <code>gv.setGlyphTransform(i, trfm)</code> has a different
-     * effect than on most other systems, namely the translation components
-     * ("m02" &amp; "m12", {@link AffineTransform}) appear to be twice as large, as
-     * they actually are. The rotation is unaffected (scale &amp; shear not tested
-     * so far).
-     * <p>
-     * This bug has only been observed on Mac OS X, see #7841.
-     * <p>
-     * After switch to Java 7, this test is a false positive on Mac OS X (see #10446),
-     * i.e. it returns true, but the real rendering code does not require any special
-     * handling.
-     * It hasn't been further investigated why the test reports a wrong result in
-     * this case, but the method has been changed to simply return false by default.
-     * (This can be changed with a setting in the advanced preferences.)
-     *
-     * @param font The font to check.
-     * @return false by default, but depends on the value of the advanced
-     * preference glyph-bug=false|true|auto, where auto is the automatic detection
-     * method which apparently no longer gives a useful result for Java 7.
-     */
-    public static boolean isGlyphVectorDoubleTranslationBug(Font font) {
-        Boolean cached = IS_GLYPH_VECTOR_DOUBLE_TRANSLATION_BUG.get(font);
-        if (cached != null)
-            return cached;
-        String overridePref = Config.getPref().get("glyph-bug", "auto");
-        if ("auto".equals(overridePref)) {
-            FontRenderContext frc = new FontRenderContext(null, false, false);
-            GlyphVector gv = font.createGlyphVector(frc, "x");
-            gv.setGlyphTransform(0, AffineTransform.getTranslateInstance(1000, 1000));
-            Shape shape = gv.getGlyphOutline(0);
-            if (Logging.isTraceEnabled()) {
-                Logging.trace("#10446: shape: {0}", shape.getBounds());
-            }
-            // x is about 1000 on normal stystems and about 2000 when the bug occurs
-            int x = shape.getBounds().x;
-            boolean isBug = x > 1500;
-            IS_GLYPH_VECTOR_DOUBLE_TRANSLATION_BUG.put(font, isBug);
-            return isBug;
-        } else {
-            boolean override = Boolean.parseBoolean(overridePref);
-            IS_GLYPH_VECTOR_DOUBLE_TRANSLATION_BUG.put(font, override);
-            return override;
-        }
-    }
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(8, new RenderThreadFactory());
+    private static ThreadPoolExecutor renderExecutorService = null;
 
     private double circum;
     private double scale;
@@ -320,8 +138,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     static final int FLAG_OUTERMEMBER_OF_SELECTED = 8;
 
     private static final double PHI = Utils.toRadians(20);
-    private static final double cosPHI = Math.cos(PHI);
-    private static final double sinPHI = Math.sin(PHI);
+    private static final double COS_PHI = Math.cos(PHI);
+    private static final double SIN_PHI = Math.sin(PHI);
     /**
      * If we should use left hand traffic.
      */
@@ -339,6 +157,14 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      */
     public static final AbstractProperty<String> PREFERENCE_TEXT_ANTIALIASING
             = new StringProperty("mappaint.text-antialiasing", "default").cached();
+
+    /**
+     * How many threads to use for rendering. 0 = let the system decide. 1 = use the
+     * EDT. 2+ use this many threads.
+     * @since xxx
+     */
+    public static final AbstractProperty<Integer> PREFERENCE_RENDER_CONCURRENCY
+            = new IntegerProperty("mappaint.render.concurrency", 1).cached();
 
     /**
      * The line with to use for highlighting
@@ -373,8 +199,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @throws IllegalArgumentException if {@code g} is null
      * @throws IllegalArgumentException if {@code nc} is null
      */
-    public StyledMapRenderer(Graphics2D g, NavigatableComponent nc, boolean isInactiveMode) {
-        super(g, nc, isInactiveMode);
+    public StyledMapRenderer(NavigatableComponent nc, boolean isInactiveMode) {
+        super(nc, isInactiveMode);
         Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
         useWiderHighlight = !(focusOwner instanceof AbstractButton || focusOwner == nc);
         this.styles = MapPaintStyles.getStyles();
@@ -388,7 +214,41 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         this.styles = styles;
     }
 
-    private void displaySegments(MapViewPath path, Path2D orientationArrows, Path2D onewayArrows, Path2D onewayArrowsCasing,
+    /**
+     * Return the number of threads to use for rendering
+     */
+    private static int getRenderThreads() {
+        int nThreads = PREFERENCE_RENDER_CONCURRENCY.get();
+        if (nThreads == 0) {
+            nThreads = Runtime.getRuntime().availableProcessors();
+        }
+        return nThreads;
+    }
+
+    /**
+     * Returns the executor service to use for rendering
+     * <p>
+     * Returns null if we should use the EDT.
+     *
+     * @return the executor service or null
+     */
+    private static ThreadPoolExecutor getRenderExecutorService() {
+        int nThreads = getRenderThreads();
+        if (nThreads == 1)
+            return null;
+        if (renderExecutorService == null) {
+            renderExecutorService = new ThreadPoolExecutor(nThreads, nThreads,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                new RenderThreadFactory());
+        } else {
+            renderExecutorService.setCorePoolSize(nThreads);
+        }
+        return renderExecutorService;
+    }
+
+    private void displaySegments(Graphics2D g, MapViewPath path,
+            Path2D orientationArrows, Path2D onewayArrows, Path2D onewayArrowsCasing,
             Color color, BasicStroke line, BasicStroke dashes, Color dashedColor) {
         g.setColor(isInactiveMode ? inactiveColor : color);
         if (useStrokes) {
@@ -435,7 +295,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * polygons)
      * @param disabled If this should be drawn with a special disabled style.
      */
-    protected void drawArea(MapViewPath area, Color color,
+    protected void drawArea(Graphics2D g, MapViewPath area, Color color,
             MapImage fillImage, Float extent, MapViewPath pfClip, boolean disabled) {
         if (!isOutlineOnly && color.getAlpha() != 0) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -444,7 +304,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                     g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.33f));
                 }
                 g.setColor(color);
-                computeFill(area, extent, pfClip, 4);
+                computeFill(g, area, extent, pfClip, 4);
             } else {
                 // TexturePaint requires BufferedImage -> get base image from possible multi-resolution image
                 Image img = HiDPISupport.getBaseImage(fillImage.getImage(disabled));
@@ -458,7 +318,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 if (!Utils.equalsEpsilon(alpha, 1f)) {
                     g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
                 }
-                computeFill(area, extent, pfClip, 10);
+                computeFill(g, area, extent, pfClip, 10);
                 g.setPaintMode();
             }
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasing);
@@ -476,7 +336,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param mitterLimit parameter for BasicStroke
      *
      */
-    private void computeFill(Shape shape, Float extent, MapViewPath pfClip, float mitterLimit) {
+    private void computeFill(Graphics2D g, Shape shape, Float extent, MapViewPath pfClip, float mitterLimit) {
         if (extent == null) {
             g.fill(shape);
         } else {
@@ -506,7 +366,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param disabled If this should be drawn with a special disabled style.
      * @since 12285
      */
-    public void drawArea(Relation r, Color color, MapImage fillImage, Float extent, Float extentThreshold, boolean disabled) {
+    public void drawArea(Graphics2D g, Relation r, Color color, MapImage fillImage, Float extent, Float extentThreshold, boolean disabled) {
         Multipolygon multipolygon = MultipolygonCache.getInstance().get(r);
         if (!r.isDisabled() && !multipolygon.getOuterWays().isEmpty()) {
             for (PolyData pd : multipolygon.getCombinedPolygons()) {
@@ -522,7 +382,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                         pfClip = shapeEastNorthToMapView(getPFClip(pd, extent * scale));
                     }
                 }
-                drawArea(p,
+                drawArea(g, p,
                         pd.isSelected() ? paintSettings.getRelationSelectedColor(color.getAlpha()) : color,
                         fillImage, extent, pfClip, disabled);
             }
@@ -568,7 +428,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param disabled If this should be drawn with a special disabled style.
      * @since 12285
      */
-    public void drawArea(IWay<?> w, Color color, MapImage fillImage, Float extent, Float extentThreshold, boolean disabled) {
+    public void drawArea(Graphics2D g, IWay<?> w, Color color, MapImage fillImage, Float extent, Float extentThreshold, boolean disabled) {
         MapViewPath pfClip = null;
         if (extent != null) {
             if (!usePartialFill(Geometry.getAreaAndPerimeter(w.getNodes()), extent, extentThreshold)) {
@@ -577,7 +437,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 pfClip = shapeEastNorthToMapView(getPFClip(w, extent * scale));
             }
         }
-        drawArea(getPath(w), color, fillImage, extent, pfClip, disabled);
+        drawArea(g, getPath(w), color, fillImage, extent, pfClip, disabled);
     }
 
     /**
@@ -598,66 +458,30 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         return ap.getPerimeter() * extent * scale < threshold * ap.getArea();
     }
 
+    public boolean getUseStrokes() {
+        return useStrokes;
+    }
+
     /**
      * Draw a text onto a node
      * @param n The node to draw the text on
      * @param bs The text and it's alignment.
      */
-    public void drawBoxText(INode n, BoxTextElement bs) {
-        if (!isShowNames() || bs == null)
-            return;
-
-        MapViewPoint p = mapState.getPointFor(n);
+    public Rectangle getBoxTextBounds(INode n, BoxTextElement bs, Graphics2D g) {
         TextLabel text = bs.text;
         String s = text.getString(n);
-        if (Utils.isEmpty(s)) return;
+        if (Utils.isEmpty(s))
+            return null;
 
         Font defaultFont = g.getFont();
         g.setFont(text.font);
 
         FontRenderContext frc = g.getFontRenderContext();
         Rectangle2D bounds = text.font.getStringBounds(s, frc);
+        LineMetrics metrics = text.font.getLineMetrics(s, frc);
+        Point pt = bs.anchor(bounds, metrics);
 
-        double x = bs.xOffset;
-        double y = bs.yOffset;
-        /*
-         *
-         *       left-above __center-above___ right-above
-         *         left-top|                 |right-top
-         *                 |                 |
-         *      left-center|  center-center  |right-center
-         *                 |                 |
-         *      left-bottom|_________________|right-bottom
-         *       left-below   center-below    right-below
-         *
-         */
-        Rectangle box = bs.getBox();
-        if (bs.hAlign == Keyword.RIGHT) {
-            x += box.x + box.width + 2;
-        } else {
-            int textWidth = (int) bounds.getWidth();
-            if (bs.hAlign == Keyword.CENTER) {
-                x -= textWidth / 2d;
-            } else if (bs.hAlign == Keyword.LEFT) {
-                x -= -box.x + 4 + textWidth;
-            } else throw new AssertionError();
-        }
-
-        if (bs.vAlign == Keyword.BOTTOM) {
-            y += box.y + box.height;
-        } else {
-            LineMetrics metrics = text.font.getLineMetrics(s, frc);
-            if (bs.vAlign == Keyword.ABOVE) {
-                y -= -box.y + (int) metrics.getDescent();
-            } else if (bs.vAlign == Keyword.TOP) {
-                y -= -box.y - (int) metrics.getAscent();
-            } else if (bs.vAlign == Keyword.CENTER) {
-                y += (int) ((metrics.getAscent() - metrics.getDescent()) / 2);
-            } else if (bs.vAlign == Keyword.BELOW) {
-                y += box.y + box.height + (int) metrics.getAscent() + 2;
-            } else throw new AssertionError();
-        }
-
+        MapViewPoint p = mapState.getPointFor(n);
         final MapViewPoint viewPoint = mapState.getForView(p.getInViewX(), p.getInViewY());
         final AffineTransform affineTransform = new AffineTransform();
         affineTransform.setToTranslation(
@@ -667,97 +491,56 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         if (text.textTransform != null) {
             affineTransform.concatenate(text.textTransform);
         }
-        affineTransform.translate(x, y);
-        displayText(n, text, s, affineTransform);
+        affineTransform.translate(pt.x, pt.y);
         g.setFont(defaultFont);
+        return StyleElement.transformBounds(bounds.getBounds(), affineTransform);
     }
 
     /**
-     * Draw an image along a way repeatedly.
-     *
-     * @param way the way
-     * @param pattern the image
-     * @param disabled If this should be drawn with a special disabled style.
-     * @param offset offset from the way
-     * @param spacing spacing between two images
-     * @param phase initial spacing
-     * @param opacity the opacity
-     * @param align alignment of the image. The top, center or bottom edge can be aligned with the way.
+     * Draw a text onto a node
+     * @param n The node to draw the text on
+     * @param bs The text and it's alignment.
      */
-    public void drawRepeatImage(IWay<?> way, MapImage pattern, boolean disabled, double offset, double spacing, double phase,
-                                float opacity, LineImageAlignment align) {
-        final int imgWidth = pattern.getWidth();
-        final double repeat = imgWidth + spacing;
-        final int imgHeight = pattern.getHeight();
+    public void drawBoxText(Graphics2D g, INode n, BoxTextElement bs) {
+        if (!isShowNames() || bs == null)
+            return;
 
-        int dy1 = (int) ((align.getAlignmentOffset() - .5) * imgHeight);
-        int dy2 = dy1 + imgHeight;
+        TextLabel text = bs.text;
+        String s = text.getString(n);
+        if (Utils.isEmpty(s)) return;
 
-        OffsetIterator it = new OffsetIterator(mapState, way.getNodes(), offset);
-        MapViewPath path = new MapViewPath(mapState);
-        if (it.hasNext()) {
-            path.moveTo(it.next());
+        Font defaultFont = g.getFont();
+        g.setFont(text.font);
+
+        FontRenderContext frc = g.getFontRenderContext();
+        Rectangle2D bounds = text.font.getStringBounds(s, frc);
+        LineMetrics metrics = text.font.getLineMetrics(s, frc);
+        Point pt = bs.anchor(bounds, metrics);
+
+        MapViewPoint p = mapState.getPointFor(n);
+        final MapViewPoint viewPoint = mapState.getForView(p.getInViewX(), p.getInViewY());
+        final AffineTransform affineTransform = new AffineTransform();
+        affineTransform.setToTranslation(
+                Math.round(viewPoint.getInViewX()),
+                Math.round(viewPoint.getInViewY()));
+
+        if (text.textTransform != null) {
+            affineTransform.concatenate(text.textTransform);
         }
-        while (it.hasNext()) {
-            path.lineTo(it.next());
-        }
-
-        double startOffset = computeStartOffset(phase, repeat);
-
-        Image image = pattern.getImage(disabled);
-
-        path.visitClippedLine(repeat, (inLineOffset, start, end, startIsOldEnd) -> {
-            final double segmentLength = start.distanceToInView(end);
-            if (segmentLength < 0.1) {
-                // avoid odd patterns when zoomed out.
-                return;
-            }
-            if (segmentLength > repeat * 500) {
-                // simply skip drawing so many images - something must be wrong.
-                return;
-            }
-            AffineTransform saveTransform = g.getTransform();
-            g.translate(start.getInViewX(), start.getInViewY());
-            double dx = end.getInViewX() - start.getInViewX();
-            double dy = end.getInViewY() - start.getInViewY();
-            g.rotate(Math.atan2(dy, dx));
-
-            // The start of the next image
-            // It is shifted by startOffset.
-            double imageStart = -((inLineOffset - startOffset + repeat) % repeat);
-
-            while (imageStart < segmentLength) {
-                int x = (int) imageStart;
-                int sx1 = Math.max(0, -x);
-                int sx2 = imgWidth - Math.max(0, x + imgWidth - (int) Math.ceil(segmentLength));
-                Composite saveComposite = g.getComposite();
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-                g.drawImage(image, x + sx1, dy1, x + sx2, dy2, sx1, 0, sx2, imgHeight, null);
-                g.setComposite(saveComposite);
-                imageStart += repeat;
-            }
-
-            g.setTransform(saveTransform);
-        });
-    }
-
-    private static double computeStartOffset(double phase, final double repeat) {
-        double startOffset = phase % repeat;
-        if (startOffset < 0) {
-            startOffset += repeat;
-        }
-        return startOffset;
+        affineTransform.translate(pt.x, pt.y);
+        displayText(g, n, text, s, affineTransform);
+        g.setFont(defaultFont);
     }
 
     @Override
-    public void drawNode(INode n, Color color, int size, boolean fill) {
+    public void drawNode(Graphics2D g, INode n, Color color, int size, boolean fill) {
         if (size <= 0 && !n.isHighlighted())
             return;
 
         MapViewPoint p = mapState.getPointFor(n);
 
         if (n.isHighlighted()) {
-            drawPointHighlight(p.getInView(), size);
+            drawPointHighlight(g, p.getInView(), size);
         }
 
         if (size > 1 && p.isInView()) {
@@ -786,21 +569,24 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param member {@code} true to render it as a relation member, {@code false} otherwise
      * @param affineTransform the affine transformation or {@code null}
      */
-    public void drawNodeIcon(INode n, MapImage img, boolean disabled, boolean selected, boolean member,
+    public void drawNodeIcon(Graphics2D g, INode n, MapImage img, boolean disabled, boolean selected, boolean member,
             AffineTransform affineTransform) {
         MapViewPoint p = mapState.getPointFor(n);
 
         int w = img.getWidth();
         int h = img.getHeight();
         if (n.isHighlighted()) {
-            drawPointHighlight(p.getInView(), Math.max(w, h));
+            drawPointHighlight(g, p.getInView(), Math.max(w, h));
         }
 
-        drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, 0d,
-                affineTransform, (g, r) -> {
+        AffineTransform at = new AffineTransform();
+        at.translate(p.getInViewX(), p.getInViewY());
+        at.concatenate(affineTransform);
+
+        drawIcon(g, img, disabled, selected, member, at, (gr, r) -> {
             Color color = getSelectionHintColor(disabled, selected);
-            g.setColor(color);
-            g.draw(r);
+            gr.setColor(color);
+            gr.draw(r);
         });
     }
 
@@ -815,7 +601,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param iconPosition Where to place the icon.
      * @since 11670
      */
-    public void drawAreaIcon(IPrimitive osm, MapImage img, boolean disabled, boolean selected, boolean member, double theta,
+    public void drawAreaIcon(Graphics2D g, IPrimitive osm, MapImage img, boolean disabled, boolean selected, boolean member, double theta,
             PositionForAreaStrategy iconPosition) {
         Rectangle2D.Double iconRect = new Rectangle2D.Double(-img.getWidth() / 2.0, -img.getHeight() / 2.0, img.getWidth(), img.getHeight());
 
@@ -825,20 +611,23 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 return;
             }
             MapViewPoint p = placement.getPoint();
-            drawIcon(p.getInViewX(), p.getInViewY(), img, disabled, selected, member, theta + placement.getRotation(), null, (g, r) -> {
+            AffineTransform affineTransform = new AffineTransform();
+            affineTransform.translate(p.getInViewX(), p.getInViewY());
+            affineTransform.rotate(theta + placement.getRotation());
+            drawIcon(g, img, disabled, selected, member, affineTransform, (gr, r) -> {
                 if (useStrokes) {
-                    g.setStroke(new BasicStroke(2));
+                    gr.setStroke(new BasicStroke(2));
                 }
                 // only draw a minor highlighting, so that users do not confuse this for a point.
                 Color color = getSelectionHintColor(disabled, selected);
                 color = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * .2));
-                g.setColor(color);
-                g.draw(r);
+                gr.setColor(color);
+                gr.draw(r);
             });
         });
     }
 
-    private void drawIcon(final double x, final double y, MapImage img, boolean disabled, boolean selected, boolean member, double theta,
+    public void drawIcon(Graphics2D g, MapImage img, boolean disabled, boolean selected, boolean member,
             AffineTransform affineTransform, BiConsumer<Graphics2D, Rectangle2D> selectionDrawer) {
         float alpha = img.getAlphaFloat();
 
@@ -847,10 +636,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             temporaryGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         }
 
-        temporaryGraphics.translate(Math.round(x), Math.round(y));
-        temporaryGraphics.rotate(theta);
-        if (affineTransform != null)
-            temporaryGraphics.transform(affineTransform);
+        temporaryGraphics.transform(affineTransform);
         int drawX = -img.getWidth() / 2 + img.offsetX;
         int drawY = -img.getHeight() / 2 + img.offsetY;
         temporaryGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -860,7 +646,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
     }
 
-    private Color getSelectionHintColor(boolean disabled, boolean selected) {
+    public Color getSelectionHintColor(boolean disabled, boolean selected) {
         Color color;
         if (disabled) {
             color = inactiveColor;
@@ -879,11 +665,11 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param fillColor The color to fill the symbol with
      * @param strokeColor The color to use for the outer corner of the symbol
      */
-    public void drawNodeSymbol(INode n, Symbol s, Color fillColor, Color strokeColor) {
+    public void drawNodeSymbol(Graphics2D g, INode n, Symbol s, Color fillColor, Color strokeColor) {
         MapViewPoint p = mapState.getPointFor(n);
 
         if (n.isHighlighted()) {
-            drawPointHighlight(p.getInView(), s.size);
+            drawPointHighlight(g, p.getInView(), s.size);
         }
 
         if (fillColor != null || strokeColor != null) {
@@ -911,10 +697,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param orderNumber The number of the segment in the way.
      * @param clr The color to use for drawing the text.
      */
-    public void drawOrderNumber(INode n1, INode n2, int orderNumber, Color clr) {
+    public void drawOrderNumber(Graphics2D g, INode n1, INode n2, int orderNumber, Color clr) {
         MapViewPoint p1 = mapState.getPointFor(n1);
         MapViewPoint p2 = mapState.getPointFor(n2);
-        drawOrderNumber(p1, p2, orderNumber, clr);
+        drawOrderNumber(g, p1, p2, orderNumber, clr);
     }
 
     /**
@@ -923,7 +709,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param path path to draw
      * @param line line style
      */
-    private void drawPathHighlight(MapViewPath path, BasicStroke line) {
+    private void drawPathHighlight(Graphics2D g, MapViewPath path, BasicStroke line) {
         if (path == null)
             return;
         g.setColor(highlightColorTransparent);
@@ -945,7 +731,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param p point
      * @param size highlight size
      */
-    private void drawPointHighlight(Point2D p, int size) {
+    private void drawPointHighlight(Graphics2D g, Point2D p, int size) {
         g.setColor(highlightColorTransparent);
         int radius = paintSettings.adj(HIGHLIGHT_POINT_RADIUS.get());
         int s = size + radius;
@@ -961,12 +747,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     }
 
     /**
-     * Draw a turn restriction
+     * Calculates the position of the icon of a turn restriction
      * @param r The turn restriction relation
-     * @param icon The icon to draw at the turn point
-     * @param disabled draw using disabled style
      */
-    public void drawRestriction(IRelation<?> r, MapImage icon, boolean disabled) {
+    public AffineTransform calcRestrictionTransform(IRelation<?> r) {
         IWay<?> fromWay = null;
         IWay<?> toWay = null;
         IPrimitive via = null;
@@ -974,7 +758,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         /* find the "from", "via" and "to" elements */
         for (IRelationMember<?> m : r.getMembers()) {
             if (m.getMember().isIncomplete())
-                return;
+                return null;
             else {
                 if (m.isWay()) {
                     IWay<?> w = (IWay<?>) m.getMember();
@@ -1010,13 +794,13 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
 
         if (fromWay == null || toWay == null || via == null)
-            return;
+            return null;
 
         INode viaNode;
         if (via instanceof INode) {
             viaNode = (INode) via;
             if (!fromWay.isFirstLastNode(viaNode))
-                return;
+                return null;
         } else {
             IWay<?> viaWay = (IWay<?>) via;
             INode firstNode = viaWay.firstNode();
@@ -1040,7 +824,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             } else if (!onewayvia && fromWay.isFirstLastNode(lastNode)) {
                 viaNode = lastNode;
             } else
-                return;
+                return null;
         }
 
         /* find the "direct" nodes before the via node */
@@ -1130,11 +914,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             iconAngle = 270-fromAngleDeg;
         }
 
-        drawIcon(
-                pVia.x + vx + vx2,
-                pVia.y + vy + vy2,
-                icon, disabled, false, false, Math.toRadians(iconAngle), null, (graphics2D, rectangle2D) -> {
-                });
+        AffineTransform affineTransform = new AffineTransform();
+        affineTransform.translate(pVia.x + vx + vx2, pVia.y + vy + vy2);
+        affineTransform.rotate(Math.toRadians(iconAngle));
+        return affineTransform;
     }
 
     /**
@@ -1144,7 +927,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param labelPositionStrategy The position of the text
      * @since 11722
      */
-    public void drawText(IPrimitive osm, TextLabel text, PositionForAreaStrategy labelPositionStrategy) {
+    public void drawText(Graphics2D g, IPrimitive osm, TextLabel text, PositionForAreaStrategy labelPositionStrategy) {
         if (!isShowNames()) {
             return;
         }
@@ -1154,25 +937,27 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
 
         FontMetrics fontMetrics = g.getFontMetrics(text.font); // if slow, use cache
-        Rectangle2D nb = fontMetrics.getStringBounds(name, g); // if slow, approximate by strlen()*maxcharbounds(font)
+        Rectangle2D stringBounds = fontMetrics.getStringBounds(name, g); // if slow, approximate by strlen()*maxcharbounds(font)
 
         Font defaultFont = g.getFont();
         forEachPolygon(osm, path -> {
             //TODO: Ignore areas that are out of bounds.
             PositionForAreaStrategy position = labelPositionStrategy;
-            MapViewPositionAndRotation center = position.findLabelPlacement(path, nb);
+            MapViewPositionAndRotation center = position.findLabelPlacement(path, stringBounds);
             if (center != null) {
-                displayText(osm, text, name, nb, center);
+                displayText(g, osm, text, name, getDisplayTextTransform(stringBounds, center));
             } else if (position.supportsGlyphVector()) {
                 List<GlyphVector> gvs = Utils.getGlyphVectorsBidi(name, text.font, g.getFontRenderContext());
-
-                List<GlyphVector> translatedGvs = position.generateGlyphVectors(path, nb, gvs, isGlyphVectorDoubleTranslationBug(text.font));
-                displayText(() -> translatedGvs.forEach(gv -> g.drawGlyphVector(gv, 0, 0)),
-                        () -> translatedGvs.stream().collect(
+                List<GlyphVector> translatedGvs = position.generateGlyphVectors(path, stringBounds, gvs);
+                displayText(g,
+                    () -> translatedGvs.forEach(gv -> g.drawGlyphVector(gv, 0, 0)),
+                    () -> translatedGvs.stream().collect(
                                 Path2D.Double::new,
                                 (p, gv) -> p.append(gv.getOutline(0, 0), false),
                                 (p1, p2) -> p1.append(p2, false)),
-                        osm.isDisabled(), text);
+                    osm.isDisabled(),
+                    text
+                );
             } else {
                 Logging.trace("Couldn't find a correct label placement for {0} / {1}", osm, name);
             }
@@ -1180,36 +965,40 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         g.setFont(defaultFont);
     }
 
-    private void displayText(IPrimitive osm, TextLabel text, String name, Rectangle2D nb,
-            MapViewPositionAndRotation center) {
+    public AffineTransform getDisplayTextTransform(Rectangle2D stringBounds, MapViewPositionAndRotation center) {
         AffineTransform at = new AffineTransform();
         if (Math.abs(center.getRotation()) < .01) {
             // Explicitly no rotation: move to full pixels.
             at.setToTranslation(
-                    Math.round(center.getPoint().getInViewX() - nb.getCenterX()),
-                    Math.round(center.getPoint().getInViewY() - nb.getCenterY()));
+                    Math.round(center.getPoint().getInViewX() - stringBounds.getCenterX()),
+                    Math.round(center.getPoint().getInViewY() - stringBounds.getCenterY()));
         } else {
             at.setToTranslation(
                     center.getPoint().getInViewX(),
                     center.getPoint().getInViewY());
             at.rotate(center.getRotation());
-            at.translate(-nb.getCenterX(), -nb.getCenterY());
+            at.translate(-stringBounds.getCenterX(), -stringBounds.getCenterY());
         }
-        displayText(osm, text, name, at);
+        return at;
     }
 
-    private void displayText(IPrimitive osm, TextLabel text, String name, AffineTransform at) {
-        displayText(() -> {
-            AffineTransform defaultTransform = g.getTransform();
-            g.transform(at);
-            g.setFont(text.font);
-            g.drawString(name, 0, 0);
-            g.setTransform(defaultTransform);
-        }, () -> {
-            FontRenderContext frc = g.getFontRenderContext();
-            TextLayout tl = new TextLayout(name, text.font, frc);
-            return tl.getOutline(at);
-        }, osm.isDisabled(), text);
+    private void displayText(Graphics2D g, IPrimitive osm, TextLabel text, String name, AffineTransform at) {
+        displayText(g,
+            () -> {
+                AffineTransform defaultTransform = g.getTransform();
+                g.transform(at);
+                g.setFont(text.font);
+                g.drawString(name, 0, 0);
+                g.setTransform(defaultTransform);
+            },
+            () -> {
+                FontRenderContext frc = g.getFontRenderContext();
+                TextLayout tl = new TextLayout(name, text.font, frc);
+                return tl.getOutline(at);
+            },
+            osm.isDisabled(),
+            text
+        );
     }
 
     /**
@@ -1220,7 +1009,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param disabled {@code true} if element is disabled (filtered out)
      * @param text text style to use
      */
-    private void displayText(Runnable fill, Supplier<Shape> outline, boolean disabled, TextLabel text) {
+    private void displayText(Graphics2D g, Runnable fill, Supplier<Shape> outline, boolean disabled, TextLabel text) {
         if (isInactiveMode || disabled) {
             g.setColor(inactiveColor);
             fill.run();
@@ -1243,7 +1032,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param osm A way or a multipolygon
      * @param consumer The consumer to call.
      */
-    private void forEachPolygon(IPrimitive osm, Consumer<MapViewPath> consumer) {
+    public void forEachPolygon(IPrimitive osm, Consumer<MapViewPath> consumer) {
         if (osm instanceof IWay) {
             consumer.accept(getPath((IWay<?>) osm));
         } else if (osm instanceof Relation) {
@@ -1274,7 +1063,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      *              e.g. oneway street or waterway
      * @param onewayReversed for oneway=-1 and similar
      */
-    public void drawWay(IWay<?> way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset,
+    public void drawWay(Graphics2D g, IWay<?> way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset,
             boolean showOrientation, boolean showHeadArrowOnly,
             boolean showOneway, boolean onewayReversed) {
 
@@ -1282,11 +1071,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         MapViewPath orientationArrows = showOrientation ? new MapViewPath(mapState) : null;
         MapViewPath onewayArrows;
         MapViewPath onewayArrowsCasing;
-        Rectangle bounds = g.getClipBounds();
-        if (bounds != null) {
-            // avoid arrow heads at the border
-            bounds.grow(100, 100);
-        }
 
         List<? extends INode> wayNodes = way.getNodes();
         if (wayNodes.size() < 2) return;
@@ -1306,46 +1090,37 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 highlightSegs.lineTo(ws.getSecondNode());
             }
 
-            drawPathHighlight(highlightSegs, line);
+            drawPathHighlight(g, highlightSegs, line);
         }
 
-        MapViewPoint lastPoint = null;
         Iterator<MapViewPoint> it = new OffsetIterator(mapState, wayNodes, offset);
-        boolean initialMoveToNeeded = true;
         ArrowPaintHelper drawArrowHelper = null;
         double minSegmentLenSq = 0;
         if (showOrientation) {
             drawArrowHelper = new ArrowPaintHelper(PHI, 10 + line.getLineWidth());
             minSegmentLenSq = Math.pow(drawArrowHelper.getOnLineLength() * 1.3, 2);
         }
+        MapViewPoint p1 = it.next();
+        path.moveTo(p1);
         while (it.hasNext()) {
-            MapViewPoint p = it.next();
-            if (lastPoint != null) {
-                MapViewPoint p1 = lastPoint;
-                MapViewPoint p2 = p;
+            MapViewPoint p2 = it.next();
+            path.lineTo(p2);
 
-                if (initialMoveToNeeded) {
-                    initialMoveToNeeded = false;
-                    path.moveTo(p1);
+            /* draw arrow */
+            if (drawArrowHelper != null) {
+                final boolean drawArrow;
+                if (way.isSelected()) {
+                    // always draw last arrow - no matter how short the segment is
+                    drawArrow = !it.hasNext() || p1.distanceToInViewSq(p2) > minSegmentLenSq;
+                } else {
+                    // not selected: only draw arrow when it fits
+                    drawArrow = (!showHeadArrowOnly || !it.hasNext()) && p1.distanceToInViewSq(p2) > minSegmentLenSq;
                 }
-                path.lineTo(p2);
-
-                /* draw arrow */
-                if (drawArrowHelper != null) {
-                    final boolean drawArrow;
-                    if (way.isSelected()) {
-                        // always draw last arrow - no matter how short the segment is
-                        drawArrow = !it.hasNext() || p1.distanceToInViewSq(p2) > minSegmentLenSq;
-                    } else {
-                        // not selected: only draw arrow when it fits
-                        drawArrow = (!showHeadArrowOnly || !it.hasNext()) && p1.distanceToInViewSq(p2) > minSegmentLenSq;
-                    }
-                    if (drawArrow) {
-                        drawArrowHelper.paintArrowAt(orientationArrows, p2, p1);
-                    }
+                if (drawArrow) {
+                    drawArrowHelper.paintArrowAt(orientationArrows, p2, p1);
                 }
             }
-            lastPoint = p;
+            p1 = p2;
         }
         if (showOneway) {
             onewayArrows = new MapViewPath(mapState);
@@ -1374,26 +1149,26 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
 
         if (way.isHighlighted()) {
-            drawPathHighlight(path, line);
+            drawPathHighlight(g, path, line);
         }
-        displaySegments(path, orientationArrows, onewayArrows, onewayArrowsCasing, color, line, dashes, dashedColor);
+        displaySegments(g, path, orientationArrows, onewayArrows, onewayArrowsCasing, color, line, dashes, dashedColor);
     }
 
     private static void appendOnewayPath(boolean onewayReversed, MapViewPoint p1, double nx, double ny, double dist,
             double onewaySize, Path2D onewayPath) {
         // scale such that border is 1 px
-        final double fac = -(onewayReversed ? -1 : 1) * onewaySize * (1 + sinPHI) / (sinPHI * cosPHI);
+        final double fac = -(onewayReversed ? -1 : 1) * onewaySize * (1 + SIN_PHI) / (SIN_PHI * COS_PHI);
         final double sx = nx * fac;
         final double sy = ny * fac;
 
         // Attach the triangle at the incenter and not at the tip.
         // Makes the border even at all sides.
-        final double x = p1.getInViewX() + nx * (dist + (onewayReversed ? -1 : 1) * (onewaySize / sinPHI));
-        final double y = p1.getInViewY() + ny * (dist + (onewayReversed ? -1 : 1) * (onewaySize / sinPHI));
+        final double x = p1.getInViewX() + nx * (dist + (onewayReversed ? -1 : 1) * (onewaySize / SIN_PHI));
+        final double y = p1.getInViewY() + ny * (dist + (onewayReversed ? -1 : 1) * (onewaySize / SIN_PHI));
 
         onewayPath.moveTo(x, y);
-        onewayPath.lineTo(x + cosPHI * sx - sinPHI * sy, y + sinPHI * sx + cosPHI * sy);
-        onewayPath.lineTo(x + cosPHI * sx + sinPHI * sy, y - sinPHI * sx + cosPHI * sy);
+        onewayPath.lineTo(x + COS_PHI * sx - SIN_PHI * sy, y + SIN_PHI * sx + COS_PHI * sy);
+        onewayPath.lineTo(x + COS_PHI * sx + SIN_PHI * sy, y - SIN_PHI * sx + COS_PHI * sy);
         onewayPath.lineTo(x, y);
     }
 
@@ -1413,8 +1188,8 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     }
 
     @Override
-    public void getSettings(boolean virtual) {
-        super.getSettings(virtual);
+    public void getSettings(Graphics2D g, boolean virtual) {
+        super.getSettings(g, virtual);
         paintSettings = MapPaintSettings.INSTANCE;
 
         circum = nc.getDist100Pixel();
@@ -1638,16 +1413,61 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         this.benchmarkFactory = benchmarkFactory;
     }
 
+    /**
+     * Splits a {@link MapViewGraphics} screen into subscreens
+     * <p>
+     * Each MapViewGraphics will get ist own Graphics2D and clip region into the buffer
+     * image.
+     *
+     * @param mvGraphics the MapViewGraphics to split
+     * @param count the number of subscreens
+     * @return a list of MapViewGraphics
+     */
+    private Collection<MapViewGraphics> splitMapViewGraphics(MapViewGraphics mvGraphics, int count) {
+        double exp = Math.log(count) / Math.log(2d);
+        int vCount = (int) Math.round(Math.pow(2d, Math.floor(exp / 2)));
+        int hCount = count / vCount;
+        Rectangle r = mvGraphics.getBounds();
+        Collection<MapViewGraphics> l = new ArrayList<>();
+        int dx = r.width / hCount;
+        int dy = r.height / vCount;
+        // Logging.info("StyledMapRenderer.splitMapViewGraphics: splitting the screen into {0}x{1} regions", hCount, vCount);
+        // Logging.info("StyledMapRenderer.splitMapViewGraphics: with size {0}x{1}", dx, dy);
+
+        int x = r.x;
+        for (int i = 0; i < hCount; ++i) {
+            int y = r.y;
+            for (int j = 0; j < vCount; ++j) {
+                BufferedImage buffer = mvGraphics.getBuffer();
+                // A new Graphics2D for each thread!!!
+                Graphics2D g = buffer.createGraphics();
+                g.setClip(x, y, dx, dy);
+                l.add(new MapViewGraphics(
+                    buffer,
+                    g,
+                    new Rectangle(x, y, dx, dy)
+                ));
+                y += dy;
+            }
+            x += dx;
+        }
+        return l;
+    }
+
+    Envelope toEnvelope(Rectangle r) {
+        return new Envelope(r.x, r.x + r.width, r.y, r.y + r.height);
+    }
+
     @Override
-    public void render(final OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, Bounds bounds) {
+    public void render(final OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, MapViewGraphics mvGraphics) {
+        // Logging.info("StyledMapRenderer.render: {0}", mvGraphics.toString());
         RenderBenchmarkCollector benchmark = benchmarkFactory.get();
-        BBox bbox = bounds.toBBox();
-        getSettings(renderVirtualNodes);
+        getSettings(mvGraphics.getDefaultGraphics(), renderVirtualNodes);
         try {
             Lock readLock = data.getReadLock();
             if (readLock.tryLock(1, TimeUnit.SECONDS)) {
                 try {
-                    paintWithLock(data, renderVirtualNodes, benchmark, bbox);
+                    paintWithLock(data, renderVirtualNodes, benchmark, mvGraphics);
                 } finally {
                     readLock.unlock();
                 }
@@ -1660,51 +1480,186 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     }
 
     private void paintWithLock(final OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, RenderBenchmarkCollector benchmark,
-            BBox bbox) {
+            MapViewGraphics mvGraphics) {
         try {
+            // Logging.info("StyledMapRenderer.paintWithLock: {0}", mvGraphics.toString());
+            BufferedImage buffer = mvGraphics.getBuffer();
+            boolean drawArea = circum <= Config.getPref().getInt("mappaint.fillareas", 10_000_000);
+            boolean drawMultipolygon = drawArea && Config.getPref().getBoolean("mappaint.multipolygon", true);
+            boolean drawRestriction = Config.getPref().getBoolean("mappaint.restriction", true);
+            styles.setDrawMultipolygon(drawMultipolygon);
+
             highlightWaySegments = data.getHighlightedWaySegments();
 
             benchmark.renderStart(circum);
 
-            List<? extends INode> nodes = data.searchNodes(bbox);
-            List<? extends IWay<?>> ways = data.searchWays(bbox);
-            List<? extends IRelation<?>> relations = data.searchRelations(bbox);
+            ExecutorService es = getRenderExecutorService();
+            final Collection<StyleRecord> allStyleElems = (es == null) ? new ConcurrentSkipListSet<>() : null;
+            final Quadtree quadtree = (es != null) ? new Quadtree() : null;
+            final BBox bbox = mapState.getForView(mvGraphics.getBounds()).getLatLonBoundsBox().toBBox();
 
-            final List<StyleRecord> allStyleElems = new ArrayList<>(nodes.size()+ways.size()+relations.size());
+            List<Future<?>> futureList = new ArrayList<>();
+            ThreadLocal<Graphics2D> threadLocalG = ThreadLocal.withInitial(buffer::createGraphics);
 
-            // Need to process all relations first.
-            // Reason: Make sure, ElemStyles.getStyleCacheWithRange is not called for the same primitive in parallel threads.
-            // (Could be synchronized, but try to avoid this for performance reasons.)
-            if (THREAD_POOL != null) {
-                THREAD_POOL.invoke(new ComputeStyleListWorker(circum, nc, relations, allStyleElems,
-                        Math.max(20, relations.size() / THREAD_POOL.getParallelism() / 3), styles));
-                THREAD_POOL.invoke(new ComputeStyleListWorker(circum, nc, new CompositeList<>(nodes, ways), allStyleElems,
-                        Math.max(100, (nodes.size() + ways.size()) / THREAD_POOL.getParallelism() / 3), styles));
-            } else {
-                new ComputeStyleListWorker(circum, nc, relations, allStyleElems, 0, styles).computeDirectly();
-                new ComputeStyleListWorker(circum, nc, new CompositeList<>(nodes, ways), allStyleElems, 0, styles).computeDirectly();
+            for (IRelation<?> relation : data.searchRelations(bbox)) {
+                if (relation.isDrawable()) {
+                    futureList.add(executorService.submit(() -> {
+                        int flags = StyledMapRenderer.computeFlags(relation, false);
+                        StyleElementList sl = styles.get(relation, circum, nc);
+                        for (StyleElement s : sl) {
+                            if ((drawMultipolygon
+                                        && drawArea
+                                        && (s instanceof AreaElement || s instanceof AreaIconElement)
+                                        && (flags & StyledMapRenderer.FLAG_DISABLED) == 0)
+                                    || (drawMultipolygon && drawArea && s instanceof TextElement)
+                                    || (drawRestriction && s instanceof NodeElement)) {
+                                StyleRecord sr = new StyleRecord(s, relation, flags);
+                                Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                                if (bounds != null) {
+                                    if (quadtree != null) {
+                                        synchronized(quadtree) {
+                                            quadtree.insert(toEnvelope(bounds), sr);
+                                        }
+                                    }
+                                    if (allStyleElems != null) {
+                                        allStyleElems.add(sr);
+                                    }
+                                }
+                            }
+                        }
+                        return 0;
+                    }));
+                }
             }
+            for (IWay<?> way : data.searchWays(bbox)) {
+                if (way.isDrawable()) {
+                    futureList.add(executorService.submit(() -> {
+                        int flags = StyledMapRenderer.computeFlags(way, false);
+                        StyleElementList sl = styles.get(way, circum, nc);
+                        for (StyleElement s : sl) {
+                            if ((drawArea && (flags & StyledMapRenderer.FLAG_DISABLED) == 0) || !(s instanceof AreaElement)) {
+                                StyleRecord sr = new StyleRecord(s, way, flags);
+                                Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                                if (bounds != null) {
+                                    if (quadtree != null) {
+                                        synchronized(quadtree) {
+                                            quadtree.insert(toEnvelope(bounds), sr);
+                                        }
+                                    }
+                                    if (allStyleElems != null) {
+                                        allStyleElems.add(sr);
+                                    }
+                                }
+                            }
+                        }
+                        return 0;
+                    }));
+                }
+            }
+            for (INode node : data.searchNodes(bbox)) {
+                if (node.isDrawable()) {
+                    futureList.add(executorService.submit(() -> {
+                        int flags = StyledMapRenderer.computeFlags(node, false);
+                        StyleElementList sl = styles.get(node, circum, nc);
+                        for (StyleElement s : sl) {
+                            StyleRecord sr = new StyleRecord(s, node, flags);
+                            Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                            if (bounds != null) {
+                                if (quadtree != null) {
+                                    synchronized(quadtree) {
+                                        quadtree.insert(toEnvelope(bounds), sr);
+                                    }
+                                }
+                                if (allStyleElems != null) {
+                                    allStyleElems.add(sr);
+                                }
+                            }
+                        }
+                        return 0;
+                    }));
+                }
+            }
+
+            // We have to wait until everybody is done because we need to paint starting
+            // with the artifact with the lowest z-order.
+            for (Future<?> f : futureList) {
+                if (!f.isDone()) {
+                    try { f.get(); }
+                    catch (CancellationException | ExecutionException ex) {
+                        Logging.error(ex);
+                    }
+                }
+            }
+            futureList.clear();
 
             if (!benchmark.renderSort()) {
                 return;
             }
-
-            // We use parallel sort here. This is only available for arrays.
-            StyleRecord[] sorted = allStyleElems.toArray(new StyleRecord[0]);
-            Arrays.parallelSort(sorted, null);
-
             if (!benchmark.renderDraw(allStyleElems)) {
                 return;
             }
 
-            for (StyleRecord styleRecord : sorted) {
-                paintRecord(styleRecord);
+            if (allStyleElems != null) {
+                // Render in the EDT for wimps
+                // Logging.info("StyledMapRenderer.paintWithLock: rendering in the EDT");
+                Graphics2D g = buffer.createGraphics();
+                for (StyleRecord styleRecord : allStyleElems) {
+                    styleRecord.paintPrimitive(paintSettings, this, g);
+                }
             }
+            if (quadtree != null) {
+                // Here we use multiple non-EDT threads to render into the {@link
+                // BufferedImage}. What? Don't you know swing is not thread-safe?
+                // <p>
+                // Each thread uses its own {@link Graphics2D}, so we can guarantee that
+                // no two threads will ever use a single Graphics2D at the same time.
+                // This keeps us from crashing.
+                // <p>
+                // Because we cannot enforce data visibility without synchronization,
+                // and synchronizing the whole buffer image would lose much of the speed
+                // gained by concurrency, we must give each thread a different
+                // rectangular region of the buffer to paint.
+                // <p>
+                // But that brings other problems, like primitives whose extent on
+                // screen is different from what their lat/lon bounds would suggest, ie.
+                // a node's text is bigger than a point and area icons are smaller than
+                // the area itself. We must calculate the screen bounds of each style in
+                // advance and use them to decide in which screen regions the style
+                // element needs to be drawn.
 
-            drawVirtualNodes(data, bbox);
+                AtomicInteger elementsDrawn = new AtomicInteger();
 
+                for (MapViewGraphics mvg : splitMapViewGraphics(mvGraphics, getRenderThreads())) {
+                    futureList.add(executorService.submit(() -> {
+                        Rectangle clipBounds = mvg.getBounds();
+                        Graphics2D g = mvg.getDefaultGraphics();
+                        List<StyleRecord> l = quadtree.query(toEnvelope(clipBounds));
+                        l.stream().filter(sr -> sr.intersects(clipBounds)).sorted().forEach(styleRecord -> {
+                            styleRecord.paintPrimitive(paintSettings, this, g);
+                            elementsDrawn.incrementAndGet();
+                        });
+                    }));
+                }
+                for (Future<?> f : futureList) {
+                    if (!f.isDone()) {
+                        try {
+                            f.get();
+                        }
+                        catch (CancellationException | ExecutionException ex) {
+                            Logging.error(ex);
+                        }
+                    }
+                }
+                futureList.clear();
+                Logging.info("Elements in quadtree: {0}", quadtree.size());
+                Logging.info("Elements drawn: {0}", elementsDrawn.get());
+            }
             benchmark.renderDone();
-        } catch (JosmRuntimeException | IllegalArgumentException | IllegalStateException e) {
+
+            if (renderVirtualNodes)
+                drawVirtualNodes(mvGraphics.getDefaultGraphics(), data, bbox);
+
+        } catch (InterruptedException | JosmRuntimeException | IllegalArgumentException | IllegalStateException e) {
             throw BugReport.intercept(e)
                     .put("data", data)
                     .put("circum", circum)
@@ -1714,11 +1669,25 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         }
     }
 
-    private void paintRecord(StyleRecord styleRecord) {
-        try {
-            styleRecord.paintPrimitive(paintSettings, this);
-        } catch (RuntimeException e) {
-            throw BugReport.intercept(e).put("record", styleRecord);
+    /**
+     * The render thread factory.
+     * <p>
+     * A render thread keeps its own copy of the Graphics context and accesses it
+     * sequentially.
+     */
+    private static class RenderThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        private class RenderThread extends Thread {
+            RenderThread(Runnable r, String name) {
+                super(r, name);
+                setDaemon(true);
+                setPriority(Thread.NORM_PRIORITY);
+            }
+        }
+
+        public Thread newThread(Runnable r) {
+            return new RenderThread(r, "StyledMapRenderer-" + threadNumber.getAndIncrement());
         }
     }
 }

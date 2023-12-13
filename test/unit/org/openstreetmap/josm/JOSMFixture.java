@@ -24,7 +24,6 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainApplicationTest;
 import org.openstreetmap.josm.gui.MainInitialization;
 import org.openstreetmap.josm.gui.layer.LayerManagerTest.TestLayer;
-import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetsTest;
 import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.io.CertificateAmendment;
 import org.openstreetmap.josm.io.OsmApi;
@@ -136,6 +135,7 @@ public class JOSMFixture {
         }
 
         // init projection
+        Projections.initFrom("resource://data/projection/custom-epsg");
         ProjectionRegistry.setProjection(Projections.getProjectionByCode("EPSG:3857")); // Mercator
 
         // setup projection grid files

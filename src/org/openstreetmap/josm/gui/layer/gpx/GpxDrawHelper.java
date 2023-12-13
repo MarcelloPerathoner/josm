@@ -46,8 +46,8 @@ import org.openstreetmap.josm.data.preferences.NamedColorProperty;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.MapViewState;
 import org.openstreetmap.josm.gui.layer.GpxLayer;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
 import org.openstreetmap.josm.gui.layer.MapViewGraphics;
-import org.openstreetmap.josm.gui.layer.MapViewPaintable;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.MapViewEvent;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.PaintableInvalidationEvent;
 import org.openstreetmap.josm.gui.layer.MapViewPaintable.PaintableInvalidationListener;
@@ -65,7 +65,7 @@ import org.openstreetmap.josm.tools.date.Interval;
  * Class that helps to draw large set of GPS tracks with different colors and options
  * @since 7319
  */
-public class GpxDrawHelper implements SoMChangeListener, MapViewPaintable.LayerPainter, PaintableInvalidationListener, GpxDataChangeListener {
+public class GpxDrawHelper implements SoMChangeListener, LayerPainter, PaintableInvalidationListener, GpxDataChangeListener {
 
     /**
      * The default color property that is used for drawing GPX points.
@@ -75,6 +75,7 @@ public class GpxDrawHelper implements SoMChangeListener, MapViewPaintable.LayerP
 
     private final GpxData data;
     private final GpxLayer layer;
+    MapView mapView;
 
     // draw lines between points belonging to different segments
     private boolean forceLines;
@@ -322,6 +323,12 @@ public class GpxDrawHelper implements SoMChangeListener, MapViewPaintable.LayerP
         setupColors();
     }
 
+    @Override
+    public LayerPainter attachToMapView(MapViewEvent event) {
+        mapView = event.getMapView();
+        return this;
+    }
+
     /**
      * Read coloring mode for specified layer from preferences
      * @return coloring mode
@@ -406,13 +413,13 @@ public class GpxDrawHelper implements SoMChangeListener, MapViewPaintable.LayerP
 
     @Override
     public void paint(MapViewGraphics graphics) {
-        Bounds clipBounds = graphics.getClipBounds().getLatLonBoundsBox();
+        Bounds clipBounds = mapView.getState().getForView(graphics.getBounds()).getLatLonBoundsBox();
         List<WayPoint> visibleSegments = listVisibleSegments(clipBounds);
         if (!visibleSegments.isEmpty()) {
             readPreferences();
-            drawAll(graphics.getDefaultGraphics(), graphics.getMapView(), visibleSegments, clipBounds);
-            if (graphics.getMapView().getLayerManager().getActiveLayer() == layer) {
-                drawColorBar(graphics.getDefaultGraphics(), graphics.getMapView());
+            drawAll(graphics.getDefaultGraphics(), mapView, visibleSegments, clipBounds);
+            if (mapView.getLayerManager().getActiveLayer() == layer) {
+                drawColorBar(graphics.getDefaultGraphics(), mapView);
             }
         }
     }

@@ -27,7 +27,6 @@ import org.apache.commons.jcs3.access.CacheAccess;
 import org.openstreetmap.gui.jmapviewer.Tile;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileLoader;
 import org.openstreetmap.josm.actions.ExpertToggleAction;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.cache.BufferedImageCacheEntry;
 import org.openstreetmap.josm.data.imagery.ImageryInfo;
 import org.openstreetmap.josm.data.imagery.vectortile.mapbox.Layer;
@@ -54,6 +53,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.layer.AbstractCachedTileSourceLayer;
 import org.openstreetmap.josm.gui.layer.LayerManager;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.mappaint.ElemStyles;
 import org.openstreetmap.josm.gui.mappaint.StyleSource;
@@ -106,16 +106,17 @@ public class MVTLayer extends AbstractCachedTileSourceLayer<MapboxVectorTileSour
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds box) {
+    public void paint(MapViewGraphics mvGraphics) {
+        Graphics2D g = mvGraphics.getDefaultGraphics();
         this.dataSet.setZoom(this.getZoomLevel());
-        AbstractMapRenderer painter = MapRendererFactory.getInstance().createActiveRenderer(g, mv, false);
-        painter.enableSlowOperations(mv.getMapMover() == null || !mv.getMapMover().movementInProgress()
+        AbstractMapRenderer painter = MapRendererFactory.getInstance().createActiveRenderer(g, mapView, false);
+        painter.enableSlowOperations(mapView.getMapMover() == null || !mapView.getMapMover().movementInProgress()
           || !OsmDataLayer.PROPERTY_HIDE_LABELS_WHILE_DRAGGING.get());
         // Set the painter to use our custom style sheet
         if (painter instanceof StyledMapRenderer && this.dataSet.getStyles() != null) {
             ((StyledMapRenderer) painter).setStyles(this.dataSet.getStyles());
         }
-        painter.render(this.dataSet, false, box);
+        painter.render(this.dataSet, false, mvGraphics);
     }
 
     @Override
@@ -170,7 +171,7 @@ public class MVTLayer extends AbstractCachedTileSourceLayer<MapboxVectorTileSour
     public VectorDataSet getData() {
         return this.dataSet;
     }
-    
+
     private static class ConvertLayerAction extends AbstractAction implements LayerAction {
         private final MVTLayer layer;
 

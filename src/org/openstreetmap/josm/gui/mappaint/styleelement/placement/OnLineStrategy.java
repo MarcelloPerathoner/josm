@@ -3,9 +3,11 @@ package org.openstreetmap.josm.gui.mappaint.styleelement.placement;
 
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -69,30 +71,40 @@ public class OnLineStrategy implements PositionForAreaStrategy {
     }
 
     @Override
-    public List<GlyphVector> generateGlyphVectors(MapViewPath path, Rectangle2D nb, List<GlyphVector> gvs,
-            boolean isDoubleTranslationBug) {
-        // Find the position on the way the font should be placed.
-        // If none is found, use the middle of the way.
-        double middleOffset = findOptimalWayPosition(nb, path).map(segment -> segment.offset)
-                .orElse(path.getLength() / 2);
+    public List<GlyphVector> generateGlyphVectors(MapViewPath path, Rectangle2D stringBounds, List<GlyphVector> gvList) {
+        double pathLength = path.getLength();
+        if (pathLength < stringBounds.getWidth() + 8) {
+            // no room for text
+            return Collections.emptyList();
+        }
 
-        // Check that segment of the way. Compute in which direction the text should be rendered.
+        // Find the offset along the way where the center of the text should be placed.
+        // If no better place is found, use the middle of the way.
+        double middleOffset = findOptimalWayPosition(stringBounds, path).map(segment -> segment.offset)
+            .orElse(pathLength / 2);
+
+        // Compute in which direction the text should be rendered.
         // It is rendered in a way that ensures that at least 50% of the text are rotated with the right side up.
-        UpsideComputingVisitor upside = new UpsideComputingVisitor(middleOffset - nb.getWidth() / 2,
-                middleOffset + nb.getWidth() / 2);
-        path.visitLine(upside);
-        boolean doRotateText = upside.shouldRotateText();
+        UpsideComputingVisitor upsideVisitor = new UpsideComputingVisitor(
+            middleOffset - stringBounds.getWidth() / 2,
+            middleOffset + stringBounds.getWidth() / 2
+        );
+        path.visitLine(upsideVisitor);
+        boolean doRotateText = upsideVisitor.shouldRotateText();
 
         // Compute the list of glyphs to draw, along with their offset on the current line.
-        List<OffsetGlyph> offsetGlyphs = computeOffsetGlyphs(gvs,
-                middleOffset + (doRotateText ? 1 : -1) * nb.getWidth() / 2, doRotateText);
+        List<OffsetGlyph> offsetGlyphs = computeOffsetGlyphs(gvList,
+                middleOffset + (doRotateText ? 1 : -1) * stringBounds.getWidth() / 2,
+                doRotateText);
 
-        // Order the glyphs along the line to ensure that they are drawn correctly.
+        // Order the glyphs so that all bidi text is drawn in ltr direction along the way.
         offsetGlyphs.sort(Comparator.comparing(OffsetGlyph::getOffset));
 
-        // Now translate all glyphs. This will modify the glyphs stored in gvs.
-        path.visitLine(new GlyphRotatingVisitor(offsetGlyphs, isDoubleTranslationBug));
-        return gvs;
+        // Now align the glyphs along the way segment(s). This will add transforms to the glyphs stored in gvList.
+        GlyphRotatingVisitor visitor = new GlyphRotatingVisitor(offsetGlyphs, pathLength);
+        path.visitLine(visitor);
+
+        return gvList;
     }
 
     /**
@@ -110,15 +122,15 @@ public class OnLineStrategy implements PositionForAreaStrategy {
             IntStream.range(0, gv.getNumGlyphs())
                     .mapToObj(i -> new OffsetGlyph(gvOffset, rotateText, gv, i))
                     .forEach(offsetGlyphs::add);
-            offset += (rotateText ? -1 : 1) + gv.getLogicalBounds().getBounds2D().getWidth();
+            offset += (rotateText ? -1 : 1) * gv.getLogicalBounds().getWidth();
         }
         return offsetGlyphs;
     }
 
-    private static Optional<HalfSegment> findOptimalWayPosition(Rectangle2D rect, MapViewPath path) {
+    private static Optional<HalfSegment> findOptimalWayPosition(Rectangle2D stringBounds, MapViewPath path) {
         // find half segments that are long enough to draw text on (don't draw text over the cross hair in the center of each segment)
         List<HalfSegment> longHalfSegment = new ArrayList<>();
-        double minSegmentLength = 2 * (rect.getWidth() + 4);
+        double minSegmentLength = 2 * (stringBounds.getWidth() + 4);
         double length = path.visitLine((inLineOffset, start, end, startIsOldEnd) -> {
             double segmentLength = start.distanceToInView(end);
             if (segmentLength > minSegmentLength) {
@@ -247,58 +259,49 @@ public class OnLineStrategy implements PositionForAreaStrategy {
      * Rotate the glyphs along a path.
      */
     private class GlyphRotatingVisitor implements PathSegmentConsumer {
-        private final Iterator<OffsetGlyph> gvs;
-        private final boolean isDoubleTranslationBug;
+        private final Iterator<OffsetGlyph> offsetIter;
+        private final double length;
         private OffsetGlyph next;
 
         /**
          * Create a new {@link GlyphRotatingVisitor}
-         * @param gvs The glyphs to draw. Sorted along the line
-         * @param isDoubleTranslationBug true to fix a double translation bug.
+         * @param offsetList The glyphs to draw. Sorted along the line
+         * @param length the whole length of the way in screen coordinates
          */
-        GlyphRotatingVisitor(List<OffsetGlyph> gvs, boolean isDoubleTranslationBug) {
-            this.isDoubleTranslationBug = isDoubleTranslationBug;
-            this.gvs = gvs.iterator();
-            takeNext();
-            while (next != null && next.offset < 0) {
-                // skip them
-                takeNext();
-            }
-        }
-
-        private void takeNext() {
-            if (gvs.hasNext()) {
-                next = gvs.next();
-            } else {
-                next = null;
-            }
+        GlyphRotatingVisitor(List<OffsetGlyph> offsetList, double length) {
+            this.offsetIter = offsetList.iterator();
+            this.next = offsetIter.next();
+            this.length = length;
         }
 
         @Override
-        public void addLineBetween(double inLineOffset, MapViewPoint start, MapViewPoint end, boolean startIsOldEnd) {
-            double segLength = start.distanceToInView(end);
-            double segEnd = inLineOffset + segLength;
-            double theta = theta(start, end);
-            while (next != null && next.offset < segEnd) {
-                Rectangle2D rect = next.getBounds();
-                double centerY = 0;
-                MapViewPoint p = start.interpolate(end, (next.offset - inLineOffset) / segLength);
-
+        public void addLineBetween(final double startOffset, MapViewPoint start, MapViewPoint end, boolean startIsOldEnd) {
+            if (next == null)
+                return;
+            final double segLength = start.distanceToInView(end);
+            final double endOffset = startOffset + segLength;
+            final double theta = theta(start, end);
+            final boolean isLastSegment = endOffset > length - 0.1; // epsilon for floating point compare to work
+            // If the text was longer than the way some glyphs at the end will not have
+            // got transforms. These would show up as flyspecks along the very top left
+            // of the mapview. If this is the last segment of the way, we have to
+            // transform those surplus glyphs too.
+            while (next.offset <= endOffset || isLastSegment) {
+                MapViewPoint p = start.interpolate(end, (next.offset - startOffset) / segLength);
+                Rectangle2D bounds = next.getBounds();
                 AffineTransform trfm = new AffineTransform();
-                trfm.translate(-rect.getCenterX(), -centerY);
-                trfm.translate(p.getInViewX(), p.getInViewY());
-                trfm.rotate(theta + next.preRotate, rect.getWidth() / 2, centerY);
-                trfm.translate(0, next.glyph.getFont().getSize2D() * .25);
-                trfm.translate(0, yOffset);
-                if (isDoubleTranslationBug) {
-                    // scale the translation components by one half
-                    AffineTransform tmp = AffineTransform.getTranslateInstance(-0.5 * trfm.getTranslateX(),
-                            -0.5 * trfm.getTranslateY());
-                    tmp.concatenate(trfm);
-                    trfm = tmp;
-                }
+
+                trfm.translate(p.getInViewX() - bounds.getCenterX(), p.getInViewY());
+                trfm.rotate(theta + next.preRotate);
+                trfm.translate(-bounds.getWidth() / 2d, yOffset + next.glyph.getFont().getSize2D() * .25);
+
                 next.glyph.setGlyphTransform(next.glyphIndex, trfm);
-                takeNext();
+                if (offsetIter.hasNext()) {
+                    next = offsetIter.next();
+                } else {
+                    next = null;
+                    break;
+                }
             }
         }
     }
@@ -314,8 +317,7 @@ public class OnLineStrategy implements PositionForAreaStrategy {
             this.preRotate = rotateText ? Math.PI : 0;
             this.glyph = glyph;
             this.glyphIndex = glyphIndex;
-            Rectangle2D rect = getBounds();
-            this.offset = offset + (rotateText ? -1 : 1) * (rect.getX() + rect.getWidth() / 2);
+            this.offset = offset + (rotateText ? -1 : 1) * getBounds().getCenterX();
         }
 
         Rectangle2D getBounds() {

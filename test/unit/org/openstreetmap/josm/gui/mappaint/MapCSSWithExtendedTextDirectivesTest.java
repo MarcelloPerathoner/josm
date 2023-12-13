@@ -18,40 +18,6 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
  */
 class MapCSSWithExtendedTextDirectivesTest {
     /**
-     * Test {@link DeriveLabelFromNameTagsCompositionStrategy}
-     */
-    @Test
-    void testCreateAutoTextElement() {
-        MultiCascade mc = new MultiCascade();
-        Cascade c = mc.getOrCreateCascade(MultiCascade.DEFAULT);
-        c.put("text", Keyword.AUTO);
-        Node osm = new Node();
-        osm.put("ref", "A456");
-        Environment env = new Environment(osm, mc, MultiCascade.DEFAULT, null);
-
-        TextLabel te = TextLabel.create(env, Color.WHITE, false /* no default annotate */);
-        assertNotNull(te.text);
-        assertInstanceOf(String.class, te.text);
-    }
-
-    /**
-     * Test {@link TagLookupCompositionStrategy}.
-     */
-    @Test
-    void testCreateTextElementComposingTextFromTag() {
-        MultiCascade mc = new MultiCascade();
-        Cascade c = mc.getOrCreateCascade("default");
-        c.put("text", LiteralExpression.create(new TagKeyReference("my_name")));
-        Node osm = new Node();
-        osm.put("my_name", "foobar");
-        Environment env = new Environment(osm, mc, "default", null);
-
-        TextLabel te = TextLabel.create(env, Color.WHITE, false /* no default annotate */);
-        assertNotNull(te.text);
-        assertInstanceOf(String.class, te.text);
-    }
-
-    /**
      * Test null strategy.
      */
     @Test

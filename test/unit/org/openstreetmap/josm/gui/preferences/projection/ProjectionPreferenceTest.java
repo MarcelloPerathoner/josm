@@ -4,6 +4,7 @@ package org.openstreetmap.josm.gui.preferences.projection;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
+import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.gui.preferences.PreferencesTestUtils;
 
 /**
@@ -23,6 +24,7 @@ class ProjectionPreferenceTest {
      */
     @Test
     void testAddGui() {
+        Projections.initFrom("resource://data/projection/custom-epsg");
         PreferencesTestUtils.doTestPreferenceSettingAddGui(new ProjectionPreference.Factory(), null);
     }
 }

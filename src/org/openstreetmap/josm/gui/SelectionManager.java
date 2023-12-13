@@ -18,13 +18,13 @@ import java.util.LinkedList;
 import javax.swing.Action;
 
 import org.openstreetmap.josm.actions.SelectByInternalPointAction;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.PaintColors;
 import org.openstreetmap.josm.gui.layer.AbstractMapViewPaintable;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.tools.ColorHelper;
 import org.openstreetmap.josm.tools.PlatformManager;
 
@@ -80,9 +80,13 @@ public class SelectionManager implements MouseListener, MouseMotionListener, Pro
      */
     private class SelectionHintLayer extends AbstractMapViewPaintable {
         @Override
-        public void paint(Graphics2D g, MapView mv, Bounds bbox) {
+        public void paint(MapViewGraphics mvGraphics) {
+            MapView mapView = MainApplication.getMap().mapView;
+            if (mapView == null)
+                return;
             if (mousePos == null || mousePosStart == null || mousePos == mousePosStart)
                 return;
+            final Graphics2D g = mvGraphics.getDefaultGraphics();
             Color color = ColorHelper.complement(PaintColors.getBackgroundColor());
             g.setColor(color);
             if (lassoMode) {

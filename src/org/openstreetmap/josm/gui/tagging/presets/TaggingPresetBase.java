@@ -58,7 +58,7 @@ abstract class TaggingPresetBase extends Composite {
     /** A custom size for the displayed icon or null to use the default size. */
     private Dimension iconSize;
     /** Base directory for all icons in this group */
-    private String iconBase;
+    private URI iconBase;
 
     final boolean bSortMenu;
     final boolean bNoMenu;
@@ -99,7 +99,13 @@ abstract class TaggingPresetBase extends Composite {
         if (s != -1) {
             iconSize = ImageProvider.adj(new Dimension(s, s));
         }
-        iconBase = attributes.getOrDefault("icon_base", "");
+        try {
+            if (attributes.get("icon_base") != null) {
+                iconBase = new URI(attributes.get("base_uri")).resolve(attributes.get("icon_base"));
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
         bSortMenu = TaggingPresetUtils.parseBoolean(
             attributes.getOrDefault("sort_menu", TaggingPresets.SORT_VALUES.get() ? "on" : "off"));
         bNoMenu = TaggingPresetUtils.parseBoolean(attributes.getOrDefault("no_menu", "off"));
@@ -111,22 +117,29 @@ abstract class TaggingPresetBase extends Composite {
         // FIXME: this is messy. Find a better way.
         if (parent == null) {
             // FIXME: we really should include a root name
+            // like {@code defaultpresets.xml/Highways/Streets/Motorway}
             groupName = "";
             localeGroupName = "";
             fullName = "";
             localeFullName = "";
-        } else if (parent instanceof Root) {
+        } else if (parent instanceof Root p) {
             groupName = "";
             localeGroupName = "";
             fullName = name;
             localeFullName = localeName;
-        } else {
-            TaggingPresetBase p = (TaggingPresetBase) parent;
+            if (iconBase == null && p.getIconBase() != null)
+                iconBase = p.getIconBase();
+        } else if (parent instanceof TaggingPresetBase p) {
             groupName = p.fullName;
             localeGroupName = p.localeFullName;
             fullName = p.fullName + "/" + name;
             localeFullName = p.localeFullName + "/" + localeName;
-            iconBase = p.getIconBase() + iconBase;
+            // if there is no icon_base attribute then, for compatibility, icon_name is
+            // relative to the classpath, if there is an icon_base attribute, it will be
+            // resolved against the base_uri and the icon path will be {@code
+            // icon_base/icon_name}
+            if (iconBase == null && p.getIconBase() != null)
+                iconBase = p.getIconBase();
             if (iconSize == null)
                 iconSize = p.iconSize; // do not use getIconSize() !
         }
@@ -277,11 +290,7 @@ abstract class TaggingPresetBase extends Composite {
     public String getIconName() {
         if (iconName == null)
             return null;
-        try {
-            return new URI(getIconBase()).resolve(iconName).toString();
-        } catch (URISyntaxException e) {
-            return null;
-        }
+        return getIconBase() != null ? getIconBase().resolve(iconName).toString() : iconName;
     }
 
     /**
@@ -296,7 +305,7 @@ abstract class TaggingPresetBase extends Composite {
      * Returns the icon base
      * @return the icon base
      */
-    String getIconBase() {
+    URI getIconBase() {
         return iconBase;
     }
 

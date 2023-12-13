@@ -28,7 +28,6 @@ import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.command.MoveCommand;
 import org.openstreetmap.josm.command.SequenceCommand;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.UndoRedoHandler;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.DataSelectionListener;
@@ -60,6 +59,7 @@ import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.draw.SymbolShape;
 import org.openstreetmap.josm.gui.layer.AbstractMapViewPaintable;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.util.ModifierExListener;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Logging;
@@ -122,8 +122,8 @@ public class ImproveWayAccuracyAction extends MapMode implements DataSelectionLi
 
     private final transient AbstractMapViewPaintable temporaryLayer = new AbstractMapViewPaintable() {
         @Override
-        public void paint(Graphics2D g, MapView mv, Bounds bbox) {
-            ImproveWayAccuracyAction.this.paint(g, mv, bbox);
+        public void paint(MapViewGraphics mvGraphics) {
+            ImproveWayAccuracyAction.this.paint(mvGraphics);
         }
     };
 
@@ -245,11 +245,12 @@ public class ImproveWayAccuracyAction extends MapMode implements DataSelectionLi
      * @param mv The map view
      * @param bbox The bounding box
      */
-    public void paint(Graphics2D g, MapView mv, Bounds bbox) {
+    public void paint(MapViewGraphics mvGraphics) {
         if (mousePos == null || (candidateNode != null && candidateNode.getDataSet() == null)) {
             return;
         }
 
+        final Graphics2D g = mvGraphics.getDefaultGraphics();
         g.setColor(guideColor);
 
         if (state == State.SELECTING && targetWay != null) {

@@ -2,10 +2,9 @@
 package org.openstreetmap.josm.data.osm.visitor.paint;
 
 import java.io.PrintStream;
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Supplier;
 
-import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer.StyleRecord;
 import org.openstreetmap.josm.gui.mappaint.mapcss.Selector;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.Logging;
@@ -40,7 +39,7 @@ public class RenderBenchmarkCollector {
      * @param allStyleElems All the elements that are painted. Unsorted
      * @return <code>true</code> if the renderer should continue to render
      */
-    public boolean renderDraw(List<StyleRecord> allStyleElems) {
+    public boolean renderDraw(Collection<StyleRecord> allStyleElems) {
         // nop
         return true;
     }
@@ -75,7 +74,7 @@ public class RenderBenchmarkCollector {
         }
 
         @Override
-        public boolean renderDraw(List<StyleRecord> allStyleElems) {
+        public boolean renderDraw(Collection<StyleRecord> allStyleElems) {
             timeSortingDone = getCurrentTimeMilliseconds();
             return super.renderDraw(allStyleElems);
         }
@@ -131,7 +130,7 @@ public class RenderBenchmarkCollector {
         }
 
         @Override
-        public boolean renderDraw(List<StyleRecord> allStyleElems) {
+        public boolean renderDraw(Collection<StyleRecord> allStyleElems) {
             boolean res = super.renderDraw(allStyleElems);
             outStream.print("phase 1 (calculate styles): " + Utils.getDurationString(timeSortingDone - timeStart));
             return res;

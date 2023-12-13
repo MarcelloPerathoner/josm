@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.openstreetmap.josm.TestUtils;
-import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer.StyleRecord;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;

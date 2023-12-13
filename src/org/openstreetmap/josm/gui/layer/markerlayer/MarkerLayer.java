@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 
 import org.openstreetmap.josm.actions.AutoScaleAction;
 import org.openstreetmap.josm.actions.RenameLayerAction;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.gpx.GpxConstants;
 import org.openstreetmap.josm.data.gpx.GpxData;
@@ -52,7 +51,6 @@ import org.openstreetmap.josm.data.preferences.IntegerProperty;
 import org.openstreetmap.josm.data.preferences.NamedColorProperty;
 import org.openstreetmap.josm.data.preferences.StrokeProperty;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.LayerListDialog;
 import org.openstreetmap.josm.gui.dialogs.LayerListPopup;
 import org.openstreetmap.josm.gui.layer.CustomizeColor;
@@ -61,6 +59,8 @@ import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToMarkerLayer;
 import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToNextMarker;
 import org.openstreetmap.josm.gui.layer.JumpToMarkerActions.JumpToPreviousMarker;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.LayerPainter;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.layer.geoimage.IGeoImageLayer;
 import org.openstreetmap.josm.gui.layer.geoimage.RemoteEntry;
 import org.openstreetmap.josm.gui.layer.gpx.ConvertFromMarkerLayerAction;
@@ -214,21 +214,22 @@ public class MarkerLayer extends Layer implements JumpToMarkerLayer, IGeoImageLa
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds box) {
+    public void paint(MapViewGraphics mvGraphics) {
+        final Graphics2D g = mvGraphics.getDefaultGraphics();
         boolean showTextOrIcon = isTextOrIconShown();
         g.setColor(realcolor);
         if (mousePressed) {
             boolean mousePressedTmp = mousePressed;
-            Point mousePos = mv.getMousePosition(); // Get mouse position only when necessary (it's the slowest part of marker layer painting)
+            Point mousePos = mapView.getMousePosition(); // Get mouse position only when necessary (it's the slowest part of marker layer painting)
             for (Marker mkr : data) {
                 if (mousePos != null && mkr.containsPoint(mousePos)) {
-                    mkr.paint(g, mv, mousePressedTmp, showTextOrIcon);
+                    mkr.paint(g, mapView, mousePressedTmp, showTextOrIcon);
                     mousePressedTmp = false;
                 }
             }
         } else {
             for (Marker mkr : data) {
-                mkr.paint(g, mv, false, showTextOrIcon);
+                mkr.paint(g, mapView, false, showTextOrIcon);
             }
         }
     }

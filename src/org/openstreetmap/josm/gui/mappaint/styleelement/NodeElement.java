@@ -3,9 +3,11 @@ package org.openstreetmap.josm.gui.mappaint.styleelement;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.Objects;
 
 import org.openstreetmap.josm.data.osm.INode;
@@ -18,8 +20,6 @@ import org.openstreetmap.josm.gui.mappaint.Cascade;
 import org.openstreetmap.josm.gui.mappaint.Environment;
 import org.openstreetmap.josm.gui.mappaint.Keyword;
 import org.openstreetmap.josm.gui.mappaint.MapPaintStyles.IconReference;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.BoxProvider;
-import org.openstreetmap.josm.gui.mappaint.styleelement.BoxTextElement.SimpleBoxProvider;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.ColorHelper;
@@ -30,15 +30,15 @@ import org.openstreetmap.josm.tools.Utils;
  */
 public class NodeElement extends StyleElement {
     /**
-     * The image that is used to display this node. May be <code>null</code>
+     * The image that should be drawn or {@code null}.
      */
     public final MapImage mapImage;
     /**
-     * The symbol that should be used for drawing this node.
+     * The symbol that should be drawn or {@code null}.
      */
     public final Symbol symbol;
 
-    /** {@code icon-rotation} * {@code icon-transform} or {@code null}. */
+    /** {@code icon-rotation} * {@code icon-transform} */
     public final AffineTransform iconTransform;
 
     private static final String[] ICON_KEYS = {ICON_IMAGE, ICON_WIDTH, ICON_HEIGHT, ICON_OPACITY, ICON_OFFSET_X, ICON_OFFSET_Y};
@@ -190,32 +190,31 @@ public class NodeElement extends StyleElement {
     }
 
     @Override
-    public void paintPrimitive(IPrimitive primitive, MapPaintSettings settings, StyledMapRenderer painter,
+    public void paintPrimitive(IPrimitive primitive, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
-        if (primitive instanceof INode) {
-            INode n = (INode) primitive;
-            if (mapImage != null && painter.isShowIcons()) {
-                painter.drawNodeIcon(n, mapImage, painter.isInactiveMode() || n.isDisabled(), selected, member, iconTransform);
+        if (primitive instanceof INode node) {
+            if (mapImage != null && renderer.isShowIcons()) {
+                renderer.drawNodeIcon(g, node, mapImage, renderer.isInactiveMode() || node.isDisabled(), selected, member, iconTransform);
             } else if (symbol != null) {
-                paintWithSymbol(settings, painter, selected, member, n);
+                drawNodeSymbol(g, settings, renderer, selected, member, node);
             } else {
                 Color color;
-                boolean isConnection = n.isConnectionNode();
+                boolean isConnection = node.isConnectionNode();
 
-                if (painter.isInactiveMode() || n.isDisabled()) {
+                if (renderer.isInactiveMode() || node.isDisabled()) {
                     color = settings.getInactiveColor();
                 } else if (selected) {
                     color = settings.getSelectedColor();
                 } else if (member) {
                     color = settings.getRelationSelectedColor();
                 } else if (isConnection) {
-                    if (n.isTagged()) {
+                    if (node.isTagged()) {
                         color = settings.getTaggedConnectionColor();
                     } else {
                         color = settings.getConnectionColor();
                     }
                 } else {
-                    if (n.isTagged()) {
+                    if (node.isTagged()) {
                         color = settings.getTaggedColor();
                     } else {
                         color = settings.getNodeColor();
@@ -224,24 +223,45 @@ public class NodeElement extends StyleElement {
 
                 final int size = max(
                         selected ? settings.getSelectedNodeSize() : 0,
-                        n.isTagged() ? settings.getTaggedNodeSize() : 0,
+                        node.isTagged() ? settings.getTaggedNodeSize() : 0,
                         isConnection ? settings.getConnectionNodeSize() : 0,
                         settings.getUnselectedNodeSize());
 
                 final boolean fill = (selected && settings.isFillSelectedNode()) ||
-                (n.isTagged() && settings.isFillTaggedNode()) ||
+                (node.isTagged() && settings.isFillTaggedNode()) ||
                 (isConnection && settings.isFillConnectionNode()) ||
                 settings.isFillUnselectedNode();
 
-                painter.drawNode(n, color, settings.adj(size), fill);
-
+                renderer.drawNode(g, node, color, settings.adj(size), fill);
             }
-        } else if (primitive instanceof IRelation && mapImage != null) {
-            painter.drawRestriction((IRelation<?>) primitive, mapImage, painter.isInactiveMode() || primitive.isDisabled());
+        } else if (primitive instanceof IRelation<?> relation && mapImage != null) {
+            // a turn restriction
+            AffineTransform at = renderer.calcRestrictionTransform(relation);
+            if (at != null)
+                renderer.drawIcon(g, mapImage, renderer.isInactiveMode() || primitive.isDisabled(),
+                    false, false, at, (graphics2D, rectangle2D) -> {});
         }
     }
 
-    private void paintWithSymbol(MapPaintSettings settings, StyledMapRenderer painter, boolean selected, boolean member,
+    @Override
+    public Rectangle getBounds(IPrimitive primitive, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
+            boolean selected, boolean outermember, boolean member) {
+        if (primitive instanceof INode node) {
+            Rectangle bounds = transformBounds(getSymbolBounds(), iconTransform);
+            Point2D pt = renderer.getNavigatableComponent().getPoint2D(node);
+            bounds.translate((int) pt.getX(), (int) pt.getY());
+            return bounds;
+        } else if (primitive instanceof IRelation<?> relation && mapImage != null) {
+            // a turn restriction
+            AffineTransform at = renderer.calcRestrictionTransform(relation);
+            if (at != null) {
+                return transformBounds(getSymbolBounds(), at);
+            }
+        }
+        return null;
+    }
+
+    private void drawNodeSymbol(Graphics2D g, MapPaintSettings settings, StyledMapRenderer painter, boolean selected, boolean member,
             INode n) {
         Color fillColor = symbol.fillColor;
         if (fillColor != null) {
@@ -263,31 +283,31 @@ public class NodeElement extends StyleElement {
                 strokeColor = settings.getRelationSelectedColor(strokeColor.getAlpha());
             }
         }
-        painter.drawNodeSymbol(n, symbol, fillColor, strokeColor);
+        painter.drawNodeSymbol(g, n, symbol, fillColor, strokeColor);
     }
 
     /**
-     * Gets the selection box for this element.
-     * @return The selection box as {@link BoxProvider} object.
+     * Gets the bounding box for the symbol or image in this node.
+     * <p>
+     * Without any transform applied. Use to anchor text to the symbol.
+     *
+     * @return the bbox rectangle
      */
-    public BoxProvider getBoxProvider() {
-        if (mapImage != null)
-            return mapImage.getBoxProvider();
-        else if (symbol != null)
-            return new SimpleBoxProvider(new Rectangle(-symbol.size/2, -symbol.size/2, symbol.size, symbol.size));
-        else {
-            // This is only executed once, so no performance concerns.
-            // However, it would be better, if the settings could be changed at runtime.
-            int size = max(Config.getPref().getInt("mappaint.node.selected-size", 5),
-                    Config.getPref().getInt("mappaint.node.unselected-size", 3),
-                    Config.getPref().getInt("mappaint.node.connection-size", 5),
-                    Config.getPref().getInt("mappaint.node.tagged-size", 3)
-            );
-            return new SimpleBoxProvider(new Rectangle(-size/2, -size/2, size, size));
+    public Rectangle getSymbolBounds() {
+        if (mapImage != null) {
+            int x = mapImage.offsetX;
+            int y = mapImage.offsetY;
+            int w = mapImage.getWidth(); // actually load the image
+            int h = mapImage.getHeight();
+            return new Rectangle(x - w / 2, y - h / 2, w, h);
+        } else if (symbol != null) {
+            return new Rectangle(-symbol.size/2, -symbol.size/2, symbol.size, symbol.size);
+        } else {
+            return DefaultStyles.PreferenceChangeListener.getRect();
         }
     }
 
-    private static int max(int a, int b, int c, int d) {
+    static int max(int a, int b, int c, int d) {
         // Profile before switching to a stream/int[] array
         // This was 66% give or take for painting nodes in terms of memory allocations
         // and was ~17% of the CPU allocations. By not using a vararg method call, we avoid

@@ -6,7 +6,6 @@ import static org.openstreetmap.josm.tools.I18n.trn;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.time.Instant;
@@ -28,7 +27,6 @@ import org.openstreetmap.josm.actions.ExpertToggleAction;
 import org.openstreetmap.josm.actions.ExpertToggleAction.ExpertModeChangeListener;
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.Data;
 import org.openstreetmap.josm.data.SystemOfMeasurement;
 import org.openstreetmap.josm.data.gpx.GpxConstants;
@@ -41,7 +39,6 @@ import org.openstreetmap.josm.data.gpx.IGpxTrackSegment;
 import org.openstreetmap.josm.data.osm.visitor.BoundingXYVisitor;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.LayerListDialog;
 import org.openstreetmap.josm.gui.dialogs.LayerListPopup;
 import org.openstreetmap.josm.gui.io.importexport.GpxImporter;
@@ -453,12 +450,12 @@ public class GpxLayer extends AbstractModifiableLayer implements GpxDataContaine
     }
 
     @Override
-    public void paint(Graphics2D g, MapView mv, Bounds bbox) {
-        // unused - we use a painter so this is not called.
+    public void paint(MapViewGraphics mvGraphics) {
+        // unused - we use a GpxDrawHelper as painter so this is not called.
     }
 
     @Override
-    protected LayerPainter createMapViewPainter(MapViewEvent event) {
+    public LayerPainter createMapViewPainter() {
         return new GpxDrawHelper(this);
     }
 

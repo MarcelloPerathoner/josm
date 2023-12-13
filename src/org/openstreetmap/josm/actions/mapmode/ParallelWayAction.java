@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import javax.swing.JOptionPane;
 
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.SystemOfMeasurement;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
@@ -46,8 +45,8 @@ import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.gui.draw.MapViewPath;
 import org.openstreetmap.josm.gui.layer.AbstractMapViewPaintable;
 import org.openstreetmap.josm.gui.layer.Layer;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.util.ModifierExListener;
-import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Logging;
@@ -617,10 +616,12 @@ public class ParallelWayAction extends MapMode implements ModifierExListener {
 
     private class ParallelWayLayer extends AbstractMapViewPaintable {
         @Override
-        public void paint(Graphics2D g, MapView mv, Bounds bbox) {
+        public void paint(MapViewGraphics mvGraphics) {
+            MapView mapView = MainApplication.getMap().mapView;
+            if (mapView == null)
+                return;
+            final Graphics2D g = mvGraphics.getDefaultGraphics();
             if (mode == Mode.DRAGGING) {
-                CheckParameterUtil.ensureParameterNotNull(mv, "mv");
-
                 Color mainColor = MAIN_COLOR.get();
                 g.setStroke(REF_LINE_STROKE.get());
                 g.setColor(mainColor);

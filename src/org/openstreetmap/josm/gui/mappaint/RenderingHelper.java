@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -24,6 +25,8 @@ import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.NavigatableComponent;
+import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
+import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
 import org.openstreetmap.josm.io.IllegalDataException;
@@ -37,7 +40,9 @@ import org.openstreetmap.josm.tools.Logging;
 public class RenderingHelper {
 
     private final DataSet ds;
+    /** Bounds in lat/lon */
     private final Bounds bounds;
+    /** Bounds in east/north */
     private final ProjectionBounds projBounds;
     private final double scale;
     private final Collection<StyleData> styles;
@@ -56,7 +61,7 @@ public class RenderingHelper {
     /**
      * Construct a new {@code RenderingHelper}.
      * @param ds the dataset to render
-     * @param bounds the bounds of the are to render
+     * @param bounds the bounds of the are to render in lat/lon
      * @param scale the scale to render at (east/north units per pixel)
      * @param styles the styles to use for rendering
      */
@@ -183,9 +188,10 @@ public class RenderingHelper {
             g.setColor(Optional.ofNullable(backgroundColor).orElse(elemStyles.getBackgroundColor()));
             g.fillRect(0, 0, imgDimPx.width, imgDimPx.height);
         }
-        StyledMapRenderer smr = new StyledMapRenderer(g, nc, false);
+        StyledMapRenderer smr = new StyledMapRenderer(nc, false);
         smr.setStyles(elemStyles);
-        smr.render(ds, false, bounds);
+        MapViewGraphics mapViewGraphics = new MapViewGraphics(image, g, new Rectangle(imgDimPx));
+        smr.render(ds, false, mapViewGraphics);
 
         // For debugging, write computed StyleElement to debugStream for primitives marked with debug=yes
         if (debugStream != null) {
