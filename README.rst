@@ -205,7 +205,7 @@ MapCSS
 
 #. MapCSS rotation has been fixed to rotate around the centerpoint.
 
-#. Patching of SVG files: `icon-image: path/to/maxspeed.svg?maxspeed=70` will search for
+#. SVG parameters: `icon-image: path/to/maxspeed.svg?maxspeed=70` will search for
    `{{maxspeed}}` in the SVG and replace it with `70`. Use one icon for all speeds.
    Multiple replacements are possible.
 
@@ -233,13 +233,14 @@ implement easy tagging of traffic signs.  The improvements that work together ar
 - multi-column menus
 - resizable icons in menus
 - append_* in tagging presets
-- parameterized SVGs
+- SVG parameters
+- arbitrary transformations in mapcss
 - new functions in mapcss
-- icon rotation
+- icon rotation command
 
-.. raw:: html
+.. figure:: demo/add-traffic-signs.svg
 
-   <video src="https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4" autoplay controls></video>
+https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4
 
 
 Plugin Preferences Rewritten
