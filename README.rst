@@ -111,6 +111,9 @@ Tagging presets have been completely rewritten.
 #. `no_menu` attribute for presets that should be searchable but should not have menus,
    eg. the Name Suggestion Index preset.
 
+#. Experimental `append_*` attributes for presets that need to append values to existing
+   tags.  eg. traffic_sign
+
 #. The validator now highlights invalid fields and puts error messages in the tooltip.
 
    .. image:: demo/validator-highlight.png
@@ -126,7 +129,7 @@ Tagging presets have been completely rewritten.
    reducing the number of public fields and methods.
 
 #. `TaggingPresets` is not a global static class anymore.
-   All tests that change presets can run in parallel now.
+   All unit tests that change presets can run in parallel now.
 
 #. The concepts of `preset template` and `preset instance` are cleanly separated. The
    XML file gets parsed into a tree of *immutable* preset templates. The templates are
@@ -196,20 +199,17 @@ MapCSS
 
    .. image:: demo/heading.png
 
-#. Rotation has been fixed to rotate around the centerpoint.
-   Correct rotation of text and additional panels:
+#. New command to rotate icons.
 
-   .. image:: demo/rotation.png
+   .. image:: demo/rotate_traffic_signs.gif
+
+#. MapCSS rotation has been fixed to rotate around the centerpoint.
 
 #. Patching of SVG files: `icon-image: path/to/maxspeed.svg?maxspeed=70` will search for
    `{{maxspeed}}` in the SVG and replace it with `70`. Use one icon for all speeds.
    Multiple replacements are possible.
 
 #. New functions: `split_traffic_sign` and `URL_query_encode`.
-
-#. New command to rotate icons.
-
-   .. image:: demo/rotate_icon_command.gif
 
 #. Experimental: Caching of expressions has been implemented to speed up applying of
    stylesheets.
@@ -218,6 +218,28 @@ MapCSS
    evaluating IMMUTABLE expressions can always be cached.  Results of STABLE expression
    can be cached as long as the DataSet does not change.  Cacheability does propagate:
    `max(1, 2)` is IMMUTABLE but `max(1, tag(lanes))` is STABLE.
+
+#. Experimental: Parallel rendering has been implemented.  Renders about twice as fast
+   on an 8-core machine.  Memory bandwith seems to be a bottleneck.  Further profiling
+   is needed.
+
+
+Traffic signs
+-------------
+
+This clip showcases how some of the enhancements described above work together to
+implement easy tagging of traffic signs.  The improvements that work together are:
+
+- multi-column menus
+- resizable icons in menus
+- append_* in tagging presets
+- parameterized SVGs
+- new functions in mapcss
+- icon rotation
+
+.. raw:: html
+
+   <video src="demo/add-traffic-signs.mkv"></video>
 
 
 Plugin Preferences Rewritten
@@ -234,8 +256,8 @@ possible to download plugins from GitHub assets.
 Notification System Rewritten
 -----------------------------
 
-Notifcations now stack up in the bottom-left corner of the main window. New
-notifications with progressbars.
+Multiple notifcations now stack up in the bottom-left corner of the main window.
+Notifications can have progressbars.
 
 
 ImageViewerDialog Rewritten

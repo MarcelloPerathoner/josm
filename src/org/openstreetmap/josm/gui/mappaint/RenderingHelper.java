@@ -25,7 +25,6 @@ import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.NavigatableComponent;
-import org.openstreetmap.josm.gui.MapViewState.MapViewRectangle;
 import org.openstreetmap.josm.gui.layer.MapViewGraphics;
 import org.openstreetmap.josm.gui.mappaint.mapcss.MapCSSStyleSource;
 import org.openstreetmap.josm.gui.mappaint.styleelement.StyleElement;
@@ -40,8 +39,6 @@ import org.openstreetmap.josm.tools.Logging;
 public class RenderingHelper {
 
     private final DataSet ds;
-    /** Bounds in lat/lon */
-    private final Bounds bounds;
     /** Bounds in east/north */
     private final ProjectionBounds projBounds;
     private final double scale;
@@ -56,6 +53,10 @@ public class RenderingHelper {
     public static class StyleData {
         public String styleUrl;
         public Map<String, String> settings = new HashMap<>();
+
+        StyleData(String url) {
+            this.styleUrl = url;
+        }
     }
 
     /**
@@ -70,7 +71,6 @@ public class RenderingHelper {
         CheckParameterUtil.ensureParameterNotNull(bounds, "bounds");
         CheckParameterUtil.ensureParameterNotNull(styles, "styles");
         this.ds = ds;
-        this.bounds = bounds;
         this.scale = scale;
         this.styles = styles;
         Projection proj = ProjectionRegistry.getProjection();

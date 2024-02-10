@@ -1,1073 +1,1094 @@
 <presets description="A preset to tag traffic signs in Italy." de.description="Eine Vorlage für italienische Verkehrszeichen." en.description="A preset to tag traffic signs in Italy." it.description="Un preset per i segnali stradali italiani." xmlns="http://josm.openstreetmap.de/tagging-preset-1.0" shortdescription="Traffic Signs in Italy" version="0.0.1" icon_base="svgs/" icon="flag.svg">
   <chunk id="t">
     <optional>
-      <combo key="direction" text="Direction" values="N,NE,E,SE,S,SW,W,NW,0,45,90,135,180,225,270,315,forward,backward" values_sort="false"/>
-      <combo key="distance" text="Distance" values="100 m,250 m,500 m" values_sort="false"/>
-      <combo key="length" text="Length" values="1 km,2 km,5 km" values_sort="false"/>
+      <combo key="direction" text="Direction" values="N,NE,E,SE,S,SW,W,NW,0,45,90,135,180,225,270,315,forward,backward" values_sort="false" default="S"/>
     </optional>
   </chunk>
   <group name="Traffic Signs in Italy" de.name="Verkehrszeichen in Italien" en.name="Traffic Signs in Italy" it.name="Segnaletica stradale in Italia" icon="flag.svg" sort_menu="false">
     <group icon_size="48" it.name="Segnali di pericolo" name="Danger warning signs" icon="altri_pericoli.svg">
       <item name="II.5" icon="curva_pericolosa_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Curva a sinistra" tooltip="Dangerous bend (to the left)">
-        <key key="traffic_sign" value="IT:II.5"/>
-        <key key="hazard" value="turn"/>
-        <key key="turn" value="left"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.5"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="turn"/>
+        <key key="turn" append_with=";" append_regex_search="^IT:" value="left"/>
         <reference ref="t"/>
       </item>
       <item name="II.4" icon="curva_pericolosa_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Curva a destra" tooltip="Dangerous bend (to the right)">
-        <key key="traffic_sign" value="IT:II.4"/>
-        <key key="hazard" value="turn"/>
-        <key key="turn" value="right"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.4"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="turn"/>
+        <key key="turn" append_with=";" append_regex_search="^IT:" value="right"/>
         <reference ref="t"/>
       </item>
       <item name="II.7" icon="doppia_curva_sx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a sinistra" tooltip="Dangerous double bend (the first to the left)">
-        <key key="traffic_sign" value="IT:II.7"/>
-        <key key="hazard" value="turns"/>
-        <key key="turns" value="left"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.7"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="turns"/>
+        <key key="turns" append_with=";" append_regex_search="^IT:" value="left"/>
         <reference ref="t"/>
       </item>
       <item name="II.6" icon="doppia_curva_dx.svg" type="node" preset_name_label="true" it.tooltip="Doppia curva, la prima a destra" tooltip="Dangerous double bend (the first to the right)">
-        <key key="traffic_sign" value="IT:II.6"/>
-        <key key="hazard" value="turns"/>
-        <key key="turns" value="right"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.6"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="turns"/>
+        <key key="turns" append_with=";" append_regex_search="^IT:" value="right"/>
         <reference ref="t"/>
       </item>
       <item name="II.15" icon="discesa_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Discesa pericolosa" tooltip="Dangerous descent">
-        <key key="traffic_sign" value="IT:II.15"/>
-        <key key="hazard" value="steep_incline"/>
-        <key key="steep_incline" value="down"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.15[{incline}]"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="steep_incline"/>
+        <key key="steep_incline" append_with=";" append_regex_search="^IT:" value="down"/>
         <text text="Incline" key="incline"/>
         <reference ref="t"/>
       </item>
       <item name="II.16" icon="salita_ripida.svg" type="node" preset_name_label="true" it.tooltip="Salita ripida" tooltip="Dangerous ascent">
-        <key key="traffic_sign" value="IT:II.16"/>
-        <key key="hazard" value="steep_incline"/>
-        <key key="steep_incline" value="up"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.16[{incline}]"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="steep_incline"/>
+        <key key="steep_incline" append_with=";" append_regex_search="^IT:" value="up"/>
         <text text="Incline" key="incline"/>
         <reference ref="t"/>
       </item>
       <item name="II.17" icon="strettoia_simmetrica.svg" type="node" preset_name_label="true" it.tooltip="Strettoia simmetrica" tooltip="Carriageway narrows (both sides)">
-        <key key="traffic_sign" value="IT:II.17"/>
-        <key key="hazard" value="road_narrows"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.17"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="road_narrows"/>
         <reference ref="t"/>
       </item>
       <item name="II.19" icon="strettoia_asimmetrica_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a destra" tooltip="Carriageway narrows (right side)">
-        <key key="traffic_sign" value="IT:II.19"/>
-        <key key="hazard" value="road_narrows"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.19"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="road_narrows"/>
         <reference ref="t"/>
       </item>
       <item name="II.18" icon="strettoia_asimmetrica_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Strettoia asimmetrica a sinistra" tooltip="Carriageway narrows (left side)">
-        <key key="traffic_sign" value="IT:II.18"/>
-        <key key="hazard" value="road_narrows"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.18"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="road_narrows"/>
         <reference ref="t"/>
       </item>
       <item name="II.1" icon="strada_deformata_figura_ii_1.svg" type="node" preset_name_label="true" it.tooltip="Strada deformata" tooltip="Uneven road">
-        <key key="traffic_sign" value="IT:II.1"/>
-        <key key="hazard" value="damaged_road"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.1"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="damaged_road"/>
         <reference ref="t"/>
       </item>
       <item name="II.2" icon="dosso.svg" type="node" preset_name_label="true" it.tooltip="Dosso" tooltip="Hump in road">
-        <key key="traffic_sign" value="IT:II.2"/>
-        <key key="hazard" value="bump"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.2"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="bump"/>
         <reference ref="t"/>
       </item>
       <item name="II.3" icon="cunetta.svg" type="node" preset_name_label="true" it.tooltip="Cunetta" tooltip="Dip in road">
-        <key key="traffic_sign" value="IT:II.3"/>
-        <key key="hazard" value="dip"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.3"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dip"/>
         <reference ref="t"/>
       </item>
       <item name="II.22" icon="strada_sdrucciolevole.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole" tooltip="Slippery road">
-        <key key="traffic_sign" value="IT:II.22"/>
-        <key key="hazard" value="slippery"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.22"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="slippery"/>
         <reference ref="t"/>
       </item>
       <item name="II.26" icon="doppio_senso_di_circolazione_figura_ii_26.svg" type="node" preset_name_label="true" it.tooltip="Doppio senso di circolazione" tooltip="Two-way traffic">
-        <key key="traffic_sign" value="IT:II.26"/>
-        <key key="oneway" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.26"/>
+        <key key="oneway" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.31a" icon="semaforo_verticale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (vertical)">
-        <key key="traffic_sign" value="IT:II.31a"/>
-        <key key="hazard" value="traffic_signals"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.31a"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="traffic_signals"/>
         <reference ref="t"/>
       </item>
       <item name="II.31b" icon="semaforo_orizzontale.svg" type="node" preset_name_label="true" it.tooltip="Semaforo" tooltip="Light signals (horizontal)">
-        <key key="traffic_sign" value="IT:II.31b"/>
-        <key key="hazard" value="traffic_signals"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.31b"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="traffic_signals"/>
         <reference ref="t"/>
       </item>
       <item name="II.13" icon="attraversamento_pericoloso.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
-        <key key="traffic_sign" value="IT:II.13"/>
-        <key key="hazard" value="crossing"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.13"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="crossing"/>
         <reference ref="t"/>
       </item>
       <item name="II.23" icon="bambini.svg" type="node" preset_name_label="true" it.tooltip="Bambini" tooltip="Children">
-        <key key="traffic_sign" value="IT:II.23"/>
-        <key key="hazard" value="children"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.23"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="children"/>
         <reference ref="t"/>
       </item>
       <item name="II.24" icon="animali_domestici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali domestici vaganti" tooltip="Cattle crossing">
-        <key key="traffic_sign" value="IT:II.24"/>
-        <key key="hazard" value="animal_crossing"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.24"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="animal_crossing"/>
         <reference ref="t"/>
       </item>
       <item name="II.25" icon="animali_selvatici_vaganti.svg" type="node" preset_name_label="true" it.tooltip="Animali selvatici vaganti" tooltip="Wildlife crossing">
-        <key key="traffic_sign" value="IT:II.25"/>
-        <key key="hazard" value="animal_crossing"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.25"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="animal_crossing"/>
         <reference ref="t"/>
       </item>
       <item name="II.33" icon="forte_vento_laterale.svg" type="node" preset_name_label="true" it.tooltip="Forte vento laterale" tooltip="Cross-wind">
-        <key key="traffic_sign" value="IT:II.33"/>
-        <key key="hazard" value="side_winds"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.33"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="side_winds"/>
         <reference ref="t"/>
       </item>
       <item name="II.21" icon="banchina_pericolosa.svg" type="node" preset_name_label="true" it.tooltip="Banchina cedevole" tooltip="Dangerous shoulder">
-        <key key="traffic_sign" value="IT:II.21"/>
-        <key key="hazard" value="dangerous_shoulder"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.21"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_shoulder"/>
         <reference ref="t"/>
       </item>
       <item name="II.34" icon="pericolo_di_incendio.svg" type="node" preset_name_label="true" it.tooltip="Pericolo di incendio" tooltip="Danger of wildfires">
-        <key key="traffic_sign" value="IT:II.34"/>
-        <key key="hazard" value="wildfires"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.34"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="wildfires"/>
         <reference ref="t"/>
       </item>
       <item name="II.29" icon="materiale_instabile.svg" type="node" preset_name_label="true" it.tooltip="Materiale instabile" tooltip="Loose gravel">
-        <key key="traffic_sign" value="IT:II.29"/>
-        <key key="hazard" value="loose_gravel"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.29"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="loose_gravel"/>
         <reference ref="t"/>
       </item>
       <item name="II.30a" icon="caduta_massi_da_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
-        <key key="traffic_sign" value="IT:II.30a"/>
-        <key key="hazard" value="falling_rocks"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.30a"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="falling_rocks"/>
         <reference ref="t"/>
       </item>
       <item name="II.30b" icon="caduta_massi_da_destra.svg" type="node" preset_name_label="true" it.tooltip="Caduta massi" tooltip="Falling rocks">
-        <key key="traffic_sign" value="IT:II.30b"/>
-        <key key="hazard" value="falling_rocks"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.30b"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="falling_rocks"/>
         <reference ref="t"/>
       </item>
       <item name="II.14" icon="attraversamento_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Cyclists entering or crossing">
-        <key key="traffic_sign" value="IT:II.14"/>
-        <key key="hazard" value="cyclists"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.14"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="cyclists"/>
         <reference ref="t"/>
       </item>
       <item name="II.32" icon="aeromobili.svg" type="node" preset_name_label="true" it.tooltip="Aeromobili" tooltip="Airfield">
-        <key key="traffic_sign" value="IT:II.32"/>
-        <key key="hazard" value="low_flying_aircraft"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.32"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="low_flying_aircraft"/>
         <reference ref="t"/>
       </item>
       <item name="II.27" icon="circolazione_rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Circolazione Rotatoria" tooltip="Roundabout ahead">
-        <key key="traffic_sign" value="IT:II.27"/>
-        <key key="hazard" value="roundabout"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.27"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="roundabout"/>
         <reference ref="t"/>
       </item>
       <item name="II.35" icon="altri_pericoli.svg" type="node" preset_name_label="true" it.tooltip="Altri pericoli" tooltip="Other dangers">
-        <key key="traffic_sign" value="IT:II.35"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.35"/>
+        <text text="Hazard" key="hazard"/>
         <reference ref="t"/>
       </item>
       <item name="II.12" icon="attraversamento_tramviario.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento tranviario" tooltip="Intersection with a tramway line">
-        <key key="traffic_sign" value="IT:II.12"/>
-        <key key="hazard" value="level_crossing"/>
-        <key key="crossing:barrier" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.12"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="level_crossing"/>
+        <key key="crossing:barrier" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.28" icon="sbocco_su_molo.svg" type="node" preset_name_label="true" it.tooltip="Sbocco su molo o su argine" tooltip="Road leads on to quay or river bank">
-        <key key="traffic_sign" value="IT:II.28"/>
-        <key key="hazard" value="quay"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.28"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="quay"/>
         <reference ref="t"/>
       </item>
       <item name="II.8" icon="passaggio_a_livello_con_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello con barriere" tooltip="Level-crossings with gates">
-        <key key="traffic_sign" value="IT:II.8"/>
-        <key key="hazard" value="level_crossing"/>
-        <key key="crossing:barrier" value="yes"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.8"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="level_crossing"/>
+        <key key="crossing:barrier" append_with=";" append_regex_search="^IT:" value="yes"/>
         <reference ref="t"/>
       </item>
       <item name="II.9" icon="passaggio_a_livello_senza_barriere.svg" type="node" preset_name_label="true" it.tooltip="Passaggio a livello senza barriere" tooltip="Other level-crossings">
-        <key key="traffic_sign" value="IT:II.9"/>
-        <key key="hazard" value="level_crossing"/>
-        <key key="crossing:barrier" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.9"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="level_crossing"/>
+        <key key="crossing:barrier" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.10a" icon="croce_di_s.andrea.svg" type="node" preset_name_label="true" it.tooltip="Croce di Sant'Andrea" tooltip="Single-rail level-crossing">
-        <key key="traffic_sign" value="IT:II.10a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.10a"/>
         <reference ref="t"/>
       </item>
       <item name="II.10b" icon="doppia_croce_di_santandrea.svg" type="node" preset_name_label="true" it.tooltip="Doppia croce di Sant'Andrea" tooltip="Multi-rail level-crossing">
-        <key key="traffic_sign" value="IT:II.10b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.10b"/>
         <reference ref="t"/>
       </item>
       <item name="II.11a" icon="pannello_distanziometrico_150.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (240 m)">
-        <key key="traffic_sign" value="IT:II.11a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.11a"/>
         <reference ref="t"/>
       </item>
       <item name="II.11b" icon="pannello_distanziometrico_100.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (160 m)">
-        <key key="traffic_sign" value="IT:II.11b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.11b"/>
         <reference ref="t"/>
       </item>
       <item name="II.11c" icon="pannello_distanziometrico_50.svg" type="node" preset_name_label="true" it.tooltip="Pannello distanziometrico" tooltip="Advanced sign (80 m)">
-        <key key="traffic_sign" value="IT:II.11c"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.11c"/>
         <reference ref="t"/>
       </item>
       <item name="II.20" icon="ponte_mobile.svg" type="node" preset_name_label="true" it.tooltip="Ponte mobile" tooltip="Movable bridge">
-        <key key="traffic_sign" value="IT:II.20"/>
-        <key key="hazard" value="swing_bridge"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.20"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="swing_bridge"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali di precedenza" name="Priority signs" icon="fermarsi_e_dare_precedenza_-_stop.svg">
       <item name="II.36" icon="dare_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza" tooltip="Give way">
-        <key key="traffic_sign" value="IT:II.36"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.36"/>
         <reference ref="t"/>
       </item>
       <item name="II.37" icon="fermarsi_e_dare_precedenza_-_stop.svg" type="node" preset_name_label="true" it.tooltip="Fermarsi e dare precedenza" tooltip="Stop">
-        <key key="traffic_sign" value="IT:II.37"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.37"/>
         <reference ref="t"/>
       </item>
       <item name="II.38" icon="distanza.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di dare precedenza" tooltip="Advance warning of give way">
-        <key key="traffic_sign" value="IT:II.38"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.38[{distance}]"/>
         <reference ref="t"/>
       </item>
       <item name="II.39" icon="preavviso.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di fermarsi e dare precedenza" tooltip="Advance warning of stop">
-        <key key="traffic_sign" value="IT:II.39"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.39[{distance}]"/>
         <reference ref="t"/>
       </item>
       <item name="II.40" icon="intersezione_con_precedenza_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con precedenza a destra" tooltip="Intersection with general priority ahead">
-        <key key="traffic_sign" value="IT:II.40"/>
-        <key key="priority_road" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.40"/>
+        <key key="priority_road" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.41" icon="dare_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Dare precedenza nei sensi unici alternati" tooltip="Oncoming traffic has priority">
-        <key key="traffic_sign" value="IT:II.41"/>
-        <key key="priority" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.41"/>
+        <key key="priority" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.42" icon="fine_del_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Fine del diritto di precedenza" tooltip="End of priority road">
-        <key key="traffic_sign" value="IT:II.42"/>
-        <key key="priority_road" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.42"/>
+        <key key="priority_road" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.43a" icon="intersezione_con_diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Intersezione con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
-        <key key="traffic_sign" value="IT:II.43a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.43a"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_junction"/>
         <reference ref="t"/>
       </item>
       <item name="II.43b" icon="intersezione_a_t_con_diritto_di_precedenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
-        <key key="traffic_sign" value="IT:II.43b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.43b"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_junction"/>
+        <key key="dangerous_junction" append_with=";" append_regex_search="^IT:" value="right"/>
         <reference ref="t"/>
       </item>
       <item name="II.43c" icon="intersezione_a_t_con_diritto_di_precedenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Intersezione a &quot;T&quot; con diritto di precedenza" tooltip="Intersection with a road the users of which must give way">
-        <key key="traffic_sign" value="IT:II.43c"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.43c"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_junction"/>
+        <key key="dangerous_junction" append_with=";" append_regex_search="^IT:" value="left"/>
         <reference ref="t"/>
       </item>
       <item name="II.43d" icon="confluenza_dx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a destra" tooltip="Intersection with a road the users of which must give way">
-        <key key="traffic_sign" value="IT:II.43d"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.43d"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_junction"/>
+        <key key="dangerous_junction" append_with=";" append_regex_search="^IT:" value="right"/>
         <reference ref="t"/>
       </item>
       <item name="II.43e" icon="confluenza_sx.svg" type="node" preset_name_label="true" it.tooltip="Confluenza a sinistra" tooltip="Intersection with a road the users of which must give way">
-        <key key="traffic_sign" value="IT:II.43e"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.43e"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="dangerous_junction"/>
+        <key key="dangerous_junction" append_with=";" append_regex_search="^IT:" value="left"/>
         <reference ref="t"/>
       </item>
       <item name="II.44" icon="diritto_di_precedenza.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza" tooltip="Priority road">
-        <key key="traffic_sign" value="IT:II.44;priority_road"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.44"/>
+        <text text="Priority_road" key="priority_road"/>
         <reference ref="t"/>
       </item>
       <item name="II.45" icon="diritto_di_precedenza_nei_sensi_unici_alternati.svg" type="node" preset_name_label="true" it.tooltip="Diritto di precedenza nei sensi unici alternati" tooltip="Priority over oncoming traffic">
-        <key key="traffic_sign" value="IT:II.45;priority"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.45"/>
+        <key key="priority" append_with=";" append_regex_search="^IT:" value="yes"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali di divieto" name="Prohibitory or restrictive signs" icon="limite_di_velocità_50.svg">
       <item name="II.46" icon="divieto_di_transito.svg" type="node" preset_name_label="true" it.tooltip="Divieto di transito" tooltip="Closed to all vehicles in both directions">
-        <key key="traffic_sign" value="IT:II.46"/>
-        <key key="vehicle" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.46"/>
+        <key key="vehicle" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.47" icon="senso_vietato.svg" type="node" preset_name_label="true" it.tooltip="Senso vietato" tooltip="No entry">
-        <key key="traffic_sign" value="IT:II.47"/>
-        <key key="oneway" value="yes"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.47"/>
+        <key key="oneway" append_with=";" append_regex_search="^IT:" value="yes"/>
         <reference ref="t"/>
       </item>
       <item name="II.48" icon="divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso" tooltip="Prohibition of overtaking">
-        <key key="traffic_sign" value="IT:II.48"/>
-        <key key="overtaking" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.48"/>
+        <key key="overtaking" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.49" icon="distanziamento_minimo_obbligatorio.svg" type="node" preset_name_label="true" it.tooltip="Distanziamento minimo obbligatorio" tooltip="Minimum distance between vehicles">
-        <key key="traffic_sign" value="IT:II.49"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.49[{mindistance}]"/>
         <text text="Mindistance" key="mindistance"/>
         <reference ref="t"/>
       </item>
       <item name="II.50" icon="limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Limite massimo di velocità" tooltip="Speed limit">
-        <key key="traffic_sign" value="IT:II.50"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.50[{maxspeed}]"/>
         <text text="Maxspeed" key="maxspeed"/>
         <reference ref="t"/>
       </item>
       <item name="II.51" icon="divieto_di_segnalazioni_acustiche.svg" type="node" preset_name_label="true" it.tooltip="Divieto di segnalazioni acustiche" tooltip="Prohibition of the use of audible warning devices">
-        <key key="traffic_sign" value="IT:II.51"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.51"/>
         <reference ref="t"/>
       </item>
       <item name="II.52" icon="divieto_di_sorpasso_per_veicoli_oltre_35t.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="Prohibition of overtaking for trucks">
-        <key key="traffic_sign" value="IT:II.52"/>
-        <key key="overtaking:hgv" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.52"/>
+        <key key="overtaking:hgv" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.53" icon="divieto_di_transito_alla_trazione_animale.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a trazione animale" tooltip="No entry for animal-powered vehicles">
-        <key key="traffic_sign" value="IT:II.53"/>
-        <key key="carriage" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.53"/>
+        <key key="carriage" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.54" icon="transito_vietato_ai_pedoni.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai pedoni" tooltip="No entry for pedestrians">
-        <key key="traffic_sign" value="IT:II.54"/>
-        <key key="foot" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.54"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.55" icon="transito_vietato_ai_velocipedi_figura_ii_55.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle biciclette" tooltip="No entry for bicycles">
-        <key key="traffic_sign" value="IT:II.55"/>
-        <key key="bicycle" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.55"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.56" icon="divieto_di_transito_motocicli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai motocicli" tooltip="No entry for motorcycles">
-        <key key="traffic_sign" value="IT:II.56"/>
-        <key key="motorcycle" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.56"/>
+        <key key="motorcycle" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.57" icon="divieto_di_transito_a_veicoli_a_braccia.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli a braccia" tooltip="No entry for hand carts">
-        <key key="traffic_sign" value="IT:II.57"/>
-        <key key="handcart" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.57"/>
+        <key key="handcart" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.58" icon="divieto_di_transito_a_tutti_gli_autoveicoli.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti gli autoveicoli" tooltip="No entry for all motor vehicles">
-        <key key="traffic_sign" value="IT:II.58"/>
-        <key key="motorcar" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.58"/>
+        <key key="motorcar" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.59" icon="divieto_di_transito_agli_autobus.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato agli autobus" tooltip="No entry for buses">
-        <key key="traffic_sign" value="IT:II.59"/>
-        <key key="bus" value="no"/>
-        <key key="tourist_bus" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.59"/>
+        <key key="bus" append_with=";" append_regex_search="^IT:" value="no"/>
+        <key key="tourist_bus" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.60a" icon="divieto_di_transito_ai_veicoli_da_trasporto.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a 3,5 tonnellate" tooltip="No entry for trucks (with a permissible maximum with more than 3.5 t)">
-        <key key="traffic_sign" value="IT:II.60a"/>
-        <key key="hgv" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.60a"/>
+        <key key="hgv" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.60b" icon="transito_vietato_ai_veicoli_di_massa_a_pieno_carico_superiore_alle_..._tonnellate_figura_ii_60-b.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli di massa a pieno carico superiore a ... tonnellate" tooltip="No entry for trucks with a permissible maximum with more than ... t">
-        <key key="traffic_sign" value="IT:II.60b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.60b[{maxweightrating:hgv}]"/>
         <text text="Maxweightrating:hgv" key="maxweightrating:hgv"/>
         <reference ref="t"/>
       </item>
       <item name="II.61" icon="divieto_di_transito_ai_veicoli_a_motore_con_rimorchio.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato a tutti i veicoli a motore trainanti un rimorchio" tooltip="No entry for vehicles drawing a trailer">
-        <key key="traffic_sign" value="IT:II.61"/>
-        <key key="trailer" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.61"/>
+        <key key="trailer" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.62" icon="divieto_di_transito_alle_macchine_agricole.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato alle macchine agricole" tooltip="No entry for tractors">
-        <key key="traffic_sign" value="IT:II.62"/>
-        <key key="agricultural" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.62"/>
+        <key key="agricultural" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.63" icon="divieto_di_transito_a_trasporti_pericolosi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano merci pericolose" tooltip="No entry for vehicles transporting dangerous goods">
-        <key key="traffic_sign" value="IT:II.63"/>
-        <key key="hazmat" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.63"/>
+        <key key="hazmat" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.64a" icon="divieto_di_transito_ai_veicoli_con_esplosivi_od_infiammabili.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano esplosivi o prodotti facilmente infiammabili" tooltip="No entry for vehicles carrying explosives or readily inflammable substances">
-        <key key="traffic_sign" value="IT:II.64a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.64a"/>
         <reference ref="t"/>
       </item>
       <item name="II.64b" icon="divieto_di_transito_agli_inquinanti_idrici.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli che trasportano prodotti suscettibili di contaminare l'acqua" tooltip="No entry for vehicles carrying goods capable of water pollution">
-        <key key="traffic_sign" value="IT:II.64b"/>
-        <key key="hazmat:water" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.64b"/>
+        <key key="hazmat:water" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.65" icon="divieto_di_transito_larghezza_230m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi larghezza superiore a ... metri" tooltip="No entry for vehicles wider than the specified limit">
-        <key key="traffic_sign" value="IT:II.65"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.65[{maxwidth}]"/>
         <text text="Maxwidth" key="maxwidth"/>
         <reference ref="t"/>
       </item>
       <item name="II.66" icon="divieto_di_transito_altezza_350m.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi altezza complessiva superiore a ... metri" tooltip="No entry for vehicles higher than the specified limit">
-        <key key="traffic_sign" value="IT:II.66"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.66[{maxheight}]"/>
         <text text="Maxheight" key="maxheight"/>
         <reference ref="t"/>
       </item>
       <item name="II.67" icon="divieto_di_transito_ai_veicoli_lunghi.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli, o a complessi di veicoli, aventi lunghezza superiore a ... metri" tooltip="No entry for vehicles or vehicle combinations longer than the specified limit">
-        <key key="traffic_sign" value="IT:II.67"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.67[{maxlength}]"/>
         <text text="Maxlength" key="maxlength"/>
         <reference ref="t"/>
       </item>
       <item name="II.68" icon="transito_vietato_ai_veicoli_aventi_una_massa_superiore_a_..._tonnellate_figura_ii_68.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi una massa superiore a ... tonnellate" tooltip="No entry for vehicles heavier than the specified limit">
-        <key key="traffic_sign" value="IT:II.68"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.68[{maxweight}]"/>
         <text text="Maxweight" key="maxweight"/>
         <reference ref="t"/>
       </item>
       <item name="II.69" icon="transito_vietato_ai_veicoli_aventi_massa_per_asse_superiore_a_..._tonnellate_figura_ii_69.svg" type="node" preset_name_label="true" it.tooltip="Transito vietato ai veicoli aventi massa per asse superiore a ... tonnellate" tooltip="No entry for vehicles which immediate weight per axle is over the specified limit">
-        <key key="traffic_sign" value="IT:II.69"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.69[{maxaxleload}]"/>
         <text text="Maxaxleload" key="maxaxleload"/>
         <reference ref="t"/>
       </item>
       <item name="II.70" icon="via_libera.svg" type="node" preset_name_label="true" it.tooltip="Via libera" tooltip="End of all prohibitions">
-        <key key="traffic_sign" value="IT:II.70"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.70"/>
         <reference ref="t"/>
       </item>
       <item name="II.71" icon="fine_limite_di_velocità_50.svg" type="node" preset_name_label="true" it.tooltip="Fine limitazione di velocità" tooltip="End of speed limit">
-        <key key="traffic_sign" value="IT:II.71"/>
-        <key key="maxspeed" value="implicit"/>
+        <text text="Maxspeed" key="nosave:maxspeed"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.71[{nosave:maxspeed}]"/>
+        <key key="maxspeed" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.72" icon="fine_del_divieto_di_sorpasso.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso" tooltip="End of overtaking prohibition">
-        <key key="traffic_sign" value="IT:II.72"/>
-        <key key="overtaking" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.72"/>
+        <key key="overtaking" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.73" icon="fine_del_divieto_di_sorpasso_per_veicoli_oltre_35t.svg" type="node" preset_name_label="true" it.tooltip="Fine divieto di sorpasso per i veicoli di massa a pieno carico superiore a 3,5 t" tooltip="End of overtaking prohibition for trucks">
-        <key key="traffic_sign" value="IT:II.73"/>
-        <key key="overtaking:hgv" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.73"/>
+        <key key="overtaking:hgv" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.74" icon="divieto_di_sosta.svg" type="node" preset_name_label="true" it.tooltip="Divieto di sosta" tooltip="Parking prohibited">
-        <key key="traffic_sign" value="IT:II.74"/>
-        <key key="parking" value="no_parking"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.74"/>
+        <key key="parking" append_with=";" append_regex_search="^IT:" value="no_parking"/>
         <reference ref="t"/>
       </item>
       <item name="II.75" icon="divieto_di_fermata.svg" type="node" preset_name_label="true" it.tooltip="Divieto di fermata" tooltip="Standing and parking prohibited">
-        <key key="traffic_sign" value="IT:II.75"/>
-        <key key="parking" value="no_stopping"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.75"/>
+        <key key="parking" append_with=";" append_regex_search="^IT:" value="no_stopping"/>
         <reference ref="t"/>
       </item>
       <item name="II.76" icon="parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio" tooltip="Parking">
-        <key key="traffic_sign" value="IT:II.76"/>
-        <key key="amenity" value="parking"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.76"/>
+        <key key="amenity" append_with=";" append_regex_search="^IT:" value="parking"/>
         <reference ref="t"/>
       </item>
       <item name="II.77" icon="preavviso_di_parcheggio.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di parcheggio" tooltip="Advance warning of parking">
-        <key key="traffic_sign" value="IT:II.77"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.77[{distance}]"/>
         <reference ref="t"/>
       </item>
       <item name="II.78" icon="passo_carrabile.svg" type="node" preset_name_label="true" it.tooltip="Passo carrabile">
-        <key key="traffic_sign" value="IT:II.78"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.78"/>
         <reference ref="t"/>
       </item>
       <item name="II.79" icon="parcheggio_riservato_pronto_soccorso.svg" type="node" preset_name_label="true" it.tooltip="Sosta consentita a particolare categoria" tooltip="Various parking exceptions">
-        <key key="traffic_sign" value="IT:II.79"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.79"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali di obbligo" name="Mandatory signs" icon="percorso_pedonale.svg">
       <item name="II.80a" icon="direzione_obbligatoria_dritto.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria diritto" tooltip="Mandatory direction straight ahead">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="only_straight_on"/>
-        <key key="traffic_sign" value="IT:II.80a"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="only_straight_on"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.80a"/>
         <reference ref="t"/>
       </item>
       <item name="II.80b" icon="direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a sinistra" tooltip="Turn left here">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="only_left_turn"/>
-        <key key="traffic_sign" value="IT:II.80b"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="only_left_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.80b"/>
         <reference ref="t"/>
       </item>
       <item name="II.80c" icon="direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzione obbligatoria a destra" tooltip="Turn right here">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="only_right_turn"/>
-        <key key="traffic_sign" value="IT:II.80c"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="only_right_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.80c"/>
         <reference ref="t"/>
       </item>
       <item name="II.80d" icon="preavviso_di_direzione_obbligatoria_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a destra" tooltip="Mandatory left turn">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="only_right_turn"/>
-        <key key="traffic_sign" value="IT:II.80d"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="only_right_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.80d"/>
         <reference ref="t"/>
       </item>
       <item name="II.80e" icon="preavviso_di_direzione_obbligatoria_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di direzione obbligatoria a sinistra" tooltip="Mandatory right turn">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="only_left_turn"/>
-        <key key="traffic_sign" value="IT:II.80e"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="only_left_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.80e"/>
         <reference ref="t"/>
       </item>
       <item name="II.81a" icon="direzioni_consentite_a_destra_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite destra e sinistra" tooltip="Mandatory right or left turn">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="no_straight_on"/>
-        <key key="traffic_sign" value="IT:II.81a"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="no_straight_on"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.81a"/>
         <reference ref="t"/>
       </item>
       <item name="II.81b" icon="direzioni_consentite_a_dritto_ed_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e destra" tooltip="Mandatory direction straight ahead or right turn">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="no_left_turn"/>
-        <key key="traffic_sign" value="IT:II.81b"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="no_left_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.81b"/>
         <reference ref="t"/>
       </item>
       <item name="II.81c" icon="direzioni_consentite_a_dritto_ed_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Direzioni consentite diritto e sinistra" tooltip="Mandatory direction straight ahead or left turn">
         <link wiki="IT:Relation:restriction"/>
-        <key key="restriction" value="no_right_turn"/>
-        <key key="traffic_sign" value="IT:II.81c"/>
+        <key key="restriction" append_with=";" append_regex_search="^IT:" value="no_right_turn"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.81c"/>
         <reference ref="t"/>
       </item>
       <item name="II.82a" icon="passaggio_obbligatorio_a_sinistra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a sinistra" tooltip="Pass by on the left-hand side">
-        <key key="traffic_sign" value="IT:II.82a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.82a"/>
         <reference ref="t"/>
       </item>
       <item name="II.82b" icon="passaggio_obbligatorio_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Passaggio obbligatorio a destra" tooltip="Pass by on the right-hand side">
-        <key key="traffic_sign" value="IT:II.82b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.82b"/>
         <reference ref="t"/>
       </item>
       <item name="II.83" icon="passaggi_consentiti.svg" type="node" preset_name_label="true" it.tooltip="Passaggi consentiti" tooltip="Drive around">
-        <key key="traffic_sign" value="IT:II.83"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.83"/>
         <reference ref="t"/>
       </item>
       <item name="II.84" icon="rotatoria.svg" type="node" preset_name_label="true" it.tooltip="Rotatoria" tooltip="Compulsary Roundabout">
-        <key key="junction" value="roundabout"/>
-        <key key="traffic_sign" value="IT:II.84"/>
+        <key key="junction" append_with=";" append_regex_search="^IT:" value="roundabout"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.84"/>
         <reference ref="t"/>
       </item>
       <item name="II.85" icon="limite_minimo_di_velocità_figura_ii_85.svg" type="node" preset_name_label="true" it.tooltip="Limite minimo di velocità" tooltip="Compulsory minimum speed">
-        <key key="traffic_sign" value="IT:II.85"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.85[{minspeed}]"/>
         <text text="Minspeed" key="minspeed"/>
         <reference ref="t"/>
       </item>
       <item name="II.86" icon="fine_limite_minimo_di_velocità_30.svg" type="node" preset_name_label="true" it.tooltip="Fine limite minimo di velocità" tooltip="End of compulsory minimum speed">
-        <key key="traffic_sign" value="IT:II.86"/>
-        <key key="minspeed" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.86[{minspeed}]"/>
+        <key key="minspeed" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.87" icon="catene_da_neve_obbligatorie.svg" type="node" preset_name_label="true" it.tooltip="Catene per neve obbligatorie" tooltip="Snow chains compulsory">
-        <key key="traffic_sign" value="IT:II.87"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.87"/>
+        <key key="snow_chains" append_with=";" append_regex_search="^IT:" value="required"/>
         <reference ref="t"/>
       </item>
       <item name="II.88" icon="percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale" tooltip="Compulsory footpath">
-        <key key="traffic_sign" value="IT:II.88"/>
-        <key key="foot" value="designated"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.88"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="designated"/>
         <reference ref="t"/>
       </item>
       <item name="II.89" icon="fine_percorso_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale" tooltip="End footpath">
-        <key key="traffic_sign" value="IT:II.89"/>
-        <key key="foot" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.89"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.90" icon="pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile" tooltip="Compulsory cycle track">
-        <key key="traffic_sign" value="IT:II.90"/>
-        <key key="bicycle" value="designated"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.90"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="designated"/>
         <reference ref="t"/>
       </item>
       <item name="II.91" icon="fine_pista_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine pista ciclabile" tooltip="End Cycleway">
-        <key key="traffic_sign" value="IT:II.91"/>
-        <key key="bicycle" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.91"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.92a" icon="pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Pista ciclabile contigua al marciapiede" tooltip="Footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.92a"/>
-        <key key="foot" value="designated"/>
-        <key key="bicycle" value="designated"/>
-        <key key="segregated" value="yes"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.92a"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="designated"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="designated"/>
+        <key key="segregated" append_with=";" append_regex_search="^IT:" value="yes"/>
         <reference ref="t"/>
       </item>
       <item name="II.93a" icon="fine_pista_ciclabile_contigua_al_marciapiede.svg" type="node" preset_name_label="true" it.tooltip="Fine della pista ciclabile contigua al marciapiede" tooltip="End of footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.93a"/>
-        <key key="foot" value="implicit"/>
-        <key key="bicycle" value="implicit"/>
-        <key key="segregated" value="yes"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.93a"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="implicit"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="implicit"/>
+        <key key="segregated" append_with=";" append_regex_search="^IT:" value="yes"/>
         <reference ref="t"/>
       </item>
       <item name="II.92b" icon="percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Percorso pedonale e ciclabile" tooltip="Footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.92b"/>
-        <key key="foot" value="designated"/>
-        <key key="bicycle" value="designated"/>
-        <key key="segregated" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.92b"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="designated"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="designated"/>
+        <key key="segregated" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.93b" icon="fine_percorso_pedonale_e_ciclabile.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso pedonale e ciclabile" tooltip="End of footpath and cycleway">
-        <key key="traffic_sign" value="IT:II.93b"/>
-        <key key="foot" value="implicit"/>
-        <key key="bicycle" value="implicit"/>
-        <key key="segregated" value="no"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.93b"/>
+        <key key="foot" append_with=";" append_regex_search="^IT:" value="implicit"/>
+        <key key="bicycle" append_with=";" append_regex_search="^IT:" value="implicit"/>
+        <key key="segregated" append_with=";" append_regex_search="^IT:" value="no"/>
         <reference ref="t"/>
       </item>
       <item name="II.94" icon="percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Percorso riservato ai quadrupedi da soma o da sella" tooltip="Compulsory track for riders on horseback">
-        <key key="traffic_sign" value="IT:II.94"/>
-        <key key="horse" value="designated"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.94"/>
+        <key key="horse" append_with=";" append_regex_search="^IT:" value="designated"/>
         <reference ref="t"/>
       </item>
       <item name="II.95" icon="fine_percorso_riservato_ai_quadrupedi.svg" type="node" preset_name_label="true" it.tooltip="Fine del percorso riservato ai quadrupedi da soma o da sella" tooltip="End of path for riders on animals">
-        <key key="traffic_sign" value="IT:II.95"/>
-        <key key="horse" value="implicit"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.95"/>
+        <key key="horse" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.96" icon="dogana.svg" type="node" preset_name_label="true" it.tooltip="Alt - Dogana" tooltip="Prohibition of passing without stopping (Customs)">
-        <key key="amenity" value="customs"/>
+        <key key="amenity" append_with=";" append_regex_search="^IT:" value="customs"/>
         <text text="Barrier" key="barrier"/>
-        <key key="traffic_sign" value="IT:II.96"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.96"/>
         <reference ref="t"/>
       </item>
       <item name="II.97a" icon="confine_cee.svg" type="node" preset_name_label="true" it.tooltip="Confine di Stato tra paesi della Comunità Europea" tooltip="European state boundary">
-        <key key="traffic_sign" value="IT:II.97a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.97a"/>
         <reference ref="t"/>
       </item>
       <item name="II.97b" icon="confine_francia.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di confine di Stato tra paesi della Comunità Europea" tooltip="Advance warning of european state boundary">
-        <key key="traffic_sign" value="IT:II.97b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.97b"/>
         <reference ref="t"/>
       </item>
       <item name="II.99" icon="stazione.svg" type="node" preset_name_label="true" it.tooltip="Alt - Stazione" tooltip="Prohibition of passing without stopping (Tollbooth)">
-        <key key="traffic_sign" value="IT:II.99"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.99"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnale di itinerario" name="Itinerary sign" icon="segnale_di_itinerario_extraurbano_figura_ii_272.svg">
       <item name="II.272" icon="segnale_di_itinerario_extraurbano_figura_ii_272.svg" type="node" preset_name_label="true" it.tooltip="Segnale di itinerario" tooltip="Itinerary sign">
-        <key key="traffic_sign" value="IT:II.272"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.272"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali di località e di localizzazione" name="Place identification signs" icon="inizio_regione.svg">
       <item name="II.273" icon="inizio_centro_abitato_figura_ii_273.svg" type="node" preset_name_label="true" it.tooltip="Inizio centro abitato" tooltip="Begin of city limits">
-        <key key="traffic_sign" value="IT:II.273"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.273"/>
         <text text="Name" key="name"/>
         <reference ref="t"/>
       </item>
       <item name="II.274" icon="fine_centro_abitato_figura_ii_274.svg" type="node" preset_name_label="true" it.tooltip="Fine centro abitato" tooltip="End of city limits">
-        <key key="traffic_sign" value="IT:II.274"/>
-        <key key="city_limit" value="end"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.274"/>
+        <key key="city_limit" append_with=";" append_regex_search="^IT:" value="end"/>
         <text text="Name" key="name"/>
         <reference ref="t"/>
       </item>
       <item name="II.275" icon="inizio_regione.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine regione" tooltip="Begin and end of region">
-        <key key="traffic_sign" value="IT:II.275"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.275"/>
         <reference ref="t"/>
       </item>
       <item name="II.276" icon="inizio_provincia.svg" type="node" preset_name_label="true" it.tooltip="Inizio e fine provincia" tooltip="Begin and end of province">
-        <key key="traffic_sign" value="IT:II.276"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.276"/>
         <reference ref="t"/>
       </item>
       <item name="II.284" icon="localizzazione_polizia_municipale_figura_ii_284.svg" type="node" preset_name_label="true" it.tooltip="Polizia municipale" tooltip="City police">
-        <key key="traffic_sign" value="IT:II.284"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.284"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali di conferma" name="Confirmatory signs" icon="segnale_di_conferma_autostradale_figura_ii_285.svg">
       <item name="II.285" icon="segnale_di_conferma_autostradale_figura_ii_285.svg" type="node" preset_name_label="true" it.tooltip="Segnale di conferma" tooltip="Confirmatory sign">
-        <key key="traffic_sign" value="IT:II.285"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.285"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali turistici e di territorio" icon="inizio_territorio_comunale.svg">
       <item name="II.294" icon="inizio_territorio_comunale.svg" type="node" preset_name_label="true" it.tooltip="Inizio territorio comunale" tooltip="Begin of municipal area">
-        <key key="traffic_sign" value="IT:II.294"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.294"/>
         <reference ref="t"/>
       </item>
       <item name="II.295" icon="fiume.svg" type="node" preset_name_label="true" it.tooltip="Indicazione turistica" tooltip="Indication for tourists">
-        <key key="traffic_sign" value="IT:II.295"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.295"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali utili per la guida" name="Indication signs" icon="attraversamento_pedonale.svg">
       <item name="II.302" icon="ospedale.svg" type="node" preset_name_label="true" it.tooltip="Ospedale" tooltip="Hospital">
-        <key key="traffic_sign" value="IT:II.302"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.302"/>
         <reference ref="t"/>
       </item>
       <item name="II.303" icon="attraversamento_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento pedonale" tooltip="Pedestrian crossing">
-        <key key="traffic_sign" value="IT:II.303"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.303"/>
         <reference ref="t"/>
       </item>
       <item name="II.304" icon="scuolabus.svg" type="node" preset_name_label="true" it.tooltip="Scuolabus" tooltip="School bus (stop)">
-        <key key="traffic_sign" value="IT:II.304"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.304"/>
         <reference ref="t"/>
       </item>
       <item name="II.305" icon="sos.svg" type="node" preset_name_label="true" it.tooltip="SOS" tooltip="Emergency phone">
-        <key key="traffic_sign" value="IT:II.305"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.305"/>
         <reference ref="t"/>
       </item>
       <item name="II.306" icon="sottopassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sottopassaggio pedonale" tooltip="Pedestrian underpass">
-        <key key="traffic_sign" value="IT:II.306"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.306"/>
         <reference ref="t"/>
       </item>
       <item name="II.307" icon="sovrappassaggio_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Sovrapassaggio pedonale" tooltip="Pedestrian overpass">
-        <key key="traffic_sign" value="IT:II.307"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.307"/>
         <reference ref="t"/>
       </item>
       <item name="II.308" icon="rampa_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Rampa pedonale" tooltip="Pedestrian underpass without steps">
-        <key key="traffic_sign" value="IT:II.308"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.308"/>
         <reference ref="t"/>
       </item>
       <item name="II.309" icon="strada_senza_uscita.svg" type="node" preset_name_label="true" it.tooltip="Strada senza uscita" tooltip="No through road">
-        <key key="traffic_sign" value="IT:II.309"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.309"/>
         <reference ref="t"/>
       </item>
       <item name="II.310" icon="preavviso_di_strada_senza_uscita_osx.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
-        <key key="traffic_sign" value="IT:II.310"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.310"/>
         <reference ref="t"/>
       </item>
       <item name="II.311" icon="preavviso_di_strada_senza_uscita_dx.svg" type="node" preset_name_label="true" it.tooltip="Preavviso di strada senza uscita" tooltip="No through road on side road">
-        <key key="traffic_sign" value="IT:II.311"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.311"/>
         <reference ref="t"/>
       </item>
       <item name="II.312" icon="velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Velocità consigliata" tooltip="Advisory speed">
-        <key key="traffic_sign" value="IT:II.312"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.312[{maxspeed:advisory}]"/>
+        <text text="Maxspeed:advisory" key="maxspeed:advisory"/>
         <reference ref="t"/>
       </item>
       <item name="II.313" icon="fine_velocità_consigliata_50.svg" type="node" preset_name_label="true" it.tooltip="Fine velocità consigliata" tooltip="End advisory speed">
-        <key key="traffic_sign" value="IT:II.313"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.313[{maxspeed:advisory}]"/>
+        <text text="Maxspeed:advisory" key="maxspeed:advisory"/>
         <reference ref="t"/>
       </item>
       <item name="II.314" icon="strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Strada riservata ai veicoli a motore" tooltip="Motorroad (road for motor vehicles only)">
-        <key key="traffic_sign" value="IT:II.314"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.314"/>
         <reference ref="t"/>
       </item>
       <item name="II.315" icon="fine_strada_riservata_ai_veicoli_a_motore.svg" type="node" preset_name_label="true" it.tooltip="Fine strada riservata ai veicoli a motore" tooltip="End of motorroad (end of road for motor vehicles only)">
-        <key key="traffic_sign" value="IT:II.315"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.315"/>
         <reference ref="t"/>
       </item>
       <item name="II.316" icon="galleria_blu.svg" type="node" preset_name_label="true" it.tooltip="Galleria" tooltip="Tunnel">
-        <key key="traffic_sign" value="IT:II.316"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.316"/>
         <reference ref="t"/>
       </item>
       <item name="II.317" icon="ponte_blu.svg" type="node" preset_name_label="true" it.tooltip="Ponte" tooltip="Bridge">
-        <key key="traffic_sign" value="IT:II.317"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.317"/>
         <reference ref="t"/>
       </item>
       <item name="II.318" icon="zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Zona residenziale" tooltip="Home zone">
-        <key key="traffic_sign" value="IT:II.318"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.318"/>
         <reference ref="t"/>
       </item>
       <item name="II.319" icon="fine_zona_residenziale.svg" type="node" preset_name_label="true" it.tooltip="Fine zona residenziale" tooltip="End of home zone">
-        <key key="traffic_sign" value="IT:II.319"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.319"/>
         <reference ref="t"/>
       </item>
       <item name="II.320" icon="area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Area pedonale urbana" tooltip="Pedestrian zone">
-        <key key="traffic_sign" value="IT:II.320"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.320"/>
         <reference ref="t"/>
       </item>
       <item name="II.321" icon="fine_area_pedonale.svg" type="node" preset_name_label="true" it.tooltip="Fine area pedonale urbana" tooltip="End of pedestrian zone">
-        <key key="traffic_sign" value="IT:II.321"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.321"/>
         <reference ref="t"/>
       </item>
       <item name="II.322a" icon="zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Zona a traffico limitato" tooltip="Restricted vehicluar access zone">
-        <key key="traffic_sign" value="IT:II.322a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.322a"/>
         <reference ref="t"/>
       </item>
       <item name="II.322b" icon="fine_zona_traffico_limitato.svg" type="node" preset_name_label="true" it.tooltip="Fine zona a traffico limitato" tooltip="End of restricted vehicluar access zone">
-        <key key="traffic_sign" value="IT:II.322b"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.322b"/>
         <reference ref="t"/>
       </item>
       <item name="II.323a" icon="zona_a_velocità_limitata_figura_ii_323-a.svg" type="node" preset_name_label="true" it.tooltip="Zona a velocità limitata" tooltip="Maximum speed zone">
-        <key key="traffic_sign" value="IT:II.323a"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.323a[{maxspeed}]"/>
+        <key key="maxspeed" append_with=";" append_regex_search="^IT:" value_template="{maxspeed}"/>
+        <key key="zone:maxspeed" append_with=";" append_regex_search="^IT:" value_template="IT:{maxspeed}"/>
         <reference ref="t"/>
       </item>
       <item name="II.323b" icon="fine_zona_a_velocità_limitata_figura_ii_323-b.svg" type="node" preset_name_label="true" it.tooltip="Fine zona a velocità limitata" tooltip="End maximum speed zone">
-        <key key="traffic_sign" value="IT:II.323b"/>
+        <text text="Maxspeed" key="nosave:maxspeed"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value_template="IT:II.323b[{nosave:maxspeed}]"/>
+        <key key="maxspeed" append_with=";" append_regex_search="^IT:" value="implicit"/>
         <reference ref="t"/>
       </item>
       <item name="II.324" icon="attraversamento_ciclabile_2.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento ciclabile" tooltip="Bicycle crossing">
-        <key key="traffic_sign" value="IT:II.324"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.324"/>
         <reference ref="t"/>
       </item>
       <item name="II.325" icon="svolta_a_sx_semidiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra semidiretta" tooltip="Route for making an indirect left turn">
-        <key key="traffic_sign" value="IT:II.325"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.325"/>
         <reference ref="t"/>
       </item>
       <item name="II.326" icon="svolta_a_sx_indiretta.svg" type="node" preset_name_label="true" it.tooltip="Svolta a sinistra indiretta" tooltip="Route for making an indirect left turn">
-        <key key="traffic_sign" value="IT:II.326"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.326"/>
         <reference ref="t"/>
       </item>
       <item name="II.327" icon="inversione_di_marcia.svg" type="node" preset_name_label="true" it.tooltip="Inversione di marcia" tooltip="Infrastructure for reversing (u-turn)">
-        <key key="traffic_sign" value="IT:II.327"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.327"/>
         <reference ref="t"/>
       </item>
       <item name="II.328" icon="piazzola_su_viabilità_ordinaria.svg" type="node" preset_name_label="true" it.tooltip="Piazzola su viabilità ordinaria" tooltip="Emergency stopping place">
-        <key key="traffic_sign" value="IT:II.328"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.328"/>
         <reference ref="t"/>
       </item>
       <item name="II.329" icon="piazzola_autostradale_sos.svg" type="node" preset_name_label="true" it.tooltip="Piazzola + SOS autostradale" tooltip="Emergency stopping place with emergency phone (on motorways)">
-        <key key="traffic_sign" value="IT:II.329"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.329"/>
         <reference ref="t"/>
       </item>
       <item name="II.330" icon="transitabilità_1.svg" type="node" preset_name_label="true" it.tooltip="Transitabilità" tooltip="Road open or closed">
-        <key key="traffic_sign" value="IT:II.330"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.330"/>
         <reference ref="t"/>
       </item>
       <item name="II.337" icon="uso_corsie_figura_ii_337.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (no trucks)">
-        <key key="traffic_sign" value="IT:II.337"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.337"/>
         <reference ref="t"/>
       </item>
       <item name="II.338" icon="uso_corsie_figura_ii_338.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (minimum speed)">
-        <key key="traffic_sign" value="IT:II.338"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.338"/>
         <reference ref="t"/>
       </item>
       <item name="II.339" icon="uso_corsie_figura_ii_339.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
-        <key key="traffic_sign" value="IT:II.339"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.339"/>
         <reference ref="t"/>
       </item>
       <item name="II.340" icon="uso_corsie_figura_ii_340.svg" type="node" preset_name_label="true" it.tooltip="Uso corsie" tooltip="Lanes usage (bus lane)">
-        <key key="traffic_sign" value="IT:II.340"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.340"/>
         <reference ref="t"/>
       </item>
       <item name="II.341" icon="variazione_corsie_disponibili_figura_ii_341.svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (2 -&gt; 1)">
-        <key key="traffic_sign" value="IT:II.341"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.341"/>
         <reference ref="t"/>
       </item>
       <item name="II.342" icon="variazione_corsie_disponibili_figura_ii_342.svg" type="node" preset_name_label="true" it.tooltip="Variazione corsie disponibili" tooltip="Change in the number of lanes (1 -&gt; 2)">
-        <key key="traffic_sign" value="IT:II.342"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.342"/>
         <reference ref="t"/>
       </item>
       <item name="II.345" icon="inizio_autostrada_figura_ii_345.svg" type="node" preset_name_label="true" it.tooltip="Inizio autostrada (sfondo verde) / inizio strada extraurbana principale (sfondo blu)" tooltip="Motorway (green background) / Expressway (blue background)">
-        <key key="traffic_sign" value="IT:II.345"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.345"/>
         <reference ref="t"/>
       </item>
       <item name="II.346" icon="segnale_fine_autostrada.svg" type="node" preset_name_label="true" it.tooltip="Fine autostrada (sfondo verde) / fine strada extraurbana principale (sfondo blu)" tooltip="End motorway (green background) / end expressway (blue background)">
-        <key key="traffic_sign" value="IT:II.346"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.346"/>
         <reference ref="t"/>
       </item>
       <item name="II.348" icon="senso_unico_a_destra.svg" type="node" preset_name_label="true" it.tooltip="Senso unico parallelo" tooltip="One way">
-        <key key="traffic_sign" value="IT:II.348"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.348"/>
         <reference ref="t"/>
       </item>
       <item name="II.349" icon="senso_unico_frontale.svg" type="node" preset_name_label="true" it.tooltip="Senso unico frontale" tooltip="One way">
-        <key key="traffic_sign" value="IT:II.349"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.349"/>
         <reference ref="t"/>
       </item>
       <item name="II.350" icon="preavviso_deviazione_consigliata_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Preavviso deviazione consigliata autocarri in transito" tooltip="Suggested detour for trucks ahead">
-        <key key="traffic_sign" value="IT:II.350"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.350"/>
         <reference ref="t"/>
       </item>
       <item name="II.351" icon="direzione_autocarri_consigliata.svg" type="node" preset_name_label="true" it.tooltip="Deviazione consigliata autocarri in transito" tooltip="Advised itinerary for heavy vehicles">
-        <key key="traffic_sign" value="IT:II.351"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.351"/>
         <reference ref="t"/>
       </item>
       <item name="II.352" icon="limiti_di_velocità_generali_figura_ii_352.svg" type="node" preset_name_label="true" it.tooltip="Limiti di velocità generali" tooltip="General speed limits">
-        <key key="traffic_sign" value="IT:II.352"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.352"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali che forniscono indicazioni di servizi utili" name="Information, facilities or service signs" icon="rifornimento.svg">
       <item name="II.353" icon="pronto_soccorso_figura_ii_353.svg" type="node" preset_name_label="true" it.tooltip="Pronto soccorso" tooltip="First aid">
-        <key key="traffic_sign" value="IT:II.353"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.353"/>
         <reference ref="t"/>
       </item>
       <item name="II.354" icon="riparazioni.svg" type="node" preset_name_label="true" it.tooltip="Assistenza meccanica" tooltip="Breakdown service">
-        <key key="traffic_sign" value="IT:II.354"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.354"/>
         <reference ref="t"/>
       </item>
       <item name="II.355" icon="telefono.svg" type="node" preset_name_label="true" it.tooltip="Telefono" tooltip="Telephone">
-        <key key="traffic_sign" value="IT:II.355"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.355"/>
         <reference ref="t"/>
       </item>
       <item name="II.356" icon="rifornimento.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento" tooltip="Filling station">
-        <key key="traffic_sign" value="IT:II.356"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.356"/>
         <reference ref="t"/>
       </item>
       <item name="II.357" icon="rifornimento_verde.svg" type="node" preset_name_label="true" it.tooltip="Rifornimento (verde)" tooltip="Filling station (green)">
-        <key key="traffic_sign" value="IT:II.357"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.357"/>
         <reference ref="t"/>
       </item>
       <item name="II.358" icon="fermata_autobus.svg" type="node" preset_name_label="true" it.tooltip="Fermata autobus" tooltip="Bus stop">
-        <key key="traffic_sign" value="IT:II.358"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.358"/>
         <reference ref="t"/>
       </item>
       <item name="II.359" icon="fermata_tram.svg" type="node" preset_name_label="true" it.tooltip="Fermata tram" tooltip="Tramway stop">
-        <key key="traffic_sign" value="IT:II.359"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.359"/>
         <reference ref="t"/>
       </item>
       <item name="II.360" icon="informazioni_figura_ii_360.svg" type="node" preset_name_label="true" it.tooltip="Informazioni" tooltip="Informations">
-        <key key="traffic_sign" value="IT:II.360"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.360"/>
         <reference ref="t"/>
       </item>
       <item name="II.361" icon="ostello_per_la_gioventù.svg" type="node" preset_name_label="true" it.tooltip="Ostello per la gioventù" tooltip="Youth hostel">
-        <key key="traffic_sign" value="IT:II.361"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.361"/>
         <reference ref="t"/>
       </item>
       <item name="II.362" icon="area_pic_nic.svg" type="node" preset_name_label="true" it.tooltip="Area per picnic" tooltip="Picnic site">
-        <key key="traffic_sign" value="IT:II.362"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.362"/>
         <reference ref="t"/>
       </item>
       <item name="II.363" icon="campeggio.svg" type="node" preset_name_label="true" it.tooltip="Campeggio" tooltip="Camping and caravan site">
-        <key key="traffic_sign" value="IT:II.363"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.363"/>
         <reference ref="t"/>
       </item>
       <item name="II.364" icon="radio_informazioni_stradali.svg" type="node" preset_name_label="true" it.tooltip="Radio informazioni stradali" tooltip="Radio station giving traffic information">
-        <key key="traffic_sign" value="IT:II.364"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.364"/>
         <reference ref="t"/>
       </item>
       <item name="II.365" icon="albergo.svg" type="node" preset_name_label="true" it.tooltip="Motel" tooltip="Hotel or motel">
-        <key key="traffic_sign" value="IT:II.365"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.365"/>
         <reference ref="t"/>
       </item>
       <item name="II.366" icon="bar.svg" type="node" preset_name_label="true" it.tooltip="Bar" tooltip="Refreshments or cafeteria">
-        <key key="traffic_sign" value="IT:II.366"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.366"/>
         <reference ref="t"/>
       </item>
       <item name="II.367" icon="ristorante.svg" type="node" preset_name_label="true" it.tooltip="Ristorante" tooltip="Restaurant">
-        <key key="traffic_sign" value="IT:II.367"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.367"/>
         <reference ref="t"/>
       </item>
       <item name="II.368" icon="parcheggio_di_scambio_con_autobus.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (bus)" tooltip="Park and ride (bus)">
-        <key key="traffic_sign" value="IT:II.368"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.368"/>
         <reference ref="t"/>
       </item>
       <item name="II.369" icon="parcheggio_di_scambio_con_tram.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (tram)" tooltip="Park and ride (tramway)">
-        <key key="traffic_sign" value="IT:II.369"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.369"/>
         <reference ref="t"/>
       </item>
       <item name="II.370" icon="parcheggio_di_scambio_con_metro.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (treno)" tooltip="Park and ride (railway)">
-        <key key="traffic_sign" value="IT:II.370"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.370"/>
         <reference ref="t"/>
       </item>
       <item name="II.371" icon="parcheggio__escursionismo.svg" type="node" preset_name_label="true" it.tooltip="Parcheggio di scambio (pedoni)" tooltip="Starting-point for walks">
-        <key key="traffic_sign" value="IT:II.371"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.371"/>
         <reference ref="t"/>
       </item>
       <item name="II.372" icon="auto_su_treno_figura_ii_372.svg" type="node" preset_name_label="true" it.tooltip="Auto su treno" tooltip="Motorail">
-        <key key="traffic_sign" value="IT:II.372"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.372"/>
         <reference ref="t"/>
       </item>
       <item name="II.373" icon="auto_al_seguito_figura_ii_373.svg" type="node" preset_name_label="true" it.tooltip="Auto al seguito" tooltip="Motorail">
-        <key key="traffic_sign" value="IT:II.373"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.373"/>
         <reference ref="t"/>
       </item>
       <item name="II.374" icon="auto_su_nave.svg" type="node" preset_name_label="true" it.tooltip="Auto su nave" tooltip="Ferry">
-        <key key="traffic_sign" value="IT:II.374"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.374"/>
         <reference ref="t"/>
       </item>
       <item name="II.375" icon="taxi.svg" type="node" preset_name_label="true" it.tooltip="Taxi" tooltip="Taxi">
-        <key key="traffic_sign" value="IT:II.375"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.375"/>
         <reference ref="t"/>
       </item>
       <item name="II.376" icon="area_di_servizio.svg" type="node" preset_name_label="true" it.tooltip="Area di servizio" tooltip="Service area">
-        <key key="traffic_sign" value="IT:II.376"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.376"/>
         <reference ref="t"/>
       </item>
       <item name="II.377" icon="area_con_scarico_liquami.svg" type="node" preset_name_label="true" it.tooltip="Area attrezzata con impianti di scarico" tooltip="Caravan waste disposal site">
-        <key key="traffic_sign" value="IT:II.377"/>
+        <key key="traffic_sign" append_with=";" append_regex_search="^IT:" value="IT:II.377"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Pannelli integrativi" name="Additional panels" icon="andamento_strada_principale.svg">
       <item name="MII.1" icon="distanza.svg" type="node" preset_name_label="true" it.tooltip="Distanza" tooltip="Distance">
-        <key key="traffic_sign" value="IT:MII.1"/>
+        <text text="Distance" key="nosave:distance"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value_template="IT:MII.1[{nosave:distance}]"/>
         <reference ref="t"/>
       </item>
       <item name="MII.2" icon="estesa_1.svg" type="node" preset_name_label="true" it.tooltip="Estesa" tooltip="Length">
-        <key key="traffic_sign" value="IT:MII.2"/>
+        <text text="Extent" key="nosave:extent"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value_template="IT:MII.2[{nosave:extent}]"/>
         <reference ref="t"/>
       </item>
       <item name="MII.3" icon="validità_1.svg" type="node" preset_name_label="true" it.tooltip="Periodo" tooltip="Period">
-        <key key="traffic_sign" value="IT:MII.3"/>
+        <text text="Period" key="nosave:period"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value_template="IT:MII.3[{nosave:period}]"/>
         <reference ref="t"/>
       </item>
       <item name="MII.4a" icon="limitazione.svg" type="node" preset_name_label="true" it.tooltip="Limitazioni" tooltip="Limitations">
-        <key key="traffic_sign" value="IT:MII.4a"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.4a"/>
         <reference ref="t"/>
       </item>
       <item name="MII.4b" icon="eccezione.svg" type="node" preset_name_label="true" it.tooltip="Eccezioni" tooltip="Exceptions">
-        <key key="traffic_sign" value="IT:MII.4b"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.4b"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5a1" icon="inizio_vert.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
-        <key key="traffic_sign" value="IT:MII.5a1"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5a1"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5a2" icon="continua_vert.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
-        <key key="traffic_sign" value="IT:MII.5a2"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5a2"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5a3" icon="fine_vert.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
-        <key key="traffic_sign" value="IT:MII.5a3"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5a3"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5b1" icon="inizio_orizz.svg" type="node" preset_name_label="true" it.tooltip="Inizio" tooltip="Begin">
-        <key key="traffic_sign" value="IT:MII.5b1"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5b1"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5b2" icon="continua_orizz.svg" type="node" preset_name_label="true" it.tooltip="Continuazione" tooltip="Repeat">
-        <key key="traffic_sign" value="IT:MII.5b2"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5b2"/>
         <reference ref="t"/>
       </item>
       <item name="MII.5b3" icon="fine_orizz.svg" type="node" preset_name_label="true" it.tooltip="Fine" tooltip="End">
-        <key key="traffic_sign" value="IT:MII.5b3"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.5b3"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6a" icon="segnaletica_in_rifacimento.svg" type="node" preset_name_label="true" it.tooltip="Segni orizzontali in corso di rifacimento" tooltip="Missing road markings">
-        <key key="traffic_sign" value="IT:MII.6a"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6a"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6b" icon="incidente.svg" type="node" preset_name_label="true" it.tooltip="Incidente" tooltip="Accident">
-        <key key="traffic_sign" value="IT:MII.6b"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6b"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6c" icon="attraversamento_binari.svg" type="node" preset_name_label="true" it.tooltip="Attraversamento di binari" tooltip="Road intersects tracks">
-        <key key="traffic_sign" value="IT:MII.6c"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6c"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6d" icon="sgombraneve_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Sgombraneve in azione" tooltip="Snowplow in action">
-        <key key="traffic_sign" value="IT:MII.6d"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6d"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6e" icon="zona_soggetta_ad_allagamento.svg" type="node" preset_name_label="true" it.tooltip="Zona soggetta ad allagamento" tooltip="Flood prone zone">
-        <key key="traffic_sign" value="IT:MII.6e"/>
-        <key key="hazard" value="flood_prone"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6e"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="flood_prone"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6f" icon="coda.svg" type="node" preset_name_label="true" it.tooltip="Coda" tooltip="Congestion">
-        <key key="traffic_sign" value="IT:MII.6f"/>
-        <key key="hazard" value="queues_likely"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6f"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="queues_likely"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6g" icon="mezzi_di_lavoro_in_azione.svg" type="node" preset_name_label="true" it.tooltip="Mezzi di lavoro in azione" tooltip="Heavy equipment in action">
-        <key key="traffic_sign" value="IT:MII.6g"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6g"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6h" icon="strada_sdrucciolevole_per_ghiaccio.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per ghiaccio" tooltip="Slippery road because of ice or snow">
-        <key key="traffic_sign" value="IT:MII.6h"/>
-        <key key="hazard" value="ice"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6h"/>
+        <key key="hazard" append_with=";" append_regex_search="^IT:" value="ice"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6i" icon="strada_sdrucciolevole_per_pioggia.svg" type="node" preset_name_label="true" it.tooltip="Strada sdrucciolevole per pioggia" tooltip="Slippery road because of rain">
-        <key key="traffic_sign" value="IT:MII.6i"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6i"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6l" icon="autocarri_in_rallentamento.svg" type="node" preset_name_label="true" it.tooltip="Autocarri in rallentamento" tooltip="Trucks slowing down">
-        <key key="traffic_sign" value="IT:MII.6l"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6l"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6m" icon="rimozione_forzata.svg" type="node" preset_name_label="true" it.tooltip="Zona rimozione coatta" tooltip="Forced removal">
-        <key key="traffic_sign" value="IT:MII.6m"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6m"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6n" icon="segnale_di_corsia.svg" type="node" preset_name_label="true" it.tooltip="Segnale di corsia">
-        <key key="traffic_sign" value="IT:MII.6n"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6n"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6p1" icon="tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
-        <key key="traffic_sign" value="IT:MII.6p1"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6p1"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6p2" icon="numero_del_tornante.svg" type="node" preset_name_label="true" it.tooltip="Tornanti" tooltip="Hairpin turn">
-        <key key="traffic_sign" value="IT:MII.6p2"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6p2"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6q1" icon="pulizia_meccanica_della_strada.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
-        <key key="traffic_sign" value="IT:MII.6q1"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6q1"/>
         <reference ref="t"/>
       </item>
       <item name="MII.6q2" icon="pulizia_meccanica_della_strada_1.svg" type="node" preset_name_label="true" it.tooltip="Pulizia stradale" tooltip="Road cleaning">
-        <key key="traffic_sign" value="IT:MII.6q2"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.6q2"/>
         <reference ref="t"/>
       </item>
       <item name="MII.7" icon="andamento_strada_principale.svg" type="node" preset_name_label="true" it.tooltip="Andamento strada principale (disegni diversi a seconda della topologia)" tooltip="Bend in priority road">
-        <key key="traffic_sign" value="IT:MII.7"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.7"/>
         <reference ref="t"/>
       </item>
     </group>
     <group icon_size="48" it.name="Segnali compositi" name="Composite signs" icon="itinerario_obbligatorio_merci_pericolose.svg">
       <item name="MII.8a" icon="divieto_di_sosta_temporaneo.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
-        <key key="traffic_sign" value="IT:MII.8a"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.8a"/>
         <reference ref="t"/>
       </item>
       <item name="MII.8b" icon="itinerario_obbligatorio_merci_pericolose.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito" tooltip="Mandatory direction for vehicles carrying dangerous goods">
-        <key key="traffic_sign" value="IT:MII.8b"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.8b"/>
         <reference ref="t"/>
       </item>
       <item name="MII.8c" icon="preavviso_deviazione_obbligatoria_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
-        <key key="traffic_sign" value="IT:MII.8c"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.8c"/>
         <reference ref="t"/>
       </item>
       <item name="MII.8d" icon="divieto_di_transito_autocarri.svg" type="node" preset_name_label="true" it.tooltip="Esempio di segnale composito">
-        <key key="traffic_sign" value="IT:MII.8d"/>
+        <key key="traffic_sign" append_with="," append_regex_search="^IT:" value="IT:MII.8d"/>
         <reference ref="t"/>
       </item>
     </group>

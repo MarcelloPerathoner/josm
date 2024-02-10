@@ -12,6 +12,7 @@ import javax.swing.JPopupMenu;
 import org.openstreetmap.josm.data.osm.Tag;
 import org.openstreetmap.josm.gui.dialogs.properties.HelpTagAction;
 import org.openstreetmap.josm.gui.dialogs.properties.TaginfoAction;
+import org.openstreetmap.josm.tools.template_engine.TemplateEntry;
 
 /**
  * A preset item associated to an OSM key.
@@ -32,6 +33,8 @@ abstract class KeyedItem extends TextItem {
      * Default is "keyvalue!" for {@link Key} and "none" for {@link Text}, {@link Combo}, {@link MultiSelect} and {@link Check}.
      */
     final MatchType matchType;
+    /** A value template */
+    final TemplateEntry valueTemplate;
 
     /**
      * Constructor.
@@ -42,6 +45,7 @@ abstract class KeyedItem extends TextItem {
         super(attributes);
         key = attributes.get("key");
         matchType = setMatchType(attributes.get("match"));
+        valueTemplate = TaggingPresetUtils.parseTemplate(attributes.get("value_template"));
     }
 
     abstract class Instance extends Item.Instance {

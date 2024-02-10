@@ -54,7 +54,7 @@ final class Combo extends ComboMultiSelect {
      */
     private Combo(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
-        editable = Boolean.parseBoolean(attributes.getOrDefault("editable", "true"));
+        editable = TaggingPresetUtils.parseBoolean(attributes.getOrDefault("editable", "true"));
     }
 
     /**

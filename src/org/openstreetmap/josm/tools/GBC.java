@@ -59,6 +59,22 @@ public final class GBC extends GridBagConstraints {
     }
 
     /**
+     * Try to fill horizontally
+     * @return This constraint for chaining.
+     */
+    public GBC hfill() {
+        return fill(HORIZONTAL);
+    }
+
+    /**
+     * Try to fill vertically
+     * @return This constraint for chaining.
+     */
+    public GBC vfill() {
+        return fill(VERTICAL);
+    }
+
+    /**
      * Set fill to the given value
      * @param value The filling value, either NONE, HORIZONTAL, VERTICAL or BOTH
      * @return This constraint for chaining.

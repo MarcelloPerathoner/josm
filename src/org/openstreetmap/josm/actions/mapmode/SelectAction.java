@@ -722,8 +722,11 @@ public class SelectAction extends MapMode implements ModifierExListener, KeyPres
         }
 
         Collection<Node> affectedNodes = AllNodesVisitor.getAllNodes(selection);
-        // for these transformations, having only one node makes no sense - quit silently
-        if (affectedNodes.size() < 2 && mode == Mode.SCALE) {
+        // not enough nodes for these transformations - quit silently
+        if (mode == Mode.SCALE && affectedNodes.size() < 2) {
+            return false;
+        }
+        if (mode == Mode.ROTATE && affectedNodes.size() < 1) {
             return false;
         }
         Command c = getLastCommandInDataset(ds);

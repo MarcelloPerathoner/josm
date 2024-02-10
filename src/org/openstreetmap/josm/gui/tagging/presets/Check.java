@@ -39,7 +39,7 @@ final class Check extends InteractiveItem {
         super(attributes);
         valueOn = attributes.getOrDefault("value_on", OsmUtils.TRUE_VALUE);
         valueOff = attributes.getOrDefault("value_off", OsmUtils.FALSE_VALUE);
-        disableOff = Boolean.parseBoolean(attributes.get("disable_off"));
+        disableOff = TaggingPresetUtils.parseBoolean(attributes.get("disable_off"));
         defaultValue = attributes.get("default");
     }
 

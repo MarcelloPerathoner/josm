@@ -50,7 +50,6 @@ import org.openstreetmap.josm.data.vector.VectorPrimitive;
 import org.openstreetmap.josm.data.vector.VectorRelation;
 import org.openstreetmap.josm.data.vector.VectorWay;
 import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.layer.AbstractCachedTileSourceLayer;
 import org.openstreetmap.josm.gui.layer.LayerManager;
 import org.openstreetmap.josm.gui.layer.MapViewGraphics;

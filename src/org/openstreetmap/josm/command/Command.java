@@ -66,6 +66,7 @@ public abstract class Command implements PseudoCommand {
         private final LatLon latLon;
         private final EastNorth eastNorth; // cached EastNorth to be used for applying exact displacement
         private final boolean modified;
+        private final String direction;
 
         /**
          * Constructs a new {@code OldNodeState} for the given node.
@@ -75,6 +76,7 @@ public abstract class Command implements PseudoCommand {
             latLon = node.getCoor();
             eastNorth = node.getEastNorth();
             modified = node.isModified();
+            direction = node.get("direction");
         }
 
         /**
@@ -97,6 +99,13 @@ public abstract class Command implements PseudoCommand {
         }
 
         /**
+         * Returns old direction tag.
+         */
+        public final String getDirection() {
+            return direction;
+        }
+
+        /**
          * Returns old modified state.
          * @return old modified state
          * @see Node #isModified()
@@ -107,7 +116,7 @@ public abstract class Command implements PseudoCommand {
 
         @Override
         public int hashCode() {
-            return Objects.hash(latLon, eastNorth, modified);
+            return Objects.hash(latLon, eastNorth, modified, direction);
         }
 
         @Override
@@ -116,6 +125,7 @@ public abstract class Command implements PseudoCommand {
             if (obj == null || getClass() != obj.getClass()) return false;
             OldNodeState that = (OldNodeState) obj;
             return modified == that.modified &&
+                    Objects.equals(direction, that.direction) &&
                     Objects.equals(latLon, that.latLon) &&
                     Objects.equals(eastNorth, that.eastNorth);
         }

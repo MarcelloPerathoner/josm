@@ -13,7 +13,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,7 +24,6 @@ import javax.imageio.ImageIO;
 import org.openstreetmap.gui.jmapviewer.OsmMercator;
 import org.openstreetmap.josm.cli.CLIModule;
 import org.openstreetmap.josm.data.Bounds;
-import org.openstreetmap.josm.data.Preferences;
 import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
@@ -86,8 +84,6 @@ public class RenderingCLI implements CLIModule {
     private String argProjection;
     private Integer argMaxImageSize;
     private List<String> argSet;
-
-    private StyleData argCurrentStyle;
 
     private enum Option {
         HELP(false, 'h'),
@@ -208,7 +204,7 @@ public class RenderingCLI implements CLIModule {
         for (Option o : Option.values()) {
             if (o.requiresArgument()) {
                 parser.addArgumentParameter(o.getName(),
-                        o == Option.SETTING ? OptionCount.MULTIPLE : OptionCount.OPTIONAL,
+                        o == Option.SETTING || o == Option.SET || o == Option.STYLE ? OptionCount.MULTIPLE : OptionCount.OPTIONAL,
                         arg -> handleOption(o, arg));
             } else {
                 parser.addFlagParameter(o.getName(), () -> handleOption(o));
@@ -218,17 +214,12 @@ public class RenderingCLI implements CLIModule {
             }
         }
 
-        argCurrentStyle = new StyleData();
         argStyles = new ArrayList<>();
         argSet = new ArrayList<>();
 
         parser.parseOptionsOrExit(Arrays.asList(argArray));
-
-        if (argCurrentStyle.styleUrl != null) {
-            argStyles.add(argCurrentStyle);
-        } else if (argStyles.isEmpty()) {
-            argCurrentStyle.styleUrl = "resource://styles/standard/elemstyles.mapcss";
-            argStyles.add(argCurrentStyle);
+        if (argStyles.isEmpty()) {
+            argStyles.add(new StyleData("resource://styles/standard/elemstyles.mapcss"));
         }
     }
 
@@ -255,11 +246,7 @@ public class RenderingCLI implements CLIModule {
             argInput = arg;
             break;
         case STYLE:
-            if (argCurrentStyle.styleUrl != null) {
-                argStyles.add(argCurrentStyle);
-                argCurrentStyle = new StyleData();
-            }
-            argCurrentStyle.styleUrl = arg;
+            argStyles.add(new StyleData(arg));
             break;
         case OUTPUT:
             argOutput = arg;
@@ -295,7 +282,8 @@ public class RenderingCLI implements CLIModule {
                         tr("Expected key and value, separated by '':'' character for option {0}, but got ''{1}''",
                                 "--setting", arg));
             }
-            argCurrentStyle.settings.put(comp[0].trim(), comp[1].trim());
+            if (!argStyles.isEmpty())
+                argStyles.get(argStyles.size() - 1).settings.put(comp[0].trim(), comp[1].trim());
             break;
         case SCALE:
             try {

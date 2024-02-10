@@ -98,6 +98,7 @@ public abstract class TransformNodesCommand extends Command {
         for (Node n : nodes) {
             OldNodeState os = oldStates.get(n);
             n.setCoor(os.getLatLon());
+            n.put("direction", os.getDirection());
             n.setModified(os.isModified());
         }
     }

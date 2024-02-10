@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +19,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.JLayeredPane;
@@ -411,7 +414,9 @@ public class TaggingPreset extends TaggingPresetBase implements Predicate<IPrimi
         public Map<String, String> getChangedTags() {
             Map<String, String> result = new HashMap<>();
             instances.forEach((item, instance) -> instance.addChangedTag(result));
-            return result;
+            return result.entrySet().stream()
+                .filter(e -> !e.getKey().startsWith("nosave:"))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
         }
 
         /**

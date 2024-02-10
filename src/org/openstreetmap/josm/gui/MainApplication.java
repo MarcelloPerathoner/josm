@@ -938,7 +938,9 @@ public class MainApplication {
         setupCallbacks();
 
         if (!skipLoadingPlugins) {
-            PluginHandler.loadVeryEarlyPlugins();
+            Collection<PluginInformation> allPlugins = PluginHandler.buildListOfPluginsToLoad(null, null);
+            PluginHandler.loadPluginResources(allPlugins);
+            PluginHandler.loadVeryEarlyPlugins(allPlugins);
         }
         // Configure Look and feel before showing SplashScreen (#19290)
         setupUIManager();

@@ -193,6 +193,9 @@ public class NodeElement extends StyleElement {
     public void paintPrimitive(IPrimitive primitive, MapPaintSettings settings, StyledMapRenderer renderer, Graphics2D g,
             boolean selected, boolean outermember, boolean member) {
         if (primitive instanceof INode node) {
+            if (node.isHighlighted()) {
+                renderer.drawNodeHighlight(g, getBounds(primitive, settings, renderer, g, selected, outermember, member));
+            }
             if (mapImage != null && renderer.isShowIcons()) {
                 renderer.drawNodeIcon(g, node, mapImage, renderer.isInactiveMode() || node.isDisabled(), selected, member, iconTransform);
             } else if (symbol != null) {

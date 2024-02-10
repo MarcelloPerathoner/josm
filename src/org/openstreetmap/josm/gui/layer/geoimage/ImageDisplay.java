@@ -36,7 +36,6 @@ import org.openstreetmap.josm.gui.layer.geoimage.viewers.projections.IImageViewe
 import org.openstreetmap.josm.gui.layer.geoimage.viewers.projections.ImageProjectionRegistry;
 import org.openstreetmap.josm.gui.layer.imagery.ImageryFilterSettings;
 import org.openstreetmap.josm.gui.layer.imagery.ImageryFilterSettings.FilterChangeListener;
-import org.openstreetmap.josm.gui.util.GuiHelper;
 import org.openstreetmap.josm.gui.util.imagery.Vector3D;
 import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
@@ -114,34 +113,9 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
     /** Show a background for the error text (may be hard on eyes) */
     private static final BooleanProperty ERROR_MESSAGE_BACKGROUND = new BooleanProperty("geoimage.message.error.background", false);
 
-    private UpdateImageThread updateImageThreadInstance;
-
     /** The future completed when the image has loaded. */
     transient Future<?> imageLoadingFuture;
     boolean mayInterruptIfRunning = false;
-
-    private class UpdateImageThread extends Thread {
-        private boolean restart;
-
-        @SuppressWarnings("DoNotCall") // we are calling `run` from the thread we want it to be running on (aka recursive)
-        @Override
-        public void run() {
-            updateProcessedImage();
-            if (restart) {
-                restart = false;
-                run();
-            }
-        }
-
-        public void restart() {
-            restart = true;
-            if (!isAlive()) {
-                restart = false;
-                updateImageThreadInstance = new UpdateImageThread();
-                updateImageThreadInstance.start();
-            }
-        }
-    }
 
     @Override
     public void preferenceChanged(PreferenceChangeEvent e) {
@@ -306,7 +280,7 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
                     }
 
                     ImageDisplay.this.image = img;
-                    updateProcessedImage();
+                    processImageAndRepaint();
                     // This will clear the loading info box
                     ImageDisplay.this.oldEntry = ImageDisplay.this.entry;
                     visibleRect = getIImageViewer(entry).getDefaultVisibleRectangle(ImageDisplay.this, image);
@@ -314,7 +288,6 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
                     selectedRect = null;
                     errorLoading = false;
                 }
-                // ImageDisplay.this.repaint(); already done in updateProcessedImage()
             } catch (IOException ex) {
                 if (ex.getCause().getClass() != InterruptedException.class)
                     Logging.error(ex);
@@ -649,12 +622,12 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
 
     protected LoadImageRunnable setImage0(IImageEntry<?> entry) {
         synchronized (this) {
-            this.oldEntry = this.entry;
+            oldEntry = this.entry;
             this.entry = entry;
             if (entry == null) {
                 image = null;
-                updateProcessedImage();
-                this.oldEntry = null;
+                processedImage = null;
+                oldEntry = null;
             }
             errorLoading = false;
         }
@@ -685,17 +658,13 @@ public class ImageDisplay extends JComponent implements Destroyable, PreferenceC
 
     @Override
     public void filterChanged() {
-        if (updateImageThreadInstance != null) {
-            updateImageThreadInstance.restart();
-        } else {
-            updateImageThreadInstance = new UpdateImageThread();
-            updateImageThreadInstance.start();
-        }
+        MainApplication.worker.submit(this::processImageAndRepaint);
     }
 
-    private void updateProcessedImage() {
-        processedImage = image == null ? null : imageProcessor.process(image);
-        GuiHelper.runInEDT(this::repaint);
+    private void processImageAndRepaint() {
+        processedImage = (image == null) ? null : imageProcessor.process(image);
+        // GuiHelper.runInEDT(this::repaint);  // repaint used to be thread-safe
+        repaint();
     }
 
     @Override

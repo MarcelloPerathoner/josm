@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.util;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.util.stream.IntStream;
 
@@ -305,6 +306,22 @@ public final class TableHelper {
     }
 
     /**
+     * Returns the preferred size of a table column's header
+     * @param table the table
+     * @param column the column index
+     * @return the preferred dimension of the header cell
+     */
+    public static Dimension getHeaderPreferredSize(JTable table, int column) {
+        TableColumn col = table.getColumnModel().getColumn(column);
+        TableCellRenderer renderer = col.getHeaderRenderer();
+        if (renderer == null) {
+            renderer = table.getTableHeader().getDefaultRenderer();
+        }
+        return renderer.getTableCellRendererComponent(
+            table, col.getHeaderValue(), false, false, -1, column).getPreferredSize();
+    }
+
+    /**
      * Sets the preferred column width for a given table column from data.
      * <p>
      * The preferred column width will be set to the preferred width of the widest cell.
@@ -313,9 +330,13 @@ public final class TableHelper {
      *
      * @param table the table with data already loaded
      * @param column the column index
+     * @param withHeader include the table header in the column width
      */
-    public static void setPreferredColumnWidth(JTable table, int column) {
+    public static void setPreferredColumnWidth(JTable table, int column, boolean withHeader) {
         int preferredWidth = 1;
+        if (withHeader) {
+            preferredWidth = getHeaderPreferredSize(table, column).width;
+        }
         int rows = table.getRowCount();
         for (int row = 0; row < rows; row++) {
             preferredWidth = Math.max(preferredWidth, table.prepareRenderer(
@@ -328,10 +349,11 @@ public final class TableHelper {
      * Sets the preferred column width for each table column from data.
      *
      * @param table the table with data already loaded
+     * @param withHeader include the table headers in the column widths
      */
-    public static void setPreferredColumnWidths(JTable table) {
+    public static void setPreferredColumnWidths(JTable table, boolean withHeader) {
         for (int col = 0; col < table.getColumnCount(); col++) {
-            setPreferredColumnWidth(table, col);
+            setPreferredColumnWidth(table, col, withHeader);
         }
     }
 }

@@ -1865,7 +1865,6 @@ implements ImageObserver, TileLoaderListener, ZoomChangeListener, FilterChangeLi
     private class TileSourcePainter implements LayerPainter {
         /** The memory handle that will hold our tile source. */
         private MemoryHandle<?> memory;
-        MapView mapView;
 
         @Override
         public void paint(MapViewGraphics graphics) {

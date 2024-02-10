@@ -373,7 +373,7 @@ public final class PluginPreference extends ExtensibleTabPreferenceSetting {
         col.setMinWidth(width);
         col.setMaxWidth(width);
 
-        TableHelper.setPreferredColumnWidth(table, 2);
+        TableHelper.setPreferredColumnWidth(table, 2, false);
 
         TableHelper.setRowHeight(table, ImageProvider.ImageSizes.LARGEICON);
     }

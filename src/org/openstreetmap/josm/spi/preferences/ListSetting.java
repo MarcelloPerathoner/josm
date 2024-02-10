@@ -17,7 +17,6 @@ public class ListSetting extends AbstractSetting<List<String>> {
      */
     public ListSetting(List<String> value) {
         super(value);
-        consistencyTest();
     }
 
     /**
@@ -32,11 +31,6 @@ public class ListSetting extends AbstractSetting<List<String>> {
     @Override
     public ListSetting copy() {
         return ListSetting.create(value);
-    }
-
-    private void consistencyTest() {
-        if (value != null && value.contains(null))
-            throw new IllegalArgumentException("Error: Null as list element in preference setting: " + value);
     }
 
     @Override

@@ -234,8 +234,12 @@ public class TaggingPresetDialog extends JDialog implements PropertyChangeListen
         TaggedHandler handler = instance.getHandler();
 
         if (showApplyButton) {
-            int size = handler.get().size();
-            setTitle(trn("Change {0} object", "Change {0} objects", size, size));
+            if (handler != null) {
+                int size = handler.get().size();
+                setTitle(trn("Change {0} object", "Change {0} objects", size, size));
+            }
+            // in case the caller didn't set a handler, eg. see the Mapillary plugin,
+            // the caller must call setTitle() at some later point
         } else if (showNewRelationButton) {
             setTitle(tr("New Relation"));
         } else {

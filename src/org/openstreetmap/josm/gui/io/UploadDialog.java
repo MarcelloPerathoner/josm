@@ -99,7 +99,6 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
     /** the model keeping the state of the changeset tags */
     private final transient UploadDialogModel model = new UploadDialogModel();
 
-    private transient DataSet dataSet;
     private transient ChangeListener changesetTagListener;
 
     /**
@@ -277,7 +276,7 @@ public class UploadDialog extends AbstractUploadDialog implements PreferenceChan
         model.putAll(map);     // init with tags from history
         model.putAll(dataSet); // overwrite with tags from the dataset
         if (Config.getPref().getBoolean("upload.source.obtainautomatically", false)
-        && this.dataSet.getChangeSetTags().containsKey(UploadDialogModel.SOURCE)) {
+                && dataSet.getChangeSetTags().containsKey(UploadDialogModel.SOURCE)) {
             model.put(UploadDialogModel.SOURCE, pnlBasicUploadSettings.getSourceFromLayer());
         }
 

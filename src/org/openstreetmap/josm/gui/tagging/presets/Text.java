@@ -46,8 +46,6 @@ final class Text extends InteractiveItem {
     private final String autoIncrement;
     /** A comma separated list of alternative keys to use for autocompletion. */
     private final String alternativeAutocompleteKeys;
-    /** A value template */
-    private final TemplateEntry valueTemplate;
     /** The default value for the item. If not specified, the current value of the key is chosen as
      * default (if applicable). Defaults to "". */
     private final String defaultValue;
@@ -64,7 +62,6 @@ final class Text extends InteractiveItem {
      */
     private Text(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
-        valueTemplate = TaggingPresetUtils.parseTemplate(attributes.get("value_template"));
         autoIncrement = attributes.get("auto_increment");
         alternativeAutocompleteKeys = attributes.get("alternative_autocomplete_keys");
         defaultValue = attributes.get("default");

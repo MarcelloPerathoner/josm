@@ -80,7 +80,7 @@ public class WikimediaCommonsLoader extends PleaseWaitRunnable {
         }
 
         @Override
-        protected void updateEnabledState() {
+        public void updateEnabledState() {
             setEnabled(MainApplication.isDisplayingMapView());
         }
     }

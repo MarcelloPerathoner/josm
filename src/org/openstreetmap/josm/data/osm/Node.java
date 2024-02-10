@@ -20,7 +20,7 @@ import org.openstreetmap.josm.data.projection.ProjectionRegistry;
  *
  * @author imi
  */
-public final class Node extends OsmPrimitive implements INode {
+public class Node extends OsmPrimitive implements INode {
 
     static final UniqueIdGenerator idGenerator = new UniqueIdGenerator();
 

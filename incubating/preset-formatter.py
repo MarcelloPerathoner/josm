@@ -31,6 +31,9 @@ DESCRIPTION = {
 }
 """ Preset description in various langauges """
 
+COUNTRY_PREFIX = "IT:"
+""" The prefix to add to all ids. """
+
 ICON = "flag.svg"
 """ The root icon for the preset menu. """
 
@@ -44,7 +47,7 @@ THUMBS = [
 """The icons to use to represent their groups."""
 
 TAGS : Dict[str,str|List[str]] = {
-    # "II.0"   : "traffic_sign={id};hazard hazard=road_works",
+    # "II.0"   : "traffic_sign={id} hazard=road_works",
     "II.1"   : "traffic_sign={id} hazard=damaged_road", # "unapproved"
     "II.2"   : "traffic_sign={id} hazard=bump",
     "II.3"   : "traffic_sign={id} hazard=dip",
@@ -57,8 +60,8 @@ TAGS : Dict[str,str|List[str]] = {
     "II.12"  : "traffic_sign={id} hazard=level_crossing crossing:barrier=no",
     "II.13"  : "traffic_sign={id} hazard=crossing",
     "II.14"  : "traffic_sign={id} hazard=cyclists",
-    "II.15"  : "traffic_sign={id} hazard=steep_incline steep_incline=down incline=*",
-    "II.16"  : "traffic_sign={id} hazard=steep_incline steep_incline=up incline=*",
+    "II.15"  : "traffic_sign={id}[{{incline}}] hazard=steep_incline steep_incline=down incline=*",
+    "II.16"  : "traffic_sign={id}[{{incline}}] hazard=steep_incline steep_incline=up incline=*",
     "II.17"  : "traffic_sign={id} hazard=road_narrows",
     "II.18"  : "traffic_sign={id} hazard=road_narrows",
     "II.19"  : "traffic_sign={id} hazard=road_narrows",
@@ -79,28 +82,28 @@ TAGS : Dict[str,str|List[str]] = {
     "II.32"  : "traffic_sign={id} hazard=low_flying_aircraft",
     "II.33"  : "traffic_sign={id} hazard=side_winds",
     "II.34"  : "traffic_sign={id} hazard=wildfires",       # unofficial wildfires
-    "II.35"  : "traffic_sign={id}",
+    "II.35"  : "traffic_sign={id} hazard=*",
 
-    "II.36"  : "traffic_sign={id}",
-    "II.37"  : "traffic_sign={id}",
-    "II.38"  : "traffic_sign={id}",
-    "II.39"  : "traffic_sign={id}",
+    "II.36"  : "traffic_sign={id}", # stop
+    "II.37"  : "traffic_sign={id}", # give way
+    "II.38"  : "traffic_sign={id}[{{distance}}]",
+    "II.39"  : "traffic_sign={id}[{{distance}}]",
     "II.40"  : "traffic_sign={id} priority_road=implicit",
     "II.41"  : "traffic_sign={id} priority=no",
     "II.42"  : "traffic_sign={id} priority_road=implicit",
-    "II.43a" : "traffic_sign={id}",
-    "II.43b" : "traffic_sign={id}",
-    "II.43c" : "traffic_sign={id}",
-    "II.43d" : "traffic_sign={id}",
-    "II.43e" : "traffic_sign={id}",
-    "II.44"  : "traffic_sign={id};priority_road=*",
-    "II.45"  : "traffic_sign={id};priority=yes",
+    "II.43a" : "traffic_sign={id} hazard=dangerous_junction",
+    "II.43b" : "traffic_sign={id} hazard=dangerous_junction dangerous_junction=right",
+    "II.43c" : "traffic_sign={id} hazard=dangerous_junction dangerous_junction=left",
+    "II.43d" : "traffic_sign={id} hazard=dangerous_junction dangerous_junction=right",
+    "II.43e" : "traffic_sign={id} hazard=dangerous_junction dangerous_junction=left",
+    "II.44"  : "traffic_sign={id} priority_road=*",
+    "II.45"  : "traffic_sign={id} priority=yes",
 
     "II.46"  : "traffic_sign={id} vehicle=no",
     "II.47"  : "traffic_sign={id} oneway=yes",
     "II.48"  : "traffic_sign={id} overtaking=no",
-    "II.49"  : "traffic_sign={id} mindistance=*",
-    "II.50"  : "traffic_sign={id} maxspeed=*",
+    "II.49"  : "traffic_sign={id}[{{mindistance}}] mindistance=*",
+    "II.50"  : "traffic_sign={id}[{{maxspeed}}] maxspeed=*",
     "II.52"  : "traffic_sign={id} overtaking:hgv=no",
     "II.53"  : "traffic_sign={id} carriage=no",
     "II.54"  : "traffic_sign={id} foot=no",
@@ -110,25 +113,27 @@ TAGS : Dict[str,str|List[str]] = {
     "II.58"  : "traffic_sign={id} motorcar=no",
     "II.59"  : "traffic_sign={id} bus=no tourist_bus=no",
     "II.60a" : "traffic_sign={id} hgv=no",
-    "II.60b" : "traffic_sign={id} maxweightrating:hgv=*",
+    "II.60b" : "traffic_sign={id}[{{maxweightrating:hgv}}] maxweightrating:hgv=*",
     "II.61"  : "traffic_sign={id} trailer=no",
     "II.62"  : "traffic_sign={id} agricultural=no",
     "II.63"  : "traffic_sign={id} hazmat=no",
     "II.64b" : "traffic_sign={id} hazmat:water=no",
-    "II.65"  : "traffic_sign={id} maxwidth=*",
-    "II.66"  : "traffic_sign={id} maxheight=*",
-    "II.67"  : "traffic_sign={id} maxlength=*",
-    "II.68"  : "traffic_sign={id} maxweight=*",
-    "II.69"  : "traffic_sign={id} maxaxleload=*",
-    "II.71"  : "traffic_sign={id} maxspeed=implicit",
+    "II.65"  : "traffic_sign={id}[{{maxwidth}}] maxwidth=*",
+    "II.66"  : "traffic_sign={id}[{{maxheight}}] maxheight=*",
+    "II.67"  : "traffic_sign={id}[{{maxlength}}] maxlength=*",
+    "II.68"  : "traffic_sign={id}[{{maxweight}}] maxweight=*",
+    "II.69"  : "traffic_sign={id}[{{maxaxleload}}] maxaxleload=*",
+    "II.71"  : "traffic_sign={id}[{{nosave:maxspeed}}] maxspeed=implicit",
     "II.72"  : "traffic_sign={id} overtaking=implicit",
     "II.73"  : "traffic_sign={id} overtaking:hgv=implicit",
     "II.74"  : "traffic_sign={id} parking=no_parking", # ??
     "II.75"  : "traffic_sign={id} parking=no_stopping", # ??
     "II.76"  : "traffic_sign={id} amenity=parking",
+    "II.77"  : "traffic_sign={id}[{{distance}}]",
 
-    "II.85"  : "traffic_sign={id} minspeed=*",
-    "II.86"  : "traffic_sign={id} minspeed=implicit",
+    "II.85"  : "traffic_sign={id}[{{minspeed}}] minspeed=*",
+    "II.86"  : "traffic_sign={id}[{{minspeed}}] minspeed=implicit",
+    "II.87"  : "traffic_sign={id} snow_chains=required",
     "II.88"  : "traffic_sign={id} foot=designated",
     "II.89"  : "traffic_sign={id} foot=implicit",
     "II.90"  : "traffic_sign={id} bicycle=designated",
@@ -142,6 +147,14 @@ TAGS : Dict[str,str|List[str]] = {
     "II.273" : "traffic_sign={id} name=*",
     "II.274" : "traffic_sign={id} city_limit=end name=*",
 
+    "II.312"  : "traffic_sign={id}[{{maxspeed:advisory}}] maxspeed:advisory=*",
+    "II.313"  : "traffic_sign={id}[{{maxspeed:advisory}}] maxspeed:advisory=*",
+    "II.323a" : "traffic_sign={id}[{{maxspeed}}] maxspeed={{maxspeed}} zone:maxspeed=IT:{{maxspeed}}",
+    "II.323b" : "traffic_sign={id}[{{nosave:maxspeed}}] maxspeed=implicit",
+
+    "MII.1"  : "traffic_sign={id}[{{nosave:distance}}]",
+    "MII.2"  : "traffic_sign={id}[{{nosave:extent}}]",
+    "MII.3"  : "traffic_sign={id}[{{nosave:period}}]",
     "MII.6e" : "traffic_sign={id} hazard=flood_prone",
     "MII.6f" : "traffic_sign={id} hazard=queues_likely",
     "MII.6h" : "traffic_sign={id} hazard=ice",
@@ -149,16 +162,20 @@ TAGS : Dict[str,str|List[str]] = {
 """Override tags for these items."""
 
 def tags(e, id_, tags_: str | List[str]):
-    """Add a key,
-    if the tag value is '*' display a text box instead,
-    if there are more of the same key, display a combobox instead.
+    """Add a key.
+
+    - if the tag value is given, just add it
+    - if the tag value is '*' display a text box,
+    - if a key is given more than once, display a combobox containing the different values.
     """
     tags : List[str] = tags_.split() if isinstance(tags_, str) else tags_
 
+    # group on the key in the tag
     for key, g in itertools.groupby(tags, lambda tag: tag.split("=")[0]):
         try:
-            gtags = [t.format(id = "IT:" + id_) for t in g]
+            gtags = [t.format(id = COUNTRY_PREFIX + id_) for t in g]
             if len(gtags) > 1:
+                # make a combobox for the values
                 e.append(
                     E.combo(
                         text=key.capitalize(),
@@ -169,9 +186,23 @@ def tags(e, id_, tags_: str | List[str]):
                 continue
             value = gtags[0].split("=")[1]
             if value == "*":
+                # make a textfield for the value
                 e.append(E.text(text=key.capitalize(), key=key))
                 continue
-            e.append(E.key(key=key, value=value))
+
+            if "{" in value:
+                for k in re.findall(r"\{nosave:(\w+)\}", value):
+                    e.append(E.text(text=k.capitalize(), key="nosave:" + k))
+
+            # add a fixed value
+            params = { "key" : key, "append_with" : ";", "append_regex_search" : "^" + COUNTRY_PREFIX }
+            if "{" in value:
+                params["value_template"] = value
+            else:
+                params["value"] = value
+            if key == "traffic_sign" and value.startswith(COUNTRY_PREFIX + "M"):
+                params["append_with"] = ","
+            e.append(E.key(**params))
         except IndexError:
             print(id_, gtags)
             sys.exit()
@@ -221,7 +252,7 @@ for section, group in itertools.groupby(items, lambda s: s.get("section", "unkno
             e.append(E.link(wiki=item["wiki"].replace("/wiki/", "")))
 
         item["tags"].append("traffic_sign={id}")
-        tags(e, id_, TAGS.get(id_, item["tags"]))  # override tags
+        tags(e, id_, TAGS.get(id_, item["tags"]))  # tags in TAGS override tags in wiki
         e.append(E.reference(ref="t"))
 
         g.append(e)
@@ -236,18 +267,7 @@ preset = E.presets(
                 text="Direction",
                 values="N,NE,E,SE,S,SW,W,NW,0,45,90,135,180,225,270,315,forward,backward",
                 values_sort="false",
-            ),
-            E.combo(
-                key="distance",
-                text="Distance",
-                values="100 m,250 m,500 m",
-                values_sort="false",
-            ),
-            E.combo(
-                key="length",
-                text="Length",
-                values="1 km,2 km,5 km",
-                values_sort="false",
+                default="S"
             ),
         ),
         id="t",

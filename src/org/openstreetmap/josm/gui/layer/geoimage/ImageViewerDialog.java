@@ -147,7 +147,6 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
 
     void setup() {
         tbCentre = new JToggleButton(new ImageCenterViewAction());
-        tbCentre.setSelected(Config.getPref().getBoolean(CENTRE_PREF, false));
 
         toolbar.setFloatable(false);
         toolbar.setBorderPainted(false);
@@ -1112,7 +1111,6 @@ public class ImageViewerDialog extends ToggleDialog // CHECKSTYLE.OFF: FinalClas
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final JToggleButton button = (JToggleButton) e.getSource();
             boolean centerView = isCenterView();
             Config.getPref().putBoolean(CENTRE_PREF, centerView);
             if (centerView)

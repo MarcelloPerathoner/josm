@@ -52,7 +52,7 @@ public final class Role extends TextItem {
         super(attributes);
         key = attributes.get("key");
         types = TaggingPresetType.getOrDefault(attributes.get("type"), EnumSet.noneOf(TaggingPresetType.class));
-        regexp = Boolean.parseBoolean(attributes.getOrDefault("regexp", "false"));
+        regexp = TaggingPresetUtils.parseBoolean(attributes.getOrDefault("regexp", "false"));
         count = Integer.parseInt(attributes.getOrDefault("count", "0"));
         memberExpression = parseSearchExpression(attributes.get("member_expression"));
         required = parseRequisite(attributes.getOrDefault("requisite", "optional"));

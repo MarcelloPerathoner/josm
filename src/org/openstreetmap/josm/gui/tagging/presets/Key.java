@@ -4,6 +4,8 @@ package org.openstreetmap.josm.gui.tagging.presets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JComponent;
 
@@ -14,8 +16,20 @@ import org.openstreetmap.josm.data.osm.Tag;
  */
 final class Key extends KeyedItem {
 
-    /** The hardcoded value for key */
-    private final String value;
+    /** The hardcoded value for key. May change if this is a calculated field. */
+    private String value;
+    /**
+     * If non-null the {@code value} is appended to an already existing value instead of replacing it.
+     * This string is used as separator.
+     * <p>
+     * Note: this is not the same as {@code delimiter}. Delimiter is the value used to
+     * separate values in the tagging preset XML, this value is the delimiter used in
+     * the OSM database.
+     */
+    final String appendWith;
+    final String appendRegexSearch;
+    final String appendRegexReplace;
+
 
     /**
      * Private constructor. Use {@link #fromXML} instead.
@@ -24,7 +38,10 @@ final class Key extends KeyedItem {
      */
     private Key(Map<String, String> attributes) throws IllegalArgumentException {
         super(attributes);
-        value = attributes.get("value");
+        value = attributes.getOrDefault("value", "");
+        appendWith = attributes.get("append_with");
+        appendRegexSearch = checkRegex(attributes.get("append_regex_search"));
+        appendRegexReplace = attributes.getOrDefault("append_regex_replace", "");
     }
 
     /**
@@ -69,9 +86,23 @@ final class Key extends KeyedItem {
         }
 
         @Override
+        void recalculate() {
+            if (valueTemplate != null)
+                value = valueTemplate.getText(getPresetInstance());
+        }
+
+        @Override
         public void addChangedTag(Map<String, String> changedTags) {
-            if (!value.equals(originalValue))
-                changedTags.put(key, value);
+            if (!value.equals(originalValue)) {
+                if (appendWith != null && originalValue != null) {
+                    String v = value;
+                    if (appendRegexSearch != null)
+                        v = value.replaceAll(appendRegexSearch, appendRegexReplace);
+                    changedTags.put(key, String.join(appendWith, originalValue, v));
+                } else {
+                    changedTags.put(key, value);
+                }
+            }
         }
 
         @Override
@@ -83,6 +114,7 @@ final class Key extends KeyedItem {
         String getValue() {
             return value;
         }
+
     }
 
     /**
@@ -101,6 +133,17 @@ final class Key extends KeyedItem {
     @Override
     public List<String> getValues() {
         return Collections.singletonList(value);
+    }
+
+    String checkRegex(String regex) {
+        if (regex == null)
+            return null;
+        try {
+            Pattern.compile(regex);
+            return regex;
+        } catch(PatternSyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override

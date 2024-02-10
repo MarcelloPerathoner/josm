@@ -50,7 +50,6 @@ import javax.swing.FocusManager;
 
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.quadtree.Quadtree;
-import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.BBox;
 import org.openstreetmap.josm.data.osm.INode;
@@ -227,15 +226,10 @@ public class StyledMapRenderer extends AbstractMapRenderer {
 
     /**
      * Returns the executor service to use for rendering
-     * <p>
-     * Returns null if we should use the EDT.
      *
-     * @return the executor service or null
+     * @return the executor service
      */
-    private static ThreadPoolExecutor getRenderExecutorService() {
-        int nThreads = getRenderThreads();
-        if (nThreads == 1)
-            return null;
+    private static ThreadPoolExecutor getRenderExecutorService(int nThreads) {
         if (renderExecutorService == null) {
             renderExecutorService = new ThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
@@ -243,6 +237,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 new RenderThreadFactory());
         } else {
             renderExecutorService.setCorePoolSize(nThreads);
+            renderExecutorService.setMaximumPoolSize(nThreads);
         }
         return renderExecutorService;
     }
@@ -539,10 +534,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
 
         MapViewPoint p = mapState.getPointFor(n);
 
-        if (n.isHighlighted()) {
-            drawPointHighlight(g, p.getInView(), size);
-        }
-
         if (size > 1 && p.isInView()) {
             int radius = size / 2;
 
@@ -572,12 +563,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     public void drawNodeIcon(Graphics2D g, INode n, MapImage img, boolean disabled, boolean selected, boolean member,
             AffineTransform affineTransform) {
         MapViewPoint p = mapState.getPointFor(n);
-
-        int w = img.getWidth();
-        int h = img.getHeight();
-        if (n.isHighlighted()) {
-            drawPointHighlight(g, p.getInView(), Math.max(w, h));
-        }
 
         AffineTransform at = new AffineTransform();
         at.translate(p.getInViewX(), p.getInViewY());
@@ -668,10 +653,6 @@ public class StyledMapRenderer extends AbstractMapRenderer {
     public void drawNodeSymbol(Graphics2D g, INode n, Symbol s, Color fillColor, Color strokeColor) {
         MapViewPoint p = mapState.getPointFor(n);
 
-        if (n.isHighlighted()) {
-            drawPointHighlight(g, p.getInView(), s.size);
-        }
-
         if (fillColor != null || strokeColor != null) {
             Shape shape = s.buildShapeAround(p.getInViewX(), p.getInViewY());
 
@@ -731,7 +712,7 @@ public class StyledMapRenderer extends AbstractMapRenderer {
      * @param p point
      * @param size highlight size
      */
-    private void drawPointHighlight(Graphics2D g, Point2D p, int size) {
+    private void drawNodeHighlight(Graphics2D g, Point2D p, int size) {
         g.setColor(highlightColorTransparent);
         int radius = paintSettings.adj(HIGHLIGHT_POINT_RADIUS.get());
         int s = size + radius;
@@ -743,6 +724,20 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             int r = (int) Math.floor(s/2d);
             g.fill(new RoundRectangle2D.Double(p.getX()-r, p.getY()-r, s, s, r, r));
             s -= step;
+        }
+    }
+
+    public void drawNodeHighlight(Graphics2D g, Rectangle bounds) {
+        g.setColor(highlightColorTransparent);
+        int padding = paintSettings.adj(HIGHLIGHT_POINT_RADIUS.get());
+        if (useWiderHighlight) {
+            padding += paintSettings.adj(WIDER_HIGHLIGHT.get());
+        }
+        int delta = Math.max(HIGHLIGHT_STEP.get(), 1);
+        for (int pad = padding / delta; pad <= padding; pad += delta) {
+            Rectangle r = new Rectangle(bounds);
+            r.grow(pad, pad);
+            g.fill(new RoundRectangle2D.Double(r.getX(), r.getY(), r.getWidth(), r.getHeight(), pad, pad));
         }
     }
 
@@ -1438,10 +1433,19 @@ public class StyledMapRenderer extends AbstractMapRenderer {
         for (int i = 0; i < hCount; ++i) {
             int y = r.y;
             for (int j = 0; j < vCount; ++j) {
-                BufferedImage buffer = mvGraphics.getBuffer();
-                // A new Graphics2D for each thread!!!
+                // All threads render into a different buffer
+                BufferedImage buffer = new BufferedImage(dx, dy, BufferedImage.TYPE_4BYTE_ABGR);
+                // Get a new Graphics2D for each thread!!!
                 Graphics2D g = buffer.createGraphics();
-                g.setClip(x, y, dx, dy);
+                g.setClip(0, 0, dx, dy);
+                g.translate(-x, -y);
+
+                // // All threads render into the same buffer
+                // BufferedImage buffer = mvGraphics.getBuffer();
+                // // Get a new Graphics2D for each thread!!!
+                // Graphics2D g = buffer.createGraphics();
+                // g.setClip(x, y, dx, dy);
+
                 l.add(new MapViewGraphics(
                     buffer,
                     g,
@@ -1493,9 +1497,13 @@ public class StyledMapRenderer extends AbstractMapRenderer {
 
             benchmark.renderStart(circum);
 
-            ExecutorService es = getRenderExecutorService();
-            final Collection<StyleRecord> allStyleElems = (es == null) ? new ConcurrentSkipListSet<>() : null;
-            final Quadtree quadtree = (es != null) ? new Quadtree() : null;
+
+            // FIXME: put quadtree on NavigatableComponent and use for hit testing
+            // FIXME: use node bounds for highlighting
+
+            int nRenderThreads = getRenderThreads();
+            final Collection<StyleRecord> allStyleElems = new ConcurrentSkipListSet<>();
+            final Quadtree quadtree = new Quadtree();
             final BBox bbox = mapState.getForView(mvGraphics.getBounds()).getLatLonBoundsBox().toBBox();
 
             List<Future<?>> futureList = new ArrayList<>();
@@ -1514,15 +1522,14 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                                     || (drawMultipolygon && drawArea && s instanceof TextElement)
                                     || (drawRestriction && s instanceof NodeElement)) {
                                 StyleRecord sr = new StyleRecord(s, relation, flags);
-                                Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
-                                if (bounds != null) {
-                                    if (quadtree != null) {
+                                if (nRenderThreads == 1) {
+                                    allStyleElems.add(sr);
+                                } else {
+                                    Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                                    if (bounds != null) {
                                         synchronized(quadtree) {
                                             quadtree.insert(toEnvelope(bounds), sr);
                                         }
-                                    }
-                                    if (allStyleElems != null) {
-                                        allStyleElems.add(sr);
                                     }
                                 }
                             }
@@ -1539,15 +1546,14 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                         for (StyleElement s : sl) {
                             if ((drawArea && (flags & StyledMapRenderer.FLAG_DISABLED) == 0) || !(s instanceof AreaElement)) {
                                 StyleRecord sr = new StyleRecord(s, way, flags);
-                                Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
-                                if (bounds != null) {
-                                    if (quadtree != null) {
+                                if (nRenderThreads == 1) {
+                                    allStyleElems.add(sr);
+                                } else {
+                                    Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                                    if (bounds != null) {
                                         synchronized(quadtree) {
                                             quadtree.insert(toEnvelope(bounds), sr);
                                         }
-                                    }
-                                    if (allStyleElems != null) {
-                                        allStyleElems.add(sr);
                                     }
                                 }
                             }
@@ -1563,15 +1569,14 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                         StyleElementList sl = styles.get(node, circum, nc);
                         for (StyleElement s : sl) {
                             StyleRecord sr = new StyleRecord(s, node, flags);
-                            Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
-                            if (bounds != null) {
-                                if (quadtree != null) {
+                            if (nRenderThreads == 1) {
+                                allStyleElems.add(sr);
+                            } else {
+                                Rectangle bounds = sr.getBounds(paintSettings, this, threadLocalG.get());
+                                if (bounds != null) {
                                     synchronized(quadtree) {
                                         quadtree.insert(toEnvelope(bounds), sr);
                                     }
-                                }
-                                if (allStyleElems != null) {
-                                    allStyleElems.add(sr);
                                 }
                             }
                         }
@@ -1583,11 +1588,11 @@ public class StyledMapRenderer extends AbstractMapRenderer {
             // We have to wait until everybody is done because we need to paint starting
             // with the artifact with the lowest z-order.
             for (Future<?> f : futureList) {
-                if (!f.isDone()) {
-                    try { f.get(); }
-                    catch (CancellationException | ExecutionException ex) {
-                        Logging.error(ex);
-                    }
+                try {
+                    f.get();
+                }
+                catch (CancellationException | ExecutionException ex) {
+                    Logging.error(ex);
                 }
             }
             futureList.clear();
@@ -1599,15 +1604,14 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 return;
             }
 
-            if (allStyleElems != null) {
+            if (nRenderThreads == 1) {
                 // Render in the EDT for wimps
                 // Logging.info("StyledMapRenderer.paintWithLock: rendering in the EDT");
                 Graphics2D g = buffer.createGraphics();
                 for (StyleRecord styleRecord : allStyleElems) {
                     styleRecord.paintPrimitive(paintSettings, this, g);
                 }
-            }
-            if (quadtree != null) {
+            } else {
                 // Here we use multiple non-EDT threads to render into the {@link
                 // BufferedImage}. What? Don't you know swing is not thread-safe?
                 // <p>
@@ -1627,34 +1631,39 @@ public class StyledMapRenderer extends AbstractMapRenderer {
                 // advance and use them to decide in which screen regions the style
                 // element needs to be drawn.
 
-                AtomicInteger elementsDrawn = new AtomicInteger();
-
-                for (MapViewGraphics mvg : splitMapViewGraphics(mvGraphics, getRenderThreads())) {
-                    futureList.add(executorService.submit(() -> {
+                ExecutorService es = getRenderExecutorService(nRenderThreads);
+                for (MapViewGraphics mvg : splitMapViewGraphics(mvGraphics, nRenderThreads)) {
+                    futureList.add(es.submit(() -> {
                         Rectangle clipBounds = mvg.getBounds();
                         Graphics2D g = mvg.getDefaultGraphics();
                         List<StyleRecord> l = quadtree.query(toEnvelope(clipBounds));
                         l.stream().filter(sr -> sr.intersects(clipBounds)).sorted().forEach(styleRecord -> {
                             styleRecord.paintPrimitive(paintSettings, this, g);
-                            elementsDrawn.incrementAndGet();
                         });
+                        mvGraphics.getDefaultGraphics().drawImage(
+                            mvg.getBuffer(), mvg.getBounds().x, mvg.getBounds().y, null);
+                        // Logging.info("DrawImage: {0}", mvg.getBounds().toString());
                     }));
                 }
                 for (Future<?> f : futureList) {
-                    if (!f.isDone()) {
-                        try {
-                            f.get();
-                        }
-                        catch (CancellationException | ExecutionException ex) {
-                            Logging.error(ex);
-                        }
+                    try {
+                        f.get();
+                    }
+                    catch (CancellationException | ExecutionException ex) {
+                        Logging.error(ex);
                     }
                 }
                 futureList.clear();
-                Logging.info("Elements in quadtree: {0}", quadtree.size());
-                Logging.info("Elements drawn: {0}", elementsDrawn.get());
             }
             benchmark.renderDone();
+
+            if (nRenderThreads == 1) {
+                Logging.info("Render Thread: EDT");
+                Logging.info("Elements in allStyleElements: {0}", allStyleElems.size());
+            } else {
+                Logging.info("Render Threads: {0}", nRenderThreads);
+                Logging.info("Elements in quadtree: {0}", quadtree.size());
+            }
 
             if (renderVirtualNodes)
                 drawVirtualNodes(mvGraphics.getDefaultGraphics(), data, bbox);

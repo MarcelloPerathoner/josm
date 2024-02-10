@@ -789,6 +789,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
 
     @Override
     public LayerPainter attachToMapView(MapViewEvent event) {
+        super.attachToMapView(event);
         MapView.addZoomChangeListener(this);
         return this;
     }
@@ -796,6 +797,7 @@ public class GeoImageLayer extends AbstractModifiableLayer implements
     @Override
     public void detachFromMapView(MapViewEvent event) {
         MapView.removeZoomChangeListener(GeoImageLayer.this);
+        super.detachFromMapView(event);
     }
 
     @Override

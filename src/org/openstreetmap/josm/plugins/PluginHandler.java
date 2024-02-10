@@ -915,6 +915,17 @@ public final class PluginHandler {
     }
 
     /**
+     * Puts the given plugins' resources into the classpath.
+     * <p>
+     * This must be run early before the mapcss loader starts or plugins will not be
+     * able to provide their own mapcss styles.
+     * @param allPlugins the plugins to put on the classpath
+     */
+    public static void loadPluginResources(Collection<PluginInformation> allPlugins) {
+        extendJoinedPluginResourceCL(allPlugins);
+    }
+
+    /**
      * Loads and instantiates the plugin described by <code>plugin</code> using
      * the class loader <code>pluginClassLoader</code>.
      *
@@ -1017,7 +1028,7 @@ public final class PluginHandler {
                 }
             }
 
-            extendJoinedPluginResourceCL(toLoad);
+            // extendJoinedPluginResourceCL(toLoad);
             ResourceProvider.addAdditionalClassLoaders(getResourceClassLoaders());
             monitor.setTicksCount(toLoad.size());
             for (PluginInformation info : toLoad) {
@@ -1041,9 +1052,8 @@ public final class PluginHandler {
      * <p>
      * This is meant for plugins that provide additional {@link javax.swing.LookAndFeel}.
      */
-    public static void loadVeryEarlyPlugins() {
-        List<PluginInformation> veryEarlyPlugins = PluginHandler.buildListOfPluginsToLoad(null, null)
-                .stream()
+    public static void loadVeryEarlyPlugins(Collection<PluginInformation> allPlugins) {
+        List<PluginInformation> veryEarlyPlugins = allPlugins.stream()
                 .filter(pi -> pi.isEarly() && pi.getStage() < 0)
                 .collect(Collectors.toList());
         loadPlugins(null, veryEarlyPlugins, null, false);
