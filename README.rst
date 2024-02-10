@@ -239,7 +239,7 @@ implement easy tagging of traffic signs.  The improvements that work together ar
 
 .. raw:: html
 
-   <video src="demo/add-traffic-signs.mkv"></video>
+   <video src="https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4" autoplay controls></video>
 
 
 Plugin Preferences Rewritten
