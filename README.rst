@@ -238,9 +238,22 @@ implement easy tagging of traffic signs.  The improvements that work together ar
 - new functions in mapcss
 - icon rotation command
 
-.. figure:: demo/add-traffic-signs.svg
+.. raw:: html
 
-https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4
+    <video controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px; min-height: 200px"
+        src="https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4">
+    </video>
+
+.. raw:: html
+
+    <video controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px; min-height: 200px"
+        src="https://github.com/MarcelloPerathoner/josm/assets/7013063/255faa7c-231d-4c40-a32f-6d4c27245daf">
+    </video>
+
+
+.. raw:: html
+
+   <div style="border:1px solid red">test</div>
 
 
 Plugin Preferences Rewritten
