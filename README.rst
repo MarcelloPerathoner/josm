@@ -199,9 +199,7 @@ MapCSS
 
    .. image:: demo/heading.png
 
-#. New command to rotate icons.
-
-   .. image:: demo/rotate_traffic_signs.gif
+#. New command to interactively rotate icons (changing the `direction` tag).
 
 #. MapCSS rotation has been fixed to rotate around the centerpoint.
 
@@ -227,33 +225,20 @@ MapCSS
 Traffic signs
 -------------
 
-This clip showcases how some of the enhancements described above work together to
+This clip showcases how some of the JOSM enhancements described above work together to
 implement easy tagging of traffic signs.  The improvements that work together are:
 
-- multi-column menus
-- resizable icons in menus
+- multi-column menus + resizable icons in menus
 - append_* in tagging presets
 - SVG parameters
 - arbitrary transformations in mapcss
 - new functions in mapcss
-- icon rotation command
+- interactive icon rotation command
 
 .. raw:: html
 
-    <video controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px; min-height: 200px"
-        src="https://github.com/MarcelloPerathoner/josm/raw/develop/demo/add-traffic-signs.mp4">
+    <video src="https://github.com/MarcelloPerathoner/josm/assets/7013063/255faa7c-231d-4c40-a32f-6d4c27245daf">
     </video>
-
-.. raw:: html
-
-    <video controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px; min-height: 200px"
-        src="https://github.com/MarcelloPerathoner/josm/assets/7013063/255faa7c-231d-4c40-a32f-6d4c27245daf">
-    </video>
-
-
-.. raw:: html
-
-   <div style="border:1px solid red">test</div>
 
 
 Plugin Preferences Rewritten
@@ -262,9 +247,12 @@ Plugin Preferences Rewritten
 The preference pane for the plugin system has been rewritten from scratch. It is now
 possible to download plugins from GitHub assets.
 
-.. figure:: demo/plugins.gif
+.. raw:: html
 
-   The new plugin preference pane
+    <video src="https://github.com/MarcelloPerathoner/josm/assets/7013063/fb0a5344-a966-4b05-b478-2d3fd0052dfa">
+    </video>
+
+The new plugin preference pane
 
 
 Notification System Rewritten

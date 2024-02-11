@@ -1028,7 +1028,7 @@ public final class PluginHandler {
                 }
             }
 
-            // extendJoinedPluginResourceCL(toLoad);
+            extendJoinedPluginResourceCL(toLoad);
             ResourceProvider.addAdditionalClassLoaders(getResourceClassLoaders());
             monitor.setTicksCount(toLoad.size());
             for (PluginInformation info : toLoad) {
